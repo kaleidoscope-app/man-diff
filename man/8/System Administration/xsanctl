@@ -1,0 +1,542 @@
+XSANCTL(8)                   System Manager's Manual                  XSANCTL(8)
+
+NAME
+     xsanctl – Xsan file system control utility
+
+SYNOPSYS
+     xsanctl command [arg [...]]
+
+DESCRIPTION
+     xsanctl provides a basic control facility for the Xsan file system.  It
+     operates by sending commands to the Xsan file system management daemon
+     xsand.  xsanctl must be run by the superuser.
+
+COMMANDS
+     xsanctl provides the following commands:
+
+   Primary commands
+     These commands are the primary ones needed for SAN management.
+
+     help         Display a list of the available xsanctl commands.
+
+     ping         Sends a ‘ping’ message to xsand.  This can be used to verify
+                  that xsand is responding to management requests.
+
+     mount volumeName [options]
+                  Creates the volume mount device for volume volumeName.  If any
+                  mount options are given, xsand updates the local mount options
+                  for the volume before creating the volume mount device.
+                  diskarbitrationd will mount the volume after the volume mount
+                  device is created.  This is the preferred method of mounting
+                  Xsan volumes from the command line.
+
+                  [options] include those options recognized by mount_acfs and
+                  three others:
+
+                  --at
+                      Specify a non-standard path at which to mount the volume.
+
+                  --rw
+                      Mount the volume for both reading and writing. This
+                  behavior is the default.
+
+                  --ro
+                      Mount the volume read-only.
+
+                  --clusteriosize=size
+                      Specify the maximum I/O transfer size (in bytes) that the
+                  cluster layer can submit to the file system's IO strategy
+                  routine. The minimum value allowed is 1MB and the maximum
+                  value allowed is 32MB. The default value is set to 8MB when
+                  the option is not specified.
+
+                  mount_acfs options should be preceded by two dashes. For
+                  instance, the number of kernel threads will increase to twenty
+                  as a result of this option: --threads=20.
+
+     unmount volumeName [options]
+                  Unmounts the volume volumeName.
+
+                  --force
+
+                       Force the unmount. This operation may cause data loss
+
+                  Previous versions of Xsan explicitly forced mounting of
+                  selected volumes.  This version of Xsan creates volume mount
+                  devices for all on-line and connected volumes and leaves mount
+                  state control to disk arbitration.
+
+     list         Displays a list of the available volumes.
+
+     createSan sanName [createMaster arguments]
+                  This subcommand must be run as root and does not depend on
+                  xsand running.  This subcommand creates a new SAN with this
+                  computer as the only controller. The SAN's name is sanName and
+                  may not begin with a dash. This subcommand has two variants.
+                  In both forms, it creates a new Xsan SAN. The subcommand's
+                  behavior depends on the configuration state of Open Directory
+                  when it runs.  Xsan controllers must be Open Directory
+                  controllers for the cluster containing the SAN configuration.
+                  If the computer is not an Open Directory controller this
+                  subcommand configures the computer to be the master of a new
+                  Open Directory cluster, and then creates the SAN using that
+                  cluster.
+
+                  The subcommand options supplied after the SAN name are
+                  examined in the case where the computer is not an Open
+                  Directory controller. In this case, they are processed as if
+                  the createMaster subcommand had been run. In the case where
+                  the computer is already an Open Directory controller, none of
+                  the additional command options are valid.
+
+     listSan      Displays a list of available Xsan SANs in the local network.
+                  This subcommand does not depend on xsand running.
+
+     joinSan sanName [options] [createReplica arguments]
+                  This subcommand must be run as root and does not depend on
+                  xsand running.  This subcommand joins this computer with an
+                  existing SAN as a metadata controller. This computer will be
+                  an additional metadata controller for an existing SAN. The
+                  subcommand's behavior depends on the configuration state of
+                  Open Directory when it runs.  Xsan controllers must be Open
+                  Directory controllers for the cluster containing the SAN
+                  configuration. If the computer is not an Open Directory
+                  controller, this subcommand configures the computer to be a
+                  replica in the Open Directory cluster, and then joins the SAN
+                  using that cluster.
+
+                  The subcommand options supplied after the joinSAN options are
+                  examined in the case where the computer is not an Open
+                  Directory controller. In this case, they are processed as if
+                  the createReplica subcommand had been run. In the case where
+                  the computer is already an Open Directory controller, none of
+                  the additional createReplica command options are valid.
+
+                  --controller-name ControllerName
+
+                       Specify the metadata controller name in the SAN in which
+                  this computer wants to join.
+
+                  --controller-user ControllerUserName
+
+                       Specify the administrator name for the metadata
+                  controller in which this computer wants to join.
+
+                  --controller-pass ControllerPassword
+
+                       Specify the administrator password for the metadata
+                  controller in which this computer wants to join.
+
+     leaveSan     This subcommand must be run as root and does not depend on
+                  xsand running.  This subcommand removes this computer as a
+                  metadata controller from an existing SAN.
+
+     removeControllerFromSan controllerName
+                  This subcommand removes the specified computer as a metadata
+                  controller from an existing SAN.
+
+     destroySan   This subcommand must be run as root and does not depend on
+                  xsand running.  This subcommand sets the SAN configuration for
+                  this system's SAN to dead and updates the configuration in
+                  LDAP. It also posts a configuration update message to the SAN.
+                  Note: this command does NOT gracefully stop the SAN.
+                  Controllers and clients may need to be rebooted if they do not
+                  cleanly stop.  Use with care. This operation can not be
+                  undone.
+
+     exportClientProfile
+                  Exports Xsan configuration profile which can be installed on
+                  clients with Profile Manager.
+
+                  --path dirPath
+
+                       Specify the directory path in which the configuration
+                  profile will be created. If this option is not selected, the
+                  current working directory path will be used.
+
+                  --output outputFile
+
+                       Specify the file name to use for the configuration
+                  profile. If this option is not selected, the name of the SAN
+                  will be used as a default.
+
+     addVolume volumeName [addOrEditVolumeOptions]
+                  This subcommand creates a new volume named volumeName.  The
+                  command options used to describe a new volume's format are
+                  described in the VOLUME DESCRIPTION section below. The volume
+                  will be hosted on all current controllers, and will be started
+                  after creation. A new volume will consist of one or more
+                  Storage pools.  One or more Storage pools must contain
+                  metadata, One or more Storage pools must contain userdata, and
+                  exactly one Storage pool must contain the journal.
+
+     editVolume volumeName [addOrEditVolumeOptions]
+                  This subcommand edits the settings for an existing volume
+                  named volumeName.  The command options used to describe
+                  volume's settings are described in the VOLUME DESCRIPTION
+                  section below. Many of the volume settings set at addVolume
+                  time may be subsequently changed. The ones which can not are
+                  documented in that section. This subcommand can also add new
+                  Storage pools to the volume.
+
+     dropVolume [option] volumeName
+                  Removes a volume from SAN. This subcommand must be run as
+                  root. Note: the clients may need to be rebooted if '--force'
+                  option fails to cleanly stop the clients.
+
+                  --force
+
+                       Force the deletion even the volume is still mounted by
+                  the clients
+
+     startVolume volumeName
+                  Start the volume volumeName.  This subcommand must be run as
+                  root.
+
+     stopVolume [option] volumeName
+                  Stops the volume volumeName.  Further operations to the volume
+                  will be blocked in clients until the volume is started. This
+                  subcommand must be run as root.
+
+                  --force
+
+                       Force the stop even the volume is still mounted by the
+                  clients
+
+     unloadProfile
+                  This subcommand must be run as root and does not depend on
+                  xsand running. This subcommand unloads any profiles
+                  configuring Xsan which were not installed by Profile Manager.
+                  Profile removal will wipe the local Xsan configuration.
+
+   Secondary commands
+     These commands are less-frequently used commands for SAN management.
+
+     changeIP oldIP newIP [oldHostName newHostName]
+                  This subcommand must be run as root.  This subcommand changes
+                  the SAN configuration locally and in LDAP if the current Xsan
+                  address is oldIP.  newIP is used in its place. If the fully-
+                  qualified domain name oldHostName is also passed as an
+                  arguement, the host name retained in the LDAP configuration
+                  for this host is changed to newHostName.  Please ensure that
+                  all controllers have the SSL certificate for newHostName
+                  before running this command. Changing the host name of a
+                  controller will cause all clients in the SAN to re-read the
+                  controller certificates.
+
+     createMaster
+                  Creates a new master LDAP server and a new directory node
+                  administrator.
+
+                  --cert-auth-name CertAuthName
+
+                       Specify the name to be used for Certificate Authority.
+
+                  --cert-admin-email CertAdminEmail
+
+                       Specify the email address to be used for Certificate
+                  Authority admin.
+
+                  --user AdminFullName
+
+                       Specify the full name for the new administrator account.
+
+                  --account AdminAccountShortName
+
+                       Specify the username for the new administrator account.
+
+                  --pass AdminPassword
+
+                       Specify the password for the new administrator account.
+
+
+     createReplica
+                  Creates a new replica from an existing LDAP master and joins
+                  Open Directory.
+
+                  --master MasterAddress
+
+                       Specify the LDAP master IP address or name.
+
+                  --account AdminAccountShortName
+
+                       Specify the username for the administrator account.
+
+                  --pass AdminPassword
+
+                       Specify the password for the administrator account.
+
+
+     destroyMaster
+                  Turns off the LDAP server and deletes its database.
+
+                  --account AdminAccountShortName
+
+                       Specify the username for the administrator account.
+
+                  --pass AdminPassword
+
+                       Specify the password for the administrator account.
+
+
+     destroyReplica
+                  Unjoins Open Directory and removes a replica from an existing
+                  LDAP master.
+
+                  --account AdminAccountShortName
+
+                       Specify the username for the administrator account.
+
+                  --pass AdminPassword
+
+                       Specify the password for the administrator account.
+
+
+     activateSan  This subcommand must be run as root and does not depend on
+                  xsand running. This subcommand activates the previous Xsan SAN
+                  configuration after macOS upgrade.
+
+     cullSan sanName
+                  This subcommand must be run as root and does not depend on
+                  xsand running.  This subcommand destroys the LDAP
+                  configuration for a SAN.  This subcommand is intended to clean
+                  up SAN configurations in LDAP which have been in the dead
+                  state long enough that all clients have been unconfigured.
+                  This operation can not be undone.
+
+     disksChanged
+                  Sends a notification to the Xsan file system that disks have
+                  changed and should be rescanned.
+
+     eraseVolume volumeName
+                  Initializes the volume volumeName.
+
+                  See CAUTION section below.
+
+     renameVolume oldName newName
+                  Renames an existing volume name to the new name. The existing
+                  config file will be renamed, and the existing data directory
+                  containing logs will be migrated to the new name. This
+                  subcommand must be run as root.
+
+     importVolume volumeConfigFile
+                  Imports a volume into SAN using the specified volume config
+                  file. Upon successful import, the volume will be started.
+
+   Plumbing commands
+     These commands expose specific points of SAN management functionality. They
+     can be very powerful, and offer an administrator a lot of flexibility. Use
+     these commands with care as they offer enough flexibility to trip and/or
+     harm an administrator.
+
+     sanConfigChanged
+                  Sends a notification to the Xsan file system that the SAN
+                  configuration has changed and should be reloaded.
+
+     pushConfigUpdate
+                  Pushes out a new configuration update. This subcommand must be
+                  run as root and does not depend on xsand running. This
+                  subcommand adjusts the SAN configuration in ldap to match the
+                  configuration status in /Library/Preferences/Xsan.  If the
+                  ldap configuration is changed, a configuration update message
+                  will be posted to the SAN.
+
+                  See CAUTION section below.
+
+     ldapConfigChanged
+                  This subcommand must be run as root and does not depend on
+                  xsand running. This subcommand verifies the local
+                  configuration with the configuration in ldap, and updates the
+                  local configuration to match.
+
+                  See CAUTION section below.
+
+     roleChanged  Sends a notification to the Xsan file system that the role has
+                  changed.
+
+     wipeConfig   Causes the Xsan file system configuration to be reset to an
+                  unconfigured state.
+
+     listTask volumeName [options]
+                  List the long running task for volumeName.  --cleanup Cleanup
+                  the long running task if it has been completed.  --wait Wait
+                  for the long running task to complete.
+
+     listTasks    List all long running tasks for all volumes.
+
+VOLUME DESCRIPTION
+     The addVolume and editVolume verbs share the command options below. Most
+     options are available to both verbs.  A few are only available to addVolume
+     as they control settings which can not be modified by editVolume.
+
+
+   VOLUME SETTINGS
+     --caseSensitive
+              Enable case sensitive on Xsan file system. When enabled, the
+              volume considers filenames to be different if they are spelled
+              alike but capitalized differently.
+
+
+     --caseInsensitive
+              Enable case insensitive on Xsan file system. When enabled, the
+              volume considers filenames to be the same if they are spelled
+              alike but capitalized differently. This setting is the default for
+              new volumes.
+
+
+     --enableACLs
+              Specify whether the Xsan file system uses access control lists
+              (ACLs) on a volume.
+
+
+     --ignoreOwners
+              Enable the noowners flag when mounting the volume, as documented
+              in the mount(8) man page. This setting is the default for new
+              volumes.
+
+
+     --idsFromGUIDs
+              Specify that Windows clients should dynamically generate UIDs and
+              GIDs based on globally unique identifer (GUID) information in
+              Active Directory domain when mapping user and group information to
+              Xsan-compatible user IDs (UIDs) and group IDs (GIDs).
+
+
+     --idsFromLDAP
+              Specify that Windows clients should get UID and GID values from
+              the uidNumber and gidNumber attributes in Active Directory records
+              when mapping user and group information to Xsan-compatible user
+              IDs (UIDs) and group IDs (GIDs).  This setting is the default for
+              new volumes.
+
+
+     --noExtendedAttrs
+              Disable support for Apple Named Streams. Named Streams are
+              utilized by Apple Xsan clients.  Disabling support on a Xsan file
+              system is a permanent change. It cannot be enabled once disabled.
+
+   STORAGE POOL SETTINGS
+     An Xsan volume contains one or more LUNs grouped into one or more Storage
+     Pools.  A Storage Pool's description begins with a --storagePool argument
+     which specifies the Storage Pool's name. Subsequent arguments control the
+     content stored in the pool and add LUNs to the pool. A pool's description
+     ends when a subsequent --storagePool argument starts the next pool, or the
+     command line ends. Storage Pool names must be unique within the volume.
+
+     As every volume requires one pool containing metadata and the journal, the
+     --defaultFirstPool argument facilitates quickly creating such a Storage
+     Pool. This argument is equivalent to this sequence of command arguments:
+     --storagePool MetadataAndJournal --metadata --journal Further, this Storage
+     Pool is placed at the beginning of the Storage Pool list, regardless of
+     where this argument is located in the command line. For typical usage, the
+     only arguments needed for this storage pool are to add one or more LUNs to
+     the pool.
+
+     If none of the content types are set on a Storage Pool, it defaults to
+     contain userdata.
+
+     --storagePool StoragePoolName
+              Begin specifying a storage pool named StoragePoolName.  This
+              argument implicitly ends any preceding Storage Pool description.
+
+     --defaultFirstPool
+              Begin specifying a storage pool named MetadataAndJournal which
+              contains the journal and metadata. This Storage Pool is placed at
+              the beginning of the Storage Pool list, regardless of where this
+              argument is located on the command line.  This argument implicitly
+              ends any preceding Storage Pool description.
+
+     --metadata
+              This Storage Pool may contain metadata.
+
+     --journal
+              This Storage Pool will contain the journal.
+
+     --data   This Storage Pool may contain userdata.
+
+     --any    Shorthand for specifying --metadata --data --journal
+
+     --addLUN DiskLabelName
+              Add a disk to the Storage Pool. The Disk Label name can be
+              determined using using cvlabel command.
+
+     --addLUNs Disk1LabelName,Disk2LabelName,...
+              Add multiple disks to the Storage Pool.
+
+     --stripeBreadth StripeBreadthSizeInKB
+              Specify the amount of data that will be written to a LUN before
+              switching to the next LUN within a stripe group. For optimal
+              performance, stripeBreadth size should be a multiple of RAID
+              stripe size. The stripeBreadth size must also be a multiple file
+              system block size of 4096 bytes.
+
+   COMMAND SETTINGS
+     --dry-run
+              Verify the requested operation without actually applying the
+              changes.
+
+     --output
+              Write the volume configuration settings to the specified output
+              path.  This option is intended exclusively for automated testing.
+              This option is subject to change without notice.
+
+     ---non-interactive
+              Perform the requested operation without actually waiting for its
+              completion.  The status of the operation can later be queried
+              using the listTask or listTasks verbs. This option is intended
+              exclusively for automated testing. This option is subject to
+              change without notice.
+
+   EXAMPLES
+     addVolume superVolume --defaultFirstPool --addLUN metaLUN --storagePool
+              lotsOfSpace --addLUNs firstAcreOfData,secondAcreOfData
+              This command creates a new volume, superVolume with two Storage
+              Pools, MetadataAndJournal and lotsOfSpace.  The first Storage Pool
+              is the one named MetadataAndJournal and contains metadata and the
+              journal. This storage pool contains one LUN named metaLUN.  The
+              second Storage Pool is named lotsOfSpace and contains userdata due
+              to the use of the default userdata specification. This Storage
+              Pool contains two LUNs named firstAcreOfData and secondAcreOfData.
+
+     addVolume superVolume --storagePool lotsOfSpace --addLUNs
+              firstAcreOfData,secondAcreOfData --defaultFirstPool --addLUN
+              metaLUN
+              This command creates the same volume as before, and demonstrates
+              how the Storage Pool created by --defaultFirstPool is always the
+              first Storage Pool in the volume, regardless of where the argument
+              is on the command line.
+
+     editVolume superVolume --caseSensitive
+              Change the volume superVolume to be case sensitive.
+
+     editVolume superVolume --storagePool moreSpace --addLUNs
+              thirdAcreOfData,fourthAcreOfData
+              Add a new Storage Pool named moreSpace to the volume superVolume.
+              This Storage Pool will contain two LUNs named thirdAcreOfData and
+              fourthAcreOfData.
+
+CAUTION
+     The pushConfigUpdate and ldapConfigChanged verbs can permanently damage a
+     SANs configuration when run on a controller if LDAP replication is not
+     functioning correctly. These verbs assume that the local LDAP node contains
+     a correct configuration for the SAN, and can lose data if this assumption
+     is incorrect.
+
+     The pushConfigUpdate verb especially can be dangerous if the local LDAP
+     configuration is not current. Any local differences between it and the
+     state in the /Library/Preferences/Xsan configuration files will trigger an
+     update to the local LDAP which the SAN will then take as the most-up-to-
+     date configuration.
+
+     Specifically, if a volume has been created in the SAN but it is not
+     described in the LDAP configuration of a controller executing
+     pushConfigUpdate, this volume's configuration will be lost and any
+     controller currently hosting it will stop. Clients will not correctly
+     disconnect and thus require a hard reboot.
+
+     The eraseVolume verb will destroy ALL existing data in the volume.
+
+SEE ALSO
+     diskutil(8), launchd(8), cvadmin(8), cvlabel(8), xsand(8), mount(8)
+
+Xsan                             April 20, 2015                             Xsan

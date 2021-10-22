@@ -1,0 +1,75 @@
+gcore(1)                     General Commands Manual                    gcore(1)
+
+NAME
+     gcore – get core images of running processes
+
+SYNOPSIS
+     gcore [-s] [-v] [-b size] [-o path | -c pathformat] pid
+
+DESCRIPTION
+     The gcore program creates a core file image of the process specified by
+     pid.  The resulting core file can be used with a debugger, e.g.  lldb(1),
+     to examine the state of the process.
+
+     The following options are available:
+
+     -s          Suspend the process while the core file is captured.
+
+     -v          Report progress on the dump as it proceeds.
+
+     -b size     Limit the size of the core file to size MiBytes.
+
+     The following options control the name of the core file:
+
+     -o path
+           Write the core file to path.
+
+     -c pathformat
+           Write the core file to pathformat.  The pathformat string is treated
+           as a pathname that may contain various special characters which cause
+           the interpolation of strings representing specific attributes of the
+           process into the name.
+
+           Each special character is introduced by the % character.  The format
+           characters and their meanings are:
+
+           N           The name of the program being dumped, as reported by
+                       ps(1).
+
+           U           The uid of the process being dumped, converted to a
+                       string.
+
+           P           The pid of the process being dumped, converted to a
+                       string.
+
+           T           The time when the core file was taken, converted to ISO
+                       8601 format.
+
+           %           Output a percent character.
+
+     The default file name used by gcore is %N-%P-%T.  By default, the core file
+     will be written to a directory whose name is determined from the
+     kern.corefile MIB.  This can be printed or modified using sysctl(8).
+
+     The directory where the core file is to be written must be accessible to
+     the owner of the target process.
+
+     gcore will not overwrite an existing file, nor will it create missing
+     directories in the path.
+
+EXIT_STATUS
+     The gcore utility exits 0 on success, and >0 if an error occurs.
+
+FILES
+     /cores/%N-%P-%T       default pathname for the corefile.
+
+BUGS
+     With the -b flag, gcore writes out as much data as it can up to the
+     specified limit, even if that results in an incomplete core image.  Such a
+     partial core dump may confuse subsequent programs that attempt to parse the
+     contents of such files.
+
+SEE ALSO
+     lldb(1), core(5), Mach-O(5), sysctl(8), sudo(8).
+
+Darwin                               2/10/16                              Darwin

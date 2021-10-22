@@ -1,0 +1,86 @@
+SHUTDOWN(8)                  System Manager's Manual                 SHUTDOWN(8)
+
+NAME
+     shutdown – close down the system at a given time
+
+SYNOPSIS
+     shutdown [-] [-h [-u] | -r | -s | -k] [-o [-n]] time [warning-message ...]
+
+DESCRIPTION
+     The shutdown utility provides an automated shutdown procedure for super-
+     users to nicely notify users when the system is shutting down, saving them
+     from system administrators, hackers, and gurus, who would otherwise not
+     bother with such niceties.
+
+     The following options are available:
+
+     -h      The system is halted at the specified time.
+
+     -k      Kick everybody off.  The -k option does not actually halt the
+             system, but leaves the system multi-user with logins disabled (for
+             all but super-user).
+
+     -n      If the -o is specified, prevent the file system cache from being
+             flushed by passing -n option to halt(8) or reboot(8).  This option
+             should probably not be used.
+
+     -o      If -h or -r is specified, shutdown will execute halt(8) or
+             reboot(8) instead of sending a signal to launchd(8).
+
+     -r      The system is rebooted at the specified time.
+
+     -s      The system is put to sleep at the specified time.
+
+     -u      The system is halted up until the point of removing system power,
+             but waits before removing power for 5 minutes so that an external
+             UPS (uninterruptible power supply) can forcibly remove power.  This
+             simulates a dirty shutdown to permit a later automatic power on. OS
+             X uses this mode automatically with supported UPSs in emergency
+             shutdowns.
+
+     time    Time is the time at which shutdown will bring the system down and
+             may be the word now (indicating an immediate shutdown) or specify a
+             future time in one of two formats: +number, or yymmddhhmm, where
+             the year, month, and day may be defaulted to the current system
+             values.  The first form brings the system down in number minutes
+             and the second at the absolute time specified.
+
+     warning-message
+             Any other arguments comprise the warning message that is broadcast
+             to users currently logged into the system.
+
+     -       If ‘-’ is supplied as an option, the warning message is read from
+             the standard input.
+
+     At intervals, becoming more frequent as apocalypse approaches and starting
+     at ten hours before shutdown, warning messages are displayed on the
+     terminals of all users logged in.
+
+     At shutdown time a message is written to the system log, containing the
+     time of shutdown, the person who initiated the shutdown and the reason.
+     Corresponding signal is then sent to launchd(8) to respectively halt,
+     reboot or bring the system down to single-user state (depending on the
+     above options).
+
+     A scheduled shutdown can be canceled by killing the shutdown process (a
+     SIGTERM should suffice).
+
+SIGTERM TO SIGKILL INTERVAL
+     Upon shutdown, all running processes are sent a SIGTERM followed by a
+     SIGKILL.  The SIGKILL will follow the SIGTERM by an intentionally
+     indeterminate period of time.  Programs are expected to take only enough
+     time to flush all dirty data and exit.  Developers are encouraged to file a
+     bug with the OS vendor, should they encounter an issue with this
+     functionality.
+
+SEE ALSO
+     kill(1), login(1), wall(1), halt(8), launchd(8), reboot(8)
+
+BACKWARD COMPATIBILITY
+     The hours and minutes in the second time format may be separated by a colon
+     (``:'') for backward compatibility.
+
+HISTORY
+     The shutdown utility appeared in 4.0BSD.
+
+macOS 12.0                      December 11, 1998                     macOS 12.0

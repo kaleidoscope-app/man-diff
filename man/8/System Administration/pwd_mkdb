@@ -1,0 +1,85 @@
+PWD_MKDB(8)                  System Manager's Manual                 PWD_MKDB(8)
+
+NAME
+     pwd_mkdb – generate the password databases
+
+SYNOPSIS
+     pwd_mkdb [-c] [-p | -s] [-d directory] [-u username] file
+
+DESCRIPTION
+     pwd_mkdb creates db(3) style secure and insecure databases for the
+     specified file.  These databases are then installed into /etc/spwd.db and
+     /etc/pwd.db, respectively.  The file is installed into /etc/master.passwd.
+     The file must be in the correct format (see passwd(5)).  It is important to
+     note that the format used in this system is different from the historic
+     Version 7 style format.
+
+     The options are as follows:
+
+     -c      Check if the password file is in the correct format.  Do not
+             change, add, or remove any files.
+
+     -d directory
+             Operate in a base directory other than the default of /etc.  All
+             absolute paths (including file) will be made relative to directory.
+             Any directories specified as a part of file will be stripped off.
+             This option is used to create password databases in directories
+             other than etc; for instance in a chroot(8) jail.
+
+     -p      Create a Version 7 style password file and install it into
+             /etc/passwd.
+
+     -s      Only update the secure version of the database.  This is most
+             commonly used in conjunction with the -u flag during a password
+             change.  Because the insecure database doesn't contain the password
+             there is no reason to update it if the only change is in the
+             password field.  Cannot be used in conjunction with the -p flag.
+
+     -u username
+             Only update the record for the specified user.  Utilities that
+             operate on a single user can use this option to avoid the overhead
+             of rebuilding the entire database.  This option must never be used
+             if the line number of the user's record in /etc/master.passwd has
+             changed.
+
+     file    The absolute path to a file in master.passwd format, as described
+             in passwd(5).
+
+     The two databases differ in that the secure version contains the user's
+     encrypted password and the insecure version has an asterisk (‘*’).
+
+     The databases are used by the C library password routines (see
+     getpwent(3)).
+
+     pwd_mkdb exits zero on success, non-zero on failure.
+
+FILES
+     /etc/master.passwd  current password file
+     /etc/passwd         a Version 7 format password file
+     /etc/pwd.db         insecure password database file
+     /etc/pwd.db.tmp     temporary file
+     /etc/spwd.db        secure password database file
+     /etc/spwd.db.tmp    temporary file
+
+SEE ALSO
+     chpass(1), passwd(1), db(3), getpwent(3), passwd(5), vipw(8)
+
+STANDARDS
+     Previous versions of the system had a program similar to pwd_mkdb,
+     mkpasswd, which built dbm(3) style databases for the password file but
+     depended on the calling programs to install them.  The program was renamed
+     in order that previous users of the program not be surprised by the changes
+     in functionality.
+
+BUGS
+     Because of the necessity for atomic update of the password files, pwd_mkdb
+     uses rename(2) to install them.  This, however, requires that the file
+     specified on the command line live on the same file system as the /etc
+     directory.
+
+     There are the obvious races with multiple people running pwd_mkdb on
+     different password files at the same time.  The front-ends to pwd_mkdb,
+     chpass(1), passwd(1), and vipw(8) handle the locking necessary to avoid
+     this problem.
+
+macOS 12.0                        June 6, 1993                        macOS 12.0

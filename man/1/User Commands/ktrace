@@ -1,0 +1,373 @@
+KTRACE(1)                    General Commands Manual                   KTRACE(1)
+
+NAME
+     ktrace – configure, record, and print events from kernel trace
+
+SYNOPSIS
+     ktrace info
+     ktrace trace [-ACNnrSstu] [-R path | -E] [-C codes-path [...]] [-T timeout]
+               [-f filter-desc] [-b buffer-size-mb] [-x pid-or-process-name
+               [...] | -p pid-or-process-name [...]] [--json | --csv | --ndjson
+               | --json-64] [-c command [...]]
+     ktrace dump [-E] [-f filter-desc] [-l compression-level] [-T timeout] [-p
+               pid-or-process-name] [--stackshot-flags extra-flags] [path]
+     ktrace init -b buffer-size-mb | -n n-events
+     ktrace setopt [-f filter-desc] [-w] [-x pid-or-process-name [...] | -p
+               pid-or-process-name [...]]
+     ktrace enable
+     ktrace disable
+     ktrace remove
+     ktrace reset
+     ktrace decode debugid [debugid [...]]
+     ktrace emit debugid [arg1 [arg2 [arg3 [arg4]]]]
+     ktrace symbolicate path
+     ktrace compress [-l -fast|balanced|small] path
+     ktrace artrace [-nr] [-t timeout] [-i interval] [-o filename] [-b
+               buffer-size-mb] [-f filter-desc] [-F filter-desc] [-p
+               pid-or-process-name]
+               [--kperf=sampler-name[,sampler-name@]timer-period|timer-frequency|kdebug-filter-desc]
+               [--remote[=remote-device]] [--type=full|profile|lite|morelite]
+               [--stackshot-flags extra-flags] [-c command [...]]
+
+DESCRIPTION
+     ktrace can configure the system to trace events, or record them to a file,
+     and print a human-readable representation of the events.
+
+SUBCOMMANDS
+     ktrace uses a subcommand syntax to separate different functionality into
+     logical groups.  Each subcommand takes its own set of options, though a few
+     options may be used in multiple subcommands.
+
+     info       Print information about the current configuration of kernel
+                trace.
+
+     trace [-ACNnrSstu] [-R path | -E] [-C codes-path [...]] [-T timeout] [-f
+                filter-desc] [-b buffer-size-mb] [-x pid-or-process-name [...] |
+                -p pid-or-process-name [...]] [--json | --csv | --ndjson |
+                --json-64] [-c command [...]]
+
+                Print events to stdout(4) in a human-readable format,
+                automatically providing wall clock time, process names, and
+                event names for each event.  Without the -R or -E options,
+                ktrace initializes the trace buffers to a reasonable size and
+                enables tracing until it terminates.
+
+                -R path
+                        Print events from the trace file at path.
+
+                -E      Use an existing configuration, instead of creating a new
+                        configuration.  This is necessary to use the trace
+                        subcommand with other ktrace subcommands, like init and
+                        setopt.
+
+                -N      Don't display names of events.
+
+                -C      Print timestamps in continuous time.
+
+                -n      Display thread names.
+
+                -r      Just configure and start trace running in windowed or
+                        ring buffer mode -- do not print the events.  ktrace
+                        trace -E can later be used to read the in-memory events.
+
+                -S      Print arguments as strings for tracepoints known to
+                        include strings
+
+                -s      Attempt to symbolicate addresses found in arguments to
+                        symbols.
+
+                -t      Print times as Mach absolute timestamps, instead of the
+                        default local wall clock time.
+
+                -A      Print times as seconds since the start of trace.
+
+                -u      Attempt to symbolicate addressess to uuid-offset tuples.
+
+                -C codes-path
+                        Use a custom codes file to provide event ID to name
+                        mappings.  See trace(1) for more details on the format
+                        of codes files.
+
+                -b buffer-size-mb
+                        Set a custom buffer size in megabytes.
+
+                -f filter-desc
+                        Apply a filter description to the trace session,
+                        controlling which events are traced.  See FILTER
+                        DESCRIPTIONS for details on the syntax of a filter.  If
+                        no filter description is provided, all events will be
+                        traced.
+
+                -T timeout
+                        End tracing after timeout has elapsed.  Suffixes like ns
+                        or ms are supported, but seconds are the default if just
+                        a number is supplied.
+
+                -x pid-or-process-name [...] | -p pid-or-process-name [...]
+                        Restrict the processes that can trace events.  Either
+                        exclude (-x) or only trace events (-p) from the provided
+                        processes by name or pid.  These options are mutually
+                        exlusive.  Processes that cannot be attached to are
+                        always excluded on release kernels.  Similarly, events
+                        in the Mach scheduling subclass are included, regardless
+                        of the this option, to allow tools to maintain thread
+                        scheduling state machines.
+
+                --json  Print events as an array of JSON objects.
+
+                --csv   Print events as CSV entries.
+
+                --ndjson
+                        Print events as a stream of newline-delimited JSON
+                        objects.
+
+                --json-64
+                        Print events as JSON objects, with 64-bit numbers.
+
+                -c command [...]
+                        Run the command specified by command and stop tracing
+                        when it exits.  All arguments after this option are
+                        passed to the command.
+
+     dump [-E] [-f filter-desc] [-l compression-level] [-T timeout]
+                [--stackshot-flags extra-flags] [path] [-p pid-or-process-name]
+
+                Write trace to a file at path for later inspection with ktrace
+                trace -R.  If no path is specified, the tool writes to a new,
+                numbered file in the working directory, starting with
+                trace001.ktrace.  The command continues to write events until
+                ktrace is terminated, the optional timeout triggers, or the
+                trace buffers fill up when using an existing configuration with
+                wrapping disabled.  If a compression level is specified, the
+                file is compressed as it is written.  Using non-default values
+                for this option may increase the overhead of collecting events.
+
+                -E      Use an existing configuration, instead of creating a new
+                        configuration.
+
+                -f filter-desc
+                        Apply a filter description to events written to the
+                        file, controlling which events are traced.  See FILTER
+                        DESCRIPTIONS for details on the syntax of a filter.  If
+                        no filter description is provided, all events will be
+                        traced.
+
+                -p pid-or-process-name
+                        Only record events that occur for the process identified
+                        by pid or process-name.  Only the first 16 characters of
+                        the name are observed, due to a kernel limitation.
+                        FILTER DESCRIPTIONS for details on the syntax of a
+                        filter.  If no filter description is provided, all
+                        events will be traced.
+
+                -p      Enable kperf sampling.
+
+                -T timeout
+                        End tracing after timeout has elapsed.  Suffixes like ns
+                        or ms are supported, but seconds are the default if just
+                        a number is supplied.
+
+                --stackshot-flags extra-flags
+                        Pass the provided extra-flags integer as additional
+                        flags when recording stackshots.
+
+     init -b buffer-size-mb | -n n-events
+
+                Initialize trace to allocate buffer-size-mb megabytes of space
+                or n-events events for its trace buffers.  This subcommand must
+                be provided before using the setopt, enable, or disable
+                subcommands initially or after using the remove subcommand.
+
+     setopt [-f filter-desc] [-w] [-x pid-or-process-name [...] | -p
+                pid-or-process-name [...]]
+
+                Set options on the existing trace configuration.  The trace
+                configuration must already be initialized.
+
+                -f filter-desc
+                        Apply a filter description to the current configuration,
+                        controlling which events are traced.  See FILTER
+                        DESCRIPTIONS for details on the syntax of a filter.  If
+                        no filter description is provided, all events will be
+                        traced.
+
+                -w      Configure trace to operate in “windowed” mode, where the
+                        trace buffer acts as a ring buffer, removing old events
+                        to make room for new ones.  By default, tracing ends
+                        when the buffer runs out of space for new events.
+
+                -x pid-or-process-name [...] | -p pid-or-process-name [...]
+                        Restrict the processes that can trace events.  Either
+                        exclude (-x) or only trace events (-p) from the provided
+                        processes by name or pid.  These options are mutually
+                        exlusive.  Processes that cannot be attached to are
+                        always excluded on release kernels.  Similarly, events
+                        in the Mach scheduling subclass are included, regardless
+                        of the this option, to allow tools to maintain thread
+                        scheduling state machines.
+
+     enable     Start tracing events.
+
+     disable    Stop tracing events.  Tracing can be started again after it has
+                been disabled, using the same configuration.
+
+     remove     Remove the current trace configuration and free the memory
+                associated with tracing.
+
+     reset      Reset tracing and associated subsystems, including kperf, to
+                their default state.
+
+     decode debugid [debugid [...]]
+                Print the components that make up the provided debugids.
+
+     emit debugid [arg1 [arg2 [arg3 [arg4]]]]
+
+                Emit an event into the trace stream with the provided debugid
+                and arguments.
+
+     symbolicate path
+                Symbolicate the trace file located at path.
+
+     compress [-l fast|balanced|small] path
+                Compress the trace file located at path using the small
+                compression level, unless otherwise specified with the -l
+                option.
+
+     artrace [-nr] [-t timeout] [-i interval] [-o filename] [-b buffer-size-mb]
+                [-f filter-desc] [-F filter-desc] [-p pid-or-process-name]
+                [--remote[=device-name]] [--type=full|profile|lite|morelite]
+                [--kperf=sampler-name,sampler-name@timer-period|timer-frequency|kdebug-filter-desc]
+                [-d group] [-e group] [--stackshot-flags extra-flags] [-c
+                command [...]]
+                Profile the system, writing trace events to an automatically
+                named file.  By default, this measures scheduler, VM, and system
+                call usage, and samples threads on-core periodically.
+
+                -o path
+                        Specify the name of the file to be created.
+
+                -f filter-desc
+                        Trace the classes and subclasses specified by the filter
+                        description.  See FILTER DESCRIPTIONS for details on the
+                        syntax of a filter.
+
+                -F filter-desc
+                        Exclude events from the default set.  Use this options
+                        with care, since analysis tools may rely on certain
+                        events being present.
+
+                -t timeout
+                        Stop tracing and exit after timeout option is provided,
+                        stop tracing and exit after timeout has elapsed.  The
+                        timeout value may have us, ms, or s appended to indicate
+                        the time units.
+
+                -i interval
+                        Set the interval that the profiling timer fires
+                        (supports the same time suffixes as -t).
+
+                -n      Disable the profiling timer entirely.
+
+                -b buffer-size-mb
+                        Set the trace buffer size.
+
+                -r      Configure tracing and leave it running in ring buffer
+                        mode.
+
+                -p pid-or-process-name
+                        Only record events that occur for the process identified
+                        by pid or process-name.  Only the first 16 characters of
+                        the name are observed, due to a kernel limitation.
+
+                -d group
+                        Disable the group named group.  See GROUPS for a list of
+                        groups.
+
+                -e group
+                        Enable the group named group.  See GROUPS for a list of
+                        groups.
+
+                --remote[=device-name]
+                        Also trace on the provided device-name or the local
+                        bridge if not specified.
+
+                --type=full|profile|lite|morelite
+                        Trace using the specified type.  full is the default,
+                        while profile just enables the profiling timer, but does
+                        not closely track scheduling events.  The lite and
+                        morelite trace types are meant for long-running, low
+                        overhead analysis and prioritize analyzing threads that
+                        are blocked for relatively long periods of time, at the
+                        cost of an unbiased sample towards threads that cause a
+                        CPU to come out of idle.
+
+                        The ‘lite’ modes work by lazily sampling threads as they
+                        are unblocked, and only those threads that block for
+                        more than a set threshold.  Further, the typical
+                        profiling timer is disabled, in lieu of sampling the
+                        CPUs opportunistically, on other interrupts.  The
+                        morelite mode has a more restrictive typefilter than
+                        lite.
+
+                --stackshot-flags extra-flags
+                        Pass the provided extra-flags integer as additional
+                        flags when recording stackshots.
+
+                -c command [...]
+                        Run the command specified by command and stop tracing
+                        when it exits.  All arguments after this option are
+                        passed to the command.
+
+                --kperf=sampler-name[,sampler-name]@timer-period|timer-frequency|kdebug-filter-desc
+                        Sample using kperf according to the given sampling
+                        description.  For the syntax of sampling descriptions,
+                        see SAMPLING DESCRIPTIONS.
+
+FILTER DESCRIPTIONS
+     A filter description is a comma-separated list of class and subclass
+     specifiers that indicate which events should be traced.  A class specifier
+     starts with ‘C’ and contains a single byte, specified in either decimal or
+     hex.  A subclass specifier starts with ‘S’ and takes two bytes.  The high
+     byte is the class and the low byte is the subclass of that class.
+
+     For example, this filter description would enable classes 1 and 37 and the
+     subclasses 33 and 35 of class 5: ‘C1,C0x25,S0x0521,S0x0523’.  The ‘ALL’
+     filter description enables events from all classes.
+
+SAMPLING DESCRIPTIONS
+     A sampling description is similar to a filter description, but it
+     configures sampling.  It's composed of two parts: a samplers section and a
+     trigger section, separated by @.  The overall form is
+     sampler-name[,sampler-name]@ Ns
+     timer-period|timer-frequency|kdebug-filter-desc.  The valid names of
+     samplers are ‘ustack’, ‘kstack’, ‘thinfo’, ‘thsnapshot’, ‘meminfo’,
+     ‘thsched’, ‘thdispatch’, ‘tksnapshot’, ‘sysmem’, and ‘thinstrscycles’.
+
+     For example, to sample user stacks every 10 milliseconds, use
+     ‘ustack@10ms’.  To sample thread scheduling information and system memory
+     every time the ‘0xfeedfac0’ event is emitted, use
+     ‘thsched,sysmem@D0xfeedfac0’.
+
+GROUPS
+     syscall-sampling
+             Sample backtraces on system calls.
+
+     fault-sampling
+             Sample backtraces on page faults.
+
+     graphics
+             Include graphics events.
+
+EXIT STATUS
+     The ktrace utility exits 0 on success, and >0 if an error occurs.
+
+CAVEATS
+     Once trace has been initialized with the init subcommand (or the trace and
+     artrace subcommands with the -r flag), it remains in use until the space is
+     reclaimed with the remove subcommand.  This prevents background diagnostic
+     tools from making use of trace.
+
+SEE ALSO
+     fs_usage(1), ktrace(5), and trace(1) trace(1)
+
+Darwin                          February 10, 2020                         Darwin

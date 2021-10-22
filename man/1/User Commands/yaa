@@ -1,0 +1,223 @@
+AA(1)                        General Commands Manual                       AA(1)
+
+
+
+NAME
+       aa - Manipulate Apple Archives
+
+SYNOPSIS
+       aa command [options]
+
+DESCRIPTION
+       aa creates and manipulates Apple Archives
+
+VERBS
+       archive           Archive the contents of the target directory
+
+       extract           Extract the contents of an archive to the target
+       directory
+
+       list              List the contents of an archive
+
+       convert           Convert an archive into another archive
+
+       manifest          Alias for 'archive -manifest'
+
+       verify            Compare the contents of the target directory with a
+       manifest
+
+       check-and-fix     Verify and fix the contents of the target directory
+       using an error correcting manifest
+
+OPTIONS
+       -v     Increase verbosity. Default is silent operation.
+
+       -h     Print usage and exit.
+
+       -d dir Target directory for archive/extract. Default is the current
+              directory.
+
+       -i input_file
+              Input file. Default is stdin.
+
+       -o output_file
+              Output file. Default is stdout.
+
+       -subdir subdir
+              Path to archive under dir. subdir will be included in the archived
+              paths, and extracted. Default is empty.
+
+       -D dir_and_subdir
+              Set both dir to `dirname dir_and_subdir` and subdir to `basename
+              dir_and_subdir`.
+
+       -x     Do not cross volume boundaries when archiving.
+
+       -a algorithm
+              Compression algorithm used when creating archives. One of lzfse,
+              lzma, lz4, zlib, raw. Default is lzfse.
+
+       -b block_size
+              Block size used when compressing archives, a number with optional
+              b, k, m, g suffix (bytes are assumed if no suffix is specified).
+              Default is 4m for archive and 1m for the other commands.
+
+       -t worker_threads
+              Number of worker threads compressing/decompressing data. Default
+              is the number of physical CPU on the running machine.
+
+       -wt writer_threads
+              Number of writer threads extracting archive content. Default is to
+              match worker_threads.
+
+       -enable-dedup (-no-enable-dedup)
+              If set, and SLC fields are present in the archive, files with same
+              data will be extracted as clones
+
+       -enable-holes (-no-enable-holes)
+              If set, and the filesystem supports it, detect and create holes in
+              files to store 0-filled segments
+
+       -ignore-eperm (-no-ignore-eperm)
+              If set, ignore EPERM (operation not permitted) errors when setting
+              files attributes
+
+       -manifest
+              Alias for the following options:
+              -exclude-field dat
+              -include-field sh1,cks,siz
+              -a lzfse -b 1m
+
+       -include-path path
+              Include entry paths having path as a prefix. This option can be
+              given multiple times.
+
+       -exclude-path path
+              Exclude entry paths having path as a prefix. This option can be
+              given multiple times.
+
+       -include-path-list path_list_file
+              File containing a list of paths to include, one entry per line.
+              This option can be given multiple times.
+
+       -exclude-path-list path_list_file
+              File containing a list of paths to exclude, one entry per line.
+              This option can be given multiple times.
+
+       -include-regex expr
+              Include entry paths matching regular expression expr, see
+              re_format(7). This option can be given multiple times.
+
+       -exclude-regex expr
+              Exclude entry paths matching regular expression expr, see
+              re_format(7). This option can be given multiple times.
+
+       -exclude-name name
+              Exclude entry paths where a single component of the path matches
+              exactly name. This option can be given multiple times.
+
+       -include-type <type_spec>
+              Include only entries matching the given types. <type_spec> is a
+              word containing one or more of the entry type characters listed
+              below.
+
+       -exclude-type <type_spec>
+              Include only entries not matching the given types. <type_spec> is
+              a word containing one or more of the entry type characters listed
+              below.
+
+       -include-field <field_spec>
+              Add the given fields to the set of field keys. This option can be
+              given multiple times. <field_spec> is a comma separated list of
+              entry field keys listed below.
+
+       -exclude-field <field_spec>
+              Remove the given fields from the set of field keys. This option
+              can be given multiple times. <field_spec> is a comma separated
+              list of entry field keys listed below.
+
+ENTRY TYPES
+       b block special
+       c character special
+       d directory
+       f regular file
+       l symbolic link
+       m metadata
+       p fifo
+       s socket
+
+ENTRY FIELDS
+       typ entry type
+       pat path
+       lnk link path
+       dev device id
+       uid user id
+       gid group id
+       mod access permissions
+       flg flags
+       mtm modification time
+       ctm creation time
+       btm backup time
+       xat extended attributes
+       acl access control list
+       cks CRC32 checksum
+       sh1 SHA1 digest
+       sh2 SHA2 digest
+       dat file contents
+       siz file size
+       duz disk usage
+       idx entry index in main archive
+       yec file data error correcting codes
+       yaf Apple Archive fields (in metadata entry)
+       all alias for all fields (exclude only)
+       attr alias for uid,gid,mod,flg,mtm,btm,ctm
+
+ENTRY SELECTION
+       -include-path and -include-path-list options are applied first to select
+       an initial set of entries, then -exclude-path, -exclude-path-list,
+       -exclude-name, -exclude-regex are applied to remove entries from this
+       set.  If no -include-path or -include-path-list option is given, all
+       entries are included in the initial set.  If a directory is
+       included/excluded, the entire sub-tree is included/excluded.
+
+EXAMPLES
+       Archive the contents of directory foo into archive foo.aar, using LZMA
+       compression with 8 MB blocks
+
+              aa archive -d foo -o foo.aar -a lzma -b 8m
+
+       Extract the contents of foo.aar in directory dst
+
+              aa extract -d dst -i foo.aar
+
+       Create a manifest of the contents of directory foo into foo.manifest,
+       using LZFSE compression with 1 MB blocks
+
+              aa manifest -d foo -o foo.manifest -a lzfse -b 1m
+
+       Verify the contents of dst match the manifest foo.manifest
+
+              aa verify -i foo.manifest -d dst -v
+
+       Print all entry paths in foo.manifest
+
+              aa list -i foo.manifest
+
+       Print all entry paths, uid, gid for regular files in foo.manifest
+
+              aa list -v -i foo.manifest -include-type f -exclude-field all
+              -include-field uid,gid,pat
+
+       Create a manifest of the contents of archive foo.aar in foo.manifest
+
+              aa convert -manifest -v -i foo.aar -o foo.manifest
+
+       Extract a subset of entries matching prefix Applications/Mail.app from
+       archive foo.aar in directory dst
+
+              aa extract -i foo.aar -include-path Applications/Mail.app -d dst
+
+
+
+
+                                                                           AA(1)

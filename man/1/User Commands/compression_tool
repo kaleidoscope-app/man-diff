@@ -1,0 +1,71 @@
+COMPRESSION_TOOL(1)                                        COMPRESSION_TOOL(1)
+
+
+
+NAME
+       compression_tool - encode/decode files using the Compression library
+
+SYNOPSIS
+       compression_tool   -encode   |  -decode  [-a algorithm]  [-A algorithm]
+       [-i input_file] [-o output_file] [-v] [-h]
+
+DESCRIPTION
+       compression_tool encodes (compresses), or decodes (uncompresses)  files
+       using the Compression library.
+
+OPTIONS
+       -encode
+              Encode (compress) the input
+
+       -decode
+              Decode (uncompress) the input
+
+       -a algorithm
+              Set  the  compression  algorithm,  valid options are zlib, lzma,
+              lzfse, lz4, lz4_raw.  Default is lzfse.
+              - zlib      raw DEFLATE payload, as defined in  IETF  RFC  1951,
+              encoder is zlib level 5,
+              -  lzma      LZMA2  payload  inside  a  XZ container, encoder is
+              LZMA2 preset 6,
+              -  lz4       raw  LZ4  payload  inside  a  simple  frame  format
+              (described in compression.h),
+              - lz4_raw   raw LZ4 payload,
+              - lzfse     LZFSE payload.
+
+       -A algorithm
+              Enable  block  compression, and set compression algorithm, valid
+              options are zlib, lzma, lzfse, lz4.  Default is lzfse.
+
+       -b block_size
+              Set block size for block compression.  The integer value can  be
+              followed by m or k or b.
+
+       -t thread_count
+              Set  the  number  of  worker  threads  to use for block compres-
+              sion/decompression.  Default is the number of logical threads on
+              the machine.
+
+       -i input_file
+              Input file. If omitted, read from standard input.
+
+       -o output_file
+              Output file. If omitted, write to standard output.
+
+       -v     Increase verbosity. Default is silent operation.
+
+       -h     Print usage and exit.
+
+BLOCK COMPRESSION FILE FORMAT
+       The  file  starts with a 4-byte header 'p','b','z',<algo>, where <algo>
+       indicates the algorithm used to compress data.  The header is  followed
+       by the 64-bit block size in bytes.  Then for each block, we have 64-bit
+       uncompressed size (will batch the block size, except possibly  for  the
+       last  block),  64-bit  compressed size, and the compressed payload.  If
+       both uncompressed and compressed sizes for a block are equal, the  pay-
+       load  is stored uncompressed.  All 64-bit values are stored big-endian.
+       Valid values for <algo> are: 'z' for zlib, 'x' for lzma, '4'  for  lz4,
+       and 'e' for lzfse.
+
+
+
+                                                           COMPRESSION_TOOL(1)

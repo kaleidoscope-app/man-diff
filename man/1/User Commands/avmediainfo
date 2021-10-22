@@ -1,0 +1,118 @@
+AVMEDIAINFO(1)               General Commands Manual              AVMEDIAINFO(1)
+
+NAME
+     avmediainfo – media analysis tool
+
+SYNOPSIS
+     avmediainfo <media_file> <options>
+
+
+
+DESCRIPTION
+     avmediainfo is a tool that can be used to parse and analyze media files. It
+     is capable of displaying generic information about the asset related to its
+     tracks, metadata, format extensions, chunks, and samples. It also warns the
+     user of any errors encountered while parsing the media file.
+     <media_file> The media file to be analysed.
+     <options> Use the options in order to display specific information
+     regarding the asset.
+
+OPTIONS
+           --formatextensions                Displays format description
+                                             extensions for each track.
+           --samples                         Lists high level sample information
+                                             for each track (Decode Time(stamp),
+                                             Presentation Time(stamp), Duration,
+                                             Offset, Size, Dependency) for
+                                             QT/ISO movies.
+           --chunks                          Lists high level chunk information
+                                             (Index, Offset, Size, Sample Count,
+                                             Sample Range, Start Time, Chunk
+                                             Info) for QT/ISO movies.
+           --interleave                      Shows the interleave by listing the
+                                             chunks in offset order.
+           --integeroffsets                  Displays all offsets as integers,
+                                             instead of hex.
+           --brief                           Displays a brief description of the
+                                             movie.
+           --help                            Show help.
+           --metadata [metadataTypeOptions]  Displays metadata information based
+                                             on options provided.  Supported
+                                             metadataType options:
+                                                   asset                Displays
+                                                                        metadata
+                                                                        for the
+                                                                        asset.
+                                                                        (Default,
+                                                                        if no
+                                                                        options
+                                                                        are
+                                                                        provided).
+                                                   track                Displays
+                                                                        metadata
+                                                                        for each
+                                                                        track.
+                                                   chapter              Displays
+                                                                        the
+                                                                        chapter
+                                                                        metadata.
+                                                   all                  Displays
+                                                                        all
+                                                                        available
+                                                                        metadata.
+           --mediatype [mediatypeOptions]    Restricts which tracks have chunk
+                                             and/or sample information displayed
+                                             based on options provided.
+                                             Supported mediatype options:
+                                                   audio                Displays
+                                                                        info
+                                                                        about
+                                                                        audio
+                                                                        tracks.
+                                                   video                Displays
+                                                                        info
+                                                                        about
+                                                                        video
+                                                                        tracks.
+                                                   closedcaption        Displays
+                                                                        info
+                                                                        about
+                                                                        closedcaption
+                                                                        tracks.
+                                                   metadata             Displays
+                                                                        info
+                                                                        about
+                                                                        temporal
+                                                                        metadata
+                                                                        tracks.
+                                                   subtitle             Displays
+                                                                        info
+                                                                        about
+                                                                        subtitle
+                                                                        tracks.
+                                                   text                 Displays
+                                                                        info
+                                                                        about
+                                                                        text
+                                                                        tracks.
+                                                   timecode             Displays
+                                                                        info
+                                                                        about
+                                                                        timecode
+                                                                        tracks.
+
+
+EXAMPLES
+     Display all the samples and chunks for the video tracks in a media file:
+
+          avmediainfo /tmp/myTestMovie.mov --samples --chunks --mediatype video
+
+     Show the interleaving order across chunks, and display all the track level
+     metadata for a media file:
+
+          avmediainfo /tmp/myTestMovie.m4v --interleave --metadata track
+
+HISTORY
+     avmediainfo command first appeared in Mac OS X 10.16.
+
+macOS                           December 18, 2019                          macOS

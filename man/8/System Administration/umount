@@ -1,0 +1,59 @@
+UMOUNT(8)                    System Manager's Manual                   UMOUNT(8)
+
+NAME
+     umount – unmount filesystems
+
+SYNOPSIS
+     umount [-fv] special | node
+     umount -a | -A [-fv] [-h host] [-t type]
+
+DESCRIPTION
+     The umount command calls the unmount(2) system call to remove a special
+     device or the remote node (rhost:path) from the filesystem tree at the
+     point node.  If either special or node are not provided, the appropriate
+     information is taken from the list of filesystems provided by getfsent(3).
+
+     The options are as follows:
+
+     -a      All the filesystems described via getfsent(3) are unmounted.
+
+     -A      All the currently mounted filesystems except the root are
+             unmounted.
+
+     -f      The filesystem is forcibly unmounted.  Active special devices
+             continue to work, but all other files return errors if further
+             accesses are attempted.  The root filesystem cannot be forcibly
+             unmounted.
+
+     -h host
+             Only filesystems mounted from the specified host will be unmounted.
+             This option implies the -A option and, unless otherwise specified
+             with the -t option, will only unmount NFS filesystems.
+
+     -t type
+             Is used to indicate the actions should only be taken on filesystems
+             of the specified type.  More than one type may be specified in a
+             comma separated list.  The list of filesystem types can be prefixed
+             with “no” to specify the filesystem types for which action should
+             not be taken.  For example, the umount command:
+
+                   umount -A -t nfs,hfs
+
+             umounts all currently-mounted filesystems of the type NFS and HFS.
+             (The -a option only unmounts entries in the /etc/fstab list.)
+
+     -v      Verbose, additional information is printed out as each filesystem
+             is unmounted.
+
+NOTES
+     Due to the complex and interwoven nature of Mac OS X, umount may fail
+     often.  It is recommended that diskutil(1) (as in, ``diskutil unmount
+     /mnt'') be used instead.
+
+SEE ALSO
+     unmount(2), getfsent(3), mount(8), diskutil(1)
+
+HISTORY
+     A umount command appeared in Version 6 AT&T UNIX.
+
+BSD 4                              May 8, 1995                             BSD 4

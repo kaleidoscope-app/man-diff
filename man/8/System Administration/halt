@@ -1,0 +1,54 @@
+REBOOT(8)                    System Manager's Manual                   REBOOT(8)
+
+NAME
+     halt, reboot – stopping and restarting the system
+
+SYNOPSIS
+     halt [-lnqu]
+     reboot [-lnq]
+
+DESCRIPTION
+     The halt and reboot utilities flush the file system cache to disk, send all
+     running processes a SIGTERM (and subsequently a SIGKILL) and, respectively,
+     halt or restart the system.  The action is logged, including entering a
+     shutdown record into the wtmp(5) file.
+
+     When the system is halted with the halt command, the system is powered off.
+
+     The options are as follows:
+
+     -l      The halt or reboot is not recorded in the system log.  This option
+             is intended for applications such as shutdown(8), that call reboot
+             or halt and log this themselves.
+
+     -n      The file system cache is not flushed.  This option should probably
+             not be used.
+
+     -q      The system is halted or restarted quickly and ungracefully, and
+             only the flushing of the file system cache is performed (if the -n
+             option is not specified).  This option should probably not be used.
+
+     -u      The system is halted up until the point of removing system power,
+             but waits before removing power for 5 minutes so that an external
+             UPS (uninterruptible power supply) can forcibly remove power.  This
+             simulates a dirty shutdown to permit a later automatic power on. OS
+             X uses this mode automatically with supported UPSs in emergency
+             shutdowns.
+
+     Normally, the shutdown(8) utility is used when the system needs to be
+     halted or restarted, giving users advance warning of their impending doom
+     and cleanly terminating specific programs.
+
+SIGTERM TO SIGKILL INTERVAL
+     The SIGKILL will follow the SIGTERM by an intentionally indeterminate
+     period of time.  Programs are expected to take only enough time to flush
+     all dirty data and exit.  Developers are encouraged to file a bug with the
+     OS vendor, should they encounter an issue with this functionality.
+
+SEE ALSO
+     wtmp(5), shutdown(8), sync(8)
+
+HISTORY
+     A reboot utility appeared in Version 6 AT&T UNIX.
+
+macOS 12.0                        June 9, 1993                        macOS 12.0

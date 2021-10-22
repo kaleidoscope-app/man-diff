@@ -1,0 +1,130 @@
+tailspin(1)                  General Commands Manual                 tailspin(1)
+
+NAME
+     tailspin – configure, save and print tailspin output
+
+SYNOPSIS
+     tailspin info
+     tailspin enable
+     tailspin disable
+     tailspin set buffer-size buffer-size-mb
+                 ktrace-filter-descriptor (add:|remove:)filter-desc
+                 oncore-sampling-period period-in-ns|disabled
+                 full-system-sampling-period period-in-ns|disabled
+     tailspin reset
+                 [buffer-size-mb|ktrace-filter-descriptor|oncore-sampling-period|full-system-sampling-period]
+     tailspin save [-r reason-string] [-l num-seconds] [-n] path-to-file
+     tailspin augment [-s] [-d] [-l] [-L path-to-log-archive] path-to-file
+     tailspin stat [-v] [-s] path-to-file
+
+DESCRIPTION
+     tailspin configures the system to continuously sample callstacks of
+     processes and select kdebug events in the kernel trace buffer. When
+     tailspin data is recorded to a file, the tailspin file will contain
+     information about the system state from about 20s prior to the save. The
+     tailspind daemon is a helper daemon for the tailspin feature and should not
+     be run manually.
+
+COLLECTING TAILSPIN DATA
+     tailspin data can be collected using the keychord when enabled:
+     Shift-Control-Option-Command-Comma. When the command is completed, a Finder
+     window will pop up with the saved tailspin file.
+
+SUBCOMMANDS
+     tailspin uses a subcommand syntax to separate different functionality into
+     logical groups.  Each subcommand takes its own set of options.
+
+     info       Print information about the current configuration of tailspin.
+
+     enable     Enable tailspin collection. Enablement persists across reboots
+                and upgrade installs.
+
+     disable    Stop tailspin collection. Disablement persists across reboots
+                and upgrade installs. tailspin can be enabled again after it has
+                been disabled, using the same configuration.
+
+     set        Configure the 4 tunable parameters of tailspin. Any change
+                applied will persist across reboots and upgrade installs.
+
+                buffer-size buffer-size-mb
+                        Set up the kernel trace buffer to be buffer-size-mb big.
+
+                ktrace-filter-descriptor (add:|remove:)filter-desc
+                        Apply the filter-desc to the tailspin configuration,
+                        thereby controlling which events are traced by tailspin.
+                        See FILTER DESCRIPTIONS on the syntax of a filter. The
+                        filter may be prefixed with "add:" or "remove:" to
+                        modify an existing filter rather than replace it
+                        entirely
+
+                oncore-sampling-period period-in-ns
+                        Set up a timer in the tailspin configuration to sample
+                        the threads that are on the CPU when the timer fires
+                        every period-in-ns.  The minimum period allowed is 1 ms.
+                        "disabled" may be used to disable the oncore sampling
+                        timer.
+
+                full-system-sampling-period period-in-ns
+                        Set up a timer in the tailspin configuration to sample
+                        all threads of all processes when the timer fires every
+                        period-in-ns.  The minimum period allowed is 10 ms.
+                        "disabled" may be used to disable the full sampling
+                        timer.
+
+     reset
+                [buffer-size-mb|ktrace-filter-descriptor|oncore-sampling-period|full-system-sampling-period]
+                Remove all custom configuration of tailspin and reset to system
+                default, or reset specific setting to the system default.
+
+     save [-r reason-string] [-l num-seconds] [-n] [path-to-file]
+
+                Save the current contents of the kernel trace buffer containing
+                tailspin data to path-to-file.
+
+                -r reason-string
+                        Include a key in the tailspin file indicating why it was
+                        saved. This reason can be viewed with tailspin stat.
+
+                -l num-seconds
+                        Limit the data in tailspin file to that of the last
+                        num-seconds.
+
+                -n      Save tailspin file without symbolicating.
+
+     augment [-d] [-s] [-l] [-L -path-to-log-archive] path-to-file
+                Augment the tailspin report at path-to-file with additional
+                information like symbols, os logs and os signposts.  If not used
+                with -d, needs to be run on the same device and build on which
+                the tailspin file was saved .
+
+     stat [-v] [-s] path-to-file
+                Print aggregate information about the data in the tailspin file.
+
+                -v      Print layout information of tailspin file.
+
+                -s      Sort ktrace statistics by frequency of trace
+                        class/subclass. Default sorting is by class/subclass
+                        code.
+
+FILTER DESCRIPTIONS
+     A filter description is a comma-separated list of class and subclass
+     specifiers that indicate which events should be traced.   A class specifier
+     starts with ‘C’ followed by a number between 0 and 255 inclusive, specified
+     in either decimal or hex (when prepended with "0x"). A subclass specifier
+     starts with ‘S’ and takes two bytes.  The high byte is the class and the
+     low byte is the subclass of that class.
+
+     For example, this filter description would enable classes 0x1 and 0x25 and
+     the subclasses 0x21 and 0x23 of class 0x5: ‘C1,C0x25,S0x0521,S0x0523’.  The
+     ‘ALL’ filter description enables events from all classes.
+
+VIEWING TAILSPIN DATA
+     tailspin data can be viewed by ktrace(1), spindump(8) and fs_usage(1).
+
+DIAGNOSTICS
+     The tailspin utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     ktrace(1), fs_usage(1), spindump(8)
+
+Darwin                            22 June 2016                            Darwin

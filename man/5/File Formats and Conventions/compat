@@ -1,0 +1,117 @@
+
+COMPAT(5)                   BSD File Formats Manual                  COMPAT(5)
+
+NAME
+     compat -- manipulate compatibility settings
+
+SYNOPSIS
+     COMMAND_MODE=legacy|unix2003
+     SYSTEM_VERSION_COMPAT=1
+
+     #define _POSIX_C_SOURCE
+     #define _DARWIN_C_SOURCE
+     #define _NONSTD_SOURCE
+     defined(__LP64__)
+
+     #include <sys/cdefs.h>
+     defined(_DARWIN_FEATURE_UNIX_CONFORMANCE)
+
+DESCRIPTION
+     Setting the environment variable COMMAND_MODE to the value legacy causes
+     utility programs to behave as closely to Mac OS X 10.3's utility programs
+     as possible.  When in this mode all of 10.3's flags are accepted, and in
+     some cases extra flags are accepted, but no flags that were used in 10.3
+     will have been removed or changed in meaning.  Any behavioral changes in
+     this mode are documented in the LEGACY sections of the individual utili-
+     ties.
+
+     Setting the environment variable COMMAND_MODE to the value unix2003
+     causes utility programs to obey the Version 3 of the Single UNIX
+     Specification (``SUSv3'') standards even if doing so would alter the
+     behavior of flags used in 10.3.
+
+     The value of COMMAND_MODE is case insensitive and if it is unset or set
+     to something other than legacy or unix2003 it behaves as if it were set
+     to unix2003.
+
+     Setting the environment variable SYSTEM_VERSION_COMPAT to 1 causes the
+     system version to be reported as 10.16 when running on macOS 11 or later.
+
+COMPILATION
+     Defining _NONSTD_SOURCE for i386 causes library and kernel calls to
+     behave as closely to Mac OS X 10.3's library and kernel calls as possi-
+     ble.  Any behavioral changes are documented in the LEGACY sections of the
+     man pages for the individual function calls.  Defining this macro when
+     compiling for any other architecture will result in a compilation error.
+
+     Defining _POSIX_C_SOURCE or _DARWIN_C_SOURCE causes library and kernel
+     calls to conform to the SUSv3 standards even if doing so would alter the
+     behavior of functions used in 10.3.  Defining _POSIX_C_SOURCE also
+     removes functions, types, and other interfaces that are not part of SUSv3
+     from the normal C namespace, unless _DARWIN_C_SOURCE is also defined
+     (i.e., _DARWIN_C_SOURCE is _POSIX_C_SOURCE with non-POSIX extensions).
+     In any of these cases, the _DARWIN_FEATURE_UNIX_CONFORMANCE feature macro
+     will be defined to the SUS conformance level (it is undefined otherwise).
+
+     Starting in Mac OS X 10.5, if none of the macros _NONSTD_SOURCE,
+     _POSIX_C_SOURCE or _DARWIN_C_SOURCE are defined, and the environment
+     variable MACOSX_DEPLOYMENT_TARGET is either undefined or set to 10.5 or
+     greater (or equivalently, the gcc(1) option -mmacosx-version-min is
+     either not specified or set to 10.5 or greater), then UNIX conformance
+     will be on by default, and non-POSIX extensions will also be available
+     (this is the equivalent of defining _DARWIN_C_SOURCE).  For version val-
+     ues less that 10.5, UNIX conformance will be off when targeting i386 (the
+     equivalent of defining _NONSTD_SOURCE).
+
+     In order to provide both legacy and conformance versions of functions,
+     two versions of affected functions are provided.  Legacy variants have
+     symbol names with no suffix in order to maintain ABI compatibility.  Con-
+     formance versions have a $UNIX2003 suffix appended to their symbol name.
+     These $UNIX2003 suffixes are automatically appended by the compiler tool-
+     chain and should not be used directly.
+
+     Platforms that were released after these updates only have conformance
+     variants available and do not have a $UNIX2003 suffix.
+
+                                        i386
+     ------------------------------+--------------------------------------------
+       user defines     deployment | namespace      conformance        suffix
+                          target   |
+     ------------------------------+--------------------------------------------
+     (none)               < 10.5   |   full      10.3 compatibility    (none)
+     (none)              >= 10.5   |   full      SUSv3 conformance    $UNIX2003
+     _NONSTD_SOURCE       (any)    |   full      10.3 compatibility    (none)
+     _DARWIN_C_SOURCE     < 10.4   |   full      10.3 compatibility    (none)
+     _DARWIN_C_SOURCE    >= 10.4   |   full      SUSv3 conformance    $UNIX2003
+     _POSIX_C_SOURCE      < 10.4   |  strict     10.3 compatibility    (none)
+     _POSIX_C_SOURCE     >= 10.4   |  strict     SUSv3 conformance    $UNIX2003
+     ------------------------------+--------------------------------------------
+                                Newer Architectures
+     ------------------------------+--------------------------------------------
+       user defines     deployment | namespace      conformance        suffix
+                          target   |
+     ------------------------------+--------------------------------------------
+     (none)               (any)    |   full      SUSv3 conformance     (none)
+     _NONSTD_SOURCE       (any)    |                  (error)
+     _DARWIN_C_SOURCE     (any)    |   full      SUSv3 conformance     (none)
+     _POSIX_C_SOURCE      (any)    |  strict     SUSv3 conformance     (none)
+     ------------------------------+--------------------------------------------
+
+STANDARDS
+     With COMMAND_MODE set to anything other than legacy, utility functions
+     conform to Version 3 of the Single UNIX Specification (``SUSv3'').
+
+     With _POSIX_C_SOURCE or _DARWIN_C_SOURCE for i386, or when building for
+     any other architecture, system and library calls conform to Version 3 of
+     the Single UNIX Specification (``SUSv3'').
+
+BUGS
+     Different parts of a program can be compiled with different compatibility
+     settings.  The resultant program will normally work as expected, for
+     example a regex created by the SUSv3 regcomp(3) can be passed to the
+     legacy regfree(3) with no unexpected results.  Some cases are less clear
+     cut, for example what does the programmer intend when they use the SUSv3
+     regcomp(3) to compile a regex, but the legacy regexec(3) to execute it?
+     Any interpretation will surprise someone.
+
+Darwin                           July 21, 2020                          Darwin

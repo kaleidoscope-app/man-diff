@@ -1,0 +1,66 @@
+MOUNT_HFS(8)                 System Manager's Manual                MOUNT_HFS(8)
+
+NAME
+     mount_hfs – mount an HFS/HFS+ file system
+
+SYNOPSIS
+     mount_hfs [-e encoding] [-u user] [-g group] [-m mask] [-o options] [-j]
+               [-c] [-w] [-x] special directory
+
+DESCRIPTION
+     The mount_hfs command attaches the HFS file system residing on the device
+     special to the global file system namespace at the location indicated by
+     directory.  This command is normally executed by mount(8) at boot time.
+
+     The options are as follows:
+
+     -e encoding (standard HFS volumes only)
+             Specify the Macintosh encoding. The following encodings are
+             supported:
+
+             Arabic, ChineseSimp, ChineseTrad, Croatian, Cyrillic, Greek,
+             Hebrew, Icelandic, Japanese, Korean, Roman (default), Romanian,
+             Thai, Turkish
+
+     -u user
+             Set the owner of the files in the file system to user.  The default
+             owner is the owner of the directory on which the file system is
+             being mounted.  The user may be a user-name, or a numeric value.
+
+     -g group
+             Set the group of the files in the file system to group.  The
+             default group is the group of the directory on which the file
+             system is being mounted.  The group may be a group-name, or a
+             numeric value.
+
+     -m mask
+             Specify the maximum file permissions for files in the file system.
+             (For example, a mask of 755 specifies that, by default, the owner
+             should have read, write, and execute permissions for files, but
+             others should only have read and execute permissions.  See chmod(1)
+             for more information about octal file modes.)  Only the nine low-
+             order bits of mask are used.  The default mask is taken from the
+             directory on which the file system is being mounted.
+
+     -o      Options are specified with a -o flag followed by a comma separated
+             string of options.  See the mount(8) man page for possible options
+             and their meanings.
+
+     -j      Ignore the journal for this mount.
+
+     -c      Disable group commit for journaling.
+
+     -w      Mount the HFS wrapper volume.
+
+     -x      Disable execute permissions on a standard HFS file system.
+
+SEE ALSO
+     mount(2), unmount(2), fstab(5), mount(8)
+
+BUGS
+     Some HFS file systems with highly fragmented catalog files may not mount.
+
+HISTORY
+     The mount_hfs utility first appeared in Mac OS X Server 1.0.
+
+Mac OS X                         March 14, 2001                         Mac OS X

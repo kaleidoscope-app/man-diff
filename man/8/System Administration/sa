@@ -1,0 +1,164 @@
+SA(8)                        System Manager's Manual                       SA(8)
+
+NAME
+     sa – print system accounting statistics
+
+SYNOPSIS
+     sa [-abcdDfijkKlmnqrstu] [-P file] [-U file] [-v cutoff] [file ...]
+
+DESCRIPTION
+     The sa utility reports on, cleans up, and generally maintains system
+     accounting files.
+
+     The sa utility is able to condense the information in /var/account/acct
+     into the summary files /var/account/savacct and /var/account/usracct, which
+     contain system statistics according to command name and login id,
+     respectively.  This condensation is desirable because on a large system,
+     /var/account/acct can grow by hundreds of blocks per day.  The summary
+     files are normally read before the accounting file, so that reports include
+     all available information.
+
+     If file names are supplied, they are read instead of /var/account/acct.
+     After each file is read, if the summary files are being updated, an updated
+     summary will be saved to disk.  Only one report is printed, after the last
+     file is processed.
+
+     The labels used in the output indicate the following, except where
+     otherwise specified by individual options:
+
+     avio   Average number of I/O operations per execution
+
+     cp     Sum of user and system time, in minutes
+
+     cpu    Same as cp
+
+     k      CPU-time averaged core usage, in 1k units
+
+     k*sec  CPU storage integral, in 1k-core seconds
+
+     re     Real time, in minutes
+
+     s      System time, in minutes
+
+     tio    Total number of I/O operations
+
+     u      User time, in minutes
+
+     The options to sa are:
+
+     -a      List all command names, including those containing unprintable
+             characters and those used only once.  By default, sa places all
+             names containing unprintable characters and those used only once
+             under the name ``***other''.
+
+     -b      If printing command statistics, sort output by the sum of user and
+             system time divided by number of calls.
+
+     -c      In addition to the number of calls and the user, system and real
+             times for each command, print their percentage of the total over
+             all commands.
+
+     -d      If printing command statistics, sort by the average number of disk
+             I/O operations.  If printing user statistics, print the average
+             number of disk I/O operations per user.
+
+     -D      If printing command statistics, sort and print by the total number
+             of disk I/O operations.
+
+     -f      Force no interactive threshold comparison with the -v option.
+
+     -i      Do not read in the summary files.
+
+     -j      Instead of the total minutes per category, give seconds per call.
+
+     -k      If printing command statistics, sort by the cpu-time average memory
+             usage.  If printing user statistics, print the cpu-time average
+             memory usage.
+
+     -K      If printing command statistics, print and sort by the cpu-storage
+             integral.
+
+     -l      Separate system and user time; normally they are combined.
+
+     -m      Print per-user statistics rather than per-command statistics.
+
+     -n      Sort by number of calls.
+
+     -P file
+             Use the specified file for accessing the per-command accounting
+             summary database, instead of the default /var/account/savacct.
+
+     -q      Create no output other than error messages.
+
+     -r      Reverse order of sort.
+
+     -s      Truncate the accounting files when done and merge their data into
+             the summary files.
+
+     -t      For each command, report the ratio of real time to the sum of user
+             and system cpu times.  If the cpu time is too small to report,
+             ``*ignore*'' appears in this field.
+
+     -U file
+             Use the specified file for accessing the per-user accounting
+             summary database, instead of the default /var/account/usracct.
+
+     -u      Superseding all other flags, for each entry in the accounting file,
+             print the user ID, total seconds of cpu usage, total memory usage,
+             number of I/O operations performed, and command name.
+
+     -v cutoff
+             For each command used cutoff times or fewer, print the command name
+             and await a reply from the terminal.  If the reply begins with
+             ``y'', add the command to the category ``**junk**''.  This flag is
+             used to strip garbage from the report.
+
+     By default, per-command statistics will be printed.  The number of calls,
+     the total elapsed time in minutes, total cpu and user time in minutes,
+     average number of I/O operations, and CPU-time averaged core usage will be
+     printed.  If the -m option is specified, per-user statistics will be
+     printed, including the user name, the number of commands invoked, total cpu
+     time used (in minutes), total number of I/O operations, and CPU storage
+     integral for each user.  If the -u option is specified, the uid, user and
+     system time (in seconds), CPU storage integral, I/O usage, and command name
+     will be printed for each entry in the accounting data file.
+
+     If the -u flag is specified, all flags other than -q are ignored.  If the
+     -m flag is specified, only the -b, -d, -i, -k, -q, and -s flags are
+     honored.
+
+FILES
+     /var/account/acct     raw accounting data file
+     /var/account/savacct  per-command accounting summary database
+     /var/account/usracct  per-user accounting summary database
+
+EXIT STATUS
+     The sa utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     lastcomm(1), acct(5), ac(8), accton(8)
+
+CAVEATS
+     While the behavior of the options in this version of sa was modeled after
+     the original version, there are some intentional differences and
+     undoubtedly some unintentional ones as well.  In particular, the -q option
+     has been added, and the -m option now understands more options than it used
+     to.
+
+     The formats of the summary files created by this version of sa are very
+     different from the those used by the original version.  This is not
+     considered a problem, however, because the accounting record format has
+     changed as well (since user ids are now 32 bits).
+
+AUTHORS
+     Chris G. Demetriou ⟨cgd@postgres.berkeley.edu⟩
+
+BUGS
+     The number of options to this program is absurd, especially considering
+     that there is not much logic behind their lettering.
+
+     The field labels should be more consistent.
+
+     The VM system does not record the CPU storage integral.
+
+macOS 12.0                        May 18, 2007                        macOS 12.0

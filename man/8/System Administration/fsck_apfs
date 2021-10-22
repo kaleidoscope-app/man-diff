@@ -1,0 +1,52 @@
+FSCK_APFS(8)                 System Manager's Manual                FSCK_APFS(8)
+
+NAME
+     fsck_apfs – APFS consistency check
+
+SYNOPSIS
+     fsck_apfs [-n | -y] [-q] [-l] [-s] [-S] [-o] device
+
+DESCRIPTION
+     The fsck_apfs utility verifies and repairs APFS containers and volumes.
+
+     fsck_apfs checks the specified APFS containers and volumes and tries to
+     repair all detected inconsistencies.
+
+     Because of inconsistencies between the block device and the buffer cache,
+     the raw device should always be used.
+
+     In its current state, fsck_apfs checks the integrity of various container
+     data structures.
+
+     The options are as follows:
+
+           -q      Causes fsck_apfs to quickly check whether the device is
+                   `clean'. If device is an APFS volume, fsck_apfs will quickly
+                   check the APFS container and the specified APFS volume.  If
+                   device is an APFS container, fsck_apfs will quickly check the
+                   APFS container and all the APFS volumes in it.  By default,
+                   no repairs are attempted during a quick check.
+
+           -n      Never attempt to repair any damage that is found.
+
+           -y      Always attempt to repair any damage that is found.
+
+           -l      Enable live verification mode.  This makes it possible to
+                   check an APFS container which is currently mounted read-
+                   write, although no repairs can be made.
+
+           -s      Print space verification summary.
+
+           -S      Skip iteration of snapshots (top-level snapshot structures
+                   will still be checked), although no repairs can be made.
+
+           -o      Repair overallocations; please do not run an older fsck_apfs
+                   on newer systems with this option.
+
+EXIT STATUS
+     fsck_apfs exits with 0 on success, and >0 if error occurs.
+
+SEE ALSO
+     fsck(8)
+
+Mac OS X                          March 6, 2018                         Mac OS X

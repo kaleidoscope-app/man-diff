@@ -1,0 +1,58 @@
+ZPRINT(1)                    General Commands Manual                   ZPRINT(1)
+
+NAME
+     zprint – show information about kernel zones
+
+SYNOPSIS
+     zprint [-cdhlLstw] [name]
+
+DESCRIPTION
+     zprint displays data about Mach zones (allocation buckets).  By default,
+     zprint will print out information about all Mach zones.  If the optional
+     name is specified, zprint will print information about each zone for which
+     name is a substring of the zone's name.
+
+     zprint interprets the following options:
+
+     -c         (Default) zprint prints zone info in columns. Long zone names
+                are truncated with ‘$’, and spaces are replaced with ‘.’, to
+                allow for sorting by column.  Pageable and collectible zones are
+                shown with ‘P’ and ‘C’ on the far right, respectively.  Zones
+                with preposterously large maximum sizes are shown with ‘----’ in
+                the max size and max num elts fields.
+
+     -d         Display deltas over time, showing any zones that have achieved a
+                new maximum current allocation size during the interval.  If the
+                total allocation sizes are being displayed for the zones in
+                question, it will also display the deltas if the total
+                allocations have doubled.
+
+     -h         (Default) Shows headings for the columns printed with the -c
+                option.  It may be useful to override this option when sorting
+                by column.
+
+     -l         (Default) Show all wired memory information after the zone
+                information.
+
+     -L         Do not show all wired memory information after the zone
+                information.
+
+     -s         zprint sorts the zones, showing the zone wasting the most memory
+                first.
+
+     -t         For each zone, zprint calculates the total size of allocations
+                from the zone over the life of the zone.
+
+     -w         For each zone, zprint calculates how much space is allocated but
+                not currently in use, the space wasted by the zone.
+
+     Any option (including default options) can be overridden by specifying the
+     option in upper-case; for example, -C overrides the default option -c.
+
+DIAGNOSTICS
+     The zprint utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     ioclasscount(1), lsmp(1), lskq(1),
+
+Mac OS X                           2 May 2016                           Mac OS X

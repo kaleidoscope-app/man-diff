@@ -1,0 +1,79 @@
+bioutil(1)                   General Commands Manual                  bioutil(1)
+
+NAME
+     bioutil – tool for viewing/changing Touch ID configuration and
+     listing/deleting enrolled fingerprints
+
+SYNOPSIS
+     bioutil {-r | -w [-f { 0 | 1 }] [-u { 0 | 1 }] [-a { 0 | 1 }]} | [-c] |
+             [-p] | [-d <uid>] [-s]
+
+DESCRIPTION
+     bioutil provides the possibility of viewing and changing Touch ID
+     configuration, both system-wide and user-specific. It also allows listing
+     and deleting enrolled fingerprints.
+
+OPTIONS
+     -r, --read
+              Read Touch ID configuration.
+
+     -w, --write
+              Write Touch ID configuration.
+
+     -s, --system
+              Indicates that system-wide configuration is to be read/written
+              (user-specific configuration is the default) or that a system-wide
+              list/delete operation is to be performed.
+
+     -f, --function
+              Enables (1) or disables (0) overall Touch ID functionality
+              (system-wide configuration only).
+
+     -u, --unlock
+              Enables (1) or disables (0) Touch ID for unlock.
+
+     -a, --applepay
+              Enables (1) or disables (0) Touch ID for ApplePay (user-specific
+              configuration only).
+
+     -c, --count
+              Provides number of enrolled fingerprints of the current user or of
+              all users (when run with -s as an administrator)
+
+     -p, --purge
+              Deletes all enrolled fingerprints of the current user or of all
+              users (when run with -s as an administrator)
+
+     -d, --delete
+              Deletes all enrolled fingerprints of the user with given user ID
+              (must be run as an administrator)
+
+EXAMPLES
+     bioutil -r
+              Reads Touch ID configuration for the current user.
+
+     bioutil -r -s
+              Reads system-wide Touch ID configuration.
+
+     bioutil -w -u 1
+              Enables Touch ID for unlock for the current user.
+
+     sudo bioutil -w -s -u 0
+              Disables Touch ID for unlock for the whole system.
+
+     bioutil -c
+              Prints the number of enrolled fingerprints of the current user.
+
+     bioutil -p
+              Deletes all enrolled fingerprints of the current user.
+
+     sudo bioutil -c -s
+              Prints numbers of enrolled fingerprints of all enrolled users.
+
+     sudo bioutil -p -s
+              Deletes all fingerprints from the system.
+
+     sudo bioutil -s -d 501
+              Deletes all fingerprints of user 501.
+
+Darwin                              15/02/16                              Darwin

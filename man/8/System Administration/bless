@@ -1,0 +1,297 @@
+BLESS(8)                     System Manager's Manual                    BLESS(8)
+
+NAME
+     bless – set volume bootability and startup disk options
+
+SYNOPSIS
+     bless --help
+
+     bless --folder directory [--file file] [--bootinfo [file]]
+           [--bootefi [file]] [--label name | --labelfile file] [--setBoot]
+           [--openfolder directory] [--nextonly] [--shortform] [--legacy]
+           [--legacydrivehint device] [--options string] [--personalize]
+           [--create-snapshot] [--last-sealed-snapshot] [--quiet | --verbose]
+
+     bless --mount directory [--file file] [--setBoot] [--nextonly]
+           [--shortform] [--legacy] [--legacydrivehint device]
+           [--options string] [--personalize] [--create-snapshot]
+           [--last-sealed-snapshot] [--quiet | --verbose]
+
+     bless --device device [--label name | --labelfile file]
+           [--startupfile file] [--setBoot] [--nextonly] [--shortform]
+           [--legacy] [--legacydrivehint device] [--options string]
+           [--quiet | --verbose]
+
+     bless --netboot --server url [--nextonly] [--options string]
+           [--quiet | --verbose]
+
+     bless --info [directory] [--getBoot] [--plist] [--quiet | --verbose]
+           [--version]
+
+     bless --unbless directory
+
+DESCRIPTION
+     bless is used to modify the volume bootability characteristics of
+     filesystems, as well as select the active boot volume.  bless has 6 modes
+     of execution: Folder Mode, Mount Mode, Device Mode, NetBoot Mode, Info
+     Mode, and Unbless Mode.
+
+     Folder Mode allows you to select a directory on a mounted volume to act as
+     the “blessed” directory, which causes the system firmware to look in that
+     directory for boot code. EFI-based systems also support a “blessed” system
+     file, which is the primary mechanism of specifying the booter for a volume
+     for those systems. In Folder Mode, if you are operating on an HFS+ volume,
+     the HFS+ Volume Header is updated to reflect the files/directories given,
+     which persists even if the volume is moved to another system or NVRAM is
+     cleared.
+
+     Mount Mode does not make permanent modifications to the filesystem, but
+     rather set the system firmware to boot from the specified volume, assuming
+     it has been properly blessed. This is a subset of the functionality of
+     Folder Mode with the --setBoot option, but is convenient when you don't
+     want to change or interrogate the filesystem for its blessed status.
+
+     Device Mode is similar to Mount Mode, but allows selection of unmounted
+     filesystems, for instance while in single user mode. It can also perform
+     certain offline modifications to the filesystem, but is not generally
+     recommended.
+
+     NetBoot Mode sets the system firmware to boot from the network, using a URL
+     syntax to specify the protocol and server.  bless only sets the local
+     system to go into NetBoot mode, and does not communicate to the server what
+     image should be used, if there are multiple images. Some other mechanism,
+     such as using Startup Disk, should be used to select that.
+
+     Info Mode will print out the currently-blessed directory of a volume, or if
+     no mountpoint is specified, the active boot volume that the firmware is set
+     to boot from.
+
+     Unbless Mode complements Folder Mode, and clears the persistent blessed
+     folder and file information on HFS+ volumes.
+
+     Additionally, --help can be used to display the command-line usage summary.
+
+   FILE/FOLDER MODE
+     Folder Mode has the following options:
+     --folder directory       Set this directory to be the Mac OS X/Darwin
+                              blessed directory, containing a BootX secondary
+                              loader for New World machines.
+     --file file              Set this file to be the Mac OS X/Darwin blessed
+                              boot file, containing a booter for EFI-based
+                              systems. If this option is not provided, a default
+                              boot file is used based on the blessed directory.
+     --bootinfo [file]        Create a BootX file in the Mac OS X/Darwin system
+                              folder using file as a source. If file is not
+                              provided, a default is used (see FILES), using a
+                              path relative to the mountpoint you are blessing.
+                              This attempts to ensure that a BootX is used that
+                              is compatible with the OS on the target volume.
+     --bootefi [file]         Create a boot.efi file in the Mac OS X/Darwin
+                              system folder using file as a source. If file is
+                              not provided, a default is used (see FILES), using
+                              a path relative to the mountpoint you are
+                              blessing. This attempts to ensure that a boot.efi
+                              is used that is compatible with the OS on the
+                              target volume. If --file is also provided, the new
+                              file will be created at that path instead.
+     --label name             Render a text label used in the firmware-based OS
+                              picker
+     --labelfile file         Use a pre-rendered label used for the firmware-
+                              based OS picker
+     --openfolder directory   Specify a folder to be opened in the Finder when
+                              the volume is mounted by the system.
+     --setBoot                Set the system to boot off the specified
+                              partition. This is implemented in a platform-
+                              specific manner. On Open Firmware-based systems,
+                              the boot-device variable is modified. On EFI-based
+                              systems, the efi-boot-device variable is changed.
+                              This is not supported on Apple Silicon based
+                              systems.
+     --nextonly               Only change the boot device selection for the next
+                              boot. This is only supported on EFI-based systems.
+     --shortform              Use an abbreviated device path form. This option
+                              can allow for booting from new devices, at the
+                              expense of boot time performance. This is only
+                              supported on EFI-based systems.
+     --legacy                 If --setBoot is given, set the firmware to boot a
+                              legacy BIOS-based operating system from the
+                              specified disk. The active flag of an MBR-
+                              partitioned disk is not modified, which can be
+                              done with fdisk(8) . This is only supported on
+                              EFI-based systems.
+     --legacydrivehint device
+                              Instruct the firmware to treat the specified whole
+                              disk as the primary, master IDE drive. This is
+                              only supported on EFI-based systems.
+     --options                Set load options associated with the new boot
+                              option. This is only supported on EFI-based
+                              systems, and in general should be avoided.
+                              Instead, use nvram(8) to set "boot-args" , which
+                              will work with both Open Firmware- and EFI-based
+                              systems.
+     --personalize            Attempts to do a personalization operation on the
+                              target, which validates the SecureBoot bundle and
+                              ensures that the relevant boot files are signed
+                              and valid for this particular machine.  This may
+                              require network access, in order to check the
+                              signatures.
+     --create-snapshot        Attempts to create an APFS snapshot of the target
+                              APFS system volume and set it as root snapshot of
+                              the system volume. The target system will boot
+                              from this snapshot on its next boot.
+     --last-sealed-snapshot   Reverts back to using the previosuly signed APFS
+                              snapshot reenabling Authenticated Root Volume.
+                               The target system will boot from this sealed
+                              snapshot on its next boot.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+
+   MOUNT MODE
+     Mount Mode has the following options:
+     --mount directory        Use the volume mounted at directory to change the
+                              active boot volume, in conjunction with --setBoot.
+                              The volume must already be properly blessed.
+     --file file              Instead of allowing the firmware to discover the
+                              booter based on the blessed directory or file,
+                              pass an explicit path to the firmware to boot
+                              from. This can be used to run EFI applications or
+                              EFI booters for alternate OSes, but should not be
+                              normally used. This is only supported on EFI-based
+                              systems.
+     --setBoot                Same as for Folder Mode.
+     --nextonly               Same as for Folder Mode.
+     --shortform              Same as for Folder Mode.
+     --legacy                 Same as for Folder Mode.
+     --legacydrivehint device
+                              Same as for Folder Mode.
+     --options                Same as for Folder Mode.
+     --personalize            Same as for Folder Mode.
+     --create-snapshot        Same as for Folder Mode.
+     --last-sealed-snapshot   Same as for Folder Mode.
+     --bootefi                This enables copying required boot objects when
+                              --create-snapshot or --last-sealed-snapshot is
+                              given.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+
+   DEVICE MODE
+     Device Mode has the following options:
+     --device device          Use the block device device to change the active
+                              boot volume. No volumes should be mounted from
+                              device , and the filesystem should already be
+                              properly blessed.
+     --label name             Set the firmware-based OS picker label for the
+                              unmounted filesystem, using name , which should be
+                              in UTF-8 encoding.
+     --labelfile file         Use a pre-rendered label used with the firmware-
+                              based OS picker.
+     --setBoot                Set the system to boot off the specified
+                              partition, as with Folder and Mount Modes.
+     --startupfile file       Add the file as the HFS+ StartupFile, and update
+                              other information on disk as appropriate for the
+                              startup file type.
+     --nextonly               Same as for Folder Mode.
+     --shortform              Same as for Folder Mode.
+     --options                Same as for Folder Mode.
+     --legacy                 Same as for Folder Mode.
+     --legacydrivehint device
+                              Same as for Folder Mode.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+
+   NETBOOT MODE
+     NetBoot Mode has the following options:
+     --netboot                Instead of setting the active boot selection to a
+                              disk-based volume, set the system to NetBoot.
+     --server protocol://[interface@]server
+                              A URL specification of how to boot the system.
+                              Currently, the only protocol supported is BSDP
+                              ("bsdp"), Apple's Boot Service Discovery Protocol.
+                              The interface is optional, and the server is the
+                              IPv4 address of the server in dotted-quad
+                              notation. If there is not a specific server you'd
+                              like to use, pass "255.255.255.255" to have the
+                              firmware broadcast for the first available server.
+                              Examples of this notation would be
+                              "bsdp://255.255.255.255" and
+                              "bsdp://en1@17.203.12.203".
+     --nextonly               Same as for Folder Mode.
+     --options                Same as for Folder Mode.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+
+   INFO MODE
+     Info Mode has the following options:
+     --info [directory]       Print out the blessed system folder for the volume
+                              mounted at directory . If directory is not
+                              specified, print information for the currently
+                              selected boot volume (which may not necessarily be
+                              ‘/’ ). This is not supported on Apple Silicon
+                              based systems.
+     --getBoot                Print out the logical boot volume, based on what
+                              is currently selected. This option will take into
+                              account the fact that the firmware may be pointing
+                              to an auxiliary booter partition, and will print
+                              out the corresponding root partition for those
+                              cases. If the system is configured to NetBoot, a
+                              URL matching the format of the --server
+                              specification for NetBoot mode will be printed.
+     --plist                  Output all information in Property List (.plist)
+                              format, suitable for parsing by CoreFoundation.
+                              This is most useful when bless is executed from
+                              another program and its standard output must be
+                              parsed.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+     --version                Print bless version and exit immediately
+
+   UNBLESS MODE
+     Unbless Mode has the following options:
+     --unbless directory      Use the HFS+ volume mounted at directory and unset
+                              any persistent blessed files/directories in the
+                              HFS+ Volume Header.
+
+FILES
+     /usr/standalone/ppc/bootx.bootinfo  Secondary loader with XML headers, used
+                                         with the --bootinfo flag. Used for
+                                         booting New World PPC-based
+                                         Macintoshes. If the argument to
+                                         --bootinfo is ommitted, this file will
+                                         be used as the default input.
+     /usr/standalone/i386/boot.efi       Booter for EFI-based systems, used with
+                                         the --bootefi flag. If the argument to
+                                         --bootefi is ommitted, this file will
+                                         be used as the default input.
+     /System/Library/CoreServices        Typical blessed folder for Mac OS X and
+                                         Darwin
+
+EXAMPLES
+   FOLDER MODE
+     To bless a volume with only Mac OS X or Darwin, and create the BootX and
+     boot.efi files as needed:
+
+           bless --folder "/Volumes/Mac OS X/System/Library/CoreServices"
+           --bootinfo --bootefi
+
+   MOUNT MODE
+     To set a volume containing either Mac OS 9 and Mac OS X to be the active
+     volume:
+
+           bless --mount "/Volumes/Mac OS" --setBoot
+
+   NETBOOT MODE
+     To set the system to NetBoot and broadcast for an available server:
+
+           bless --netboot --server bsdp://255.255.255.255
+
+   INFO MODE
+     To gather information about the currently selected volume (as determined by
+     the firmware), suitable for piping to a program capable of parsing Property
+     Lists:
+
+           bless --info --plist
+
+SEE ALSO
+     mount(8), newfs(8), nvram(8)
+
+Mac OS X                          May 24, 2013                          Mac OS X

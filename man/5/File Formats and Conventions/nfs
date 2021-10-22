@@ -1,0 +1,219 @@
+NFS(5)                         File Formats Manual                        NFS(5)
+
+NAME
+     NFS – Network File System
+
+SYNOPSIS
+     NFS
+
+DESCRIPTION
+     NFS is the standard UNIX file sharing protocol suite.  MacOS supports
+     version two, NFSv2 (RFC 1094), version three, NFSv3 (RFC 1813), and in
+     addition for the client, version four, NFSv4 (RFC 3530).  NFSv2 and NFSv3
+     also rely on adjunct protocols for mounting, Mountd (RFC 1094, RFC 1813)
+     and for locking, NLM (OpenGroup XNFS).  NFSv4 subsumes both mount and
+     locking operations in to it's protocol.  MacOS systems support TCP over
+     IPv4 and IPv6.  In addition for versions two and three of the protocol, UDP
+     is supported over IPv4 and IPv6, however its use is discouraged. Version
+     two of the protocol is considered legacy and should only be used if higher
+     versions of the protocol are unavailable.
+
+   MacOS Extended Attribute Considerations
+     MacOS makes heavy use of extended attributes, resource forks, and possibly
+     ACLs.  NFSv2 and NFSv3 do not support these operations over the wire. The
+     getting and setting of ACLs are not supported but extended attributes and
+     resource forks for MacOS clients are supported by storing extended
+     attributes and resource forks in an "Apple Double" (also known as a dot
+     under bar file) files on the server. On the other hand NFSv4 can optionally
+     support ACLs. And can optionally support the storing of resource forks and
+     extended attributes as NFSv4 named attributes.  Previous versions of NFSv4
+     on MacOS would use NFSv4 named attributes if supported by the server for
+     storing extended attributes and resource forks, however this version of
+     NFSv4 defaults to using "Apple Double" files. If a server exports files
+     systems with both NFSv3 and NFSv4 (the usual default case) and supports
+     named attributes as well, then there is a potential for data loss, since
+     changing an extended attribute or resource fork from an NFSv3 client is not
+     visible to an NFSv4 client and visa versa.  If the server is known to only
+     have NFSv4 clients or is only exporting file systems with NFSv4 then MacOS
+     clients should use the namedattr option.  See mount_nfs(8).  If converting
+     from NFSv3 to NFSv4 only with named attribute support, the following
+     procedure can be use to convert the "Apple Double" files to NFSv4 named
+     attributes.
+
+     Be sure that the file system on the server has no other MacOS NFS mounts.
+     Then allow one MacOS NFSv4 client that has been mounted with the namedattr
+     mount option (mount -o vers=4,namedattr), to mount the export(s) on the
+     server.  Then at the mount point on the client run the dot_clean -m
+     command.  This will read the "Apple Double" files and convert them to
+     native extended attributes on the server and then remove the "Apple Double"
+     file.
+
+   MacOS ACL support.
+     ACLs (access control list) are enforced at the server not the client. As
+     mentioned above NFSv3/NFSv2 do not support ACLs. So it is possible to get
+     access or permission errors even though the BSD permission bits indicate
+     that a file system operation should succeed.  MacOS NFSv4 clients can
+     optionally support ACLs if the acl or aclonly options are given at mount
+     time. The reason that ACLs are not enabled by default is that there
+     interpretation can be different from one server to another. Particularly in
+     the way BSD mode bits are interpreted.  A simplified explanation for MacOS,
+     is that it interprets ACLs by running over the list of ACEs (access control
+     entries) in order and if all requests for access have been granted and no
+     request for access has been denied then the access is granted. If no
+     request has been denied but some request have not been granted then fall
+     back to the BSD access permissions. A complete description of ACLs can be
+     found in "Appendix B, File System Details" in the File System Programming
+     Guide.  Also see acl, noacl, and aclonly in mount_nfs(8) for more details.
+     Future version of MacOS may enable ACL support by default.
+
+   NFSv4 Name mapping.
+     Unlike NFSv3/NFSv2 identities for owners and groups are represented by
+     strings instead of 32 bit numbers. Thus NFSv4 clients and servers have to
+     convert these over the wire string identities to the local identities and
+     local identities to strings. These strings are principally used in GETATTR,
+     SETATTR, and ACEs for security identities.  Note that the RPC credential is
+     used for permission and access checking for whether an operation will be
+     allowed. Those credentials are found in the RPC header, such as a kerberos
+     identity that is associated with the RPCSEC_GSS context.  These strings are
+     of the form "identity@NFSv4Domain", where the "NFSv4Domain" follows DNS
+     domain naming conventions.
+
+   MacOS NFSv4 name mapping rules.
+     When processing identities by default we first check and see if the idenity
+     string from the server is a string of digits if so we use that as the
+     uid/gid to ask Open Directory to map that to a local idenitity. If that
+     fails or the idenity string is not a string of digits we next check for
+     well known names that NFSv4 supports. These names are of the form
+     "identity@" with no domain part. If we match any of the following
+
+           OWNER@            GROUP@            EVERYONE@
+           INTERACTIVE@      NETWORK@          DIALUP@
+           BATCH@            ANONYMOUS@        AUTHENTICATED@
+           SERVICE@
+
+     These identities are mapped to Open Directory internal identities. Along
+     with any other identity that ends in an "@", which are mapped to nobody.
+     These well known identities are used as generic security idenitifiers in
+     ACEs.  These identities are mapped back to the above strings when going
+     back over the wire to the server. If the identites do not match the strings
+     ending in "@" then we attempt to map the identities as follows.  MacOS
+     clients support a zero configuration option by not specifying a default
+     NFSv4 domain. String identies coming from the server are handed as is to
+     Open Directory to translate the string identity to the local identity. This
+     works if the NFSv4 domain is the same as an Open Directory node name.
+     Local identies are similarly translated to the fully scoped Open Directory
+     names on the way out.  If Open Directory returns an error in trying to  map
+     the identities we then by default try to use the following fall back
+     idenities:
+
+           root@any_domain   wheel@any_domain
+           nobody@any_domain nfsnobody@any_domain
+
+     Root and wheel identities are translated by Open Directory with uid/gid of
+     zero and nobody and nfsnobody are traslated to uid/gid of -2 (MacOS
+     internal representation for the nobody uid/gid).
+
+     This is useful in situations where the client and server do not share a
+     common naming database.  It is recommended where sites have a large number
+     of MacOS clients, set their NFSv4 domain to be the LDAP node that is being
+     used to bind Open Directory so that there is no other configuration needed
+     for the Mac clients.
+
+     For environments which have a different NFSv4 domain name from the bound
+     LDAP node name, the NFSv4 domain name needs to be set by editing
+     /etc/nfs.conf and adding the line
+           nfs.client.default_nfs4domain = <my_nfsv4_domain>
+     See nfs.conf(5).  The rules for mapping are then as follows. If a string
+     identity comes in over the wire whose domain portion matches the client's
+     NFSv4 domain, then its stripped off and that unscoped name is this given to
+     Open Directory to map to a local identity. On the way back to the server
+     any Open Directory node name is stripped off and the NFSv4 domain name is
+     appended. If the identity coming from the server does not match the NFSv4
+     domain name, then its passed to Open Directory as is and the rules
+     described above for having no NFSv4 domain name set are followed.
+
+Examples
+     The server has set its NFSv4 domain that is not the same as any MacOS
+     client Open Directory node, so that the identity mapping is not set up
+     correctly.  Users will see output like the following example:
+
+     3-$ ls -l /tmp/mp
+     total 16851
+     -rw-r--r--  1 nobody  nobody       29 Oct 12  2015 Foo.txt
+     drwxr-xr-x  3 nobody  nobody        4 Jan 31 16:27 Q102/
+     drwxrwxrwx  3 nobody  nobody        7 Jan 24 16:59 acl/
+     -rw-r--r--  1 nobody  wheel         0 Feb  8 11:54 file1
+     -rw-r--r--  1 root    wheel         0 Feb  8 12:00 file2
+     -rw-r--r--  1 nobody  nobody        0 Feb  9 11:06 fooby
+     drwx------  2 nobody  nobody        5 Sep 22  2015 keyring-GbeUpi/
+     drwx------  2 65432   nobody        5 Sep  8  2015 keyring-OX5G6P/
+
+     Most of the mappings comeback as "nobody/nobody".  Note "file1" comes back
+     with group wheel. This is an example of fall back identity mapping.
+     Similarly for "file2" for both the user and group return root and wheel
+     respectfully. The directory "keyring-OX5G6P" has ownership of 65432 this is
+     because the server could not map that id locally and so sent it over the
+     wire as a string of digits.  After correcting the NFSv4 domain on the
+     server we have:
+
+     4-$ ls -l /tmp/mp
+     total 16851
+     -rw-r--r--  1 lbricker  staff        29 Oct 12  2015 Foo.txt
+     drwxr-xr-x  3 lbricker  staff         4 Jan 31 16:27 Q102/
+     drwxrwxrwx  3 lbricker  staff         7 Jan 24 16:59 acl/
+     -rw-r--r--  1 lbricker  staff         0 Feb  8 11:54 file1
+     -rw-r--r--  1 root      nobody        0 Feb  8 12:00 file2
+     -rw-r--r--  1 lbricker  nobody        0 Feb  9 11:06 fooby
+     drwx------  2 lbricker  staff         5 Sep 22  2015 keyring-GbeUpi/
+     drwx------  2 65432     staff         5 Sep  8  2015 keyring-OX5G6P/
+
+     What is surprising is that file1 and file2's group is now nobody. The
+     reason is that the server is sending those group ids as
+     "root@<open_directroy_node>".  Open Directory will not find that mapping so
+     it will map it to nobody (had "wheel@<open_directory_node" had been used,
+     wheel would have been returned).  In the previous example the server sent
+     "root@bogus.nfsv4.com".  Open Directory will now return an error since it
+     can not find a valid Open Directory node "bogus.nfsv4.com" and thus use the
+     fall back to a gid of 0.
+
+     Debugging NFSv4 name mapping can be done with the nfs4mapid command. See
+     nfs4mapid(8).  This allows testing of name/identity translations by using a
+     system call into the kernel that calls the same routines as the MacOS nfs
+     client uses. For example we determine the group translations above.
+
+     83-$ sudo nfs4mapid -G root@nod.apple.com
+     group root@nod.apple.com maps to id -2
+         mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEFFFFFFFFE
+     84-$ sudo nfs4mapid -G wheel@nod.apple.com
+     group wheel@nod.apple.com maps to id 0
+         mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000
+     85-$ sudo nfs4mapid -G wheel@foobar.com
+     group wheel@foobar.com maps to id 0
+         mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000
+     86-$ sudo nfs4mapid -G root@foobar.com group
+     root@foobar.com maps to id 0
+         mapping done through guid ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000000
+
+See Also
+     Appendix B, File System Details, File System Programming Guide, Apple,
+     https://developer.apple.com.
+
+     dot_clean(1), nfs.conf(5), nfs4mapid(8), mount_nfs(8), opendirectoryd(8),
+
+Standards
+     [RFC1094]  B. Nowicki, NFS: Network File System Protocol specification,
+                RFC1094, March 1989, http://www.rfc-editor.org/info/rfc1094.
+
+     [RFC1813]  B. Callaghan, B. Pawlowski, and P. Staubach, NFS Version 3
+                Protocol Specification, RFC1813, June 1995, http://www.rfc-
+                editor.org/info/rfc1813.
+
+     [RFC3530]  S. Shepler, B. Callaghan, D. Robinson, R. Thurlow, C. Beame, M.
+                Eisler, and D. Noveck, Network File System (NFS) version 4
+                Protocol, RFC3530, April 2003, http://www.rfc-
+                editor.org/info/rfc3530.
+
+     [XNFS]     Protocols for Interworking: XNFS, Version 3W, Open Group
+                Technical Standard, February, 1998, ISBN: 1-85912-184-5.
+
+macOS 12.0                        May 25, 2017                        macOS 12.0

@@ -1,0 +1,99 @@
+containermanagerd(8)         System Manager's Manual        containermanagerd(8)
+
+NAME
+     containermanagerd – Application and plug-in containerization management
+     daemon
+
+SYNOPSIS
+     containermanagerd [--runmode runmode] [--default-user username]
+                       [--bundle-container-mode mode]
+                       [--bundle-container-owner username]
+                       [--system-container-mode mode]
+
+DESCRIPTION
+     containermanagerd creates, destroys, and otherwise manages containers for
+     applications and their respective plug-ins and works in concert with
+     sandbox(7) to provide application containerization. It is a classic launch
+     daemon and/or agent managed by launchd.
+
+     The following arguments are available:
+
+     --runmode runmode
+             Defines the running mode of the daemon where runmode is one of the
+             following:
+
+             exclusive      The daemon will run in exclusive mode where all
+                            containers on the system are managed by a single
+                            containermanagerd process.  This is the default
+                            runmode. This mode can only be run as a
+                            LaunchDaemon.
+
+             agent          The daemon will run in per-user mode, and will
+                            manage containers only for the current user.
+
+             proxy          The daemon will run in per-user mode, but will only
+                            forward messages to the LaunchDaemon. This mode will
+                            automatically be used if set to run as an agent but
+                            the current user has no home directory, or its home
+                            directory is /var/empty.
+
+     --default-user username
+             Sets the default user where user data will be stored.
+
+     --bundle-container-mode mode
+             Controls how bundle containers are managed where mode is one of the
+             following:
+
+             none          Bundle containers will not be supported.
+
+             global        Bundle containers will be cross-user and owned by the
+                           system.
+
+             per-user      Bundle containers will be per-user and owned by the
+                           user.
+
+     --bundle-container-owner username
+             Sets the username that bundle containers will be chown(2) to.
+             Ignored if bundle container mode is not global
+
+     --system-container-mode mode
+             Controls how system containers are managed where mode is one of the
+             following:
+
+             none          System containers will not be supported.
+
+             global        System containers will be cross-user and owned by the
+                           system.
+
+             per-user      System containers will be per-user and owned by the
+                           user.
+
+     --system-container-owner username
+             Sets the username that system containers will be chown(2) to.
+             Ignored if system container mode is not global
+
+     Users should not run containermanagerd manually and changing arguments is
+     unsupported.
+
+FILES
+     •   /System/Library/LaunchDaemons/com.apple.containermanagerd.plist
+
+     •   /System/Library/LaunchAgents/com.apple.containermanagerd.plist
+
+     •   /usr/libexec/containermanagerd
+
+     •   ~/Library/ContainerManager
+
+     •   ~/Library/Caches/com.apple.containermanagerd
+
+     •   ~/Library/Containers
+
+     •   ~/Library/Group Containers
+
+SEE ALSO
+     xpc(3) sandbox(7)
+
+HISTORY
+     containermanagerd was first introduced in macOS 10.16.
+
+Darwin                          September 4, 2019                         Darwin
