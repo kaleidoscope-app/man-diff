@@ -1,7 +1,7 @@
 pkgbuild(1)                  General Commands Manual                 pkgbuild(1)
 
 NAME
-     pkgbuild – Build an OS X Installer component package from on-disk files
+     pkgbuild – Build a macOS Installer component package from on-disk files
 
 SYNOPSIS
      pkgbuild [options] --root root-path [--component-plist plist-path]
@@ -140,6 +140,40 @@ ARGUMENTS AND OPTIONS
              the actual on-disk files, only the ownership that is archived into
              the package.
 
+     --large-payload
+             By default, packages that are created have a per-file size limit
+             associated with them.  This method instructs pkgbuild to construct
+             a package where the included payload format supports large files.
+             A large file is defined as any file that is 8 GiB or larger.
+
+             Warning: The --large-payload option generates packages that are
+             only compatible with macOS 12.0 and above. Packages using this
+             feature will fail to install or extract on previous releases.
+             Specifying this option requires the user to pass [--min-os-version
+             12.0] or later to acknowledge this requirement.
+
+     --compression compression-mode
+             Allows control over the compression used for the package. This
+             option does not affect the compression used for plugins or scripts.
+             Not specifying this option will leave the chosen compression
+             algorithm up to the operating system. Two compression-mode
+             arguments are supported:
+
+               •   legacy forces a 10.5-compatible compression algorithm for the
+                   package.
+
+               •   latest enables pkgbuild to automatically select newer, more
+                   efficient compression algorithms based on what is provided to
+                   [--min-os-version <version>].
+
+     --min-os-version os-version
+             Specifying a minimum OS version allows the system to create a
+             package with the latest supported features. Some features can have
+             major benefits such as a better compression ratio. However,
+             specifying a minimum version will make the package require that
+             version when presented to productbuild(1). Some of the options in
+             this tool require this argument to be provided.
+
      --sign identity-name
              Adds a digital signature to the resulting package. See SIGNED
              PACKAGES
@@ -276,4 +310,4 @@ EXAMPLES
 SEE ALSO
      productbuild(1), xcodebuild(1)
 
-Mac OS X                       September 15, 2010                       Mac OS X
+macOS                             July 1, 2021                             macOS

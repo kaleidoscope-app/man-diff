@@ -11,8 +11,11 @@ SYNOPSIS
 DESCRIPTION
        aa creates and manipulates Apple Archives
 
-VERBS
+COMMANDS
        archive           Archive the contents of the target directory
+
+       append            Archive the contents of the target directory, append to
+       an existing archive file
 
        extract           Extract the contents of an archive to the target
        directory
@@ -85,8 +88,28 @@ OPTIONS
        -manifest
               Alias for the following options:
               -exclude-field dat
-              -include-field sh1,cks,siz
+              -include-field sh2,siz,idx,idz
               -a lzfse -b 1m
+
+       -imanifest input_manifest_file
+              Manifest matching the input archive.  Can be used in conjonction
+              with the entry selection options to accelerate processing
+
+       -omanifest output_manifest_file
+              Receives a manifest of the output archive
+
+       -list-format format
+              Output format for the list command, one of text, json. Default is
+              text
+
+
+ENTRY SELECTION OPTIONS
+       -include-path and -include-path-list options are applied first to select
+       an initial set of entries, then -exclude-path, -exclude-path-list,
+       -exclude-name, -exclude-regex are applied to remove entries from this
+       set.  If no -include-path or -include-path-list option is given, all
+       entries are included in the initial set.  If a directory is
+       included/excluded, the entire sub-tree is included/excluded.
 
        -include-path path
               Include entry paths having path as a prefix. This option can be
@@ -136,6 +159,59 @@ OPTIONS
               can be given multiple times. <field_spec> is a comma separated
               list of entry field keys listed below.
 
+
+ENCRYPTION OPTIONS
+       When archiving, encryption is selected by one of the -password...,
+       -key..., or -recipient-pub options.  The archive will be signed if a
+       private key is specified with -sign-priv.  With the currently available
+       profiles, public/private keys are on the Elliptic Curve P-256, and
+       symmetric keys are 256-bit long.
+
+       -keychain
+              Use Keychain to load/store symmetric keys and passwords
+
+       -password file
+              File containing encryption password. When encrypting, and if
+              -password-gen is passed, receives the generated password.  Can be
+              - to print the password to standard output.
+
+       -password-value password
+              Password.
+
+       -password-gen
+              When encrypting, generate a new random password.  It is
+              recommended to always use this option, in conjonction with
+              -keychain to store the password in the Keychain, or -password to
+              store the password in a file or print it.
+
+       -key file
+              File containing encryption symmetric key. When encrypting, and if
+              -key-gen is passed, receives the generated key.
+
+       -key-value key
+              Symmetric key, either "hex:<64 hex digits>" or "base64:<32 bytes
+              encoded using base64>".
+
+       -key-gen
+              When encrypting, generate a new random symmetric key.
+
+       -recipient-pub file
+              Recipient public key for encryption.  The corresponding private
+              key is required to decrypt the archive.
+
+       -recipient-priv file
+              Recipient private key for decryption.  The archive must have been
+              encrypted against the corresponding public key.
+
+       -sign-pub file
+              Signing public key for decryption.  The archive must have been
+              signed with the corresponding private key.
+
+       -sign-priv file
+              Signing private key for encryption.  The corresponding public key
+              is required to decrypt and authenticate the archive.
+
+
 ENTRY TYPES
        b block special
        c character special
@@ -145,6 +221,7 @@ ENTRY TYPES
        m metadata
        p fifo
        s socket
+
 
 ENTRY FIELDS
        typ entry type
@@ -162,7 +239,7 @@ ENTRY FIELDS
        acl access control list
        cks CRC32 checksum
        sh1 SHA1 digest
-       sh2 SHA2 digest
+       sh2 SHA2-256 digest
        dat file contents
        siz file size
        duz disk usage
@@ -172,13 +249,6 @@ ENTRY FIELDS
        all alias for all fields (exclude only)
        attr alias for uid,gid,mod,flg,mtm,btm,ctm
 
-ENTRY SELECTION
-       -include-path and -include-path-list options are applied first to select
-       an initial set of entries, then -exclude-path, -exclude-path-list,
-       -exclude-name, -exclude-regex are applied to remove entries from this
-       set.  If no -include-path or -include-path-list option is given, all
-       entries are included in the initial set.  If a directory is
-       included/excluded, the entire sub-tree is included/excluded.
 
 EXAMPLES
        Archive the contents of directory foo into archive foo.aar, using LZMA
@@ -217,6 +287,15 @@ EXAMPLES
 
               aa extract -i foo.aar -include-path Applications/Mail.app -d dst
 
+       Archive and encrypt directory foo to archive foo.aea, generating a random
+       password and storing it in the Keychain
+
+              aa archive -d foo -o foo.aea -keychain -password-gen
+
+       Decrypt and extract archive foo.aea to directory dst, obtaining the
+       password from the Keychain (requires local authentication)
+
+              aa extract -o foo.aea -d dst -keychain
 
 
 

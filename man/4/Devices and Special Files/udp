@@ -28,6 +28,11 @@ DESCRIPTION
 
      Options at the IP transport level may be used with UDP; see ip(4).
 
+     Using sendmsg(2) with IP_PKTINFO as ancillary data with a non NULL
+     interface index or a local address can remove the local IP address that was
+     assigned by a previous call to bind(2) and leave the UDP socket in an
+     unbound state with INADDR_ANY as the local address.
+
 DIAGNOSTICS
      A socket operation may fail with one of the following errors returned:
 
@@ -49,8 +54,8 @@ DIAGNOSTICS
                       address for which no network interface exists.
 
 SEE ALSO
-     connect(2), connectx(2), getsockopt(2), recv(2), send(2), socket(2),
-     inet(4), intro(4), ip(4)
+     bind(2), connect(2), connectx(2), getsockopt(2), recv(2), send(2),
+     sendmsg(2), socket(2), inet(4), intro(4), ip(4)
 
 HISTORY
      The udp protocol appeared in 4.2BSD.

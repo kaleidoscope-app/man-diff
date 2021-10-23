@@ -1,8 +1,8 @@
 productbuild(1)              General Commands Manual             productbuild(1)
 
 NAME
-     productbuild – Build a product archive for the OS X Installer or the Mac
-     App Store
+     productbuild – Build a product archive for the macOS Installer or the Mac
+     App Store.
 
 SYNOPSIS
      productbuild [--product requirements-plist]
@@ -165,6 +165,13 @@ ARGUMENTS AND OPTIONS
 
              Valid only if --distribution is not specified.
 
+             If the package provided was created by the pkgbuild tool with the
+             --large-payload option specified, then its large payload format
+             will be preserved. The generated product's distribution will
+             include a minimum system version requirement of macOS 12.0 or the
+             minimum allowable system version(s) in the requirements property
+             list, whichever is greater.
+
      --synthesize
              Write the synthesized distribution directly instead of
              incorporating it into a product archive.
@@ -185,6 +192,16 @@ ARGUMENTS AND OPTIONS
              use by the OS X Installer application's plugin mechanism.  It will
              normally contain a InstallerSections.plist file, and one or more
              plugin bundles.
+
+     --large-payload
+             By default, packages that are nested inside of products have a
+             per‐file size limit associated with them. This method instructs
+             productbuild to construct a product where the included payload
+             format supports large files.  A large file is defined as any file
+             that is 8 GiB or larger.
+
+             Note: Opting into --large-payload enforces a distribution
+             requirement that mandates macOS 12.0 or later.
 
      --sign identity-name
              Adds a digital signature to the resulting package. See SIGNED
@@ -493,4 +510,4 @@ EXAMPLES
 SEE ALSO
      pkgbuild(1), productsign(1), xcodebuild(1)
 
-Mac OS X                       September 15, 2010                       Mac OS X
+macOS                           January 19, 2021                           macOS

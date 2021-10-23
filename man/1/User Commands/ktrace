@@ -8,9 +8,13 @@ SYNOPSIS
      ktrace trace [-ACNnrSstu] [-R path | -E] [-C codes-path [...]] [-T timeout]
                [-f filter-desc] [-b buffer-size-mb] [-x pid-or-process-name
                [...] | -p pid-or-process-name [...]] [--json | --csv | --ndjson
-               | --json-64] [-c command [...]]
-     ktrace dump [-E] [-f filter-desc] [-l compression-level] [-T timeout] [-p
-               pid-or-process-name] [--stackshot-flags extra-flags] [path]
+               | --json-64] [-c command [...]] [--only-named-events]
+               [--no-default-codes-files] [--continuous]
+               [--disable-coprocessors]
+     ktrace dump [-E] [-f filter-desc] [-l compression-level] [-T timeout] [-b
+               buffer-size-mb] [-p pid-or-process-name] [--stackshot-flags
+               extra-flags] [--include-log-content] [--disable-coprocessors]
+               [--notify-tracing-started key] [path]
      ktrace init -b buffer-size-mb | -n n-events
      ktrace setopt [-f filter-desc] [-w] [-x pid-or-process-name [...] | -p
                pid-or-process-name [...]]
@@ -21,13 +25,16 @@ SYNOPSIS
      ktrace decode debugid [debugid [...]]
      ktrace emit debugid [arg1 [arg2 [arg3 [arg4]]]]
      ktrace symbolicate path
+     ktrace machine
+     ktrace config
      ktrace compress [-l -fast|balanced|small] path
      ktrace artrace [-nr] [-t timeout] [-i interval] [-o filename] [-b
                buffer-size-mb] [-f filter-desc] [-F filter-desc] [-p
                pid-or-process-name]
                [--kperf=sampler-name[,sampler-name@]timer-period|timer-frequency|kdebug-filter-desc]
-               [--remote[=remote-device]] [--type=full|profile|lite|morelite]
-               [--stackshot-flags extra-flags] [-c command [...]]
+               [--remote[=remote-device]]
+               [--type=full|profile|lite|morelite|none] [--stackshot-flags
+               extra-flags] [--notify-tracing-started key] [-c command [...]]
 
 DESCRIPTION
      ktrace can configure the system to trace events, or record them to a file,
@@ -44,7 +51,9 @@ SUBCOMMANDS
      trace [-ACNnrSstu] [-R path | -E] [-C codes-path [...]] [-T timeout] [-f
                 filter-desc] [-b buffer-size-mb] [-x pid-or-process-name [...] |
                 -p pid-or-process-name [...]] [--json | --csv | --ndjson |
-                --json-64] [-c command [...]]
+                --json-64] [-c command [...]] [--only-named-events]
+                [--no-default-codes-files] [--continuous]
+                [--disable-coprocessors]
 
                 Print events to stdout(4) in a human-readable format,
                 automatically providing wall clock time, process names, and
@@ -129,8 +138,7 @@ SUBCOMMANDS
                         when it exits.  All arguments after this option are
                         passed to the command.
 
-     dump [-E] [-f filter-desc] [-l compression-level] [-T timeout]
-                [--stackshot-flags extra-flags] [path] [-p pid-or-process-name]
+     dump
 
                 Write trace to a file at path for later inspection with ktrace
                 trace -R.  If no path is specified, the tool writes to a new,
@@ -170,6 +178,9 @@ SUBCOMMANDS
                 --stackshot-flags extra-flags
                         Pass the provided extra-flags integer as additional
                         flags when recording stackshots.
+
+                --notify-tracing-started key
+                        Post a notification on key after tracing has started.
 
      init -b buffer-size-mb | -n n-events
 
@@ -228,6 +239,10 @@ SUBCOMMANDS
      symbolicate path
                 Symbolicate the trace file located at path.
 
+     config     Print the current system's trace configuration.
+
+     machine    Print the current system's machine information.
+
      compress [-l fast|balanced|small] path
                 Compress the trace file located at path using the small
                 compression level, unless otherwise specified with the -l
@@ -235,10 +250,11 @@ SUBCOMMANDS
 
      artrace [-nr] [-t timeout] [-i interval] [-o filename] [-b buffer-size-mb]
                 [-f filter-desc] [-F filter-desc] [-p pid-or-process-name]
-                [--remote[=device-name]] [--type=full|profile|lite|morelite]
+                [--remote[=device-name]]
+                [--type=full|profile|lite|morelite|none]
                 [--kperf=sampler-name,sampler-name@timer-period|timer-frequency|kdebug-filter-desc]
-                [-d group] [-e group] [--stackshot-flags extra-flags] [-c
-                command [...]]
+                [-d group] [-e group] [--stackshot-flags extra-flags]
+                [--disable-coprocessors] [-c command [...]]
                 Profile the system, writing trace events to an automatically
                 named file.  By default, this measures scheduler, VM, and system
                 call usage, and samples threads on-core periodically.
@@ -291,7 +307,7 @@ SUBCOMMANDS
                         Also trace on the provided device-name or the local
                         bridge if not specified.
 
-                --type=full|profile|lite|morelite
+                --type=full|profile|lite|morelite|none
                         Trace using the specified type.  full is the default,
                         while profile just enables the profiling timer, but does
                         not closely track scheduling events.  The lite and
@@ -307,7 +323,7 @@ SUBCOMMANDS
                         profiling timer is disabled, in lieu of sampling the
                         CPUs opportunistically, on other interrupts.  The
                         morelite mode has a more restrictive typefilter than
-                        lite.
+                        lite.  none mode acts like ktrace dump.
 
                 --stackshot-flags extra-flags
                         Pass the provided extra-flags integer as additional
@@ -368,6 +384,6 @@ CAVEATS
      tools from making use of trace.
 
 SEE ALSO
-     fs_usage(1), ktrace(5), and trace(1) trace(1)
+     fs_usage(1), ktrace(5), notify(3), and trace(1)
 
 Darwin                          February 10, 2020                         Darwin

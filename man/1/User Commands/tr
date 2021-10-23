@@ -61,17 +61,12 @@ DESCRIPTION
                 special values.
 
                 \a    <alert character>
-
                 \b    <backspace>
-
                 \f    <form-feed>
-
                 \n    <newline>
                 \r    <carriage return>
-
                 \t    <tab>
                 \v    <vertical tab>
-
 
                 A backslash followed by any other character maps to that
                 character.
@@ -91,40 +86,24 @@ DESCRIPTION
                 class.  Class names are:
 
                 alnum        <alphanumeric characters>
-
                 alpha        <alphabetic characters>
-
                 blank        <whitespace characters>
-
                 cntrl        <control characters>
-
                 digit        <numeric characters>
-
                 graph        <graphic characters>
-
                 ideogram     <ideographic characters>
-
                 lower        <lower-case alphabetic characters>
-
                 phonogram    <phonographic characters>
-
                 print        <printable characters>
-
                 punct        <punctuation characters>
-
                 rune         <valid characters>
-
                 space        <space characters>
-
                 special      <special characters>
-
                 upper        <upper-case characters>
-
                 xdigit       <hexadecimal characters>
 
-
-                When “Li [:lower:]” appears in string1 and “[:upper:]” appears
-                in the same relative position in string2, it represents the
+                When “[:lower:]” appears in string1 and “[:upper:]” appears in
+                the same relative position in string2, it represents the
                 characters pairs from the toupper mapping in the LC_CTYPE
                 category of the current locale.  When “[:upper:]” appears in
                 string1 and “[:lower:]” appears in the same relative position in
@@ -190,6 +169,9 @@ COMPATIBILITY
      “[:lower:]” and “[:upper:]” should be used instead of explicit character
      ranges like “a-z” and “A-Z”.
 
+     “[=equiv=]” expression and collation for ranges are implemented for single
+     byte locales only.
+
      System V has historically implemented character ranges using the syntax
      “[c-c]” instead of the “c-c” used by historic BSD implementations and
      standardized by POSIX.  System V shell scripts should work under this
@@ -212,7 +194,9 @@ COMPATIBILITY
      specified.  This implementation will not permit illegal syntax.
 
 STANDARDS
-     The tr utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).
+     The tr utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).  The
+     “ideogram”, “phonogram”, “rune”, and “special” character classes are
+     extensions.
 
      It should be noted that the feature wherein the last character of string2
      is duplicated if string2 has less characters than string1 is permitted by
@@ -221,4 +205,4 @@ STANDARDS
      this behavior.  The -u option is an extension to the IEEE Std 1003.1-2001
      (“POSIX.1”) standard.
 
-macOS 12.0                        July 23, 2004                       macOS 12.0
+macOS 12.0                      October 13, 2006                      macOS 12.0

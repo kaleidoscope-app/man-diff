@@ -1,4 +1,4 @@
-taskpolicy(8)                System Manager's Manual               taskpolicy(8)
+TASKPOLICY(8)                System Manager's Manual               TASKPOLICY(8)
 
 NAME
      taskpolicy – execute a program with an altered I/O or scheduling policy or
@@ -6,28 +6,28 @@ NAME
 
 SYNOPSIS
      taskpolicy [-d policy] [-g policy] [-c clamp] [-b] [-t thruput_tier]
-                [-l latency_tier] [-a] program [arg1 [...]]
+                [-l latency_tier] [-a] [-s] program [arg1 [...]]
      taskpolicy [-b|-B] [-t thruput_tier] [-l latency_tier] [-p pid]
 
 DESCRIPTION
      The taskpolicy program uses the setiopolicy_np(3) and setpriority(2) APIs
-     to execute a program with altered I/O or scheduling policies. All children
+     to execute a program with altered I/O or scheduling policies.  All children
      of the specified program also inherit these policies.
 
      taskpolicy accepts the following flags and arguments:
 
            -d policy  Run the program after calling setiopolicy_np(3) with an
                       iotype of IOPOL_TYPE_DISK, a scope of IOPOL_SCOPE_PROCESS,
-                      and the specified policy. The argument can either be an
+                      and the specified policy.  The argument can either be an
                       integer, or a symbolic string like "default" or
                       "throttle", which is interpreted case-insensitively.
 
            -g policy  Run the program after calling setiopolicy_np(3) with an
                       iotype of IOPOL_TYPE_DISK, a scope of
-                      IOPOL_SCOPE_DARWIN_BG, and the specified policy. The
+                      IOPOL_SCOPE_DARWIN_BG, and the specified policy.  The
                       argument is interpreted in the same manner as -d.
 
-           -c clamp   Run the program using the specified QoS clamp. The
+           -c clamp   Run the program using the specified QoS clamp.  The
                       argument can be either "utility", "background", or
                       "maintenance", which is interpreted case-insensitively.
 
@@ -45,7 +45,11 @@ DESCRIPTION
            -a         Run the program with the resource management policies
                       given to applications.
 
-SEE ALSO
-     setpriority(2), setiopolicy_np(3)
+           -s         Run the program with an initial suspended state by calling
+                      posix_spawnattr_setflags(3) with
+                      POSIX_SPAWN_START_SUSPENDED.
 
-Darwin                               2/21/13                              Darwin
+SEE ALSO
+     setpriority(2), posix_spawnattr_setflags(3), setiopolicy_np(3)
+
+Darwin                          February 21, 2013                         Darwin

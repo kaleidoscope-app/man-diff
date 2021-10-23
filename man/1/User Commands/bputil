@@ -5,18 +5,18 @@ NAME
      Macs.
 
 SYNOPSIS
-     bputil [-ldfgnmkcas] [-u username] [-p password]
+     bputil [-ldefgnmkcas] [-u username] [-p password]
             [-v APFS Volume Group UUID]
 
 DESCRIPTION
      This utility is not meant for normal users or even sysadmins. It provides
      unabstracted access to capabilities which are normally handled for the user
      automatically when changing the security policy through GUIs such as the
-     Startup Security Utility in macOS Recovery. It is possible to make your
-     system security much weaker and therefore easier to compromise using this
-     tool. This tool is not to be used in production environments. It is
-     possible to render your system unbootable with this tool. It should only be
-     used to understand how the security of Apple Silicon Macs works. Use at
+     Startup Security Utility in macOS Recovery ("recoveryOS"). It is possible
+     to make your system security much weaker and therefore easier to compromise
+     using this tool. This tool is not to be used in production environments. It
+     is possible to render your system unbootable with this tool. It should only
+     be used to understand how the security of Apple Silicon Macs works. Use at
      your own risk!
 
      bputil performs actions by calling the BootPolicy library. This modifies
@@ -28,20 +28,44 @@ DESCRIPTION
      tool must either have a username and password specified on the command
      line, or via the interactive prompt.
 
+     macOS 12 Monterey introduced a new concept of "paired recoveryOS", and a
+     new set of restrictions related to it. Every installation of macOS 12 has
+     its own paired recoveryOS with matching version stored on the same APFS
+     volume group. Installations of macOS 11 Big Sur are paired to a single
+     recoveryOS stored on a separate APFS volume group called “system
+     recoveryOS”.
+
      By design, the SEP application which is responsible for making changes to
      the LocalPolicy will inspect the boot state of the main Application
-     Processor (AP). It will only allow the below security-downgrading
-     operations if it detects that the AP is in the intended boot state. When
-     System Integrity Protection (SIP) was first introduced to Macs, it was
-     decided that requiring a reboot to macOS Recovery would provide intentional
-     friction which would make it harder for malicious software to downgrade the
-     system. That precedent is extended here to detect the special boot to macOS
-     Recovery via holding the power key at boot time. We refer to this as One
-     True Recovery (1TR), and most of the below downgrade options will only work
-     when booted into 1TR, not when called from normal macOS. This helps ensure
-     that only a physically-present user, not malicious software running in
-     macOS, can permanently downgrade the security settings. The below CLI
-     options specify what boot environments a downgrade can be performed from.
+     Processor (AP), and the pairing status between the booted OS and the target
+     LocalPolicy. It will only allow the below security-downgrading operations
+     if it detects that the AP is in the intended boot state, and the OS pairing
+     status is valid. When System Integrity Protection (SIP) was first
+     introduced to Macs, it was decided that requiring a reboot to recoveryOS
+     would provide intentional friction which would make it harder for malicious
+     software to downgrade the system. That precedent is extended here to detect
+     the special boot to recoveryOS via holding the power key at boot time. We
+     refer to this as One True Recovery (1TR), and most of the below downgrade
+     options will only work when booted into 1TR, not when called from normal
+     macOS or any other OS environment. This helps ensure that only a
+     physically-present user, not malicious software running in macOS, can
+     permanently downgrade the security settings. The below CLI options specify
+     what boot environments a downgrade can be performed from.
+
+     The pairing restrictions are enforced as follows:
+
+     - All installations of macOS 11 are paired to the system recoveryOS. If a
+        macOS 11 installation is selected to boot by default, then the system
+        recoveryOS will be booted by holding down the power key at boot time.
+        The system recoveryOS can downgrade security settings of any macOS 11
+        installations, but not any installations of macOS 12.
+
+     - Every installation of macOS 12 is paired to a recoveryOS stored on the
+        corresponding APFS volume group. If a macOS 12 installation is selected
+        to boot by default, then its paired recoveryOS will be booted by holding
+        down the power key at boot time. The paired recoveryOS can downgrade
+        security settings for the paired macOS installation, but not any other
+        macOS installation.
 
      The SEP-signed LocalPolicy is evaluated at boot time by iBoot.
      Configurations within the LocalPolicy change iBoot's behavior, such as
@@ -75,10 +99,10 @@ DESCRIPTION
      -v, --vuid AABBCCDD-EEFF-0011-2233-4455667788990
 
               Specify the APFS Volume Group UUID of the OS intended to have its
-              policy changed. If no option is specified, the default value will
-              be set to the APFS Volume Group UUID of the running OS. The Volume
-              Group UUID for a given OS can be found with 'diskutil apfs
-              listVolumeGroups'.
+              policy changed. If no option is specified, and there are multiple
+              OS installations detected, an interactive prompt will request the
+              UUID. The Volume Group UUID for a given OS can be found with
+              'diskutil apfs listVolumeGroups'.
 
      -l, --debug-logging
 
@@ -92,8 +116,13 @@ DESCRIPTION
               which is used to capture the customer-specified security policy.
               More details about the displayed entries are available in the
               "Apple Platform Security" website documentation. If the system has
-              multiple bootable volumes, an interactive prompt will ask to
-              select a volume to display the policy for.
+              multiple bootable OSes, an interactive prompt will ask to select
+              an OS volume to display the policy for.
+
+     -e, --display-all-policies
+
+              Display the detailed contents of the LocalPolicy for every
+              bootable OS installation.
 
      -f, --full-security
 
@@ -116,6 +145,7 @@ DESCRIPTION
               upgrade.
 
               Boot environment requirements: None.
+              Pairing requirements: None.
 
      -g, --reduced-security
 
@@ -133,8 +163,9 @@ DESCRIPTION
               existing security policy options) and only the options specified
               via this tool will exist in the output local policy.
 
-              Boot environment requirements: software-launched macOS Recovery or
+              Boot environment requirements: software-launched recoveryOS or
               1TR.
+              Pairing requirements: None.
 
      -n, --permissive-security
 
@@ -158,6 +189,7 @@ DESCRIPTION
               policy.
 
               Boot environment requirements: 1TR.
+              Pairing requirements: Paired only.
 
      -k, --enable-kexts.
 
@@ -165,7 +197,7 @@ DESCRIPTION
               mode if not already true, selecting this option will make your
               system easier to compromise!
 
-              The AuxilaryKernelCache is a SEP-signed boot object which can be
+              The AuxiliaryKernelCache is a SEP-signed boot object which can be
               verified and loaded into kernel memory before that memory is
               restricted to being non-writable by a "Configurable Text Read-only
               Region" (CTRR) hardware register. Introducing 3rd party kernel
@@ -176,12 +208,13 @@ DESCRIPTION
               opts in to lowering their security from 1TR.
 
               Boot environment requirements: 1TR.
+              Pairing requirements: Paired only.
 
      -c, --disable-kernel-ctrr
 
-              Because this option automatically downgrades to Reduced Security
-              mode if not already true, selecting this option will make your
-              system easier to compromise!
+              Because this option automatically downgrades to Permissive
+              Security mode if not already true, selecting this option will make
+              your system easier to compromise!
 
               This disables the enforcement of the "Configurable Text Read-only
               Region" (CTRR) hardware register that marks kernel memory as non-
@@ -192,12 +225,13 @@ DESCRIPTION
               the kernel with exploits.
 
               Boot environment requirements: 1TR.
+              Pairing requirements: Paired only.
 
      -a, --disable-boot-args-restriction
 
-              Because this option automatically downgrades to Reduced Security
-              mode if not already true, selecting this option will make your
-              system easier to compromise!
+              Because this option automatically downgrades to Permissive
+              Security mode if not already true, selecting this option will make
+              your system easier to compromise!
 
               The macOS kernel accepts a variety of configuration options via an
               nvram variable named "boot-args". However, some of these options
@@ -207,6 +241,7 @@ DESCRIPTION
               customer consciously opts in to lowering their security from 1TR.
 
               Boot environment requirements: 1TR.
+              Pairing requirements: Paired only.
 
      -s, --disable-ssv
 
@@ -226,6 +261,7 @@ DESCRIPTION
               persist across software updates.
 
               Boot environment requirements: 1TR.
+              Pairing requirements: Paired only.
 
      -m, --enable-mdm
 
@@ -241,8 +277,9 @@ DESCRIPTION
               explicitly approve this capability for the MDM.
 
               Boot environment requirements: 1TR.
+              Pairing requirements: Paired only.
 
 HISTORY
-     bputil first appeared in macOS 11 for Apple Silicon Macs
+     bputil first appeared in macOS 11 for Apple Silicon Macs.
 
 Darwin                          September 1, 2020                         Darwin

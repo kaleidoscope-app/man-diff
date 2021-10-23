@@ -35,8 +35,11 @@ DESCRIPTION
                    .h file. Useful for first time conversions to literal syntax
                    and only supported with the objc format.
 
-     -insert keypath -type value
+     -insert keypath -type [value] [-append]
                    Insert a value into the property list before writing it out.
+                   value is required unless type is dictionary or array.  If
+                   -append is specified, keypath is expected to reference an
+                   array and the value will be appended to the end of the array.
 
      -replace keypath -type value
                    Overwrite an existing value in the property list before
@@ -46,13 +49,25 @@ DESCRIPTION
                    Removes the value at keypath from the property list before
                    writing it out.
 
-     -extract keypath fmt
+     -extract keypath fmt [-expect expect_type]
                    Outputs the value at keypath in the property list as a new
-                   plist of type fmt.
+                   plist of type fmt.  Optionally fails if -expect expect_type
+                   is used and the value at keypath does not match that type.
+
+     -type keypath [-expect expect_type]
+                   Outputs the type of the value at keypath in the property
+                   list. Optionally fails if -expect expect_type is used and the
+                   value at keypath does not match that type.
+
+     -create fmt   Creates an empty plist of the specified fmt.
 
      There are a few additional options:
 
      --            Specifies that all further arguments are file names
+
+     -n            When used with -extract using the raw format, will not print
+                   a terminating newline character. This aids use in shell
+                   interpolation.
 
      -s            Don't print anything on success.
 
@@ -73,6 +88,9 @@ ARGUMENTS
            json     for the JSON format
            swift    to convert from plist to swift literal syntax
            objc     to convert from plist to Obj-C literal syntax
+           raw      when used with -extract, will print the unencapsulated value
+                    at the keypath. See RAW VALUES AND EXPECTED TYPES below. The
+                    result will be output to stdout unless -o is specified.
 
      keypath is a key-value coding key path, with one extension: a numerical
      path component applied to an array will act on the object at that index in
@@ -80,18 +98,40 @@ ARGUMENTS
      the last one in the key path.
 
      type is one of:
-            -bool     YES if passed "YES" or "true", otherwise NO
-            -integer  any valid 64 bit integer
-            -float    any valid 64 bit float
-            -string   UTF8 encoded string
-            -date     date in XML property list format, not supported if
-                      outputting JSON
-            -data     a base-64 encoded string
-            -xml      an XML property list, useful for inserting compound values
-            -json     JSON fragment, useful for inserting compound values
+            -bool        YES if passed "YES" or "true", otherwise NO
+            -integer     any valid 64 bit integer
+            -float       any valid 64 bit float
+            -string      UTF8 encoded string
+            -date        date in XML property list format, not supported if
+                         outputting JSON
+            -data        a base-64 encoded string
+            -xml         an XML property list, useful for inserting compound
+                         values
+            -json        JSON fragment, useful for inserting compound values
+            -array       An empty array, when used with -insert.  Does not
+                         accept a value.
+            -dictionary  An empty dictionary, when used with -insert Does not
+                         accept a value.
 
      value will be assigned to the keypath specified with the -insert or
      -replace flags.
+
+RAW VALUES AND EXPECTED TYPES
+     With -extract keypath raw the value printed depends on its type.
+
+     Following are the possible expect_type values and how they will be printed
+     when encountered with -extract keypath raw
+            bool         the string "true" or "false"
+            integer      the numeric value
+            float        the floating point value with no specific precision
+            string       the raw unescaped string, UTF8-encoded
+            date         the RFC3339-encoded string representation in UTC time
+                         zone
+            data         a base64-encoded string representation of the data
+            array        a number indicating the count of elements in the array
+            dictionary   each key in the dictionary will be printed on a new
+                         line in alpha-sorted order
+     The above expect_type string is itself printed when -type keypath is used.
 
 DIAGNOSTICS
      The plutil command exits 0 on success, and 1 on failure.
@@ -105,4 +145,7 @@ STANDARDS
 HISTORY
      The plutil command first appeared in macOS 10.2.
 
-macOS                           January 15, 2019                           macOS
+     The raw format type, -type command, -expect option, and -append option
+     first appeared in macOS 12.
+
+macOS                            March 29, 2021                            macOS

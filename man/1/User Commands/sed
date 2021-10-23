@@ -4,8 +4,8 @@ NAME
      sed – stream editor
 
 SYNOPSIS
-     sed [-Ealnru] command [file ...]
-     sed [-Ealnr] [-e command] [-f command_file] [-I extension] [-i extension]
+     sed [-Ealnru] command [-I extension] [-i extension] [file ...]
+     sed [-Ealnru] [-e command] [-f command_file] [-I extension] [-i extension]
          [file ...]
 
 DESCRIPTION
@@ -36,7 +36,8 @@ DESCRIPTION
      -f command_file
              Append the editing commands found in the file command_file to the
              list of commands.  The editing commands should each be listed on a
-             separate line.
+             separate line.  The commands are read from the standard input if
+             command_file is “-”.
 
      -I extension
              Edit files in-place, saving backups with the specified extension.
@@ -100,7 +101,7 @@ Sed Addresses
                specified);
 
            •   a context address that consists of a regular expression preceded
-               and followed by a delimiter. The closing delimiter can also
+               and followed by a delimiter.  The closing delimiter can also
                optionally be followed by the “I” character, to indicate that the
                regular expression is to be matched in a case-insensitive way.
 
@@ -384,10 +385,10 @@ STANDARDS
      The sed utility is expected to be a superset of the IEEE Std 1003.2
      (“POSIX.2”) specification.
 
-     The -E, -I, -a and -i options, the prefixing “+” in the second member of an
-     address range, as well as the “I” flag to the address regular expression
-     and substitution command are non-standard FreeBSD extensions and may not be
-     available on other operating systems.
+     The -E, -I, -a and -i options, the special meaning of -f -, the prefixing
+     “+” in the second member of an address range, as well as the “I” flag to
+     the address regular expression and substitution command are non-standard
+     FreeBSD extensions and may not be available on other operating systems.
 
 HISTORY
      A sed command, written by L. E. McMahon, appeared in Version 7 AT&T UNIX.
@@ -401,4 +402,4 @@ BUGS
      “a”, “c” and “i” commands.  Multibyte characters cannot be used as
      delimiters with the “s” and “y” commands.
 
-macOS 12.0                       March 27, 2017                       macOS 12.0
+macOS 12.0                        June 10, 2020                       macOS 12.0

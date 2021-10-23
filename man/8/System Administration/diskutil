@@ -4,7 +4,7 @@ NAME
      diskutil – modify, verify and repair local disks
 
 SYNOPSIS
-     diskutil [quiet] verb [options]
+     diskutil [quiet] verb [subVerb] [options]
 
 DESCRIPTION
      diskutil manipulates the structure of local disks. It provides information
@@ -101,6 +101,12 @@ VERBS
                 Unmount a single volume.  Force will force-unmount the volume
                 (less kind to any open files; see also umount (8)).
 
+                Up to a few seconds (or more) may be required for any Disk
+                Arbitration dissenters in the system to approve the unmount,
+                and/or for the file system to flush data.  This verb gives up
+                and returns failure after a maximum of 1 minute in most
+                situations.
+
      unmountDisk | umountDisk [force] device
                 Given a disk containing a partition map, unmount all of its
                 volumes. That is, unmounts are attempted for the map's
@@ -139,6 +145,14 @@ VERBS
                 specified, then the argument strings you specify will be passed
                 (by diskarbitrationd) verbatim to "-o"; multiple arguments must
                 be separated with commas.
+
+                Up to a few seconds (or much longer in rare cases) may be
+                required for any Disk Arbitration dissenters or disk claimers in
+                the system to approve the mount, and/or for the file system to
+                complete a minimal fsck(8).  (For example, Disk Arbitration
+                might invoke fsck_apfs -q before mounting an APFS Volume.)  This
+                verb gives up and returns failure after a maximum of 1 minute in
+                most situations.
 
                 If -mountPoint is specified, then your path, rather than the
                 standard path of /Volumes/VolumeName or
@@ -487,7 +501,7 @@ VERBS
                           the file system format name or explicit type, the
                           partition space is partially erased ("wiped"), but a
                           file system structure is not initialized with any file
-                          system's formatter program (e.g.  newfs_hfs(8); this
+                          system's formatter program, e.g.  newfs_hfs(8). This
                           is useful for setting up partitions that will contain
                           user-defined (not necessarily file system) data.
 
@@ -1244,15 +1258,17 @@ VERBS
                            contain crypto users; indeed, other than the Disk
                            User, they should be added before encrypting.
 
-                           Types of Cryptographic Users include at-most-one-per-
-                           Volume "Disk" user, whose UUID value always matches
-                           its Volume's UUID; iCloud or personal "Recovery
-                           Keys", which are not users per se, but instead store
-                           partial crypto keys and are associated with
+                           Types of Cryptographic Users include the at-most-one-
+                           per-Volume "Disk" user, whose UUID value always
+                           matches its Volume's UUID; iCloud or personal
+                           "Recovery Keys", which are not users per se, but
+                           instead store partial crypto keys and are paired with
                            corresponding "Recovery Users" and have fixed-
-                           constant UUID values; and "Open Directory" users,
-                           whose UUID values match corresponding local macOS
-                           Open Directory account user GUIDs.
+                           constant UUID values; and, most commonly, "Open
+                           Directory" users, whose UUID values match
+                           corresponding local macOS Open Directory (OD) account
+                           user GUIDs (e.g. the common local user accounts; see
+                           dscl(1) for more information).
 
                            If -plist is specified, then a property list will be
                            emitted instead of the normal user-readable output.
@@ -2015,13 +2031,6 @@ EXAMPLES
      diskutil partitionDisk disk3 APM HFS+ vol1 15% Journaled\ HFS+ vol2 R
      Journaled\ HFS+ vol3 25% Free\ Space volX 10g
 
-SEE ALSO
-     hdiutil(1), mount(8), umount(8), diskmanagementd(8),
-     diskmanagementstartup(8), diskarbitrationd(8), corestoraged(8),
-     fdesetup(8), ioreg(8), newfs_hfs(8), fsck_hfs(8), authopen(1), hfs.util(8),
-     msdos.util(8), ufs.util(8), drutil(1), vsdbutil(8), apfs.util(8),
-     fsck_apfs(8), mount_apfs(8), newfs_apfs(8)
-
 ERRORS
      diskutil will exit with status 0 if successful or 1 if it cannot complete
      the requested operation; this includes cases in which usage text is
@@ -2029,6 +2038,13 @@ ERRORS
      might include an explanation local to diskutil, an error string from the
      DiskManagement or MediaKit frameworks, an underlying POSIX error, or some
      combination.
+
+SEE ALSO
+     authopen(1), drutil(1), hdiutil(1), apfs.util(8), corestoraged(8),
+     diskarbitrationd(8), diskmanagementd(8), diskmanagementstartup(8),
+     fdesetup(8), fsck_apfs(8), fsck_hfs(8), hfs.util(8), ioreg(8), mount(8),
+     mount_apfs(8), msdos.util(8), newfs_apfs(8), newfs_hfs(8), ufs.util(8),
+     umount(8), vsdbutil(8)
 
 HISTORY
      The eraseDisk and partitionDisk verbs had an option to add Mac OS 9 drivers
@@ -2060,4 +2076,4 @@ HISTORY
      Starting with macOS 11.0, certain Core Storage manipulation verbs have been
      removed.
 
-macOS                             24 July 2020                             macOS
+macOS                            11 January 2021                           macOS

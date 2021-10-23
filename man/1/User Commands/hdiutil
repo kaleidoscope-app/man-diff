@@ -480,6 +480,7 @@ VERBS
 
                 Options specific to -srcdevice:
                 -segmentSize size_spec
+                               Note that segmented images are deprecated.
                                Specify that the image should be written in
                                segments no bigger than size_spec (which follows
                                -size conventions).
@@ -525,7 +526,7 @@ VERBS
                       UDZO - UDIF zlib-compressed image
                       ULFO - UDIF lzfse-compressed image (OS X 10.11+ only)
                       ULMO - UDIF lzma-compressed image (macOS 10.15+ only)
-                      UDBZ - UDIF bzip2-compressed image (Mac OS X 10.4+ only)
+                      UDBZ - UDIF bzip2-compressed image (deprecated)
                       UDTO - DVD/CD-R master for export
                       UDSP - SPARSE (grows with content)
                       UDSB - SPARSEBUNDLE (grows with content; bundle-backed)
@@ -549,6 +550,7 @@ VERBS
                              When converting an unpartitioned UDIF, the default
                              is true.
                 -segmentSize [size_spec]
+                             Note that segmented images are deprecated.
                              Specify segmentation into size_spec-sized segments
                              as outfile is being written.  The default size_spec
                              when -segmentSize is specified alone is 2*1024*1024
@@ -1094,6 +1096,8 @@ VERBS
                                modify the image.
 
      segment
+                NOTE: hdiutil segment command is deprecated
+
                 segment -o firstSegname -segmentCount #segs image [opts]
                 segment -o firstSegname -segmentSize size image [opts]
                 segment an UDIF disk image.  Segmented images work around
@@ -1156,9 +1160,8 @@ VERBS
                               does not store instance UUIDs so these will be
                               randomly generated for APM maps.
 
-     udifrez [options] image
-                embed resources (e.g. a software license agreement) in a disk
-                image.
+     udifrez [options] image (deprecated)
+                embed resources in a disk image.
 
                 You must specify one of the following options:
                 -xml file
@@ -1166,7 +1169,7 @@ VERBS
                 -replaceall
                      Delete all pre-existing resources in image.
 
-     udifderez [options] image
+     udifderez [options] image (deprecated)
                 extract resources from image.
 
                 Options:
@@ -1179,10 +1182,6 @@ EXAMPLES
      Verifying:
            hdiutil verify myimage.img
                  verifies an image against its internal checksum.
-
-     Segmenting:
-           hdiutil segment -segmentSize 10m -o /tmp/aseg 30m.dmg
-                 creates aseg.dmg, aseg.002.dmgpart, and aseg.003.dmgpart
 
      Converting:
            hdiutil convert master.dmg -format UDTO -o master
@@ -1594,6 +1593,16 @@ COMPATIBILITY
                disk image add "-layout NONE" to the creation flags. This change
                does not apply to images created with -srcfolder or -srcdevice
                arguments.
+
+     macOS 12.0:
+
+           •   Deprecated UDBZ format (bzip2 compression)
+
+           •   Deprecated segmented UDIF images (hdiutil segment, -segmentSize
+               argument in hdiutil create & convert)
+
+           •   Deprecated hdiutil udifrez/udifderez (embed and extract
+               resources)
 
 HISTORY
      Disk images were first invented to electronically store and transmit

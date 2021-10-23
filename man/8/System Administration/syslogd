@@ -46,12 +46,13 @@ DESCRIPTION
                  are closed upon reaching the maximum size, and a new file is
                  opened for subsequent messages.
 
-     -utmp_ttl   Sets the time-to-live in seconds for messages used by the utmp,
-                 wtmp, and lastlog subsystems.  The default is 31622400 seconds
-                 (approximately 1 year).  Note that if archival is enabled (see
-                 the aslmanager(8) manual), these messages will be copied to an
-                 archive after the regular time-to-live interval, but will
-                 persist in the data store until their own expiry time.
+     -utmp_ttl   Sets the time-to-live in seconds for messages used by the
+                 utmp(5), wtmp(5), and lastlog(5) subsystems.  The default is
+                 31622400 seconds (approximately 1 year).  Note that if archival
+                 is enabled (see the aslmanager(8) manual), these messages will
+                 be copied to an archive after the regular time-to-live
+                 interval, but will persist in the data store until their own
+                 expiry time.
 
      -mps_limit  Sets the kernel quota for messages per second allowed by
                  syslogd.  Any messages in excess of the quota limit from any
@@ -79,7 +80,7 @@ DESCRIPTION
                  disables the coalescing mechanism.
 
      The remaining options of the form -module_name {0|1} may be used to disable
-     (0) or enable (1) the action of several of internal modules.
+     (0) or enable (1) the action of several of syslogd 's internal modules.
 
      -asl_in      The “asl_in” module receives log messages on the UNIX domain
                   socket associated with the asl(3) API.  The module may be
@@ -92,10 +93,6 @@ DESCRIPTION
      -klog_in     The “klog_in” module receives log messages on the UNIX domain
                   socket associated with the kernel logging API.  The module may
                   be disabled using -klog_in 0.  The module is normally enabled.
-
-     -bsd_in      The “bsd_in” module receives log messages on the UNIX domain
-                  socket associated with the syslog(3) API.  The module may be
-                  disabled using -bsd_in 0.  The module is normally enabled.
 
      -bsd_out     The “bsd_out” module examines the stream of received log
                   messages and acts upon them according to the rules specified
@@ -162,7 +159,6 @@ FILES
      /etc/syslog.conf      bsd_out module configuration file
      /etc/asl.conf         asl_action module configuration file
      /var/run/syslog.pid   process ID file
-     /var/run/syslog       name of the UNIX domain datagram log socket
      /dev/klog             kernel log device
      /var/log/asl          data store directory
      /var/log/asl.archive  default archive directory
@@ -170,11 +166,11 @@ FILES
                            launchd configuration file for syslogd
 
 SEE ALSO
-     syslog(1), logger(1), asl(3), syslog(3), asl.conf(5) syslog.conf(5)
+     logger(1), syslog(1), asl(3), syslog(3), asl.conf(5), syslog.conf(5)
 
 HISTORY
      The syslogd utility appeared in 4.3BSD.
 
      The Apple System Log facility was introduced in Mac OS X 10.4.
 
-Mac OS X                        October 18, 2004                        Mac OS X
+macOS                           October 18, 2004                           macOS

@@ -70,9 +70,9 @@ DESCRIPTION
        of SUBSEP.
 
        The print statement prints its arguments on the standard output (or on a
-       file if > file or >> file is present or on a pipe if | cmd is present),
-       separated by the current output field separator, and terminated by the
-       output record separator.  file and cmd may be literal names or
+       file if > file  or >> file  is present or on a pipe if | cmd  is
+       present), separated by the current output field separator, and terminated
+       by the output record separator.  file and cmd may be literal names or
        parenthesized expressions; identical string values in different
        statements denote the same open file.  The printf statement formats its
        expression list according to the format (see printf(3)).  The built-in
@@ -82,63 +82,53 @@ DESCRIPTION
        The mathematical functions atan2, cos, exp, log, sin, and sqrt are built
        in.  Other built-in functions:
 
-       length the length of its argument taken as a string, number of elements
-              in an array for an array argument, or length of $0 if no argument.
 
-       rand   random number on [0,1).
-
-       srand  sets seed for rand and returns the previous seed.
-
-       int    truncates to an integer value.
-
+       length
+            the length of its argument taken as a string, number of elements in
+            an array for an array argument, or length of $0 if no argument.
+       rand random number on [0,1).
+       srand
+            sets seed for rand and returns the previous seed.
+       int  truncates to an integer value.
        substr(s, m [, n])
-              the n-character substring of s that begins at position m counted
-              from 1.  If no n, use the rest of the string.
-
+            the n-character substring of s that begins at position m counted
+            from 1.  If no n, use the rest of the string.
        index(s, t)
-              the position in s where the string t occurs, or 0 if it does not.
-
+            the position in s where the string t occurs, or 0 if it does not.
        match(s, r)
-              the position in s where the regular expression r occurs, or 0 if
-              it does not.  The variables RSTART and RLENGTH are set to the
-              position and length of the matched string.
-
+            the position in s where the regular expression r occurs, or 0 if it
+            does not.  The variables RSTART and RLENGTH are set to the position
+            and length of the matched string.
        split(s, a [, fs])
-              splits the string s into array elements a[1], a[2], ..., a[n], and
-              returns n.  The separation is done with the regular expression fs
-              or with the field separator FS if fs is not given.  An empty
-              string as field separator splits the string into one array element
-              per character.
-
+            splits the string s into array elements a[1], a[2], ..., a[n], and
+            returns n.  The separation is done with the regular expression fs or
+            with the field separator FS if fs is not given.  An empty string as
+            field separator splits the string into one array element per
+            character.
        sub(r, t [, s])
-              substitutes t for the first occurrence of the regular expression r
-              in the string s.  If s is not given, $0 is used.
-
+            substitutes t for the first occurrence of the regular expression r
+            in the string s.  If s is not given, $0 is used.
        gsub(r, t [, s])
-              same as sub except that all occurrences of the regular expression
-              are replaced; sub and gsub return the number of replacements.
-
+            same as sub except that all occurrences of the regular expression
+            are replaced; sub and gsub return the number of replacements.
        sprintf(fmt, expr, ...)
-              the string resulting from formatting expr ...  according to the
-              printf(3) format fmt.
-
+            the string resulting from formatting expr ...  according to the
+            printf(3) format fmt.
        system(cmd)
-              executes cmd and returns its exit status. This will be -1 upon
-              error, cmd's exit status upon a normal exit, 256 + sig upon death-
-              by-signal, where sig is the number of the murdering signal, or 512
-              + sig if there was a core dump.
-
+            executes cmd and returns its exit status. This will be -1 upon
+            error, cmd's exit status upon a normal exit, 256 + sig upon death-
+            by-signal, where sig is the number of the murdering signal, or 512 +
+            sig if there was a core dump.
        tolower(str)
-              returns a copy of str with all upper-case characters translated to
-              their corresponding lower-case equivalents.
-
+            returns a copy of str with all upper-case characters translated to
+            their corresponding lower-case equivalents.
        toupper(str)
-              returns a copy of str with all lower-case characters translated to
-              their corresponding upper-case equivalents.
+            returns a copy of str with all lower-case characters translated to
+            their corresponding upper-case equivalents.
 
        The ``function'' getline sets $0 to the next input record from the
-       current input file; getline < file sets $0 to the next record from file.
-       getline x sets variable x instead.  Finally, cmd | getline pipes the
+       current input file; getline < file  sets $0 to the next record from file.
+       getline x sets variable x instead.  Finally, cmd | getline  pipes the
        output of cmd into getline; each call of getline returns the next line of
        output from cmd.  In all cases, getline returns 1 for a successful input,
        0 for end of file, and -1 for an error.
@@ -175,46 +165,33 @@ DESCRIPTION
 
        Variable names with special meanings:
 
-       ARGC   argument count, assignable.
 
-       ARGV   argument array, assignable; non-null members are taken as
-              filenames.
-
+       ARGC argument count, assignable.
+       ARGV argument array, assignable; non-null members are taken as filenames.
        CONVFMT
-              conversion format used when converting numbers (default %.6g).
-
+            conversion format used when converting numbers (default %.6g).
        ENVIRON
-              array of environment variables; subscripts are names.
-
+            array of environment variables; subscripts are names.
        FILENAME
-              the name of the current input file.
-
-       FNR    ordinal number of the current record in the current file.
-
-       FS     regular expression used to separate fields; also settable by
-              option -Ffs.
-
-       NF     number of fields in the current record.
-
-       NR     ordinal number of the current record.
-
-       OFMT   output format for numbers (default %.6g).
-
-       OFS    output field separator (default space).
-
-       ORS    output record separator (default newline).
-
+            the name of the current input file.
+       FNR  ordinal number of the current record in the current file.
+       FS   regular expression used to separate fields; also settable by option
+            -Ffs.
+       NF   number of fields in the current record.
+       NR   ordinal number of the current record.
+       OFMT output format for numbers (default %.6g).
+       OFS  output field separator (default space).
+       ORS  output record separator (default newline).
        RLENGTH
-              the length of a string matched by match.
-
-       RS     input record separator (default newline).  If empty, blank lines
-              separate records.  If more than one character long, RS is treated
-              as a regular expression, and records are separated by text
-              matching the expression.
-
-       RSTART the start position of a string matched by match.
-
-       SUBSEP separates multiple subscripts (default 034).
+            the length of a string matched by match.
+       RS   input record separator (default newline).  If empty, blank lines
+            separate records.  If more than one character long, RS is treated as
+            a regular expression, and records are separated by text matching the
+            expression.
+       RSTART
+            the start position of a string matched by match.
+       SUBSEP
+            separates multiple subscripts (default 034).
 
        Functions may be defined (at the position of a pattern-action statement)
        thus:
@@ -246,8 +223,8 @@ EXAMPLES
        END  { print "sum is", s, " average is", s/NR }
 
               Add up first column, print sum and average.
-       /start/, /stop/
-       Print all lines between start/stop pairs.
+              /start/, /stop/
+              Print all lines between start/stop pairs.
 
        BEGIN     {    # Simulate echo(1)
             for (i = 1; i < ARGC; i++) printf "%s ", ARGV[i]
@@ -271,4 +248,4 @@ BUGS
 
 
 
-                                                                          AWK(1)
+                                   2020-11-24                             AWK(1)

@@ -102,8 +102,12 @@ OPTIONS
              the path(s) given. Without this option, existing signatures will
              not be replaced, and the signing operation fails.
 
-     --remove-signature
-             Removes the current code signature from the path(s) given.
+     --generate-entitlement-der
+             When signing, convert the supplied entitlements XML data to DER and
+             embed the entitlements as both XML and DER in the signature.
+             Embedding DER entitlements is default behavior as of macOS 12.0
+             when signing for all platforms. This argument was introduced in
+             macOS 10.14 (Mojave).
 
      -h, --hosting
              Constructs and prints the hosting chain of a running program. The
@@ -134,6 +138,9 @@ OPTIONS
              and verified as a single, possibly gigantic page. This option only
              applies to the main executable and has no effect on the sealing of
              associated data, including resources.
+
+     --remove-signature
+             Removes the current code signature from the path(s) given.
 
      -r, --requirements requirements
              During signing, indicates that internal requirements should be
@@ -187,11 +194,12 @@ OPTIONS
              does not already begin with a suitable binary ("blob") header, one
              is attached automatically.
              When displaying a signature, extract any entitlement data from the
-             signature and write it to the path given. Use "-" to write to
-             standard output.  By default, the binary "blob" header is returned
-             intact; prefix the path with a colon ":" to automatically strip it
-             off.  If the signature has no entitlement data, nothing is written
-             (this is not an error).
+             signature and write it to the path given in an abstract
+             representation. If needed --xml or --der may be passed in to output
+             the entitlements in a desired format, if you pass in both then DER
+             will be printed. Use "-" as the path to write to standard output.
+             If the signature has no entitlement data, nothing is written (this
+             is not an error).
 
      --extract-certificates prefix
              When displaying a signature, extract the certificates in the
@@ -531,11 +539,14 @@ EXAMPLES
            codesign --display -r- Terminal.app
 
      To display the entitlements of a binary or bundle:
-           codesign --display --entitlements :- /sbin/launchd
-           codesign --display --entitlements :- Terminal.app
+           codesign --display --entitlements - /sbin/launchd
+           codesign --display --entitlements - --der Terminal.app
 
      To display the entitlements of process 666:
-           codesign --display --entitlements :- +666
+           codesign --display --entitlements - +666
+
+     To display the XML entitlements of process 1337:
+           codesign --display --entitlements - --xml +1337
 
 TROUBLESHOOTING
      A common source of confusion when using codesign arises from the ordering
@@ -611,12 +622,6 @@ BUGS
            codesign --verify 666
      would become:
            codesign --verify ./666
-
-     Prefixing a number with "+" will force codesign to interpret the number as
-     a PID. For example:
-           codesign --verify 666
-     would become:
-           codesign --verify +666
 
 NOTES
      The Xcode build system invokes codesign automatically if the

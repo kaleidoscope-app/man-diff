@@ -30,11 +30,28 @@ ENVIRONMENT
 EXIT STATUS
      The pwd utility exits 0 on success, and >0 if an error occurs.
 
+EXAMPLES
+     Show current working directory with symbolic links resolved:
+
+           $ /bin/pwd -P
+           /usr/home/fernape
+
+     Show the logical current directory.  Then use file(1) to inspect the /home
+     directory:
+
+           $ /bin/pwd
+           /home/fernape
+           $ file /home
+           /home: symbolic link to usr/home
+
 SEE ALSO
-     builtin(1), cd(1), csh(1), sh(1), getcwd(3)
+     builtin(1), cd(1), csh(1), realpath(1), sh(1), getcwd(3)
 
 STANDARDS
      The pwd utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).
+
+HISTORY
+     The pwd command appeared in Version 5 AT&T UNIX.
 
 BUGS
      In csh(1) the command dirs is always faster because it is built into that
@@ -45,4 +62,4 @@ BUGS
      The -L option does not work unless the PWD environment variable is exported
      by the shell.
 
-macOS 12.0                       April 12, 2003                       macOS 12.0
+macOS 12.0                      October 24, 2020                      macOS 12.0

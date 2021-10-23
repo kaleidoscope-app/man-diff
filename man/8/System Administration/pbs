@@ -4,8 +4,8 @@ NAME
      pbs – general helper tool
 
 SYNOPSIS
-     pbs [-debug] [-dump_pboard] [-dump_userdefs] [-flush_pboard]
-         [-flush_userdefs] language1 language2 ...
+     pbs [-debug] [-dump] [-read_bundle PATH] [-flush] [-update] language1
+         language2 ...
 
 DESCRIPTION
      pbs is an agent for the Services menu.  It scans for and vends available
@@ -17,10 +17,10 @@ DESCRIPTION
      pbs normally runs the first time Services are needed in any login session.
      You may run it manually for debugging Services. If run without any options,
      pbs will scan for changed Services, cache them along with their English
-     localization on a private pasteboard, and immediately update the Services
-     menu in all running apps. It will also log about any invalid Services
-     declarations in Info.plist. This is useful when developing or testing
-     Services, because it immediately applies any changes.
+     localization, and immediately update the Services menu in all running apps.
+     It will also log about any invalid Services declarations in Info.plist.
+     This is useful when developing or testing Services, because it immediately
+     applies any changes.
 
      ServicesMenu.strings files for a localization are loaded only when an app
      running under that localization shows the Services menu.  You may pass pbs
@@ -28,35 +28,30 @@ DESCRIPTION
      immediately.
 
      pbs has additional options that are useful for debugging, in particular the
-     -dump_pboard option. The complete list of options is:
+     -dump and -read_bundle options. The complete list of options is:
 
      -debug
          Output debugging information regarding what pbs is doing.
 
-     -dump_pboard
-         Prints the private pasteboard containing the current Services
-         information.  You can use this to determine which apps are providing
-         Services and where they are located on the filesystem.
-
-     -dump_userdefs
+     -dump
          Prints the userdef cache of Services information.  pbs caches Services
          information in its userdefs to avoid scanning the entire system every
          boot.  Changed apps are still detected via FSEvents, so there is no
          need to flush the userdef cache when installing a new Service.
 
-     -flush_pboard
-         Erases the private pasteboard containing Services information.  The
-         next time the Services menu is shown, pbs will scan for changed
-         Services and update the pasteboard.
-
-     -flush_userdefs
-         Erases the userdef cache.
+     -read_bundle PATH
+         Prints the Services information for the given application or service
+         bundle. Does not update the cache.
 
      -flush
-         Equivalent to -flush_pboard and -flush_userdefs, entirely resetting
-         pbs. The next time Services information is needed, pbs will do a
-         complete rescan for apps vending Services, and read their plist.  Note:
-         this rescan may be very expensive!
+         Erases the userdef cache, entirely resetting pbs. The next time
+         Services information is needed, pbs will do a complete rescan for apps
+         vending Services, and read their plist.  Note: this rescan may be very
+         expensive!
+
+     -update
+         Updates the userdef cache. pbs will do a complete rescan for apps
+         vending Services, and read their plist.
 
 HISTORY
      First appeared in NextStep.  pbs has historically had responsibilities that
