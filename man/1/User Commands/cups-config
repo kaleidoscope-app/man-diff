@@ -1,0 +1,90 @@
+cups-config(1)                     Apple Inc.                     cups-config(1)
+
+
+
+NAME
+       cups-config - get cups api, compiler, directory, and link information.
+
+SYNOPSIS
+       cups-config --api-version
+       cups-config --build
+       cups-config --cflags
+       cups-config --datadir
+       cups-config --help
+       cups-config --ldflags
+       cups-config [ --image ] [ --static ] --libs
+       cups-config --serverbin
+       cups-config --serverroot
+       cups-config --version
+
+DESCRIPTION
+       The cups-config command allows application developers to determine the
+       necessary command-line options for the compiler and linker, as well as
+       the installation directories for filters, configuration files, and
+       drivers.  All values are reported to the standard output.
+
+OPTIONS
+       The cups-config command accepts the following command-line options:
+
+       --api-version
+            Reports the current API version (major.minor).
+
+       --build
+            Reports a system-specific build number.
+
+       --cflags
+            Reports the necessary compiler options.
+
+       --datadir
+            Reports the default CUPS data directory.
+
+       --help
+            Reports the program usage message.
+
+       --ldflags
+            Reports the necessary linker options.
+
+       --libs
+            Reports the necessary libraries to link to.
+
+       --serverbin
+            Reports the default CUPS binary directory, where filters and
+            backends are stored.
+
+       --serverroot
+            Reports the default CUPS configuration file directory.
+
+       --static
+            When used with --libs, reports the static libraries instead of the
+            default (shared) libraries.
+
+       --version
+            Reports the full version number of the CUPS installation
+            (major.minor.patch).
+
+EXAMPLES
+       Show the currently installed version of CUPS:
+
+           cups-config --version
+
+       Compile a simple one-file CUPS filter:
+
+           cc `cups-config --cflags --ldflags` -o filter filter.c \
+               `cups-config --libs`
+
+DEPRECATED OPTIONS
+       The following options are deprecated but continue to work for backwards
+       compatibility:
+
+       --image
+            Formerly used to add the CUPS imaging library to the list of
+            libraries.
+
+SEE ALSO
+       cups(1), CUPS Online Help (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

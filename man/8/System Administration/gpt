@@ -1,0 +1,163 @@
+GPT(8)                       System Manager's Manual                      GPT(8)
+
+NAME
+     gpt – GUID partition table maintenance utility
+
+SYNOPSIS
+     gpt [general_options] command [command_options] device ...
+
+DESCRIPTION
+     The gpt utility provides the necessary functionality to manipulate GUID
+     partition tables (GPTs), but see BUGS below for how and where functionality
+     is missing.  The basic usage model of the gpt tool follows that of the
+     cvs(1) tool.  The general options are described in the following paragraph.
+     The remaining paragraphs describe the individual commands with their
+     options.  Here we conclude by mentioning that a device is either a special
+     file corresponding to a disk-like device or a regular file.  The command is
+     applied to each device listed on the command line.
+
+   General Options
+     The general options allow the user to change default settings or otherwise
+     change the behaviour that is applicable to all commands.  Not all commands
+     use all default settings, so some general options may not have an effect on
+     all commands.
+
+     The -f option causes the gpt utility to open the device with
+     O_SHLOCK|O_RDWR mode.  Use this mode cautiously.  It may conflict with
+     other tasks currently have the write access to the same device.
+
+     The -p count option allows the user to change the number of partitions the
+     GPT can accommodate.  This is used whenever a new GPT is created.  By
+     default, the gpt utility will create space for 128 partitions (or 32
+     sectors of 512 bytes).
+
+     The -r option causes the gpt utility to open the device for reading only.
+     Currently this option is primarily useful for the show command, but the
+     intent is to use it to implement dry-run behaviour.
+
+     The -v option controls the verbosity level.  The level increases with every
+     occurrence of this option.  There is no formalized definition of the
+     different levels yet.
+
+   Commands
+     gpt add [-b number] [-i index] [-s count] [-t type] device ...
+             The add command allows the user to add a new partition to an
+             existing table.  By default, it will create an HFS partition
+             covering the first available block of an unused disk space.  The
+             command-specific options can be used to control this behaviour.
+
+             The -b number option allows the user to specify the starting
+             (beginning) sector number of the partition.  The minimum sector
+             number is 1, but has to fall inside an unused region of disk space
+             that is covered by the GPT.
+
+             The -i index option allows the user to specify which (free) entry
+             in the GPT table is to be used for the new partition.  By default,
+             the first free entry is selected.
+
+             The -s count option allows the user to specify the size of the
+             partition in sectors.  The minimum size is 1.
+
+             The -t type option allows the user to specify the partition type.
+             The type is given as an UUID, but gpt accepts efi, hfs, apfs, linux
+             and windows as aliases for the most commonly used partition types.
+
+     gpt create [-fp] device ...
+             The create command allows the user to create a new (empty) GPT.  By
+             default, one cannot create a GPT when the device contains a MBR,
+             however this can be overridden with the -f option.  If the -f
+             option is specified, an existing MBR is destroyed and any
+             partitions described by the MBR are lost.
+
+             The -p option tells gpt to create only the primary table and not
+             the backup table.  This option is only useful for debugging and
+             should not be used otherwise.
+
+     gpt destroy [-r] device ...
+             The destroy command allows the user to destroy an existing,
+             possibly not empty GPT.
+
+             The -r option instructs gpt to destroy the table in a way that it
+             can be recovered.
+
+     gpt label [-a] ⟨-f file | -l label⟩ device ...
+
+     gpt label [-b number] [-i index] [-s count] [-t type] ⟨-f file | -l label⟩
+             device ...
+             The label command allows the user to label any partitions that
+             match the selection.  At least one of the following selection
+             options must be specified.
+
+             The -a option specifies that all partitions should be labeled.  It
+             is mutually exclusive with all other selection options.
+
+             The -b number option selects the partition that starts at the given
+             block number.
+
+             The -i index option selects the partition with the given partition
+             number.
+
+             The -s count option selects all partitions that have the given
+             size.  This can cause multiple partitions to be removed.
+
+             The -t type option selects all partitions that have the given type.
+             The type is given as an UUID or by the aliases that the add command
+             accepts.  This can cause multiple partitions to be removed.
+
+             The -f file or -l label options specify the new label to be
+             assigned to the selected partitions.  The -f file option is used to
+             read the label from the specified file.  Only the first line is
+             read from the file and the trailing newline character is stripped.
+             If the file name is the dash or minus sign (-), the label is read
+             from the standard input.  The -l label option is used to specify
+             the label in the command line.  The label is assumed to be encoded
+             in UTF-8.
+
+     gpt recover device ...
+             The recover command allows the user to recover the GPT from the
+             backup table.
+
+     gpt remove [-a] device ...
+
+     gpt remove [-b number] [-i index] [-s count] [-t type] device ...
+             The remove command allows the user to remove any and all partitions
+             that match the selection.  It uses the same selection options as
+             the label command.  See above for a description of these options.
+             Partitions are removed by clearing the partition type.  No other
+             information is changed.
+
+     gpt show [-l] device ...
+             The show command displays the current partitioning on the listed
+             devices and gives an overall view of the disk contents.  With the
+             -l option the GPT partition label will be displayed instead of the
+             GPT partition type.  The option has no effect on non-GPT
+             partitions.
+
+SEE ALSO
+     fdisk(8), mount(8), newfs(8), pdisk(8)
+
+HISTORY
+     The gpt utility appeared in FreeBSD 5.0 for ia64.
+
+BUGS
+     The development of the gpt utility is still work in progress.  Many
+     necessary features are missing or partially implemented.  In practice this
+     means that the manual page, supposed to describe these features, is farther
+     removed from being complete or useful.  As such, missing functionality is
+     not even documented as missing.  However, it is believed that the currently
+     present functionality is reliable and stable enough that this tool can be
+     used without bullet-proof footware if one thinks one does not make
+     mistakes.
+
+     It is expected that the basic usage model does not change, but it is
+     possible that future versions will not be compatible in the strictest sense
+     of the word.  For example, the -p count option may be changed to a command
+     option rather than a generic option.  There are only two commands that use
+     it so there is a chance that the natural tendency for people is to use it
+     as a command option.  Also, options primarily intended for diagnostic or
+     debug purposes may be removed in future versions.
+
+     Another possibility is that the current usage model is accompanied by other
+     interfaces to make the tool usable as a back-end.  This all depends on
+     demand and thus feedback.
+

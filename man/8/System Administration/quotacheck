@@ -1,0 +1,66 @@
+QUOTACHECK(8)                System Manager's Manual               QUOTACHECK(8)
+
+NAME
+     quotacheck – filesystem quota consistency checker
+
+SYNOPSIS
+     quotacheck [-g] [-u] [-v] filesystem ...
+     quotacheck [-g] [-u] [-v] -a
+
+DESCRIPTION
+     Quotacheck examines each filesystem, builds a table of current disk usage,
+     and compares this table against that recorded in the disk quota file for
+     the filesystem.  If any inconsistencies are detected, both the quota file
+     and the current system copy of the incorrect quotas are updated (the latter
+     only occurs if an active filesystem is checked).  By default both user and
+     group quotas are checked.
+
+     Available options:
+
+     -a      If the -a flag is supplied in place of any filesystem names,
+             quotacheck will check all the read-write filesystems with an
+             existing mount option file at its root.  The mount option file
+             specifies the types of quotas that are to be checked.
+
+     -g      Only group quotas are checked. The mount option file,
+             .quota.ops.group, must exist at the root of the filesystem.
+
+     -u      Only user quotas are checked.  The mount option file,
+             .quota.ops.user, must exist at the root of the filesystem.
+
+     -v      quotacheck reports discrepancies between the calculated and
+             recorded disk quotas.
+
+     Specifying both -g and -u is equivalent to the default.  Parallel passes
+     are run on the filesystems required, in an identical fashion to fsck(8).
+
+     Normally quotacheck operates silently.
+
+     Quotacheck expects each filesystem being checked to have quota data files
+     named .quota.user and/or .quota.group located at the filesystem root.  If a
+     binary data file is not present, quotacheck will create it.  The default
+     filename and root location cannot be overridden.
+
+     Quotacheck is normally run at fsck time.
+
+     Quotacheck accesses the raw device in calculating the actual disk usage for
+     each user.  Thus, the filesystems checked should be quiescent while
+     quotacheck is running.
+
+FILES
+     Each of the following quota files is located at the root of the mounted
+     filesystem.  The mount option files are empty files whose existence
+     indicates that quotas are to be enabled for that filesystem. The binary
+     data files will be created by quotacheck, if they don't already exist.
+
+     .quota.user       data file containing user quotas
+     .quota.group      data file containing group quotas
+     .quota.ops.user   mount option file used to enable user quotas
+     .quota.ops.group  mount option file used to enable group quotas
+
+SEE ALSO
+     quota(1), quotactl(2), edquota(8), fsck(8), quotaon(8), repquota(8)
+
+HISTORY
+     The quotacheck command appeared in 4.2BSD.
+

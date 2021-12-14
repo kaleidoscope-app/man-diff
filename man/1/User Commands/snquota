@@ -1,0 +1,428 @@
+SNQUOTA(1)                   General Commands Manual                  SNQUOTA(1)
+
+
+
+NAME
+       snquota - Xsan Quota Configuration Utility
+
+SYNOPSIS
+       snquota {-F_volume_name|-P_path} action [options]
+
+DESCRIPTION
+       The snquota command manipulates the quota system in the Xsan volume.
+
+       The quota system provides a means for limiting the amount of disk storage
+       consumed on a per user or per group basis across an entire file system or
+       within a designated directory hierarchy.  Quota limits apply to the space
+       consumed by disk-block allocations for a user or group, which is not
+       equal to the sum of their file sizes.  Disk-block allocations can be less
+       than the file size if the file is sparse, or more if the file system has
+       allocated extra sequential blocks for the efficiency of anticipated
+       future writes.
+
+       There are three types of quotas: user quotas, group quotas, and directory
+       quotas.  User and group quotas limit the number of volume blocks that can
+       be allocated by the user or group on which the limit is placed.  When
+       quotas are on, the total allocated volume space of all users and groups
+       that own files in the volume are automatically kept.
+
+       Directory quotas are a little different.  The system does not
+       automatically keep track of the usage for each directory.  The snquota
+       command allows directories to be turned into the root of a Directory
+       Quota Name Space (DQNS).  Then, the number and size of all files in the
+       directory and all its subdirectories are tracked and (optionally)
+       limited.
+
+       For all quota types, limits and usage values only apply to regular files,
+       not directories, symlinks, or special device files
+
+       Each quota entity has two limits associated with it.  These are the hard
+       limit and the soft limit.
+
+       The hard limit is the absolute limit which volume space usage should not
+       exceed.  Any time the total allocated space is at or over the hard limit,
+       all further allocations or write requests by the offending user or group
+       will be denied.
+
+       The soft limit is a lesser limit.  When the user exceeds this limit (but
+       not the hard limit), allocations are still permitted for a while, but a
+       warning message will be written to the logs.  (View the messages with
+       Console.app or the dmesg command.)  When the soft limit has been overrun
+       for longer than the grace period, the soft limit becomes a hard limit and
+       any further allocations or write requests are denied.  When the usage
+       again falls below the soft limit, allocation requests will again be
+       serviced.
+
+       Previous versions of snquota required all three of the limit values
+       (hard, soft, and grace) to be set or all three to be unset.  This version
+       relaxes that somewhat.  It is now possible to specify just a hard limit
+       without a soft and grace limit.  It's also possible to set a soft limit
+       and grace period without a hard limit.  It's also possible to specify a
+       soft limit without any grace period (such a limit warns periodically, but
+       never prevents allocation).  It's still not possible to specify a grace
+       period without a soft limit. Although all three values (-h, -s, -t) still
+       need to be on the command line, you can set the limits that should not be
+       enforced to zero.
+
+       For performance reasons related to the distributed nature of Xsan, quota
+       overruns are not only possible but likely.  The overrun size depends upon
+       a number of factors including the size of the allocation request(s) at
+       the time of the quota overrun.
+
+       Some versions of snquota support setting default limits for the various
+       types of quotas.  For example, you can set a default hard limit, soft
+       limit, and grace period for all users.  After doing that, any new user
+       created will inherit those limits.  Note that setting default limits will
+       not change the limits of existing quota entities.  Use the -0 option and
+       either "-u default", "-g default", "-d default", or "-fd default".  See
+       the examples section.
+
+       When working with Directory Quotas, the specified volume must be mounted
+       on the node running snquota.
+
+       Limits are not enforced against super-user accounts.
+
+DIRECTORY QUOTA NAME SPACES
+       DQNSs are created by either of two actions, -C or -M.  They have
+       different performance trade-offs and which one to use depends on the
+       situation at hand.
+
+       The -C action creates a DQNS whose usage values (the amount of disk space
+       and the number of files) are already initialized to the correct value.
+       In order to initialize them, snquota must walk the directory tree under
+       the root of the DQNS and tally up how much disk space is used.  For big
+       directory trees, this process can take a long time.  Any modifications to
+       the files and directories in the DQNS will be stalled until this walk is
+       complete.
+
+       The -M action quickly creates a DQNS whose usage values are zero.  As
+       files are created in the DQNS, the usage value will increase, but will
+       never count the files that were present in the directory when it was
+       created.  In order to initialize the DQNS so the values are correct, the
+       quota database must be rebuild using the -R action.  A rebuild runs much
+       faster than a file-tree walk on a per-inode basis, but it must look at
+       all of the inodes in the volume.  When the rebuild is running,
+       modifications to the volume will be stalled until the rebuild is
+       complete.
+
+       So, when creating a DQNS that is believed to contain only a small
+       percentage of the inodes in the volume, use -C.  When creating a DQNS (or
+       many DQNSs) that use a large percentage of the files, use -M.
+
+       A typical situation where -M would be useful is converting an existing
+       volume to use directory quotas.  First every directory which needs to be
+       a DQNS root is marked with a call to "snquota -M".  Then, all of the
+       DQNSs are initialized with one call to "snquota -R".
+
+       When in doubt, use -C.
+
+       Nesting of DQNSs is not allowed.  This means that a DQNS may not be a
+       subdirectory of another DQNS.
+
+       Directories can not be renamed across DQNS boundaries.  Also, all hard
+       links to an inode must be within the same DQNS.  Attempts to rename
+       directories/files or create hard links that would violate this rule will
+       result in a EXDEV being returned.
+
+       If a directory tree contains inodes with hard links outside of the tree,
+       an attempt to convert the tree into a DQNS via the -C action on the tree
+       will result in an error.  An attempt to convert the tree into a DQNS via
+       the -M and -R actions will result in an error during the -R action.
+
+QUOTAS IN MIXED OS ENVIRONMENTS
+       The user and groups names specified in -u and -g represent underlying
+       identifiers that are determined by the OS type of the MDC.
+
+       On a Linux or Xsan MDC, those identifiers are the classic UNIX User
+       IDentifier (UID) and Group IDentifier (GID).  When a UNIX client (Linux,
+       MacOS, Solaris, etc) creates a file, it passes the user's UID and GID to
+       the MDC.  Those IDs are attached to the file and are used by the quota
+       subsystem.  When a Windows client creates a file, it passes a UID and GID
+       it gets from one of three places:
+
+       1.     If the Active Directory entry for the user has UNIX IDs associated
+              with it, those are used.  The behavior at this point is just like
+              UNIX client.  The administrator can set the IDs for a user via the
+              AD configuration tool under the "UNIX Attributes" tab.  This tab
+              is part of the "Identity Management for UNIX" subsystem.
+
+       2.     If the user doesn't have UNIX attributes, then the user and group
+              "nobody" IDs from the file system configuration file are used.
+
+       3.     If the process's SID is a special "Root SID", the UID/GID passed
+              will be 0/0 (i.e. root).  The "root SID" is S-1-5-18.
+
+       The Windows client can associate a NTSD with a file, but it's ignored by
+       the quota subsystem. (It's only used for access control by the client at
+       that point.)
+
+       On a Windows MDC, the favored identifiers are user and group SIDs derived
+       from the NTSD which owns the file.  If there is no NTSD associated with
+       the file, the UID/GID values associated with the inode are used.  So,
+       when a Windows client creates a file, it passes in a NTSD.  That NTSD
+       broken into SIDs and used as file's owner identifiers as far as the quota
+       subsystem is concerned.  When a UNIX client creates a file, it passes the
+       usual UID/GID pair, not a NTSD.  This is used by the quota system.  If
+       that file is accessed from a on Windows client, it gets assigned an NTSD.
+       At that point the quota will be wrong.  Subsequent allocations of that
+       file will be charged to the SD and not the UID/GID.
+
+       So, the preferred method of running quotas with a mixture of UNIX and
+       Windows clients is to run with a Linux MDC with UNIX user/group mappings
+       for Active Directory users.  That way, a user who logs into clients of
+       either OS will have a single quota (which will be based on the UID).
+
+       Another option is to just use Directory Quotas.  They are much more
+       straight-forward to share between OS types.
+
+UNITS
+       Usage and Limits are printed in a human-readable form, suffixed with "K",
+       "M", "G", "T","P", or "E" for kibibytes, mebibyte, gibibyte, tebibyte,
+       pebibytes, or exbibytes, respectively.  These are base-2 values (i.e. 1K
+       = 1024).  A value without a suffix is in bytes.
+
+       File count values are also printed with these suffixes, but they are
+       base-10 values (i.e. 1K = 1000).
+
+       Time values are printed with the suffixes "m", "h", "d", "w", "M" and "y"
+       for minutes, hours, days, weeks, months, and years, respectively.
+
+       If the -e option is used, the suffixes are disabled and exact values are
+       printed. Time units are in minutes.
+
+       These suffixes can also be used when specifying limits with the -h, -s,
+       and -t options.  Decimal values may be used (e.g -h 1.5g).
+
+       For the most part, the case of the suffix doesn't matter.  The only
+       exception to that is the time suffixes "m" and "M", meaning "minutes" and
+       "months", respectively.
+
+FILE SYSTEM SPECIFICATION
+       -F VolumeName
+              Specify VolumeName as the volume to manipulate.  VolumeName may be
+              qualified with cluster and administrative domain, if other than
+              the default cluster in which the command is being run. The syntax
+              is VolumeName@<cluster>[/<addom>].
+
+       -P Path
+              Specify the volume containing Path as the volume to manipulate.
+
+ACTIONS
+       -C     This action creates an initialized DQNS on the directory specified
+              by the -d argument.  After this command is run, disk space usage
+              and file counts will be tracked in the directory and all its
+              subdirectories.  Later, limits may be set on the DQNS using the -S
+              action.  Note that since this operation creates and initializes
+              the DQNS, the directory tree contained by the new DQNS will be
+              walked to total up the current usage values.  This may take some
+              time.  Modifications to the files and directories in the DQNS will
+              be stalled until this walk is complete.
+
+       -D     This action destroys the DQNS specified by the -d argument.  Disk
+              space and file count usage values will no longer be tracked.
+              Limits will no longer be enforced.  Note that this does not modify
+              or destroy the files and directories in the DQNS in any way.
+
+       -G     This action returns the quota limits and values for the user,
+              group, or directory specified by the -u, -g, or -d option,
+              respectively.
+
+       -L     This action lists the current quota limits and values for all
+              user, group, and directory quotas.
+
+       -M     This action creates (marks) an uninitialized DQNS on the directory
+              specified by the -d argument.  After this command is run, disk
+              space usage and file counts will be tracked in the directory and
+              all its subdirectories.  Later, limits may be set on the DQNS
+              using the -S option.  Note that since this operation creates (but
+              does not initialize) the DQNS, the usage values for the DQNS will
+              start out at zero.  The user should later use the -R action to
+              initialize the usage values.  See the DIRECTORY QUOTA NAME SPACES
+              section above for a discussion on when to use -M and when to use
+              -C.  When in doubt, don't use this action.  Use -C instead.
+
+       -R     This action rebuilds the quota database.  It is most useful when
+              used after snquota has been used a number of times with the -M
+              action.  See the DIRECTORY QUOTA NAME SPACES section above.  Note
+              that this action can take a long time.  The volume will be
+              unresponsive during this time.  The action cannot be canceled
+              after it is started.  A prompt will be displayed confirming the
+              intent to run the action unless the -Y option is specified. A
+              rebuild preserves limits and DQNSs.
+
+       -S     This action sets the quota limits for the user, group, or
+              directory specified by the -u, -g, or -d option, respectively.
+              The limits must be specified by the -h, -s, and -t, options.  All
+              three must be present, but some/all may be zero.
+
+       -X     This action generates quota reports for all users and groups.
+              There are three files placed in
+              /Library/Logs/Xsan/data/<volume_name>:
+                  1. quota_report.txt - a "pretty" text file report.
+                  2. quota_report.csv - a comma delimited report suitable
+                     for Excel spreadsheets.  Fields that can have commas,
+                     newlines, and other strange characters are escaped with
+                     double quotes.  This is the case with DQNSs path fields.
+                  3. quota_regen.in - a list of snquota commands that can be
+                     used to set up an identical quota database on another
+                     Xsan volume. Passing this file to
+                     the shell executes it as a script.
+
+       -Z     This action completely destroys all quota configuration and then
+              rebuilds the quota database as in the -R option above. Unlike the
+              -R action,  -Z clears the limits and directory quota name spaces.
+              It is recommended that the quota_regen.in file be generated using
+              the -X option to save the quota configuration prior to using -Z.
+
+OPTIONS
+       -0     List, read, and set default limits.  When specified with the -L
+              action, the default limits are included in the list (if they are
+              non-zero).  When specified with the -G or -S actions, the default
+              limits for the specified type of quota are read or written.  When
+              using -0, the argument for -u, -g, -d, or -fd should be "default".
+
+       -a     When this option is used, directory quota paths printed by the -L
+              and -G options will be absolute paths.  Paths supplied to the -d
+              option are also absolute paths (or relative to the CWD).  When
+              this option is absent, all paths are relative to the root of the
+              specified volume.
+
+       -d Directory
+              This option specifies a DQNS on a Xsan volume to be used with the
+              -C, -D, -G, -M, or -S options.  The directory supplied is the root
+              directory of the DQNS.  The directory path is relative to the root
+              of the specified volume, unless the -a option is used.
+
+       -e     When used with the -G or -L actions, numbers will be printed as
+              exact values.  Usage and Limits which represent disk space are
+              printed in bytes.  Times are printed in minutes.  For example,
+              with this option, a one megabyte hard limit will be printed as
+              "1048576", not "1M".  A one day grace period will be printed as
+              "1440", not "1d".
+
+       -f     The -f option is only useful with the -G and -S actions and the -d
+              option.  When the -f option is present, limits and values
+              represent the number of regular files contained in the DQNS.  If
+              the -f option is not present, limits and values represent the disk
+              space contained in the DQNS.
+
+       -g GroupName
+              This option specifies the name of a group to get or set with the
+              -G or -S action.  The group name may also be of the form "G:id",
+              where "id" is a number that represents a group's GID.
+
+       -H HostName
+              Use a hostname in a Xsan cluster that is different from the
+              cluster the command is being run on.  This option in rarely
+              needed.
+
+       -h HardLimit
+              This option specifies a hard limit to set when used with the -S
+              action.  See the UNITS section above.  The maximum hard limit
+              value is 16 exbibytes - 1 fsBlockSize (the file system configured
+              block size.) If the fsBlockSize is 4096, the maximum hard limit
+              value is 18,446,744,073,709,547,520 bytes.  (Note: commas were
+              added for readability; commas are not allowed in values.)
+
+       -h     This option causes snquota to print a friendly help message and
+              exit.  It only works when used by itself.  If there are other
+              options present, it is assumed that a hard limit is being
+              specified.
+
+       -o {text|xml|json}
+              Print output in text, xml, or json.  The default is text.
+
+       -s SoftLimit
+              This option specifies a soft limit to set when used with the -S
+              action.  See the UNITS section above. The maximum soft limit value
+              is 16 exbibytes - 1 fsBlockSize (the file system configured block
+              size.) If the fsBlockSize is 4096, the maximum soft limit value is
+              18,446,744,073,709,547,520 bytes.  (Note: commas were added for
+              readability; commas are not allowed in values.)
+
+       -t GracePeriod
+              This option specifies a grace period to set when used with the -S
+              action.  See the UNITS section above.
+
+       -u UserName
+              This option specifies the name of a user to get or set with the -G
+              or -S action.  The user name may also be of the form "U:id", where
+              "id" is a number that represents a user's UID.
+
+       -Y     When used with the -R or -Z actions, this option prevents snquota
+              from asking for confirmation.
+
+       -z     This option is the same as specifying "-h 0 -s 0 -t 0".  It's only
+              useful with the -S action.
+
+EXIT VALUES
+       snquota will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List all the quota limits and values on a volume named "data".
+
+          snquota -F data -L
+
+       List all the quota limits and values on a volume named "data", but in
+       cluster "cluster1".
+
+          snquota -F data@cluster1 -L
+
+       Specify a hard limit of ten gigabytes, a soft limit of nine gigabytes,
+       and a grace period of one week on user "lisa" in a volume named "data".
+
+          snquota -F data -S -u lisa -h 10g -s 9g -t 1w
+
+       Turn off quota limits for user "lisa" in a volume named "data".
+
+          snquota -F data -S -u lisa -z
+
+       Get the quota values for a group named "simpsons" on a volume mounted on
+       "/stornext/data".
+
+          snquota -P /stornext/data -G -g simpsons
+
+       Create a DQNS on the directory "/lisa/saxophone_music" in a volume
+       mounted on "/stornext/data".
+
+          snquota -P /stornext/data -C -d /lisa/saxophone_music
+
+       Specify a hard limit of one gigabyte, a soft limit of nine hundred
+       megabytes, and a grace period of one day on pre-existing DQNS
+       "/lisa/saxophone_music" in a volume named "data".
+
+          snquota -F data -S -d /lisa/saxophone_music -h 1g -s 900m -t 1d
+
+       Create a number of DQNSs using -M and -R.  This is faster than using -C
+       if these directories take up most of the space in the volume.
+
+          snquota -F data -M -d /bart/comics
+          snquota -F data -M -d /bart/pranks
+          snquota -F data -M -d /bart/itchy_and_scratchy
+          snquota -F data -R
+
+       Create the same DQNSs using -C.  This is faster than using -M and -R if
+       the directories are small.
+
+          snquota -F data -C -d /bart/comics
+          snquota -F data -C -d /bart/pranks
+          snquota -F data -C -d /bart/itchy_and_scratchy
+
+       Specify a hard limit of one thousand files, a soft limit of nine hundred
+       files, and a grace period of one week on pre-existing DQNS "/bart/pranks"
+       in a volume named "data".
+
+          snquota -F data -S -d /bart/pranks -f -h 1k -s 900 -t 1w
+
+       Set default hard limits limits for all newly created DQNSs.  The first
+       line set defaults for disk space and the second line sets defaults for
+       files.
+
+          snquota -F data -S -0d default -h 1t -s 0 -t 0
+          snquota -F data -S -0fd default -h 1m -s 0 -t 0
+
+SEE ALSO
+       snfs_config(5), snfs_rest_config.json(4)
+
+
+

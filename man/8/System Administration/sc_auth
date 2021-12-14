@@ -1,0 +1,106 @@
+sc_auth(8)                   System Manager's Manual                  sc_auth(8)
+
+NAME
+     sc_auth – SmartCard authorization setup script
+
+SYNOPSIS
+     sc_auth pair   [-v] -u user -h hash
+     sc_auth unpair [-v] [-u user] [-h hash]
+     sc_auth pairing_ui [-v] [-f] [-s enable|disable|status]
+     sc_auth identities
+     sc_auth list   [-v] [-u user] [-d domain]
+     sc_auth changepin [-t tokenid] [-u]
+     sc_auth verifypin [-t tokenid] [-p PIN]
+     sc_auth enable_for_login -c class-id
+
+SYNOPSIS - legacy
+     sc_auth accept [-v] [-u user] [-d domain] [-k keyname] sc_auth accept [-v]
+     [-u user] [-d domain] -h hash sc_auth remove [-v] [-u user] [-d domain]
+     sc_auth hash   [-k keyname]
+
+DESCRIPTION
+     sc_auth configures a local user account to permit authentication using a
+     supported SmartCard.  Authentication is via asymmetric key (also known as
+     public-key) encryption.  sc_auth works with signing keys, but not
+     encryption keys.
+
+     sc_auth can perform the following actions:
+
+     pair     Associate a user with a public key. Because user's keychain will
+              be modified to be unlockable by a key, SmartCard with that key
+              must be present in the reader. The key to use has to be specified
+              by its hash.
+
+     unpair   Remove association with a user and keychain. If no specific hash
+              is provided, all associations with a user are removed.
+
+     pairing_ui
+              Enable, disable and force to display pairing dialog when card with
+              unpaired identities is inserted
+
+     identities
+              List all identities on all SmartCards and display appropriate
+              associations with users (for associated keys) or key names (for
+              unassociated keys).
+
+     list     List all public keys associated with a user.
+
+     changepin
+              Change or unblock SmartCard PIN.  This command works only for
+              Personal Identity Verification (PIV) SmartCards. With -u argument,
+              PIN can be unblocked using PUK and without the -u argument, PIN
+              can be changed. Optional -t argument allows specifying tokenID.
+
+     verifypin
+              Verify SmartCard PIN. This command works only for Personal
+              Identity Verification (PIV) SmartCards. Optional -t argument
+              allows specifying tokenID. Optional -p argument allows specifying
+              PIN.
+
+     enable_for_login
+              Enable the app extension for login and make the token available to
+              the system for authentication.
+
+DESCRIPTION - legacy
+     sc_auth can perform the following legacy actions:
+
+     accept   Associate a user with a public key on a card.  The key to use can
+              be specified either by its name or its hash.
+
+     remove   Remove all public keys associated with a user.
+
+     hash     Print the hashes for all keys on all inserted cards.
+
+OPTIONS
+     -u user  Specifies the user whose account is to be modified
+
+     -d domain
+              Specifies the directory domain containing the user account
+
+     -k keyname
+              Specifies a public key by its name
+
+     -h hash  Specifies a public key by its hash
+
+     -v       Verbose mode
+
+     -f       Force to display pairing dialog
+
+     -t tokenid
+              Specifies a token by tokenID
+
+     -c class-id
+              Specifies a token by  'com.apple.ctk.class-id' from Info.plist
+
+     -p PIN   Specifies a PIN
+
+NOTES
+     sc_auth is a shell script.  It is intended to be modified by administrators
+     to suit their local environments.
+
+     sc_auth is only known to work with a local directory.  Consult the script's
+     source for some limited guidance to using remote directories.
+
+SEE ALSO
+     SmartCardServices(7), SmartCardServices-legacy(7), pam_smartcard(8)
+

@@ -1,0 +1,430 @@
+TMUTIL(8)                    System Manager's Manual                   TMUTIL(8)
+
+NAME
+     tmutil – Time Machine utility
+
+SYNOPSIS
+     tmutil verb [options]
+
+DESCRIPTION
+     tmutil provides methods of controlling and interacting with Time Machine,
+     as well as examining and manipulating Time Machine backups. Common
+     abilities include restoring data from backups, editing exclusions, and
+     comparing backups.
+
+     Several, but not all, verbs require root and Full Disk Access privileges.
+     Full Disk Access privileges can be granted to the Terminal application used
+     to run tmutil from the Privacy tab in the Security & Privacy preference
+     pane.
+
+BACKUP STRUCTURE
+     Throughout this manual, specific language is used to describe particular
+     "realms" associated with Time Machine backups. It is important to
+     understand this terminology to make effective use of tmutil and its manual.
+
+     backup source
+             A volume currently being backed up by Time Machine.
+
+     backup disk
+             The HFS+ or APFS volume that contains Time Machine backups.
+
+     backup destination
+             In the case of a local destination, a synonym for backup disk. For
+             network destinations, this is the AFP or SMB share on which the
+             backup disk image resides.
+
+     backup disk image (or backup image)
+             A sparsebundle that, when mounted, is the backing store for a
+             volume that is a backup disk.
+
+     backup store
+             The top-level "Backups.backupdb" directory at the root of an HFS+
+             backup disk. E.g.,
+
+             /Volumes/Chronoton/Backups.backupdb
+
+             n.b. APFS backup disks do not have backup stores.
+
+     machine directory
+             On HFS+, a directory inside a backup store that contains all the
+             backups for a particular computer. On APFS, the root of the backup
+             disk is a machine directory. For local HFS+ destinations, a backup
+             store can contain multiple machine directories, all for separate
+             computers. E.g.,
+
+             /Volumes/Chronoton/Backups.backupdb/thermopylae
+
+     backup
+             A directory inside a machine directory or APFS backup volume
+             snapshot that represents a single initial or incremental backup of
+             one computer. E.g.,
+
+             /Volumes/Chronoton/Backups.backupdb/thermopylae/2011-07-03-123456
+
+             com.apple.TimeMachine.2011-07-03-123456.backup
+
+     local snapshot (or snapshot)
+             An APFS snapshot of an APFS source volume included in the backup.
+             E.g.,
+
+             com.apple.TimeMachine.2011-07-03-123456.local
+
+     volume store
+             A directory inside a backup that represents a single initial or
+             incremental backup of one backup source. E.g.,
+
+             /Volumes/Chronoton/Backups.backupdb/thermopylae/2011-07-03-123456/Mac
+             HD
+
+             /Volumes/.timemachine/*/2011-07-03-123456.backup/2011-07-03-123456.backup/Mac
+             HD
+
+VERBS
+     Each verb is listed with its description and individual arguments.
+
+     setdestination [-ap] arg
+             Configure a local HFS+ or APFS volume, AFP share, or SMB share as a
+             backup destination. Requires root and Full Disk Access privileges.
+
+             When the -a option is provided, arg will be added to the list of
+             destinations. Time Machine will automatically choose a backup
+             destination from the list when performing backups. When the -a
+             option is not provided, the current list of destinations will be
+             replaced by arg.
+
+             If you wish to set an HFS+ or APFS volume as the backup
+             destination, arg should be the mount point of the volume in
+             question. When setting an AFP or SMB destination arg takes the
+             form:
+
+             protocol://user[:pass]@host/share
+
+             In the AFP and SMB cases, the password component of the URL is
+             optional; you may instead specify the -p option to enter the
+             password at a non-echoing interactive prompt. This is of particular
+             interest to the security-conscious, as all arguments provided to a
+             program are visible by all users on the system via the ps tool.
+
+     destinationinfo [-X]
+             Print information about destinations currently configured for use
+             with Time Machine. For each backup destination, the following
+             information may be displayed:
+
+                 Name          The volume label as shown in Finder.
+                 Kind          Whether the destination is locally attached
+                               storage or a network device.
+                 URL           In the case of a network destination, the URL
+                               used for Time Machine configuration.
+                 Mount Point   If the volume is currently mounted, the path in
+                               the file system at which it was mounted.
+                 ID            The unique identifier for the destination.
+
+             When more than one destination is configured, the most recent
+             backup destination will be marked with the > indicator.
+
+             When the -X option is provided, output will be printed in XML
+             property list format.
+
+     removedestination identifier
+             Remove the destination with the specified unique identifier from
+             the Time Machine configuration. Requires root and Full Disk Access
+             privileges.
+
+             To obtain the unique identifier for a destination, see
+             destinationinfo.
+
+     addexclusion [-pv] item ...
+             Configure an exclusion that tells Time Machine not to back up a
+             file, directory, or volume during future backups.
+
+             There are three kinds of user-configurable exclusions in Time
+             Machine:
+
+             The first kind of exclusion, which is the default behavior for the
+             addexclusion verb, is a location-independent ("sticky") exclusion
+             that follows a file or directory. When the file or directory is
+             moved, the exclusion goes with the item to the new location.
+             Additionally, when the item is copied, the copy retains the
+             exclusion.
+
+             The second kind of exclusion is a fixed-path exclusion. With this,
+             you tell Time Machine that you want a specific path to be excluded,
+             agnostic of the item at that path. If there is no file or directory
+             at the specified path, the exclusion has no effect; if the item
+             previously at the path has been moved or renamed, the item is not
+             excluded, because it does not currently reside at the excluded
+             path. As a consequence of these semantics, moving a file or
+             directory to the path will cause the item to be excluded--fixed-
+             path exclusions are not automatically cleaned up when items are
+             moved or deleted and will take effect again once an item exists at
+             an excluded path.
+
+             The third kind of exclusion is a volume exclusion. These track
+             volumes based on file system UUID, which is persistent across
+             volume name and mount path changes. Erasing the volume will cause
+             Time Machine to apply default behavior for the newly erased volume.
+
+             The -p option configures fixed-path exclusions. The -v option
+             configures volume exclusions. Both require root and Full Disk
+             Access privileges. The -v option is the only supported way to
+             exclude or unexclude a volume; behavior is undefined if a sticky or
+             fixed-path exclusion is specified.
+
+     removeexclusion [-pv] item ...
+             Configure Time Machine to back up a file, directory, or volume
+             during future backups. This verb follows the same usage, exclusion
+             style, and privilege semantics as addexclusion.
+
+     isexcluded [-X] item ...
+             Determine if a file, directory, or volume are excluded from Time
+             Machine backups.
+
+             When the -X option is provided, output will be printed in XML
+             property list format.
+
+             # example output for an excluded item
+             thermopylae:~ thoth$ tmutil isexcluded /Users/admin/Desktop/foo.txt
+             [Excluded]      /Users/admin/Desktop/foo.txt
+
+             # example output for an item that is not excluded
+             thermopylae:~ thoth$ tmutil isexcluded /Users/admin/Desktop/bar.txt
+             [Included]      /Users/admin/Desktop/bar.txt
+
+     enable
+             Turn on automatic backups. Requires root and Full Disk Access
+             privileges.
+
+     disable
+             Turn off automatic backups. Requires root and Full Disk Access
+             privileges.
+
+     startbackup [-a | --auto] [-b | --block] [-r | --rotation] [-d |
+             --destination dest_id]
+             Begin a backup if one is not already running.
+
+             Options:
+                 --auto           Run the backup in a mode similar to system-
+                                  scheduled backups.
+                 --block          Wait (block) until the backup is finished
+                                  before exiting.
+                 --rotation       Allow automatic destination rotation during
+                                  the backup.
+                 --destination    Perform the backup to the destination
+                                  corresponding to the specified ID.
+
+             The --auto option provides a supported mechanism with which to
+             trigger "automatic-like" backups, similar to automatic backups that
+             are scheduled by the system. While this is not identical to true
+             system-scheduled backups, it provides custom schedulers the ability
+             to achieve some (but not all) behavior normally exhibited when
+             operating in automatic mode.
+
+     stopbackup
+             Cancel a backup currently in progress.
+
+     compare [-@acdefglmnstuEUX] [-D depth] [-I name] [backup_path | path1
+             path2]
+             Perform a backup diff.
+
+             If no arguments are provided, tmutil will compare the computer to
+             the latest backup. If a backup path is provided as the sole
+             argument, tmutil will compare the computer to the specified backup.
+             If two path arguments are provided, tmutil will compare those two
+             items to each other.  tmutil will attempt to inform you when you
+             have asked it to do something that doesn't make sense or isn't
+             supported.
+
+             The compare verb allows you to specify what properties to compare.
+             If you specify no property options, tmutil assumes a default
+             property set of -@gmstu. Specifying any property option overrides
+             the default set.
+
+             Options:
+                 -a    Compare all supported metadata.
+                 -n    No metadata comparison.
+                 -@    Compare extended attributes.
+                 -c    Compare creation times.
+                 -d    Compare file data forks.
+                 -e    Compare ACLs.
+                 -f    Compare file flags.
+                 -g    Compare GIDs.
+                 -m    Compare file modes.
+                 -s    Compare sizes.
+                 -t    Compare modification times.
+                 -u    Compare UIDs.
+                 -D    Limit traversal depth to depth levels from the beginning
+                       of iteration.
+                 -E    Don't take exclusions into account when comparing items
+                       inside volumes.
+                 -I    Ignore paths with a path component equal to name during
+                       iteration. This may be specified multiple times.
+                 -U    Ignore logical volume identity (volume UUIDs) when
+                       directly comparing a local volume or volume store to a
+                       volume store.
+                 -X    Print output in XML property list format.
+
+     verifychecksums path ...
+             Compute a checksum of data contained within a backup and verify the
+             result(s) against checksum information computed at the time of
+             backup.
+
+             No output is generated for matching checksums. Issues are reported
+             using the following legend:
+
+                 !    The file's current checksum does not match the expected
+                      recorded checksum.
+                 ?    The file's recorded checksum is invalid.
+
+             Beginning in OS X 10.11, Time Machine records checksums of files
+             copied into backups. Checksums are not retroactively computed for
+             files that were copied by earlier releases of OS X.
+
+     restore [-v] src ... dst
+             Restore the item src, which is inside a backup, to the location
+             dst. The dst argument mimics the destination path semantics of the
+             cp tool. You may provide multiple source paths to restore. The last
+             path argument must be a destination.
+
+             When using the restore verb, tmutil behaves largely like Finder.
+             Custom Time Machine metadata (extended security and other) will be
+             removed from the restored data, and other metadata will be
+             preserved.
+
+             Root and Full Disk Access privileges may be required to perform
+             restores. When restoring with tmutil as root, ownership of the
+             restored items will match the state of the items in the backup.
+
+     delete [-d backup_mount_point -t timestamp] [-p path]
+             Deletes the backups with the specified timestamp from the backup
+             volume mounted at the specified mountpoint. The -t option followed
+             by a timestamp can be used multiple times to specify multiple
+             backups to delete. For HFS backup disks, a specific path to delete
+             can also be specified using the -p option. This verb can delete
+             items from backups that were not made by, or are not claimed by,
+             the current machine. Requires root and Full Disk Access privileges.
+
+     deleteinprogress machine_directory
+             Delete all in-progress backups for a machine directory. Requires
+             root and Full Disk Access privileges.  On APFS backup destinations,
+             this reverts the destination volume to the last backup.
+
+     latestbackup
+             Print information about the most recent backup for this computer.
+
+     listbackups [-d backup_mount_point [-m]]
+             Print information about all of this computer's completed backups.
+             The -d option specifies a backup volume to list backups from. When
+             -m is provided, listbackups will attempt to mount backups and list
+             their mounted paths. This option requires root and Full Disk Access
+             privileges.
+
+     machinedirectory
+             Print the path to the current machine directory for this computer.
+
+     calculatedrift machine_directory
+             Analyze the backups in an HFS machine directory and determine the
+             amount of change between each. Averages are printed after all
+             backups have been analyzed. This may require root and Full Disk
+             Access privileges, depending on the contents of the machine
+             directory.
+
+     uniquesize path ...
+             Analyze the specified path in an HFS+ backup or path to an APFS
+             backup and determine its unique size. The figure reported by
+             uniquesize represents things that only exist in the specified path;
+             things that are present in other backups are not tallied.
+
+     inheritbackup {machine_directory | sparsebundle}
+             Claim a machine directory or sparsebundle for use by the current
+             machine. Requires root and Full Disk Access privileges.
+
+             Machine directories and sparsebundles are owned by one computer at
+             a time, and are tracked by unique identifiers rather than computer
+             name, host name, or ethernet address. The inheritbackup verb
+             reassigns the identity of the specified item, reconfiguring it so
+             the current host recognizes it during backups. When inheriting a
+             sparsebundle, the machine directory within will also be claimed.
+
+             Inheriting is typically only one step in the process of configuring
+             a backup for use by a machine. You may also need to use
+             setdestination, associatedisk, or both, depending on the situation.
+
+             One machine can own multiple machine directories and sparsebundles,
+             but it is ill-advised for them to reside in the same place. In such
+             a situation, which will be chosen during a backup is undefined. As
+             a result, inheritbackup will attempt to detect possible identity
+             collisions before making changes.
+
+     associatedisk mount_point snapshot_volume
+             Bind a volume store directory to the specified local disk, thereby
+             reconfiguring the backup history. Requires root and Full Disk
+             Access privileges.
+
+             In Mac OS X, HFS+ and APFS volumes have a persistent UUID that is
+             assigned when the file system is created. Time Machine uses this
+             identifier to make an association between a source volume and a
+             volume store. Erasing the source volume creates a new file system
+             on the disk, and the previous UUID is not retained. The new UUID
+             causes the source volume -> volume store association to be broken.
+             If one were just erasing the volume and starting over, it would
+             likely be of no real consequence, and the new UUID would not be a
+             concern; when erasing a volume in order to clone another volume to
+             it, recreating the association may be desired.
+
+             A concrete example of when and how you would use associatedisk:
+
+             After having problems with a volume, you decide to erase it and
+             manually restore its contents from a Time Machine backup or copy of
+             another nature. (I.e., not via Time Machine System Restore or
+             Migration Assistant.) On your next incremental backup, the data
+             will be copied anew, as though none of it had been backed up
+             before. Technically, it is true that the data has not been backed
+             up, given the new UUID. However, this is probably not what you want
+             Time Machine to do. You would then use associatedisk to reconfigure
+             the backup so it appears that this volume has been backed up
+             previously:
+
+             thermopylae:~ thoth$ sudo tmutil associatedisk [-a]
+             "/Volumes/MyNewStuffDisk"
+             "/Volumes/Chronoton/Backups.backupdb/thermopylae/Latest/MyStuff"
+
+             The result of the above command would associate the volume store
+             MyStuff in the specified backup with the source volume
+             MyNewStuffDisk. The volume store would also be renamed to match.
+             The -a option tells associatedisk to find all volume stores in the
+             same machine directory that match the identity of MyStuff, and then
+             perform the association on all of them.
+
+     localsnapshot
+             Create new local Time Machine snapshots of all APFS volumes
+             included in the Time Machine backup.
+
+     listlocalsnapshots mount_point
+             List local Time Machine snapshots of the specified volume.
+
+     listlocalsnapshotdates [mount_point]
+             List the creation dates of all local Time Machine snapshots.
+
+             Specify mount_point to list snapshot creation dates from a specific
+             volume.
+
+             Listed dates are formatted YYYY-MM-DD-HHMMSS.
+
+     deletelocalsnapshots {mount_point | date}
+             If a date is specified, delete all local Time Machine snapshots on
+             all mounted disks for the specified date (formatted YYYY-MM-DD-
+             HHMMSS).  If a disk is specified, delete all local Time Machine
+             snapshots on the specified disk
+
+     thinlocalsnapshots mount_point [purge_amount] [urgency]
+             Thin local Time Machine snapshots for the specified volume.
+
+             When purge_amount and urgency are specified, tmutil will attempt
+             (with urgency level 1-4) to reclaim purge_amount in bytes by
+             thinning snapshots.
+
+             If urgency is not specified, the default urgency will be used.
+
+EXIT STATUS
+     In most situations, tmutil exits 0 on success, >0 otherwise.
+

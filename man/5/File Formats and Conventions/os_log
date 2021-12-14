@@ -1,0 +1,147 @@
+os_log(5)                      File Formats Manual                     os_log(5)
+
+NAME
+     os_log – logging configuration profiles
+
+DESCRIPTION
+     Logging configuration profiles are property list dictionaries that
+     customize the behavior of the os_log(3) and os_signpost APIs.
+
+     Customization is on a subsystem and category basis, i.e., for particular
+     os_log_t objects returned by os_log_create(3).  Behavior involving the
+     OS_LOG_DEFAULT constant is not affected by configuration profiles.
+
+     There are two types of logging configuration profiles, system-wide and
+     application-specific.
+
+           •   System-wide profiles are located in the
+               /System/Library/Preferences/Logging/Subsystems directory.  Files
+               in this directory define logging configuration settings used by
+               system components (e.g., system libraries and frameworks).  Their
+               names indicate which subsystems they configure; each contains a
+               dictionary for that subsystem.
+
+           •   Application-specific profiles are in an application's Info.plist
+               file, in an OSLogPreferences dictionary.  Keys in this dictionary
+               correspond to subsystem names, and its values are subsystem
+               dictionaries.
+
+     Subsystem dictionaries are further organized into sub-dictionaries that
+     correspond to categories.  Subsystem dictionary keys are category names and
+     values are dictionaries that define logging configuration settings for that
+     subsystem and category.
+
+     The special DEFAULT-OPTIONS category key can be used to define common
+     settings for all categories in a subsystem.  (Settings in particular
+     category dictionaries will take precedence over these common settings.)
+
+KEYS
+     Category dictionaries contain one or more of the following keys.
+
+     Level <dictionary>
+     Enable and disable logs.  Control how they are written.
+
+     os_log(3) has three levels.  In order from lowest to highest, they are:
+     Debug, Info, and Default.  Debug level is associated with os_log_debug;
+     Info with os_log_info; and Default with os_log, os_log_error, and
+     os_log_fault.
+
+     The system settings are that: Debug level logging is disabled; Info level
+     is enabled and written to a memory buffer; Default level logging is enabled
+     and persisted to disk.
+
+           Enable <string> (default: Inherit)
+           Turn logs on for a particular level and any higher levels with the
+           options: Off, Default, Info, and Debug.  Inherit means to use the
+           common settings for a subsystem, if defined, or to use the system
+           settings otherwise.
+
+           Persist <string> (default: Inherit)
+           Save logs to disk for a particular level and any higher levels with
+           the options: Off, Default, Info, and Debug.  Inherit means to use the
+           common settings for a subsystem, if defined, or to use the system
+           settings otherwise.  Levels that are enabled but not persisted are
+           written to a memory buffer so that recent history can be saved at
+           collection time.
+
+     Enable-Oversize-Messages <boolean> (default: false)
+     Use a standard or increased message size limit.  Log messages have a
+     1024-byte encoded size limit.  Enabling oversize messages increases this
+     encoded size limit to 32 kilobytes.  Oversize messages are expensive.  They
+     should not be logged from performance-sensitive code paths like the main
+     thread.
+
+     Enable-Private-Data <boolean> (default: false)
+     Enable or disable the capturing of private arguments.  See os_log(3) for
+     discussion about public versus private arguments.
+
+     Signpost-Enabled <boolean> (default: true)
+     Enable and disable signposts.
+
+     Signpost-Persisted <boolean> (default: false)
+     Control whether signposts are persisted to disk or written to a memory
+     buffer.
+
+     Signpost-Scope <string> (default: Process)
+     Control signpost interval scope with the options: Thread, Process, and
+     System.  See <os/signpost.h> for details.
+
+     Signpost-Backtraces-Enabled <boolean> (default: false)
+     Enable and disable the capture of backtrace data for signposts.
+
+EXAMPLES
+     If the following plist were at
+     /System/Library/Preferences/Logging/Subsystems/com.example.plist, it would
+     turn off logging for the "Transactions" category in the "com.example"
+     subsystem.  A profile or the log(1) config command could be used to turn it
+     on when needed.
+
+           <?xml version="1.0" encoding="UTF-8"?>
+           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+           "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+           <plist version="1.0">
+           <dict>
+               <key>Transactions</key>
+               <dict>
+                   <key>Level</key>
+                   <dict>
+                       <key>Enable</key>
+                       <string>Off</string>
+                   </dict>
+               </dict>
+           </dict>
+           </plist>
+
+     If the following OSLogPreferences dictionary were in the Info.plist of an
+     application, it would enable all levels and persist the Info and Default
+     levels for the "Details" category in the "com.example" subsystem; and it
+     would enable signpost backtraces for the "Measurements" category.
+
+           <key>OSLogPreferences</key>
+           <dict>
+               <key>com.example</key>
+               <dict>
+                   <key>Details</key>
+                   <dict>
+                       <key>Level</key>
+                       <dict>
+                           <key>Enable</key>
+                           <string>Debug</string>
+                           <key>Persist</key>
+                           <string>Info</string>
+                       </dict>
+                   </dict>
+                   <key>Measurements</key>
+                   <dict>
+                       <key>Signpost-Backtraces-Enabled</key>
+                       <true/>
+                   </dict>
+               </dict>
+           </dict>
+
+SEE ALSO
+     log(1), os_log(3), os_log_create(3), plist(5)
+
+HISTORY
+     Application-specific logging configuration was introduced in macOS 10.15.
+

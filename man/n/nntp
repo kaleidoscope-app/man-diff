@@ -1,0 +1,362 @@
+nntp(n)                      Tcl NNTP Client Library                     nntp(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       nntp - Tcl client for the NNTP protocol
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require nntp  ?0.2.1?
+
+       ::nntp::nntp ?host? ?port? ?nntpName?
+
+       nntpName method ?arg arg ...?
+
+       nntpName article ?msgid?
+
+       nntpName authinfo ?user? ?pass?
+
+       nntpName body ?msgid?
+
+       nntpName configure
+
+       nntpName configure option
+
+       nntpName configure option value ...
+
+       nntpName cget option
+
+       nntpName date
+
+       nntpName group ?group?
+
+       nntpName head ?msgid?
+
+       nntpName help
+
+       nntpName last
+
+       nntpName list
+
+       nntpName listgroup ?group?
+
+       nntpName mode_reader
+
+       nntpName newgroups since
+
+       nntpName newnews
+
+       nntpName newnews since
+
+       nntpName newnews group ?since?
+
+       nntpName next
+
+       nntpName post article
+
+       nntpName slave
+
+       nntpName stat ?msgid?
+
+       nntpName quit
+
+       nntpName xgtitle ?group_pattern?
+
+       nntpName xhdr field ?range?
+
+       nntpName xover ?range?
+
+       nntpName xpat field range ?pattern_list?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The package nntp provides a simple Tcl-only client library for the NNTP
+       protocol.  It works by opening the standard NNTP socket on the server,
+       and then providing a Tcl API to access the NNTP protocol commands.  All
+       server errors are returned as Tcl errors (thrown) which must be caught
+       with the Tcl catch command.
+
+COMMANDS
+       ::nntp::nntp ?host? ?port? ?nntpName?
+              The command opens a socket connection to the specified NNTP server
+              and creates a new nntp object with an associated global Tcl
+              command whose name is nntpName. This command may be used to access
+              the various NNTP protocol commands for the new connection. The
+              default port number is "119" and the default host is "news". These
+              defaults can be overridden with the environment variables NNTPPORT
+              and NNTPHOST respectively.
+
+              Some of the commands supported by this package are not part of the
+              nntp rfc 977 (http://www.rfc-editor.org/rfc/rfc977.txt) and will
+              not be available (or implemented) on all nntp servers.
+
+              The access command nntpName has the following general form:
+
+              nntpName method ?arg arg ...?
+                     Option and the args determine the exact behavior of the
+                     command.
+
+       nntpName article ?msgid?
+              Query the server for article msgid from the current group.  The
+              article is returned as a valid tcl list which contains the
+              headers, followed by a blank line, and then followed by the body
+              of the article. Each element in the list is one line of the
+              article.
+
+       nntpName authinfo ?user? ?pass?
+              Send authentication information (username and password) to the
+              server.
+
+       nntpName body ?msgid?
+              Query the server for the body of the article msgid from the
+              current group.  The body of the article is returned as a valid tcl
+              list. Each element in the list is one line of the body of the
+              article.
+
+       nntpName configure
+
+       nntpName configure option
+
+       nntpName configure option value ...
+
+       nntpName cget option
+              Query and configure options of the nntp connection object.
+              Currently only one option is supported, -binary. When set articles
+              are retrieved as binary data instead of text. The only methods
+              affected by this are article and body.
+
+              One application of this option would be the download of articles
+              containing yEnc encoded images. Although encoded the data is still
+              mostly binary and retrieving it as text will corrupt the
+              information.
+
+              See package yencode for both encoder and decoder of such data.
+
+       nntpName date
+              Query the server for the servers current date.  The date is
+              returned in the format YYYYMMDDHHMMSS.
+
+       nntpName group ?group?
+              Optionally set the current group, and retrieve information about
+              the currently selected group.  Returns the estimated number of
+              articles in the group followed by the number of the first article
+              in the group, followed by the last article in the group, followed
+              by the name of the group.
+
+       nntpName head ?msgid?
+              Query the server for the headers of the article msgid from the
+              current group.  The headers of the article are returned as a valid
+              tcl list. Each element in the list is one line of the headers of
+              the article.
+
+       nntpName help
+              Retrieves a list of the commands that are supported by the news
+              server that is currently attached to.
+
+       nntpName last
+              Sets the current article pointer to point to the previous message
+              (if there is one) and returns the msgid of that message.
+
+       nntpName list
+              Returns a tcl list of valid newsgroups and associated information.
+              Each newsgroup is returned as an element in the tcl list with the
+              following format:
+
+                    group last first p
+
+              where <group> is the name of the newsgroup, <last> is the number
+              of the last known article currently in that newsgroup, <first> is
+              the number of the first article currently in the newsgroup, and
+              <p> is either 'y' or 'n' indicating whether posting to this
+              newsgroup is allowed ('y') or prohibited ('n').
+
+              The <first> and <last> fields will always be numeric.  They may
+              have leading zeros.  If the <last> field evaluates to less than
+              the <first> field, there are no articles currently on file in the
+              newsgroup.
+
+       nntpName listgroup ?group?
+              Query the server for a list of all the messages (message numbers)
+              in the group specified by the argument group or by the current
+              group if the group argument was not passed.
+
+       nntpName mode_reader
+              Query the server for its nntp 'MODE READER' response string.
+
+       nntpName newgroups since
+              Query the server for a list of all the new newsgroups created
+              since the time specified by the argument since.  The argument
+              since can be any time string that is understood by clock scan. The
+              tcl list of newsgroups is returned in a similar form to the list
+              of groups returned by the nntpName list command.  Each element of
+              the list has the form:
+
+                    group last first p
+
+              where <group> is the name of the newsgroup, <last> is the number
+              of the last known article currently in that newsgroup, <first> is
+              the number of the first article currently in the newsgroup, and
+              <p> is either 'y' or 'n' indicating whether posting to this
+              newsgroup is allowed ('y') or prohibited ('n').
+
+       nntpName newnews
+              Query the server for a list of new articles posted to the current
+              group in the last day.
+
+       nntpName newnews since
+              Query the server for a list of new articles posted to the current
+              group since the time specified by the argument since.  The
+              argument since can be any time string that is understood by clock
+              scan.
+
+       nntpName newnews group ?since?
+              Query the server for a list of new articles posted to the group
+              specified by the argument group since the time specified by the
+              argument since (or in the past day if no since argument is passed.
+              The argument since can be any time string that is understood by
+              clock scan.
+
+       nntpName next
+              Sets the current article pointer to point to the next message (if
+              there is one) and returns the msgid of that message.
+
+       nntpName post article
+              Posts an article of the form specified in RFC 1036
+              (http://www.rfc-editor.org/rfc/rfc1036.txt, successor to RFC 850)
+              to the current news group.
+
+       nntpName slave
+              Identifies a connection as being made from a slave nntp server.
+              This might be used to indicate that the connection is serving
+              multiple people and should be given priority.  Actual use is
+              entirely implementation dependent and may vary from server to
+              server.
+
+       nntpName stat ?msgid?
+              The stat command is similar to the article command except that no
+              text is returned.  When selecting by message number within a
+              group, the stat command serves to set the current article pointer
+              without sending text. The returned acknowledgment response will
+              contain the message-id, which may be of some value.  Using the
+              stat command to select by message-id is valid but of questionable
+              value, since a selection by message-id does NOT alter the "current
+              article pointer"
+
+       nntpName quit
+              Gracefully close the connection after sending a NNTP QUIT command
+              down the socket.
+
+       nntpName xgtitle ?group_pattern?
+              Returns a tcl list where each element is of the form:
+
+              newsgroup description
+
+              If a group_pattern is specified then only newsgroups that match
+              the pattern will have their name and description returned.
+
+       nntpName xhdr field ?range?
+              Returns the specified header field value for the current message
+              or for a list of messages from the current group.  field is the
+              title of a field in the header such as from, subject, date, etc.
+              If range is not specified or is "" then the current message is
+              queried.  The command returns a list of elements where each
+              element has the form of:
+
+                  msgid value
+
+              Where msgid is the number of the message and value is the value
+              set for the queried field.  The range argument can be in any of
+              the following forms:
+
+              ""     The current message is queried.
+
+              msgid1-msgid2
+                     All messages between msgid1 and msgid2 (including msgid1
+                     and msgid2) are queried.
+
+              msgid1 msgid2
+                     All messages between msgid1 and msgid2 (including msgid1
+                     and msgid2) are queried.
+
+       nntpName xover ?range?
+              Returns header information for the current message or for a range
+              of messages from the current group.  The information is returned
+              in a tcl list where each element is of the form:
+
+                  msgid subject from date idstring bodysize headersize xref
+
+              If range is not specified or is "" then the current message is
+              queried.  The range argument can be in any of the following forms:
+
+              ""     The current message is queried.
+
+              msgid1-msgid2
+                     All messages between msgid1 and msgid2 (including msgid1
+                     and msgid2) are queried.
+
+              msgid1 msgid2
+                     All messages between msgid1 and msgid2 (including msgid1
+                     and msgid2) are queried.
+
+       nntpName xpat field range ?pattern_list?
+              Returns the specified header field value for a specified message
+              or for a list of messages from the current group where the
+              messages match the pattern(s) given in the pattern_list.  field is
+              the title of a field in the header such as from, subject, date,
+              etc.  The information is returned in a tcl list where each element
+              is of the form:
+
+                  msgid value
+
+              Where msgid is the number of the message and value is the value
+              set for the queried field.  The range argument can be in any of
+              the following forms:
+
+              msgid  The message specified by msgid is queried.
+
+              msgid1-msgid2
+                     All messages between msgid1 and msgid2 (including msgid1
+                     and msgid2) are queried.
+
+              msgid1 msgid2
+                     All messages between msgid1 and msgid2 (including msgid1
+                     and msgid2) are queried.
+
+EXAMPLE
+       A bigger example for posting a single article.
+
+
+           package require nntp
+           set n [nntp::nntp NNTP_SERVER]
+           $n post "From: USER@DOMAIN.EXT (USER_FULL)
+           Path: COMPUTERNAME!USERNAME
+           Newsgroups: alt.test
+           Subject: Tcl test post -ignore
+           Message-ID: <[pid][clock seconds]
+           @COMPUTERNAME>
+           Date: [clock format [clock seconds] -format "%a, %d %
+           b %y %H:%M:%S GMT" -gmt true]
+
+           Test message body"
+
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category nntp of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       news, nntp, nntpclient, rfc 1036, rfc 977
+
+CATEGORY
+       Networking
+
+
+

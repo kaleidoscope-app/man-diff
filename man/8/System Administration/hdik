@@ -1,0 +1,55 @@
+hdik(8)                      System Manager's Manual                     hdik(8)
+
+NAME
+     hdik – lightweight tool to attach and mount disk images in-kernel
+
+SYNOPSIS
+     hdik imagefile [options]
+     hdik -e device
+
+DESCRIPTION
+     hdik is a simple tool that can be used to attach disk images directly to
+     the DiskImages driver.  The end result is functionally similar to passing
+     -kernel to hdiutil(1)'s attach verb.  hdik does not rely upon the presence
+     of DiskImages or other high-level frameworks.
+
+     The DiskImages driver only supports a selection of disk image formats:
+     UDRW, UDRO, UDZO, ULFO, SPARSE (UDSP).  It also supports shadow files.
+     hdiutil(1)'s imageinfo verb indicates whether a particular image is kernel
+     compatible.
+
+     hdik requires root access to perform its functions.
+
+     In the first form, an image to attach must be provided:
+
+     imagefile   path to the disk image file to attach.
+
+     In its second form, hdik issues an eject command to the specified device.
+     The argument is the full device node path (e.g.  /dev/disk2). Any volumes
+     mounted from the device must be unmounted first, or the command will fail.
+     See umount(8).
+
+OPTIONS
+     -shadow [shadowfile]
+                 Use a shadow file in conjunction with the data in the image.
+                 This option prevents modification of the original image and
+                 allows read-only images to be used as read/write images.  When
+                 blocks are being read from the image, blocks present in the
+                 shadow file override blocks in the base image.  When blocks are
+                 being written, the writes will be redirected to the shadow
+                 file.  If not specified, -shadow defaults to
+                 <imagename>.shadow.  If the shadow file does not exist, it is
+                 created.
+
+     -nomount    Suppress automatic mounting of filesystems contained within the
+                 image.  This will result in /dev entries being created, but
+                 will not mount any volumes.
+
+     -drivekey keyname=value
+                 Specify a key/value pair for the IOHDIXHDDrive object created
+                 (shows up in the IOKit registry of devices which is viewable
+                 with ioreg(8)).
+
+SEE ALSO
+     hdiutil(1), diskarbitrationd(8), diskutil(8), umount(8), ioreg(8)
+

@@ -1,0 +1,145 @@
+SPAWN(8)                     System Manager's Manual                    SPAWN(8)
+
+
+
+
+NAME
+       spawn - Postfix external command spawner
+
+SYNOPSIS
+       spawn [generic Postfix daemon options] command_attributes...
+
+DESCRIPTION
+       The spawn(8) daemon provides the Postfix equivalent of inetd.  It listens
+       on a port as specified in the Postfix master.cf file and spawns an
+       external command whenever a connection is established.  The connection
+       can be made over local IPC (such as UNIX-domain sockets) or over
+       non-local IPC (such as TCP sockets).  The command´s standard input,
+       output and error streams are connected directly to the communication
+       endpoint.
+
+       This daemon expects to be run from the master(8) process manager.
+
+COMMAND ATTRIBUTE SYNTAX
+       The external command attributes are given in the master.cf file at the
+       end of a service definition.  The syntax is as follows:
+
+       user=username (required)
+
+       user=username:groupname
+              The external command is executed with the rights of the specified
+              username.  The software refuses to execute commands with root
+              privileges, or with the privileges of the mail system owner. If
+              groupname is specified, the corresponding group ID is used instead
+              of the group ID of username.
+
+       argv=command... (required)
+              The command to be executed. This must be specified as the last
+              command attribute.  The command is executed directly, i.e. without
+              interpretation of shell meta characters by a shell command
+              interpreter.
+
+BUGS
+       In order to enforce standard Postfix process resource controls, the
+       spawn(8) daemon runs only one external command at a time.  As such, it
+       presents a noticeable overhead by wasting precious process resources. The
+       spawn(8) daemon is expected to be replaced by a more structural solution.
+
+DIAGNOSTICS
+       The spawn(8) daemon reports abnormal child exits.  Problems are logged to
+       syslogd(8).
+
+SECURITY
+       This program needs root privilege in order to execute external commands
+       as the specified user. It is therefore security sensitive.  However the
+       spawn(8) daemon does not talk to the external command and thus is not
+       vulnerable to data-driven attacks.
+
+CONFIGURATION PARAMETERS
+       Changes to main.cf are picked up automatically as spawn(8) processes run
+       for only a limited amount of time. Use the command "postfix reload" to
+       speed up a change.
+
+       The text below provides only a parameter summary. See postconf(5) for
+       more details including examples.
+
+       In the text below, transport is the first field of the entry in the
+       master.cf file.
+
+RESOURCE AND RATE CONTROL
+
+       transport_time_limit ($command_time_limit)
+              The amount of time the command is allowed to run before it is
+              terminated.
+
+              Postfix 2.4 and later support a suffix that specifies the time
+              unit: s (seconds), m (minutes), h (hours), d (days), w (weeks).
+              The default time unit is seconds.
+
+MISCELLANEOUS
+
+       config_directory (see 'postconf -d' output)
+              The default location of the Postfix main.cf and master.cf
+              configuration files.
+
+       daemon_timeout (18000s)
+              How much time a Postfix daemon process may take to handle a
+              request before it is terminated by a built-in watchdog timer.
+
+       export_environment (see 'postconf -d' output)
+              The list of environment variables that a Postfix process will
+              export to non-Postfix processes.
+
+       ipc_timeout (3600s)
+              The time limit for sending or receiving information over an
+              internal communication channel.
+
+       mail_owner (postfix)
+              The UNIX system account that owns the Postfix queue and most
+              Postfix daemon processes.
+
+       max_idle (100s)
+              The maximum amount of time that an idle Postfix daemon process
+              waits for an incoming connection before terminating voluntarily.
+
+       max_use (100)
+              The maximal number of incoming connections that a Postfix daemon
+              process will service before terminating voluntarily.
+
+       process_id (read-only)
+              The process ID of a Postfix command or daemon process.
+
+       process_name (read-only)
+              The process name of a Postfix command or daemon process.
+
+       queue_directory (see 'postconf -d' output)
+              The location of the Postfix top-level queue directory.
+
+       syslog_facility (mail)
+              The syslog facility of Postfix logging.
+
+       syslog_name (see 'postconf -d' output)
+              A prefix that is prepended to the process name in syslog records,
+              so that, for example, "smtpd" becomes "prefix/smtpd".
+
+SEE ALSO
+       postconf(5), configuration parameters
+       master(8), process manager
+       syslogd(8), system logging
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+AUTHOR(S)
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

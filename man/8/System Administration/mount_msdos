@@ -1,0 +1,53 @@
+MOUNT_MSDOS(8)               System Manager's Manual              MOUNT_MSDOS(8)
+
+NAME
+     mount_msdos – mount an MS-DOS file system
+
+SYNOPSIS
+     mount_msdos [-o options] [-u uid] [-g gid] [-m mask] special node
+
+DESCRIPTION
+     The mount_msdos command attaches the MS-DOS filesystem residing on the
+     device special to the global filesystem namespace at the location indicated
+     by node.  This command is normally executed by mount(8) at boot time, but
+     can be used by any user to mount an MS-DOS file system on any directory
+     that they own (provided, of course, that they have appropriate access to
+     the device that contains the file system).
+
+     The options are as follows:
+
+     -o options
+             Use the specified mount options, as described in mount(8).
+
+     -u uid  Set the owner of the files in the file system to uid.  The default
+             owner is the owner of the directory on which the file system is
+             being mounted.
+
+     -g gid  Set the group of the files in the file system to gid.  The default
+             group is the group of the directory on which the file system is
+             being mounted.
+
+     -m mask
+             Specify the maximum file permissions for files in the file system.
+             (For example, a mask of 755 specifies that, by default, the owner
+             should have read, write, and execute permissions for files, but
+             others should only have read and execute permissions.  See chmod(1)
+             for more information about octal file modes.)  Only the nine low-
+             order bits of mask are used.  The default mask is taken from the
+             directory on which the file system is being mounted.
+
+SEE ALSO
+     mount(2), unmount(2), fstab(5), mount(8)
+
+CAVEATS
+     FreeBSD 2.1 and earlier versions could not handle cluster sizes larger than
+     16K.  Just mounting an MS-DOS file system could cause corruption to any
+     mounted file system.  Cluster sizes larger than 16K are unavoidable for
+     file system sizes larger than 1G, and also occur when filesystems larger
+     than 1G are shrunk to smaller than 1G using FIPS.
+
+HISTORY
+     The mount_msdos utility first appeared in FreeBSD 2.0.  Its predecessor,
+     the mount_pcfs utility appeared in FreeBSD 1.0, and was abandoned in favor
+     of the more aptly-named mount_msdos.
+

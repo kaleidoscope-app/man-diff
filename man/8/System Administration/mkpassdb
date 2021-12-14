@@ -1,0 +1,158 @@
+mkpassdb(8)                  System Manager's Manual                 mkpassdb(8)
+
+NAME
+     mkpassdb – Mac OS X Server Password Server database creation tool
+
+SYNOPSIS
+     mkpassdb -deleteslot slot-ID
+     mkpassdb -dump [-v]
+     mkpassdb -dump [slot-ID]
+     mkpassdb -header
+     mkpassdb -kerberize
+     mkpassdb -key
+     mkpassdb -list
+     mkpassdb -mergedb path
+     mkpassdb -mergeparent path
+     mkpassdb -setadmin slot-ID [admin-class (0-7)]
+     mkpassdb -setglobalpolicy "policy1=value1 policy2=value2 etc."
+     mkpassdb -setkerberos slot-ID KerberosRealm
+     mkpassdb -setkeyagent slot-ID
+     mkpassdb -setcomputeraccount [off]
+     mkpassdb -setrealm realm
+     mkpassdb -getreplicationinterval
+     mkpassdb -setreplicationinterval seconds [policy]
+     mkpassdb -rekeydb [key-size-in-bits]
+     mkpassdb [-u user] [-m mech] [-a] [-b] [-e count] [-n replica-name] [-o]
+              [-p] [-q]
+
+DESCRIPTION
+     mkpassdb creates or modifies the password server database directly.
+
+     mkpassdb must be run as root; it will exit otherwise. The -list command is
+     the only exception.
+
+     This tool's purpose is to create and manage the password server database.
+     It performs operations that are not supported by the password server
+     protocol because of security concerns. These operations include the
+     creation and destruction of the database itself, the creation of the RSA
+     security keys that establish the identity of the password server, the
+     trusted mechanism list, and the genesis of administrator accounts. It also
+     allows the root account to make some password server changes on the local
+     system.
+
+     -deleteslot               Invalidates a slot ID in the database.
+     -dump                     Outputs all of the User IDs and their
+                               corresponding user names. If a slot-ID is
+                               specified, it prints out more detailed
+                               information for a single slot. If the [-v] option
+                               is used, additional columns are included.
+     -header                   Outputs the database header information.
+     -kerberize                Attempts to add kerberos principals for all non-
+                               kerberos accounts in password server.
+     -key                      Outputs the RSA public key stored in the
+                               database.
+     -list                     Outputs all of the SASL mechanisms available to
+                               the password server.
+     -mergedb                  This command is a low-level command that is
+                               invoked by a higher-level tool in normal usage.
+                               Refer to the restoredb command in the slapconfig
+                               man page.  This command merges a snapshot of the
+                               password server database into the current
+                               database whether or not the daemon is running.
+                               This command takes existing LDAP users, looks for
+                               their data in the specified db file, and merges
+                               their db information.  If there is data in the db
+                               without a corresponding LDAP user or computer, it
+                               is not merged.  The identity elements of the
+                               password server, including RSA keys and replica
+                               name, are changed to the snapshot's contents.
+     -mergeparent              This command is a low-level command that is
+                               invoked by a higher-level tool in normal usage.
+                               Refer to the mergedb command in the slapconfig
+                               man page.  This command merges a snapshot of the
+                               password server database into the current
+                               database whether or not the daemon is running.
+                               This command takes existing LDAP
+                                users, looks for their data in the specified db
+                               file, and merges their db information.  If there
+                               is data in the db without a corresponding LDAP
+                               user or compute r, it is not merged.  The current
+                               identity of the password server is preserved.
+     -setadmin                 Promotes a slot-ID to have administrator
+                               privileges for the password server. By default,
+                               administrators set with mkpassdb receive the most
+                               priveleged rank (0).
+     -setglobalpolicy          Sets the default policies for all users.
+     -setkerberos              Assigns a Kerberos realm to a password server
+                               account.
+     -setkeyagent              Promotes a slot-ID to have enough administrator
+                               privileges to retrieve session keys on behalf of
+                               other accounts.
+     -setcomputeraccount       Informs the password server that the account
+                               belongs to a computer rather than a user.
+                               Computer accounts are not subject to policies and
+                               do not expire. Using the optional "off" argument
+                               changes the state back to a user account.
+     -setrealm                 Sets the password server's SASL realm.
+     -getreplicationinterval   Gets the number of seconds between replication
+                               attempts.
+     -setreplicationinterval   Sets the number of seconds between replication
+                               attempts.
+     -rekeydb                  Generates a new RSA public/private key pair for
+                               the database. Valid sizes are 1024, 2048, or
+                               3072.  This command should be invoked by a
+                               higher-level tool. If run from the command line,
+                               existing users will not be able to authenticate.
+                               The PasswordService daemon must be turned off
+                               with, "NeST -stoppasswordserver" before this
+                               command can be used.
+
+OPTIONS
+     The following options are available:
+
+     -a    add a new administrator to an existing database.
+
+     -b    add a new non-administrative user to an existing database.
+
+     -e    expand the database to a fixed number of records. If the number is
+           greater than the current size of the database, then the database is
+           expanded; otherwise, no action is performed. This option is used by
+           other setup tools when establishing a replica database. There is no
+           reason to use it from the command line.
+
+     -m mech
+           establishes a mechanism as weak. If a mechanism is considered weak,
+           then it can be used to verify passwords but the password server will
+           not allow write operations to its database. The mechanisms SMB-NT,
+           SMB-LAN-MANAGER, CRYPT, and APOP are always in the weak list.
+           Directory Services uses DHX to perform write operations to the
+           password server.
+
+     -n name
+           Assign a name to a replica
+
+     -o    overwrite an existing database. Replacing an existing database is
+           extremely destructive and should not be done unless all password
+           server users have been removed from the directory system.
+
+     -p    prompt for a password
+
+     -q    quiet
+
+     -u user
+           Add this user name to the database.
+
+USAGE
+     In typical usage, mkpassdb is invoked by another tool. It is used directly
+     on rare occasion.
+
+FILES & FOLDERS
+     /Library/Preferences/com.apple.passwordserver.plist - the PasswordService preferences file
+     /usr/sbin/PasswordService - the password service daemon
+     /var/db/authserver/authservermain - password database (guard this)
+     /var/db/authserver/authserverfree - list of free (reusable) slots in the database
+     /var/db/authserver/authserverreplicas - table of password server replicas
+
+SEE ALSO
+     NeST(8) PasswordService(8) slapconfig(8)
+

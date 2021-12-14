@@ -1,0 +1,57 @@
+KPASSWDD(8)                  System Manager's Manual                 KPASSWDD(8)
+
+NAME
+     kpasswdd – Kerberos 5 password changing server
+
+SYNOPSIS
+     kpasswdd [--addresses=address] [--check-library=library]
+              [--check-function=function] [-k kspec | --keytab=kspec]
+              [-r realm | --realm=realm] [-p string | --port=string] [--version]
+              [--help]
+
+DESCRIPTION
+     kpasswdd serves request for password changes. It listens on UDP port 464
+     (service kpasswd) and processes requests when they arrive. It changes the
+     database directly and should thus only run on the master KDC.
+
+     Supported options:
+
+     --addresses=address
+             For each till the argument is given, add the address to what
+             kpasswdd should listen too.
+
+     --check-library=library
+             If your system has support for dynamic loading of shared libraries,
+             you can use an external function to check password quality. This
+             option specifies which library to load.
+
+     --check-function=function
+             This is the function to call in the loaded library. The function
+             should look like this:
+
+             const char * passwd_check(krb5_context context, krb5_principal
+             principal, krb5_data *password)
+
+             context is an initialized context; principal is the one who tries
+             to change passwords, and password is the new password. Note that
+             the password (in password->data) is not zero terminated.
+
+     -k kspec, --keytab=kspec
+             Keytab to get authentication key from.
+
+     -r realm, --realm=realm
+             Default realm.
+
+     -p string, --port=string
+             Port to listen on (default service kpasswd - 464).
+
+DIAGNOSTICS
+     If an error occurs, the error message is returned to the user and/or logged
+     to syslog.
+
+BUGS
+     The default password quality checks are too basic.
+
+SEE ALSO
+     kpasswd(1), kdc(8)
+

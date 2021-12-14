@@ -1,0 +1,22 @@
+CHECKGID(8)                  System Manager's Manual                 CHECKGID(8)
+
+NAME
+     checkgid – validate group identifiers
+
+SYNOPSIS
+     checkgid group ...
+
+DESCRIPTION
+     Given one or more group identifers on the command line (e.g., "httpd" or
+     "#-1"), figure out whether they'll be valid for the server to use at run-
+     time.
+
+     If a groupname isn't found, or we can't setgid() to it, return -1.  If all
+     groups are valid, return 0.
+
+     This may need to be run as the superuser for the setgid() to succeed;
+     running it as any other user may result in a false negative.
+
+SEE ALSO
+     httpd(8)
+

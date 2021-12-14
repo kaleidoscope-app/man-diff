@@ -1,0 +1,324 @@
+iwidgets::extfileselectionbox(1)                                  [incr Widgets]
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::extfileselectionbox - Create and manipulate a file selection
+       box widget
+
+SYNOPSIS
+       iwidgets::extfileselectionbox pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Extfileselectionbox
+
+STANDARD OPTIONS
+
+       activeBackground   background         borderWidth         cursor
+       foreground         highlightColor     highlightThickness  insertBackground
+       insertBorderWidth  insertOffTime      insertOnTime        insertWidth
+       selectBackground   selectBorderWidth  selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       popupCursor     textBackground textFont
+
+       See the "combobox" widget manual entry for details on the above
+       associated options.
+
+       labelFont
+
+       See the "labeledwidget" widget manual entry for details on the above
+       associated options.
+
+       sashCursor
+
+       See the "panedwindow" widget manual entry for details on the above
+       associated options.
+
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" widget class manual entry for details on the above
+       associated options.
+
+       textBackground  textFont
+
+       See the "scrolledlistbox" widget manual entry for details on the above
+       associated options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           automount
+       Class:          Automount
+       Command-Line Switch:           -automount
+
+              Specifies a list of directory prefixes to ignore. Typically, this
+              option would be used as follows:
+                  -automount {export tmp_mnt}
+
+       Name:           childSitePos
+       Class:          Position
+       Command-Line Switch:           -childsitepos
+
+              Specifies the position of the child site in the extended
+              fileselection box: n, s, e, w, top, or bottom.  The default is s.
+
+       Name:           directory
+       Class:          Directory
+       Command-Line Switch:           -directory
+
+              Specifies the initial default directory.  The default is the
+              present working directory.
+
+       Name:           dirSearchCommand
+       Class:          Command
+       Command-Line Switch:           -dirsearchcommand
+
+              Specifies a Tcl command to be executed to perform a directory
+              search.  The command will receive the current working directory
+              and filter mask as arguments.  The command should return a list of
+              files which will be placed into the directory list.
+
+       Name:           dirsLabel
+       Class:          Text
+       Command-Line Switch:           -dirslabel
+
+              Specifies the text of the label for the directory list.  The
+              default is "Directories".
+
+       Name:           dirsOn
+       Class:          DirsOn
+       Command-Line Switch:           -dirson
+
+              Specifies whether or not to display the directory list.  The value
+              may be given in any of the forms acceptable to Tcl_GetBoolean.
+              The default is true.
+
+       Name:           fileSearchCommand
+       Class:          Command
+       Command-Line Switch:           -filesearchcommand
+
+              Specifies a Tcl command to be executed to perform a file search.
+              The command will receive the current working directory and filter
+              mask as arguments.  The command should return a list of files
+              which will be placed into the file list.
+
+       Name:           filesLabel
+       Class:          Text
+       Command-Line Switch:           -fileslabel
+
+              Specifies the text of the label for the files list.  The default
+              is "Files".
+
+       Name:           filesOn
+       Class:          FilesOn
+       Command-Line Switch:           -fileson
+
+              Specifies whether or not to display the files list.  The value may
+              be given in any of the forms acceptable to Tcl_GetBoolean.  The
+              default is true.
+
+       Name:           fileType
+       Class:          FileType
+       Command-Line Switch:           -filetype
+
+              Specify the type of files which may appear in the file list:
+              regular, directory, or any.  The default is regular.
+
+       Name:           filterCommand
+       Class:          Command
+       Command-Line Switch:           -filtercommand
+
+              Specifies a Tcl command to be executed upon hitting the Return key
+              in the filter combobox widget.
+
+       Name:           filterLabel
+       Class:          Text
+       Command-Line Switch:           -filterlabel
+
+              Specifies the text of the label for the filter combobox.  The
+              default is "Filter".
+
+       Name:           filterOn
+       Class:          FilterOn
+       Command-Line Switch:           -filteron
+
+              Specifies whether or not to display the filter combobox.  The
+              value may be given in any of the forms acceptable to
+              Tcl_GetBoolean.  The default is true.
+
+       Name:           height
+       Class:          Height
+       Command-Line Switch:           -height
+
+              Specifies the height of the selection box.  The value may be
+              specified in any of the forms acceptable to Tk_GetPixels.  The
+              default is 300 pixels.
+
+       Name:           invalid
+       Class:          Command
+       Command-Line Switch:           -invalid
+
+              Command to be executed should the filter contents be proven
+              invalid.  The default is {bell}.
+
+       Name:           mask
+       Class:          Mask
+       Command-Line Switch:           -mask
+
+              Specifies the initial file mask string.  The default is "*".
+
+       Name:           noMatchString
+       Class:          NoMatchString
+       Command-Line Switch:           -nomatchstring
+
+              Specifies the string to be displayed in the files list should no
+              files match the mask.  The default is "".
+
+       Name:           selectDirCommand
+       Class:          Command
+       Command-Line Switch:           -selectdirommand
+
+              Specifies a Tcl command to be executed following selection of a
+              directory in the directory list.
+
+       Name:           selectFileCommand
+       Class:          Command
+       Command-Line Switch:           -selectfileommand
+
+              Specifies a Tcl command to be executed following selection of a
+              file in the files list.
+
+       Name:           selectionCommand
+       Class:          Command
+       Command-Line Switch:           -selectioncommand
+
+              Specifies a Tcl command to be executed upon hitting the Return key
+              in the selection combobox widget.
+
+       Name:           selectionLabel
+       Class:          Text
+       Command-Line Switch:           -selectionlabel
+
+              Specifies the text of the label for the selection combobox.  The
+              default is "Selection".
+
+       Name:           selectionOn
+       Class:          SelectionOn
+       Command-Line Switch:           -selectionon
+
+              Specifies whether or not to display the selection combobox.  The
+              value may be given in any of the forms acceptable to
+              Tcl_GetBoolean.  The default is true.
+
+       Name:           width
+       Class:          Width
+       Command-Line Switch:           -width
+
+              Specifies the width of the selection box.  The value may be
+              specified in any of the forms acceptable to Tk_GetPixels.  The
+              default is 350 pixels.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::extfileselectionbox command creates an extended file
+       selection box which is slightly different than the fileselectionbox
+       widget.  The differences are mostly cosmetic in that the listboxes are
+       within a panedwindow and the entryfields for the filter and selection
+       have been replaced by comboboxes.  Other than that the interface is
+       practically the same.
+
+
+METHODS
+       The iwidgets::extfileselectionbox command creates a new Tcl command whose
+       name is pathName.  This command may be used to invoke various operations
+       on the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for extfileselectionbox widgets:
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::extfileselectionbox command.
+
+       pathName childsite
+              Returns the child site widget path name.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::extfileselectionbox
+              command.
+
+       pathName filter
+              Update the current contents of the extended file selection box
+              based on the current filter combobox value.
+
+       pathName get
+              Returns the current value of the selection combobox widget.
+
+
+COMPONENTS
+       Name:           dirs
+       Class:          Scrolledlistbox
+
+              The dirs component is the directory list box for the extended
+              fileselection box. See the "scrolledlistbox" widget manual entry
+              for details on the dirs component item.
+
+       Name:           files
+       Class:          Scrolledlistbox
+
+              The files component is the file list box for the extended
+              fileselection box.  See the "scrolledlistbox" widget manual entry
+              for details on the files component item.
+
+       Name:           filter
+       Class:          Combobox
+
+              The filter component is the field for user input of the filter
+              value.  See the "combobox" widget manual entry for details on the
+              filter component item.
+
+       Name:           selection
+       Class:          Combobox
+
+              The selection component is the field for user input of the
+              currently selected file value.  See the "combobox" widget manual
+              entry for details on the selection component item.
+
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              iwidgets::extfileselectionbox .fsb
+              pack .fsb -padx 10 -pady 10 -fill both -expand yes
+
+
+AUTHOR(S)
+       Mark L. Ulferts
+
+       Anthony Parent
+
+KEYWORDS
+       extfileselectionbox, widget
+
+
+

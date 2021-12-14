@@ -1,0 +1,74 @@
+netbiosd(8)                  System Manager's Manual                 netbiosd(8)
+
+NAME
+     netbiosd – NetBIOS protocol daemon
+
+SYNOPSIS
+     netbiosd [options]
+
+DESCRIPTION
+     netbiosd is responsible for interacting with NetBIOS networks.  netbiosd
+     registers and defends one or more NetBIOS name, depending on the set of
+     configured services. It also browses and scavenges names from the NetBIOS
+     network, making them available to the system through mDNSResponder.
+
+OPTIONS
+     -debug   The service will log extensive debug information and may perform
+              extra diagnostic checks. This option is typically only useful for
+              debugging.
+
+     -dump-packets
+              Pretty-print all sent and received NetBIOS packets to the output
+              log. This option is typically only useful for debugging.
+
+     -help    Prints a usage message and exits.
+
+     -max-refresh
+              Maximum time (in seconds) between searches to refresh the
+              workgroup list.
+
+     -min-refresh
+              Minimum time (in seconds) between searches to refresh the
+              workgroup list.
+
+     -stdout  Causes netbiosd to print log messages to standard output instead
+              of the system log.
+
+FILES
+     /Library/Preferences/SystemConfiguration/com.apple.smb.server.plist
+              The primary configuration for the SMB stack. This file is updated
+              by various system services and should not be edited by hand.
+
+     /System/Library/LaunchDaemons/com.apple.netbiosd.plist
+              The netbiosd service's property list file for launchd(8).
+
+SIGNALS
+     SIGHUP   This signal causes netbiosd to reconfigure. It will first
+              unregister any NetBIOS names it has registered.  Then it will
+              determine its new set of NetBIOS names and register those.
+
+     SIGUSR1  This signal causes netbiosd to toggle debug logging.
+
+SEE ALSO
+     launchd(8), mDNSResponder(8)
+
+STANDARDS
+     The TCP/UDP embodiment of the NetBIOS protocol is documented in
+
+     RFC 1002
+              Protocol standard for a NetBIOS service on a TCP/UDP: Detailed
+              Specifications, 1987
+
+     RFC 1001
+              Protocol standard for a NetBIOS service on a TCP/UDP: Concepts and
+              Methods, 1987
+
+     The NetBIOS browsing protocol is documented as part of the Microsoft Work
+     Group Server Protocol Program (WSPP) technical documentation set,
+     specifically
+
+     MS-BRWS  Common Internet File System (CIFS) Browser Protocol Specification
+
+HISTORY
+     The netbiosd utility first appeared in Mac OS 10.7.
+

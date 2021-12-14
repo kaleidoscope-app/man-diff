@@ -1,0 +1,35 @@
+emond(8)                     System Manager's Manual                    emond(8)
+
+NAME
+     emond – Event Monitor Daemon
+
+SYNOPSIS
+     emond [-r path] [-c path]
+
+DESCRIPTION
+     emond accepts events from various services, runs them through a simple
+     rules engine, and takes action. The actions can run commands; send email,
+     or SMS messages.
+
+     Options:
+
+     -r path_to_rules
+              Tells emond to look for rules files in the specified path. The
+              path may refer to either a file or a directory. If the path refers
+              to a directory, then all files with a .plist extension in that
+              directory will be loaded.
+
+     -c path_to_config
+              Tells emond to look in specified path for its config file.
+
+FILES
+     /etc/emond.d/rules/                           Default directory where emond
+                                                   looks for rules.
+     /etc/emond.d/emond.plist                      the plist formatted config
+                                                   file
+     /System/Library/LaunchDaemons/com.apple.emond.plist
+                                                   the launchd config file
+
+SEE ALSO
+     emond.plist(5), distnoted(8), emlog.pl(8), launchd(8), xssendevent(8)
+

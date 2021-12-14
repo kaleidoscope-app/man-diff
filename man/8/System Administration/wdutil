@@ -1,0 +1,61 @@
+wdutil(8)                    System Manager's Manual                   wdutil(8)
+
+NAME
+     wdutil – Wireless Diagnostics command line utility.
+
+SYNOPSIS
+     wdutil [command]
+
+DESCRIPTION
+     wdutil provides functionality of the Wireless Diagnostics application in
+     command line form.
+
+COMMANDS
+     The following commands are available:
+
+     diagnose [-f outputDirectoryPath]
+
+           Equivalent to running the Wireless Diagnostics application, without
+           UI. The default outputDirectoryPath is /var/tmp.
+
+           Requires sudo.
+
+     info
+
+           Displays all of the content included in the Wi-Fi Info utility view.
+
+     log [{+|-} {dhcp|od|dns|eapol|wifi}]+
+
+           Enables or disables logging for DHCP, OpenDirectory, DNS, EAPOL, and
+           Wi-Fi
+
+           Requires sudo.
+
+     dump
+
+           Dumps the temporary Wi-Fi log buffer to /tmp/wifi-XXXXXX.log
+
+EXAMPLES
+     Run all diagnostic tests:
+
+           sudo wdutil diagnose
+
+     Gather information about the current wireless environment:
+
+           wdutil info
+
+     Enable DHCP and OpenDirectory logging:
+
+           sudo wdutil log +dhcp +od
+
+     Disable EAPOL logging:
+
+           sudo wdutil log -eapol
+
+AUTHOR
+     This program and document are maintained by Apple Inc. <wifi-
+     diags@group.apple.com>.
+
+HISTORY
+     The wdutil command first appeared in Mac OS X Version 10.9.
+

@@ -1,0 +1,165 @@
+iwidgets::radiobox(1)            [incr Widgets]            iwidgets::radiobox(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::radiobox - Create and manipulate a radiobox widget
+
+SYNOPSIS
+       iwidgets::radiobox pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledframe <- iwidgets::Radiobox
+
+STANDARD OPTIONS
+       background      borderWidth    cursor          disabledForeground
+       foreground      relief         selectColor
+
+       See the "options" manual entry for details on the standard options.
+
+INHERITED OPTIONS
+       labelBitmap     labelFont      labelImage      labelMargin
+       labelPos        labelText      labelVariable
+
+       See the "labeledframe" class manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:   command
+       Class:  Command
+       Command-Line Switch:    -command
+
+              Specifies a Tcl command procedure to be evaluated following a
+              change in the current radio box selection.
+
+       Name:   orient
+       Class:  Orient
+       Command-Line Switch:    -orient
+       Default Value:  vertical
+
+              Specifies the orientation of the radiobuttons within the radiobox.
+              Valid values are either "horizontal" or "vertical".
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::radiobox command creates a radio button box widget capable
+       of adding, inserting, deleting, selecting, and configuring radiobuttons
+       as well as obtaining the currently selected button.
+
+
+METHODS
+       The iwidgets::radiobox command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.
+
+       Many of the widget commands for the radiobox take as one argument an
+       indicator of which radiobutton of the radiobox to operate on.  These
+       indicators are called indexes and allow reference and manipulation of
+       radiobuttons.  Radiobox indexes may be specified in any of the following
+       forms:
+
+       number      Specifies the radiobutton numerically, where 0 corresponds to
+                   the top radiobutton of the radiobox.
+
+       end         Indicates the last radiobutton of the radiobox.
+
+       pattern     If the index doesn't satisfy one of the above forms then this
+                   form is used.  Pattern is pattern-matched against the tag of
+                   each radiobutton in the radiobox, in order from top to
+                   bottom, until a matching entry is found.  The rules of
+                   Tcl_StringMatch are used.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName add tag ?option value option value?
+              Adds a new radiobutton to the radiobuttond window on the bottom.
+              The command takes additional options which are passed on to the
+              radiobutton as construction arguments.  These include the standard
+              Tk radiobutton options.  The tag is returned.
+
+       pathName buttonconfigure index ?options?
+              This command is similar to the configure command, except that it
+              applies to the options for an individual radiobutton, whereas
+              configureapplies to the options for the radiobox as a whole.
+              Options may have any of the values accepted by the add widget
+              command.  If options are specified, options are modified as
+              indicated in the command and the command returns an empty string.
+              If no options are specified, returns a list describing the current
+              options for entry index (see Tk_ConfigureInfo for information on
+              the format of this list).
+
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::radiobox command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::radiobox command.
+
+       pathName delete index
+              Deletes a specified radiobutton given an index.
+
+       pathName deselect index
+              Deselects a specified radiobutton given an index.
+
+       pathName flash index
+              Flashes a specified radiobutton given an index.
+
+       pathName get
+              Returns the tag of the currently selected radiobutton.
+
+       pathName index index
+              Returns the numerical index corresponding to index.
+
+       pathName insert index tag ?option value option value ...?
+              Same as the add command except that it inserts the new radiobutton
+              just before the one given by index, instead of appending to the
+              end of the radiobox.  The option, and value arguments have the
+              same interpretation as for the add widget command.
+
+       pathName select index
+              Selects a specified radiobutton given an index.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::radiobox .rb -labeltext Fonts
+               .rb add times -text Times
+               .rb add helvetica -text Helvetica
+               .rb add courier -text Courier
+               .rb add symbol -text Symbol
+               .rb select courier
+
+               pack .rb -padx 10 -pady 10 -fill both -expand yes
+
+
+
+AUTHOR
+       Michael J. McLennan
+
+       Mark L. Ulferts
+
+KEYWORDS
+       radiobox, widget
+
+
+

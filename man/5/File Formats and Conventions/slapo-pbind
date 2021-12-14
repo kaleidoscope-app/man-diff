@@ -1,0 +1,57 @@
+SLAPO-PBIND(5)                 File Formats Manual                SLAPO-PBIND(5)
+
+
+
+NAME
+       slapo-pbind - proxy bind overlay to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The pbind overlay to slapd(8) forwards Simple Binds on a local database
+       to a remote LDAP server instead of processing them locally. The remote
+       connection is managed using an instance of the ldap backend.
+
+
+       The pbind overlay uses a subset of the ldap backend's config directives.
+       They are described in more detail in slapd-ldap(5).
+
+       Note: this overlay is built into the ldap backend; it is not a separate
+       module.
+
+
+       overlay pbind
+              This directive adds the proxy bind overlay to the current backend.
+              The proxy bind overlay may be used with any backend, but it is
+              mainly intended for use with local storage backends.
+
+
+       uri <ldapurl>
+              LDAP server to use.
+
+
+       tls <TLS parameters>
+              Specify the use of TLS.
+
+
+       network-timeout <time>
+              Set the network timeout.
+
+
+       quarantine <quarantine parameters>
+              Turns on quarantine of URIs that returned LDAP_UNAVAILABLE.
+
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5), slapd-ldap(5), slapd(8).
+
+AUTHOR
+       Howard Chu
+
+
+

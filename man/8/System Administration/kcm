@@ -1,0 +1,91 @@
+KCM(8)                       System Manager's Manual                      KCM(8)
+
+NAME
+     kcm – process-based credential cache for Kerberos tickets.
+
+SYNOPSIS
+     kcm [--cache-name=cachename] [-c file | --config-file=file]
+         [-g group | --group=group] [--max-request=size]
+         [--disallow-getting-krbtgt] [--use-uid-matching] [--detach]
+         [-h | --help] [-k principal | --system-principal=principal]
+         [-l time | --lifetime=time] [-n | --no-name-constraints]
+         [-r time | --renewable-life=time] [-s path | --socket-path=path]
+         [--door-path=path] [-S principal | --server=principal]
+         [-t keytab | --keytab=keytab] [-u user | --user=user] [-v | --version]
+
+DESCRIPTION
+     kcm is a process based credential cache.  To use it, set the KRB5CCNAME
+     enviroment variable to ‘KCM:uid’ or add the stanza
+
+
+     [libdefaults]
+             default_cc_name = KCM:%{uid}
+
+     to the /etc/krb5.conf configuration file and make sure kcm is started in
+     the system startup files.
+
+     The kcm daemon can hold the credentials for all users in the system.
+     Access control is done with Unix-like permissions.  The daemon checks the
+     access on all operations based on the uid of the user.  The tickets are
+     renewed as long as is permitted by the KDC's policy.
+
+     The kcm daemon can also keep a SYSTEM credential that server processes can
+     use to access services.  One example of usage might be an nss_ldap module
+     that quickly needs to get credentials and doesn't want to renew the ticket
+     itself.
+
+     Supported options:
+
+     --cache-name=cachename
+             system cache name
+
+     -c file, --config-file=file
+             location of config file
+
+     -g group, --group=group
+             system cache group
+
+     --max-request=size
+             max size for a kcm-request
+
+     --disallow-getting-krbtgt
+             disallow extracting any krbtgt from the
+
+     --use-uid-matching
+             use uid only to determine if a user can access a credential or not
+             kcm daemon.
+
+     --detach
+             detach from console
+
+     -h, --help
+
+     -k principal, --system-principal=principal
+             system principal name
+
+     -l time, --lifetime=time
+             lifetime of system tickets
+
+     -n, --no-name-constraints
+             disable credentials cache name constraints
+
+     -r time, --renewable-life=time
+             renewable lifetime of system tickets
+
+     -s path, --socket-path=path
+             path to kcm domain socket
+
+     --door-path=path
+             path to kcm door socket
+
+     -S principal, --server=principal
+             server to get system ticket for
+
+     -t keytab, --keytab=keytab
+             system keytab name
+
+     -u user, --user=user
+             system cache owner
+
+     -v, --version
+

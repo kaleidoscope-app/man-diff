@@ -1,0 +1,74 @@
+SNCFGVALIDATE(8)             System Manager's Manual            SNCFGVALIDATE(8)
+
+
+
+NAME
+       sncfgvalidate - Validate a Xsan Volume configuration file
+
+SYNOPSIS
+       sncfgvalidate -n VolName [-f config_file] [-M msg_format]
+
+       sncfgvalidate -h
+
+DESCRIPTION
+       The sncfgvalidate program will validate a Xsan file system configuration
+       file.
+
+       If only an VolName is specified, sncfgvalidate looks for an already
+       installed configuration file for the named file system, and validates its
+       syntax if it exists.
+
+       If an VolName and a config_file are specified, the specified config
+       file's internal syntax is validated, and it is compared against the
+       currently installed configuration file for the named file system (if it
+       exists).
+
+OPTIONS
+       -h     Display usage.
+
+       -n VolName
+              Required. The name of the file system whose config is to be
+              validated.
+
+       -f config_file
+              Specify the config file to validate.
+
+       -M msg_format
+              Specify XML if you want messages to come back in XML format.  This
+              defaults to ASCII.
+
+EXIT VALUES
+       sncfgvalidate will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List usage:
+
+          # sncfgvalidate -h
+          Usage: sncfgvalidate -n <fs_name> [-f <config_path>] [-M <fmt>]
+            -f            Path to file to validate
+            -n            Name of file system to validate
+            -M            Message format: ASCII, XML (default ASCII)
+            -h            This usage
+
+       validate an installed config:
+
+          # sncfgvalidate -n snfs1
+          'snfs1' validated
+
+       validate a new config
+
+          # sncfgvalidate -n snfs2 -f /tmp/mysnfs2
+          'snfs' validated
+
+       validate a modified config against the installed config (with an invalid
+       change)
+
+          # sncfgvalidate -n snfs1 -f /tmp/mysnfs1
+          warning: Journal Size of 16M is less than recommended minimum value; It must be at least 32M for mkfs to succeed with an fs blocksize of 32K
+          warning: new fsBlockSize (32768) does not match existing fsBlockSize (16384), file system must be remade
+
+SEE ALSO
+       snfs_config(5)
+
+
+

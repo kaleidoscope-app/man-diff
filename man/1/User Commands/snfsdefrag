@@ -1,0 +1,449 @@
+SNFSDEFRAG(1)                General Commands Manual               SNFSDEFRAG(1)
+
+
+
+NAME
+       snfsdefrag - Xsan File System File Defrag Utility
+
+SYNOPSIS
+       snfsdefrag [-ADdFPqsv] [-G group] [-K key] [-k key] [-g group] [-m count]
+              [-r] [-S file] Target [Target...]
+
+       snfsdefrag -e [-v] [-b] [-F] [-G group] [-K key] [-r] [-t] [-L] [-S file]
+              Target [Target...]
+
+       snfsdefrag -E [-v] [-b] [-F] [-G group] [-K key] [-r] [-t] [-L] [-S file]
+              Target [Target...]
+
+       snfsdefrag -c [-v] [-F] [-G group] [-K key] [-r] [-t] [-T] [-S file] [-A]
+              Target [Target...]
+
+       snfsdefrag -p [-DPqv] [-F] [-G group] [-K key] [-r] [-S file] [-A]
+              Target [Target...]
+
+       snfsdefrag -l [-Dv] [-F] [-G group] [-K key] [-m count] [-r] [-S file]
+              [-A] Target [Target...]
+
+DESCRIPTION
+       snfsdefrag is a utility for defragmenting files on a Xsan volume by
+       relocating the data in a file to a smaller set of extents.  Reducing the
+       number of extents in a file improves performance by minimizing disk head
+       movement when performing I/O.  In addition, with fewer extents, Xsan File
+       System Manager (FSM) overhead is reduced.
+
+       snfsdefrag can be used to migrate files off of an existing stripe group
+       and on to other storage pools by using the -G option and setting the -m
+       option to 0. If affinities are associated with a file that is being
+       defragmented, new extents are created using the existing file affinity,
+       unless being overridden by the -k option.  If the -k option is specified,
+       the files are moved to a stripe group with the specified affinity.
+       Without -k, files are moved to any available stripe group. This migration
+       capability can be especially useful when a storage pool is going out of
+       service.  See the use of the -G option in the EXAMPLES section below.
+
+       In addition to defragmenting and migrating files, snfsdefrag can be used
+       to list the extents in a file (see the -e option) or to prune away unused
+       space that has been preallocated for the file (see the -p option).
+
+       Note: Free space in a storage pool can also become fragmented.  To
+       address this issue, see the sgdefrag command.
+
+       Note: The snfsdefrag utility is no longer the preferred tool to prepare a
+       storage pool for retirement.  Use the sgoffload utility instead.
+
+OPTIONS
+       -A     Do not attempt to temporarily stop I/O on an open file by setting
+              the administrative lock on the file.
+
+       -b     Show extent size in blocks instead of kilobytes.  Only useful with
+              the -e and -E (list extents) options.
+
+       -c     This option causes snfsdefrag to just display an extent count
+              instead of defragmenting files.  See also the -t and -T options.
+
+       -D     Turns on debug messages.
+
+       -d     Causes snfsdefrag to operate on files containing extents that have
+              depths that are different than the current depth for the extent's
+              storage pool.  This option is useful for reclaiming disk space
+              that has become "shadowed" after cvupdatefs has been run for
+              stripe group expansion.  Note that when -d is used, a file may be
+              defragmented due to the stripe depth in one or more of its extents
+              OR due to the file's extent count.
+
+       -e     This option causes snfsdefrag to not actually attempt the
+              defragmentation, but instead report the list of extents contained
+              in the file.  The extent information includes the starting file
+              relative offset, starting and ending storage pool block addresses,
+              the size of the extent, the depth of the extent, and the storage
+              pool number.  See also the -t option.
+
+       -E     This option has the same effect as the -e option except that file
+              relative offsets and starting and ending stripe group block
+              addresses that are stripe-aligned are highlighted with an asterisk
+              (*).  Also, starting storage pool addresses that are equally
+              misaligned with the file relative offset are highlighted with a
+              plus sign (+).  See also the -t option.
+
+       -F     This option causes snfsdefrag to skip resource forks for file
+              systems on which the namedStreams option is enabled.
+
+
+       -G storagepool
+              This option causes snfsdefrag to only operate on files having at
+              least one extent in storagepool, which is the stripe group index.
+              Use "sgmanage --list" to see the stripe group index.  Note that
+              multiple -G options can be specified to match files with an extent
+              in at least one of the specified storage pools.
+
+       -K key This option causes snfsdefrag to only operate on source files that
+              have the supplied affinity key.  If key is preceded by '!' then
+              snfsdefrag will only operate on source files that do not have the
+              affinity key.  See EXAMPLES below.
+
+       -k key Forces the new extent for the file to be created on the storage
+              pool specified by key.  This option has the side effect of
+              changing or creating the affinity on the affected files. If this
+              is not desired, the cvaffinity command can be used to change or
+              delete the affinity or the -g option can used instead.
+
+       -g storagepool
+              Places the new extent on the storage pool corresponding to the
+              specified index storagepool.  Unlike the key option, the file's
+              affinity is not affected.  Use "sgmanage --list" to see the stripe
+              group index.
+
+       -l     This option causes snfsdefrag to just list candidate files.
+
+       -L     When used with the -e or -E option, this option causes snfsdefrag
+              to also print out the physical location of each extent on disk.
+
+       -m count
+              This option tells snfsdefrag to only operate on files containing
+              more than count extents. By default, the value of count is 1.  A
+              value of zero can be specified to operate on all files with at
+              least one extent. This is useful for moving files off a stripe
+              group.
+
+       -p     Causes snfsdefrag to perform a prune operation instead of
+              defragmenting the file.  During a prune operation, blocks beyond
+              EOF that have been preallocated either explicitly or as part of
+              inode expansion are freed, thereby reducing disk usage.  Files are
+              otherwise unmodified. Note: While prune operations reclaim unused
+              disk space, performing them regularly can lead to free space
+              fragmentation.
+
+       -P     Lists skipped files.
+
+       -q     Causes snfsdefrag to be quiet.
+
+       -r     This option instructs snfsdefrag to recurse through the Target and
+              attempt to defragment each fragmented file that it finds.  If
+              Target is not specified, the current directory is assumed.
+
+       -s     Causes snfsdefrag to perform allocations that are block-aligned.
+              This can help performance in situations where the I/O size
+              perfectly spans the width of the storage pool's disks.
+
+       -S file
+              Writes status monitoring information in the supplied file.  This
+              is used internally by Xsan and the format of this file may change.
+
+       -t     This option adds totals to the output of the -c, -e, or -E
+              options.  Output at the end indicates how many regular files were
+              visited, how many total extents were found from all files, and the
+              average # of extents per file. Also shown are the number of files
+              with one extent, the number of files with more than one extent,
+              and the largest number of extents in a single file.
+
+       -T     This option acts like -t, except that with -c, only the summary
+              output is presented. No information is provided for individual
+              files.
+
+       -v     Causes snfsdefrag to be verbose.
+
+EXAMPLES
+       Count the extents in the file foo.
+
+          rock% snfsdefrag -c foo
+
+       Starting in directory, dir1, recursively count all the files and their
+       extents and then print the grand total and average number of extents per
+       file.
+
+          rock% snfsdefrag -r -c -t dir1
+
+       List the extents in the file foo.
+
+          rock% snfsdefrag -e foo
+
+       Defragment the file foo.
+
+          rock% snfsdefrag foo
+
+       Defragment the file foo if it contains more than 2 extents.  Otherwise,
+       do nothing.
+
+          rock% snfsdefrag -m 2 foo
+
+       Traverse the directory abc and its sub-directories and defragment every
+       file found containing more than one extent.
+
+          rock% snfsdefrag -r abc
+
+       Traverse the directory abc and its sub-directories and defragment every
+       file found having one or more extents whose depth differs from the
+       current depth of extent's storage pool OR having more than one extent.
+
+          rock% snfsdefrag -rd abc
+
+       Traverse the directory abc and its sub-directories and only defragment
+       files having one or more extents whose depth differs from the current
+       depth of extent's storage pool.  This situation would arise after
+       cvupdatefs has been used to expand the depth of a stripe group. The high
+       value for -m ensures that only extents with different depth values are
+       defragmented.
+
+          rock% snfsdefrag -m 9999999999 -rd abc
+
+       Traverse the directory abc and recover unused preallocated disk space in
+       every file visited.
+
+          rock% snfsdefrag -rp abc
+
+       Force the file foo to be relocated to the storage pool with the affinity
+       key "fast"
+
+          rock% snfsdefrag -k fast -m 0 foo
+
+       If the file foo has the affinity fast, then move its data to a storage
+       pool with the affinity slow.
+
+          rock% snfsdefrag -K fast -k slow -m 0 foo
+
+       If the file foo does NOT have the affinity slow, then move its data to a
+       storage pool with the affinity slow.
+
+          rock% snfsdefrag -K '!slow' -k slow -m 0 foo
+
+       Traverse the directory abc and migrate any files containing at least one
+       extent in storage pool 2 to any non-exclusive storage pool.
+
+          rock% snfsdefrag -r -G 2 -m 0 abc
+
+       Traverse the directory abc and migrate any files containing at least one
+       extent in storage pool 2 to storage pools with the affinity slow. It is
+       advised that allocations to the source stripe group  be disabled before
+       running the following command, if you wish to retire the source stripe
+       group.  On systems with Linux MDCs, use sgmanage to disable allocations.
+       On Windows MDCs, edit the config file, insert "Alloc Disabled" in the
+       stripe group section, and restart the FSM.
+
+          rock% snfsdefrag -r -G 2 -k slow -m 0 abc
+
+       Traverse the directory abc list any files that have the affinity fast and
+       having at least one extent in storage pool 2.  It is advised that
+       allocations to the source stripe group be disabled before running the
+       following command, if you wish to retire the source stripe group.  On
+       systems with Linux MDCs, use sgmanage to disable allocations.  On Windows
+       MDCs, edit the config file, insert "Alloc Disabled" in the stripe group
+       section, and restart the FSM.
+
+          rock% snfsdefrag -r -G 2 -k fast -l -m 0 abc
+
+NOTES
+       Only the owner of a file or superuser is allowed to defragment a file.
+       (To act as superuser on a Xsan volume, in addition to becoming the user
+       root, the configuration option GlobalSuperUser must be enabled.  See
+       snfs_config(5) for more information.)
+
+       snfsdefrag attempts to set an administrative lock on a file before
+       attempting the defrag operation, unless overridden by the -A option.
+       This will stop I/O related operations on an open file and allow the
+       defrag operation to proceed. When the defrag is complete, the client will
+       refresh its view of the file such that an application will not be aware
+       that the file's physical location on disk may have changed.  If the
+       administrative lock cannot be obtained and the file is open, snfsdefrag
+       will skip the file.
+
+       snfsdefrag will not operate on files that have been modified in the past
+       10 seconds and files with modification times in the future. If a file is
+       modified while defragmentation is in progress, snfsdefrag will abort and
+       the file will be skipped.
+
+       snfsdefrag skips special files and files containing holes.
+
+       snfsdefrag does not follow symbolic links.
+
+       When operating on a file marked for PerfectFit allocations, snfsdefrag
+       will "do the right thing" and preserve the PerfectFit attribute.
+
+       While performing defragmentation, snfsdefrag creates a temporary file
+       named TargetFile__defragtmp.  If the command is interrupted, snfsdefrag
+       will attempt to remove this file.  However, if snfsdefrag is killed or a
+       power failure occurs, the temporary file may be left behind.  If
+       snfsdefrag is subsequently re-run and attempts defragmentation, it will
+       clean up any stale temporary files encountered.  But if snfsdefrag is not
+       run again, it will be necessary to find and remove the temporary file as
+       it will continue to consume space.  Note that user files having the
+       __defragtmp extension should not be created if snfsdefrag is to be run.
+
+       snfsdefrag will fail if it cannot locate a set of extents that would
+       reduce the current extent count on a file.
+
+       When files being defragmented reside in a managed file system with stub
+       files enabled and CLASS_STUB_READ_AHEAD is set in the fs_sysparams file,
+       the operation could cause file retrieval.
+
+       By default, when using the -r option, snfsdefrag will sort directory
+       entries before operating on them unless the size of the directory exceeds
+       1GiB. This threshold can be adjusted using the environment variable
+       DEFRAG_MAX_DIR_SORT_SIZE.
+
+       When a file contains a resource fork and resides on a file system where
+       the namedStreams feature is enabled, by default, snfsdefrag will attempt
+       to operate on the resource fork as well as the main file. When this
+       occurs, the resource fork will be displayed having the same name as the
+       original file with the "/..namedfork/rsrc" suffix. For example, if the
+       original file has the name "/stornext/snfs1/myfile", snfsdefrag will show
+       "/stornext/snfs1/myfile/..namedfork/rsrc" to represent the resource fork
+       "named stream." The -F option can be used to prevent snfsdefrag from
+       operating on these named streams.
+
+ADVANCED FRAGMENTATION ANALYSIS
+       There are two major types of fragmentation to note: file fragmentation
+       and free space fragmentation. File fragmentation is measured by the
+       number of file extents used to store a file. A file extent is a
+       contiguous allocation unit within a file. When a large enough contiguous
+       space cannot be found to allocate to a file, multiple smaller  file
+       extents are created. Each extent represents a different physical spot in
+       a storage pool. Requiring multiple extents to address file data impacts
+       performance in a number of ways. First, the file system must do more work
+       looking up locations for a file's data.  Also, having file data spread
+       across many different locations in the file system requires the storage
+       hardware to do more work while reading a file. On a disk there will be
+       increased head movements, as the drive seeks around to read in each data
+       extent. Many disks also attempt to optimize I/O performance, for example,
+       by attempting to predict upcoming read locations. When a file's data is
+       contiguous these optimizations work well. However, with a fragmented file
+       the drive optimizations are not nearly as efficient.
+
+       A file's fragmentation should be viewed more as a percentage than as a
+       hard number. While it's true that a file of nearly any size with 50000
+       fragments is extremely fragmented and should be defragmented, a file that
+       has 500 fragments that are mostly one or two file system blocks (4096
+       bytes) in length is also very fragmented. Keeping files to under 10%
+       fragmentation is the ideal, and how close you come to that ideal is a
+       compromise based on real-world factors (file system use, file sizes and
+       their life span, opportunities to run snfsdefrag, etc.).
+
+       In an attempt to reduce fragmentation (file and free space),
+       Administrators can try using the Allocation Session Reservation feature.
+       This feature is managed using the GUI or by modifying the
+       allocSessionReservationSize parameter, see snfs_config(5).  See also the
+       Xsan Tuning Guide.
+
+       Some common causes of fragmentation are having very full stripe groups
+       (possibly because of affinities), a file system that has a lot of
+       fragmented free space (deleting a fragmented file produces fragmented
+       free space), heavy use of CIFS or NFS which typically use out-of-order
+       allocations resulting in unoptimized (uncoalesced) allocations, or an
+       application that writes files in a random order.
+
+       snfsdefrag is designed to detect files which contain file fragmentation
+       and coalesce that data onto a minimal number of file extents. The
+       efficiency of snfsdefrag is dependent on the  state of the file system's
+       free data blocks, or free space.
+
+       The second type of fragmentation is free space fragmentation. The file
+       system's free space is the pool of unallocated data blocks. Space
+       allocation for new files, as well as allocations for extending existing
+       files, comes from the file system's free space. Free space fragmentation
+       is measured by the number of fragments of contiguous free blocks.
+       Fragmentation in the file system's free space affects the file system's
+       ability to allocate large extents. A file can only have an extent as
+       large as the largest contiguous block of free space. Thus free space
+       fragmentation can lead to file fragmentation in larger files. As
+       snfsdefrag processes fragmented files it attempts to use large enough
+       free space fragments to create a new defragmented file space. If free
+       space is too fragmented snfsdefrag may not be able to allocate a large
+       enough extent for the file's data. In the case that snfsdefrag must use
+       multiple extents in the defragmented file, it will only proceed if the
+       processed file will have fewer extents than the original.  Otherwise
+       snfsdefrag will abort that file's defrag process and move on to remaining
+       defrag requests.
+
+FRAGMENTATION ANALYSIS EXAMPLES
+       The following examples include reporting from snfsdefrag as well as
+       cvfsck. Some examples require additional tools such as awk and sort.
+
+       Reporting a specific file's fragmentation (extent count).
+
+              # snfsdefrag -c <filename>
+
+       Report all files, their extents, the total # of files and extents, and
+       the average number of extents per files. Beware that this command walks
+       the entire file system so it can take a while and cause the performance
+       of applications to degrade while running.
+
+              # snfsdefrag -r -c -t <mount point>
+
+       The following command will create a report showing each file's path,
+       followed by extent count, with the report sorted by extent count. Files
+       with the greatest number of extents will show up at the top of the list.
+
+       Replace <fsname> in the following example with the name of your Xsan file
+       system. The report is written to stdout and should be redirected to a
+       file.
+
+              # cvfsck -x <fsname> | awk -F, '{if (NF == 14) \
+                print($6", "$7)}' | sort -uk1 -t, | sort -nrk2 -t,
+
+       This next command will display all files with at least 10 extents and
+       with a size of at least 1MB. Replace <fsname> in the following example
+       with the name of your Xsan file system. The report is written to stdout
+       and can be redirected to a file.
+
+              # echo "#extents  file size  av. extent size  filename"; \
+                cvfsck -r <fsname> | awk '{if (NF == 8 && $03 > 1048576 && \
+                $05 > 10) printf("%8d %10d %16d %10s\n", $5, $3, $03/$05, $8)}' \
+                | sort -nr
+
+       The next command displays a report of free space fragmentation. This
+       allows an administrator to see if free space fragmentation may affect
+       future allocation fragmentation. See cvfsck(8) man page for description
+       of report output.
+
+              # cvfsck -a -t -f <fsname>
+
+       The fragmentation detected RAS warning message may sometimes refer to an
+       inode number instead of a file name.  To find the file name associated
+       with the inode number on non-Windows clients, fill the file system mount
+       point and the decimal inum from the RAS message into the following find
+       command.  The file name can then be used to defragment the file.  There
+       may be more than one file that matches the 32-bit inode number.
+
+              # find <mount_point> -inum <decimal_inum>
+
+              # snfsdefrag <filename>
+
+       For Windows clients:
+
+       Using a DOS shell, CD to the directory containing the StorNext binaries
+       and run the cvstat command as follows:  The <fname> parameter is the
+       drive letter:/mount point and the <inum> parameter has either the decimal
+       or hexadecimal 64-bit inode number from the RAS message.  For example:
+
+              c:\> cd c:\Program Files\StorNext\bin
+
+              c:\> cvstat fname=j:\ inum=0x1c0000004183da
+
+FILES
+       /Library/Preferences/Xsan/*.cfg
+
+SEE ALSO
+       cvfsck(8), cvcp(1), cvmkfile(1), snfs_config(5), snfs.cfgx(5),
+       snfs.cfg(5), cvaffinity(1), sgdefrag(8), sgoffload(8), sgmanage(8)
+
+
+

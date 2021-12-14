@@ -1,0 +1,313 @@
+VIRTUAL(8)                   System Manager's Manual                  VIRTUAL(8)
+
+
+
+
+NAME
+       virtual - Postfix virtual domain mail delivery agent
+
+SYNOPSIS
+       virtual [generic Postfix daemon options]
+
+DESCRIPTION
+       The virtual(8) delivery agent is designed for virtual mail hosting
+       services. Originally based on the Postfix local(8) delivery agent, this
+       agent looks up recipients with map lookups of their full recipient
+       address, instead of using hard-coded unix password file lookups of the
+       address local part only.
+
+       This delivery agent only delivers mail.  Other features such as mail
+       forwarding, out-of-office notifications, etc., must be configured via
+       virtual_alias maps or via similar lookup mechanisms.
+
+MAILBOX LOCATION
+       The mailbox location is controlled by the virtual_mailbox_base and
+       virtual_mailbox_maps configuration parameters (see below).  The
+       virtual_mailbox_maps table is indexed by the recipient address as
+       described under TABLE SEARCH ORDER below.
+
+       The mailbox pathname is constructed as follows:
+
+         $virtual_mailbox_base/$virtual_mailbox_maps(recipient)
+
+       where recipient is the full recipient address.
+
+UNIX MAILBOX FORMAT
+       When the mailbox location does not end in /, the message is delivered in
+       UNIX mailbox format.   This format stores multiple messages in one
+       textfile.
+
+       The virtual(8) delivery agent prepends a "From sender time_stamp"
+       envelope header to each message, prepends a Delivered-To: message header
+       with the envelope recipient address, prepends an X-Original-To: header
+       with the recipient address as given to Postfix, prepends a Return-Path:
+       message header with the envelope sender address, prepends a > character
+       to lines beginning with "From ", and appends an empty line.
+
+       The mailbox is locked for exclusive access while delivery is in progress.
+       In case of problems, an attempt is made to truncate the mailbox to its
+       original length.
+
+QMAIL MAILDIR FORMAT
+       When the mailbox location ends in /, the message is delivered in qmail
+       maildir format. This format stores one message per file.
+
+       The virtual(8) delivery agent prepends a Delivered-To: message header
+       with the final envelope recipient address, prepends an X-Original-To:
+       header with the recipient address as given to Postfix, and prepends a
+       Return-Path: message header with the envelope sender address.
+
+       By definition, maildir format does not require application-level file
+       locking during mail delivery or retrieval.
+
+MAILBOX OWNERSHIP
+       Mailbox ownership is controlled by the virtual_uid_maps and
+       virtual_gid_maps lookup tables, which are indexed with the full recipient
+       address. Each table provides a string with the numerical user and group
+       ID, respectively.
+
+       The virtual_minimum_uid parameter imposes a lower bound on numerical user
+       ID values that may be specified in any virtual_uid_maps.
+
+CASE FOLDING
+       All delivery decisions are made using the full recipient address, folded
+       to lower case. See also the next section for a few exceptions with
+       optional address extensions.
+
+TABLE SEARCH ORDER
+       Normally, a lookup table is specified as a text file that serves as input
+       to the postmap(1) command. The result, an indexed file in dbm or db
+       format, is used for fast searching by the mail system.
+
+       The search order is as follows. The search stops upon the first
+       successful lookup.
+
+       •      When the recipient has an optional address extension the
+              user+extension@domain.tld address is looked up first.
+
+              With Postfix versions before 2.1, the optional address extension
+              is always ignored.
+
+       •      The user@domain.tld address, without address extension, is looked
+              up next.
+
+       •      Finally, the recipient @domain is looked up.
+
+       When the table is provided via other means such as NIS, LDAP or SQL, the
+       same lookups are done as for ordinary indexed files.
+
+       Alternatively, a table can be provided as a regular-expression map where
+       patterns are given as regular expressions. In that case, only the full
+       recipient address is given to the regular-expression map.
+
+SECURITY
+       The virtual(8) delivery agent is not security sensitive, provided that
+       the lookup tables with recipient user/group ID information are adequately
+       protected. This program is not designed to run chrooted.
+
+       The virtual(8) delivery agent disallows regular expression substitution
+       of $1 etc. in regular expression lookup tables, because that would open a
+       security hole.
+
+       The virtual(8) delivery agent will silently ignore requests to use the
+       proxymap(8) server. Instead it will open the table directly. Before
+       Postfix version 2.2, the virtual delivery agent will terminate with a
+       fatal error.
+
+STANDARDS
+       RFC 822 (ARPA Internet Text Messages)
+
+DIAGNOSTICS
+       Mail bounces when the recipient has no mailbox or when the recipient is
+       over disk quota. In all other cases, mail for an existing recipient is
+       deferred and a warning is logged.
+
+       Problems and transactions are logged to syslogd(8).  Corrupted message
+       files are marked so that the queue manager can move them to the corrupt
+       queue afterwards.
+
+       Depending on the setting of the notify_classes parameter, the postmaster
+       is notified of bounces and of other trouble.
+
+BUGS
+       This delivery agent supports address extensions in email addresses and in
+       lookup table keys, but does not propagate address extension information
+       to the result of table lookup.
+
+       Postfix should have lookup tables that can return multiple result
+       attributes. In order to avoid the inconvenience of maintaining three
+       tables, use an LDAP or MYSQL database.
+
+CONFIGURATION PARAMETERS
+       Changes to main.cf are picked up automatically, as virtual(8) processes
+       run for only a limited amount of time. Use the command "postfix reload"
+       to speed up a change.
+
+       The text below provides only a parameter summary. See postconf(5) for
+       more details including examples.
+
+MAILBOX DELIVERY CONTROLS
+
+       virtual_mailbox_base (empty)
+              A prefix that the virtual(8) delivery agent prepends to all
+              pathname results from $virtual_mailbox_maps table lookups.
+
+       virtual_mailbox_maps (empty)
+              Optional lookup tables with all valid addresses in the domains
+              that match $virtual_mailbox_domains.
+
+       virtual_minimum_uid (100)
+              The minimum user ID value that the virtual(8) delivery agent
+              accepts as a result from $virtual_uid_maps table lookup.
+
+       virtual_uid_maps (empty)
+              Lookup tables with the per-recipient user ID that the virtual(8)
+              delivery agent uses while writing to the recipient's mailbox.
+
+       virtual_gid_maps (empty)
+              Lookup tables with the per-recipient group ID for virtual(8)
+              mailbox delivery.
+
+       Available in Postfix version 2.0 and later:
+
+       virtual_mailbox_domains ($virtual_mailbox_maps)
+              Postfix is final destination for the specified list of domains;
+              mail is delivered via the $virtual_transport mail delivery
+              transport.
+
+       virtual_transport (virtual)
+              The default mail delivery transport and next-hop destination for
+              final delivery to domains listed with $virtual_mailbox_domains.
+
+       Available in Postfix version 2.5.3 and later:
+
+       strict_mailbox_ownership (yes)
+              Defer delivery when a mailbox file is not owned by its recipient.
+
+LOCKING CONTROLS
+
+       virtual_mailbox_lock (see 'postconf -d' output)
+              How to lock a UNIX-style virtual(8) mailbox before attempting
+              delivery.
+
+       deliver_lock_attempts (20)
+              The maximal number of attempts to acquire an exclusive lock on a
+              mailbox file or bounce(8) logfile.
+
+       deliver_lock_delay (1s)
+              The time between attempts to acquire an exclusive lock on a
+              mailbox file or bounce(8) logfile.
+
+       stale_lock_time (500s)
+              The time after which a stale exclusive mailbox lockfile is
+              removed.
+
+RESOURCE AND RATE CONTROLS
+
+       virtual_destination_concurrency_limit
+       ($default_destination_concurrency_limit)
+              The maximal number of parallel deliveries to the same destination
+              via the virtual message delivery transport.
+
+       virtual_destination_recipient_limit
+       ($default_destination_recipient_limit)
+              The maximal number of recipients per message for the virtual
+              message delivery transport.
+
+       virtual_mailbox_limit (51200000)
+              The maximal size in bytes of an individual virtual(8) mailbox or
+              maildir file, or zero (no limit).
+
+MISCELLANEOUS CONTROLS
+
+       config_directory (see 'postconf -d' output)
+              The default location of the Postfix main.cf and master.cf
+              configuration files.
+
+       daemon_timeout (18000s)
+              How much time a Postfix daemon process may take to handle a
+              request before it is terminated by a built-in watchdog timer.
+
+       delay_logging_resolution_limit (2)
+              The maximal number of digits after the decimal point when logging
+              sub-second delay values.
+
+       ipc_timeout (3600s)
+              The time limit for sending or receiving information over an
+              internal communication channel.
+
+       max_idle (100s)
+              The maximum amount of time that an idle Postfix daemon process
+              waits for an incoming connection before terminating voluntarily.
+
+       max_use (100)
+              The maximal number of incoming connections that a Postfix daemon
+              process will service before terminating voluntarily.
+
+       process_id (read-only)
+              The process ID of a Postfix command or daemon process.
+
+       process_name (read-only)
+              The process name of a Postfix command or daemon process.
+
+       queue_directory (see 'postconf -d' output)
+              The location of the Postfix top-level queue directory.
+
+       syslog_facility (mail)
+              The syslog facility of Postfix logging.
+
+       syslog_name (see 'postconf -d' output)
+              A prefix that is prepended to the process name in syslog records,
+              so that, for example, "smtpd" becomes "prefix/smtpd".
+
+       Available in Postfix version 3.0 and later:
+
+       virtual_delivery_status_filter ($default_delivery_status_filter)
+              Optional filter for the virtual(8) delivery agent to change the
+              delivery status code or explanatory text of successful or
+              unsuccessful deliveries.
+
+SEE ALSO
+       qmgr(8), queue manager
+       bounce(8), delivery status reports
+       postconf(5), configuration parameters
+       syslogd(8), system logging
+
+README_FILES
+       Use "postconf readme_directory" or
+       "postconf html_directory" to locate this information.
+       VIRTUAL_README, domain hosting howto
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+HISTORY
+       This delivery agent was originally based on the Postfix local delivery
+       agent. Modifications mainly consisted of removing code that either was
+       not applicable or that was not safe in this context: aliases,
+       ~user/.forward files, delivery to "|command" or to /file/name.
+
+       The Delivered-To: message header appears in the qmail system by Daniel
+       Bernstein.
+
+       The maildir structure appears in the qmail system by Daniel Bernstein.
+
+AUTHOR(S)
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+       Andrew McNamara
+       andrewm@connect.com.au
+       connect.com.au Pty. Ltd.
+       Level 3, 213 Miller St
+       North Sydney 2060, NSW, Australia
+
+
+

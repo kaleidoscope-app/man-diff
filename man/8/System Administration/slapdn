@@ -1,0 +1,69 @@
+SLAPDN(8C)                                                            SLAPDN(8C)
+
+
+
+NAME
+       slapdn - Check a list of string-represented LDAP DNs based on schema
+       syntax
+
+SYNOPSIS
+       /usr/sbin/slapdn [-d_debug-level] [-f_slapd.conf] [-F_confdir] [-N|-P]
+       [-o_option[=value]] [-v] DN [...]
+
+DESCRIPTION
+       Slapdn is used to check the conformance of a DN based on the schema
+       defined in slapd(8) and that loaded via slapd.conf(5).  It opens the
+       slapd.conf(5) configuration file or the slapd-config (5) backend, reads
+       in the schema definitions, and then parses the DN list given on the
+       command-line.
+
+OPTIONS
+       -d_debug-level
+              enable debugging messages as defined by the specified debug-level;
+              see slapd(8) for details.
+
+       -f_slapd.conf
+              specify an alternative slapd.conf(5) file.
+
+       -F_confdir
+              specify a config directory.  If both -f and -F are specified, the
+              config file will be read and converted to config directory format
+              and written to the specified directory.  If neither option is
+              specified, an attempt to read the default config directory will be
+              made before trying to use the default config file. If a valid
+              config directory exists then the default config file is ignored.
+
+       -N     only output a normalized form of the DN, suitable to be used in a
+              normalization tool; incompatible with -P.
+
+       -o_option[=value]
+              Specify an option with a(n optional) value.  Possible generic
+              options/values are:
+
+                     syslog=<subsystems>  (see `-s' in slapd(8))
+                     syslog-level=<level> (see `-S' in slapd(8))
+                     syslog-user=<user>   (see `-l' in slapd(8))
+
+
+       -P     only output a prettified form of the DN, suitable to be used in a
+              check and beautification tool; incompatible with -N.
+
+       -v     enable verbose mode.
+
+EXAMPLES
+       To check a DN give the command:
+
+            /usr/sbin/slapdn -f //etc/openldap/slapd.conf -v DN
+
+SEE ALSO
+       ldap(3), slapd(8), slaptest(8)
+
+       "OpenLDAP Administrator's Guide" (http://www.OpenLDAP.org/doc/admin/)
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

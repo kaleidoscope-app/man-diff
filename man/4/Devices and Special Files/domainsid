@@ -1,0 +1,49 @@
+DOMAINSID(4)                  Device Drivers Manual                 DOMAINSID(4)
+
+
+
+NAME
+       domainsid - Xsan File System Domain SID File
+
+SYNOPSIS
+       /Library/Preferences/Xsan/domainsid
+
+DESCRIPTION
+       The Xsan File System domainsid file is an optional MDC configuration file
+       used to set the domain SID to be used with ACLs when the Security Model
+       is set to "acl" in a file system configuration file and Unix Identity
+       Mapping is set to "algorithmic"
+
+       Note that this file should only be deployed in very specific use cases.
+       For example, if an environment uses Open Directory, the domainsid file
+       should contain the assigned Domain SID.  This can be determined by
+       running the following command on a Mac:
+
+       $ dsmemberutil getsid -U username
+
+       where username is the name of any regular user account in Open Directory.
+       This will return a string such as the following:
+
+
+       S-1-5-21-2553502104-2799725507-638401443-3106
+
+       The Domain SID is the string without the trailing RID so in this example,
+       it has the value S-1-5-21-2553502104-2799725507-638401443  The following
+       command may be run on the MDC to set this domain SID.
+
+       mdc# echo S-1-5-21-2553502104-2799725507-638401443 > /Library/Preferences/Xsan/domainsid
+
+       After configuring the domainsid, file systems must be restarted on the
+       FSM to have it take effect.
+
+       Note: Improper configuration of this file may lead to files having
+       invalid ACLs and permissions not being enforced properly.
+
+FILES
+       /Library/Preferences/Xsan/domainsid
+
+SEE ALSO
+       cvfs(8), snfs_config(5),
+
+
+

@@ -1,0 +1,40 @@
+SNSTATD(8)                   System Manager's Manual                  SNSTATD(8)
+
+
+
+NAME
+       snstatd - Xsan Statistics Daemon
+
+SYNOPSIS
+       Xsan File System process
+
+DESCRIPTION
+       snstatd is a daemon that is launched by the Xsan File System fsmpm(8)
+       process. It is used to gather statistics about file system activity and
+       related activity such as I/O and storage manager activity.  This daemon
+       also services requests from the qustat command and archives statistics to
+       .csv files.  The archive files reside in /usr/cvfs/qustats.
+
+       snstatd is configured using the qustat.conf(5) configuration file, which
+       specifies the intervals for gathering and archiving statistics.
+       Debugging levels can also be specified in this file.
+
+       snstatd may be started, stopped or restarted in cvadmin(8) using the
+       startd, stopd, restartd commands respectively. This may be done to
+       propagate changes made to the existing qustat.conf(5) file.
+
+       snstatd logs to /Library/Logs/Xsan/debug/snstatd.log for debugging
+       purposes.
+
+ENVIRONMENT
+       snstatd is available on all Xsan installs.
+
+FILES
+       /Library/Logs/Xsan/debug/snstatd.log
+       /Library/Preferences/Xsan/qustat.conf
+
+SEE ALSO
+       qustat.conf(5), qustat(8),
+
+
+

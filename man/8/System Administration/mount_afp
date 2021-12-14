@@ -1,0 +1,102 @@
+MOUNT_AFP(8)                 System Manager's Manual                MOUNT_AFP(8)
+
+NAME
+     mount_afp – mount an afp (AppleShare) filesystem
+
+SYNOPSIS
+     mount_afp [-i] [-s] [-k] [-o options] afp_url node
+
+DESCRIPTION
+     The mount_afp command mounts the AFP volume denoted by the afp_url
+     afp://[user[;AUTH=uamname][:password]@]host[:port]/volumename at the mount
+     point indicated by node.
+
+     This command is normally executed by mount(8) when the -t afp option is
+     used. If the -i option is not used, all the required information to
+     establish a login to the remote server must be available in the afp URL,
+     including username & password if needed.
+
+     The arguments and options are:
+
+     -i      Interactive mode, you are prompted for the password if you did not
+             supply one in the url.
+
+     -s      Soft mount (default).  Network errors, e.g. timeouts, will be
+             retried for a much shorter amount of time.  If the network errors
+             persist, then the mount will be force unmounted.
+
+     -k      Hard mount.  Network errors, e.g. timeouts, will be retried for an
+             extended amount of time.  If the network errors persist, then the
+             mount will be force unmounted.
+
+     -o      Options passed to mount(2) are specified with the -o option
+             followed by a comma separated string of options. See the mount(8)
+             man page for possible options and their meanings. Additional
+             options supported by the AFP Client are as follows:
+
+             nobrowse
+                     Indicate to the Carbon subsystem that this volume is not to
+                     be displayed to the user.
+
+             automounted
+                     Set flags on the mountpoint to indicate that the volume has
+                     been mounted by the automounter.
+
+     afp_url
+             There are two forms of afp URL, one for TCP/IP and one for
+             AppleTalk:
+
+             afp://[user[;AUTH=uamname][:password]@]host[:port]/volume
+
+             afp:/at/[user[;AUTH=uamname][:password]@]servername[:zonename]/volume
+
+             Denotes the afp server and sharepoint to mount. It may also contain
+             the username & password required to log into the server. uamname is
+             the protocol name of the authentication method.  If port is not
+             specified, then port 548 is used.
+
+     node    Path to mount point, which must be a directory that the user has
+             write permissions for.
+
+EXAMPLES
+     The following example illustrates how to mount the afp volume
+     server.company.com/volumename/ at the mount point /Volumes/mntpnt:
+
+           mkdir /Volumes/mntpnt
+           mount_afp afp://username:userpass@server.company.com/volumename/ /Volumes/mntpnt
+
+     This example shows the proper url to use to mount the volume guestVolume
+     from the afp server myserver as guest (if no uam and no username, then use
+     guest uam):
+
+           mkdir /Volumes/guest
+           mount_afp "afp://myserver/guestVolume" /Volumes/guest
+
+     This example shows the proper url to use to mount the volume myVolume from
+     the afp server myserver using Kerberos authentication:
+
+           mkdir /Volumes/myVolume
+           mount_afp "afp://;AUTH=Client%20Krb%20v2@myserver/myVolume" /Volumes/myVolume
+
+
+SEE ALSO
+     mount(2), unmount(2), mount(8)
+
+HISTORY
+     The mount_afp command first appeared Mac OS X version 10.0. Kerberos
+     authentication was added in Mac OS X version 10.2
+
+RETURN VALUES
+     0                  mount_afp successfully mounted the volume directory.
+
+     [ENODEV (19)]      The server volume could not be mounted by mount_afp
+                        because the server was not found or because the
+                        sharepoint does not exist, or because node does not have
+                        proper access.
+
+     [EACCES (13)]      The volume could not be mounted by mount_afp because the
+                        user did not provide proper authentication credentials.
+
+     [ENOTDIR (20)]     The volume could not be mounted by mount_afp because the
+                        mountpoint was not a directory.
+

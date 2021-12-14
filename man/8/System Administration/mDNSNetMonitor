@@ -1,0 +1,30 @@
+mDNSNetMonitor(8)            System Manager's Manual           mDNSNetMonitor(8)
+
+NAME
+     mDNSNetMonitor – dumps mDNS traffic on a network
+
+SYNOPSIS
+     mDNSNetMonitor [-i interface] [host]
+
+DESCRIPTION
+     mDNSNetMonitor prints out a description of the contents of mDNS packets on
+     a network interface. It is similiar to tcpdump in that it continuously
+     captures packets until it is interrupted by a SIGINT signal (generated, for
+     example, by typing your interrupt character, typically  control-C)  or a
+     SIGTERM signal (typically generated with the kill(1) command).
+
+     When mDNSNetMonitor finishes capturing packets, it will report counts of
+     packets captured per mDNS packet type, service type and source device.
+
+     Note that mDNSNetMonitor will not capture unicast mDNS packets.
+
+OPTION
+     -i interface    Displays packets on specified interface.
+
+Example
+     To print all packets arriving at or departing from sundown:
+         % mDNSNetMonitor sundown
+
+SEE ALSO
+     mDNSResponder(8), dns-sd(8)
+

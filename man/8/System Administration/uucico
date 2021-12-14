@@ -1,0 +1,162 @@
+uucico(8)                    System Manager's Manual                   uucico(8)
+
+
+
+NAME
+       uucico - UUCP file transfer daemon
+
+SYNOPSIS
+       uucico [ options ]
+
+DESCRIPTION
+       The uucico daemon processes file transfer requests queued by uucp (1) and
+       uux (1).  It is started when uucp or uux is run (unless they are given
+       the -r option).  It is also typically started periodically using entries
+       in the crontab table(s).
+
+       When invoked with -r1, --master, -s, --system, or -S, the daemon will
+       place a call to a remote system, running in master mode.  Otherwise the
+       daemon will start in slave mode, accepting a call from a remote system.
+       Typically a special login name will be set up for UUCP which
+       automatically invokes uucico when a call is made.
+
+       When uucico terminates, it invokes the uuxqt (8) daemon, unless the -q or
+       --nouuxqt option is given; uuxqt (8) executes any work orders created by
+       uux (1) on a remote system, and any work orders created locally which
+       have received remote files for which they were waiting.
+
+       If a call fails, uucico will normally refuse to retry the call until a
+       certain (configurable) amount of time has passed.  This may be overriden
+       by the -f, --force, or -S option.
+
+       The -l, --prompt, -e, or --loop options may be used to force uucico to
+       produce its own prompts of "login: " and "Password:".  When another
+       daemon calls in, it will see these prompts and log in as usual.  The
+       login name and password will normally be checked against a separate list
+       kept specially for uucico rather than the /etc/passwd file; it is
+       possible on some systems to direct uucico to use the /etc/passwd file.
+       The -l or --prompt option will prompt once and then exit; in this mode
+       the UUCP administrator or the superuser may use the -u or --login option
+       to force a login name, in which case uucico will not prompt for one.  The
+       -e or --loop option will prompt again after the first session is over; in
+       this mode uucico will permanently control a port.
+
+       If uucico receives a SIGQUIT, SIGTERM or SIGPIPE signal, it will cleanly
+       abort any current conversation with a remote system and exit.  If it
+       receives a SIGHUP signal it will abort any current conversation, but will
+       continue to place calls to (if invoked with -r1 or --master) and accept
+       calls from (if invoked with -e or --loop) other systems.  If it receives
+       a SIGINT signal it will finish the current conversation, but will not
+       place or accept any more calls.
+
+OPTIONS
+       The following options may be given to uucico.
+
+       -r1, --master
+            Start in master mode (call out to a system); implied by -s,
+            --system, or -S.  If no system is specified, call any system for
+            which work is waiting to be done.
+
+       -r0, --slave
+            Start in slave mode.  This is the default.
+
+       -s system, --system system
+            Call the named system.
+
+       -S system
+            Call the named system, ignoring any required wait.  This is
+            equivalent to -s system -f.
+
+       -f, --force
+            Ignore any required wait for any systems to be called.
+
+       -l, --prompt
+            Prompt for login name and password using "login: " and "Password:".
+            This allows uucico to be easily run from inetd (8).  The login name
+            and password are checked against the UUCP password file, which
+            probably has no connection to the file /etc/passwd.  The --login
+            option may be used to force a login name, in which cause uucico will
+            only prompt for a password.
+
+       -p port, --port port
+            Specify a port to call out on or to listen to.
+
+       -e, --loop
+            Enter endless loop of login/password prompts and slave mode daemon
+            execution.  The program will not stop by itself; you must use kill
+            (1) to shut it down.
+
+       -w, --wait
+            After calling out (to a particular system when -s, --system, or -S
+            is specifed, or to all systems which have work when just -r1 or
+            --master is specifed), begin an endless loop as with --loop.
+
+       -q, --nouuxqt
+            Do not start the uuxqt (8) daemon when finished.
+
+       -c, --quiet
+            If no calls are permitted at this time, then don't make the call,
+            but also do not put an error message in the log file and do not
+            update the system status (as reported by uustat (1)).  This can be
+            convenient for automated polling scripts, which may want to simply
+            attempt to call every system rather than worry about which
+            particular systems may be called at the moment.  This option also
+            suppresses the log message indicating that there is no work to be
+            done.
+
+       -C, --ifwork
+            Only call the system named by -s, --system or -S if there is work
+            for that system.
+
+       -D, --nodetach
+            Do not detach from the controlling terminal.  Normally uucico
+            detaches from the terminal before each call out to another system
+            and before invoking uuxqt.  This option prevents this.
+
+       -u name, --login name
+            Set the login name to use instead of that of the invoking user.
+            This option may only be used by the UUCP administrator or the
+            superuser.  If used with --prompt, this will cause uucico to prompt
+            only for the password, not the login name.
+
+       -z, --try-next
+            If a call fails after the remote system is reached, try the next
+            alternate rather than simply exiting.
+
+       -i type, --stdin type
+            Set the type of port to use when using standard input.  The only
+            support port type is TLI, and this is only available on machines
+            which support the TLI networking interface.  Specifying -iTLI causes
+            uucico to use TLI calls to perform I/O.
+
+       -x type, -X type, --debug type
+            Turn on particular debugging types.  The following types are
+            recognized: abnormal, chat, handshake, uucp-proto, proto, port,
+            config, spooldir, execute, incoming, outgoing.
+
+            Multiple types may be given, separated by commas, and the --debug
+            option may appear multiple times.  A number may also be given, which
+            will turn on that many types from the foregoing list; for example,
+            --debug 2 is equivalent to --debug abnormal,chat.
+
+            The debugging output is sent to the debugging file, which may be
+            printed using uulog -D.
+
+       -I file, --config file
+            Set configuration file to use.  This option may not be available,
+            depending upon how uucico was compiled.
+
+       -v, --version
+            Report version information and exit.
+
+       --help
+            Print a help message and exit.
+
+SEE ALSO
+       kill(1), uucp(1), uux(1), uustat(1), uuxqt(8)
+
+AUTHOR
+       Ian Lance Taylor <ian@airs.com>
+
+
+

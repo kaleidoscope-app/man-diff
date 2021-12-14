@@ -1,0 +1,67 @@
+xscertadmin(8)               System Manager's Manual              xscertadmin(8)
+
+NAME
+     xscertadmin -- process Certificate Revocation Lists in an OD environment
+
+SYNOPSIS
+     xscertadmin command [common options] [command options]
+
+DESCRIPTION
+     Manage Certificate Revocation Lists (CRLs)  in an Open Directory
+     Environment.
+
+COMMANDS
+     list [-x] [-v] [-d ⟨debug_level⟩] [-a | ⟨issuer_common_name⟩]
+
+     add [-x] [-v] [-d ⟨debug_level⟩] [-r ⟨reason_code⟩] [-t ⟨type⟩]
+     ⟨user/record name⟩
+
+     add [-x] [-v] [-d ⟨debug_level⟩] [-r ⟨reason_code⟩] [-t ⟨type⟩] -f
+     ⟨file_of_names⟩
+
+     add [-x] [-v] [-d ⟨debug_level⟩] [-r ⟨reason_code⟩] -i ⟨issuer_common_name⟩
+     -s ⟨serial_number⟩
+
+COMMON OPTIONS
+     -x/--xml              Returns output to stdout in xml format.
+
+     -v/--version          Print the version of the tool.
+
+     -d/--debug ⟨debug_level⟩
+                           Sets the level of diagnostic message detail, 0 for
+                           off and 1 for on.
+
+LIST OPTIONS
+     -a/--all              List all CRLs
+
+ADD OPTIONS
+     -f/--file             A file containing names.
+
+     -i/--issuer           The common name of the issuer of the certificate.
+
+     -r/--reason           The revocation reason code.
+
+     -s/--serial           The serial number of the certificate to revoke.
+
+     -t/--type             The record type: user, device, computer or
+                           recordType.
+
+REASON CODES
+     0                     unspecified
+
+     1                     keyCompromise
+
+     2                     cACompromise
+
+     3                     affiliationChanged
+
+     4                     superseded
+
+     5                     cessationOfOperation
+
+     6                     certificateHold
+
+     9                     privilegeWithdrawn
+
+     10                    aACompromise
+

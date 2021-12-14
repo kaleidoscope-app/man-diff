@@ -1,0 +1,160 @@
+vfs(n)                                                                    vfs(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       vfs - Filesystem management in Tcl
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require vfs  ?1.2.1?
+
+       vfs::filesystem mount ?-volume? path command
+
+       vfs::filesystem unmount path
+
+       vfs::filesystem info ?path?
+
+       vfs::filesystem fullynormalize path
+
+       vfs::filesystem posixerror int
+
+       vfs::filesystem internalerror command
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The package vfs provides commands to query, mount and unmount virtual
+       filesystems implemented in Tcl. This is further facilitated through the
+       provison of helper commands in a tcl script library. See section "HANDLER
+       ENVIRONMENT" of vfs-fsapi for more information.
+
+       Once a virtual filesystem is in place, the standard Tcl commands, like
+       file, glob, cd, pwd, open, including all their C APIs in the Tcl library
+       (e.g.  Tcl_FSOpenFileChannel, Tcl_FSMatchInDirectory, extensions such as
+       Tk which may open or read files will also transparently access the
+       virtual filesystem).
+
+       Because all of Tcl's filesystem activity passes through a single layer,
+       every operation can be intercepted. This package does just that.  This is
+       also quite different from simply overloading the file command in Tcl.  We
+       are actually providing replacements for C commands like access, stat,
+       etc.  By implementing a small number of low-level commands we ensure that
+       all commands at higher levels will function irrespective of what is going
+       on inside the filesystem layer.
+
+       Tcl's filesystem hooks operate on a per-process basis.  This means every
+       Tcl interpreter in the same process/application will see the same
+       filesystem, including any virtual filesystems.
+
+       To access this package use the command package require vfs.  This
+       automatically registers the vfs hooks into Tcl's filesystem and provides
+       the command vfs::filesystem. The latter allows the registration of actual
+       virtual filesystems. More in the upcoming section API.  The hooks will
+       not be removed until Tcl exits. If desired, control over this could be
+       exposed to Tcl in the future.  By and in itself the command above will
+       have no further effect. Only after filesystem implementations have been
+       registered and filesystems using them been mounted filesystem commands
+       will actually be intercepted, and handled by the Tcl code of the mounted
+       virtual filesystem.
+
+API
+       vfs::filesystem mount ?-volume? path command
+              Mounts a virtual filesystem at path, making it useable. After
+              completion of the call any access to a subdirectory of path will
+              be handled by that filesystem. The filesystem is represented here
+              by the command prefix which will be executed whenever an operation
+              on a file or directory within path has to be performed.
+
+              Whether the command is implemented in C or Tcl is of no relevance
+              as long as it adheres to the API specified in vfs-fsapi and is
+              present in the interpreter where the mount operation is executed.
+
+              If the option -volume is specified the new mount point is also
+              registered with Tcl as a new volume and will therefore from then
+              on appear in the output of the command file volumes. This is
+              useful (and required for reasonable operation) for mounts like
+              ftp://. It should not be used for paths mounted inside the native
+              filesystem.
+
+              The new filesystem mounts will be observed immediately in all
+              interpreters in the current process.  If the interpreter is later
+              deleted, all mounts which are intercepted by it will be
+              automatically removed (and will therefore affect the view of the
+              filesystem seen by all interpreters).
+
+       vfs::filesystem unmount path
+              This unmounts the virtual filesystem which was mounted at path. An
+              error is thrown if no filesystem was mounted there.  After the
+              completion of the operation the filesystem is not visible anymore,
+              and any previous filesystem accessible through this path becomes
+              accessible again.
+
+       vfs::filesystem info ?path?
+              A list of all filesystems mounted in all interpreters is returned,
+              if no path argument was specified.  Else the filesystem
+              responsible for that path is examined and the command prefix used
+              to handle all filesystem operations returned.  An error is thrown
+              if no filesystem is mounted for that path.
+
+              There is currently no facility for examining in which interpreter
+              each command will be evaluated.
+
+       vfs::filesystem fullynormalize path
+              Performs a full expansion of path, (as per file normalize). This
+              includes the following of any links in the last element of path.
+
+       vfs::filesystem posixerror int
+              This command can be called by filesystem implementations during
+              the execution of a filesystem operation to signal the posix error
+              code of a failure. See also vfs-fsapi.
+
+       vfs::filesystem internalerror command
+              When used the specified command is registerd as the command to
+              trap and report any internal errors thrown by filesystem
+              implementations.
+
+LIMITATIONS
+       The code of the package vfs has only a few limitations.
+
+       [1]    One subtlety one has to be aware of is that mixing
+              case-(in)sensitive filesystems and application code may yield
+              unexpected results.
+
+              For example mounting a case-sensitive virtual filesystem into a
+              case-insensitive system (like the standard Windows or MacOS
+              filesystems) and then using this with code relying on case-
+              insensitivity problems will appear when accessing the virtual
+              filesystem.
+
+              Note that application code relying on case-insensitivity will not
+              under Unix either, i.e. is inherently non-portable, and should be
+              fixed.
+
+       [2]    The C-API's for link and lstat are currently not exposed to the
+              Tcl level. This may be done in the future to allow virtual
+              filesystems implemented in Tcl to support the reading and writing
+              of links.
+
+       [3]    The public C-API filesystem function Tcl_FSMatchInDirectory is
+              given a variety of type information in a Tcl_GlobTypeData
+              structure.  Currently only the type field of said strcuture is
+              exposed to the tcl-level. Fields like permissions and MacOS
+              type/creator are ignored.
+
+SEE ALSO
+       vfs-filesystems, vfs-fsapi
+
+KEYWORDS
+       file, filesystem, vfs
+
+COPYRIGHT
+       Copyright (c) 2001-2003 Vince Darley <vincentdarley@users.sourceforge.net>
+       Copyright (c) 2003 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

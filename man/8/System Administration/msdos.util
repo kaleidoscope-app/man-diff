@@ -1,0 +1,55 @@
+MSDOS.UTIL(8)                System Manager's Manual               MSDOS.UTIL(8)
+
+NAME
+     msdos.util – DOS/Windows (FAT) file system utility
+
+SYNOPSIS
+     msdos.util -m mountflag1 mountflag2 mountflag3 mountflag4 device node
+
+     msdos.util -p mountflag1 mountflag2 mountflag3 mountflag4 device
+
+     msdos.util -u device
+
+     msdos.util -k device
+
+     msdos.util -n device name
+
+DESCRIPTION
+     The msdos.util command supports the mounting, probing, and unmounting of
+     FAT file systems.
+
+     Options:
+           -m mountflag1 mountflag2 mountflag3 mountflag4
+                   mount
+           -n      set name
+           -p mountflag1 mountflag2 mountflag3 mountflag4
+                   probe for mounting
+           -u      unmount
+           -k      print volume UUID
+
+     mountflags above are either:
+           •   removable or fixed
+           •   readonly or writeable
+           •   suid or nosuid
+           •   dev or nodev
+
+     FAT volumes do not actually have a volume UUID.  They have an optional
+     4-byte volume ID.  If a volume has an ID, then it will be converted to a
+     version 3 UUID using MD5 to checksum the kFSUUIDNamespaceSHA1 UUID folowed
+     by the volume ID.
+
+     For the -k option, if the volume has a volume ID, the exit status will be
+     253 and the UUID will be printed to standard out, without any trailing
+     newline.  Otherwise, if the volume appears to be FAT, the exit status will
+     be 255.  If the volume does not appear to be FAT, the exit status will be
+     254.
+
+FILES
+     /System/Library/Filesystems/msdos.fs/Contents/Resources/msdos.util
+
+SEE ALSO
+     diskarbitrationd(8)
+
+HISTORY
+     Derived from the Openstep Workspace Manager file system utility programs.
+

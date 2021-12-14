@@ -1,0 +1,69 @@
+memchan(n)                                                            memchan(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       memchan - C API for creating memory channels
+
+SYNOPSIS
+       package require Tcl
+
+       package require memchan
+
+       Tcl_Channel Memchan_CreateMemoryChannel (Tcl_Interp *interp, int
+       initialSize)
+
+       Tcl_Channel Memchan_CreateFifoChannel (Tcl_Interp *interp)
+
+       void Memchan_CreateFifo2Channel (Tcl_Interp *interp, Tcl_Channel *aPtr,
+       Tcl_Channel *bPtr)
+
+       Tcl_Channel Memchan_CreateNullChannel (Tcl_Interp *interp)
+
+       Tcl_Channel Memchan_CreateZeroChannel (Tcl_Interp *interp)
+
+       Tcl_Channel Memchan_CreateRandomChannel (Tcl_Interp *interp)
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The memchan package provides a C API for use by third-party extension
+       writers. This is exposed by a Tcl stubs library table to reduce version
+       dependency as is available for Tcl itself.
+
+COMMAND
+       Tcl_Channel Memchan_CreateMemoryChannel (Tcl_Interp *interp, int
+       initialSize)
+
+       Tcl_Channel Memchan_CreateFifoChannel (Tcl_Interp *interp)
+
+       void Memchan_CreateFifo2Channel (Tcl_Interp *interp, Tcl_Channel *aPtr,
+       Tcl_Channel *bPtr)
+
+       Tcl_Channel Memchan_CreateNullChannel (Tcl_Interp *interp)
+
+       Tcl_Channel Memchan_CreateZeroChannel (Tcl_Interp *interp)
+
+       Tcl_Channel Memchan_CreateRandomChannel (Tcl_Interp *interp)
+
+       Each of these functions creates an returns a channel exactly as described
+       in the Tcl command pages for each of the memchan commands. The Tcl
+       commands internally call these functions to create the channels.
+
+       The memchan channel accepts an initialSize argument to permit pre-
+       allocating space for the internal buffer. Normally this may be set to 0.
+
+       The fifo2 API function looks a little different because it must return
+       two linked channels.
+
+SEE ALSO
+       Tcl_GetChannelName
+
+COPYRIGHT
+       Copyright (c) 2004 Pat Thoyts <patthoyts@users.sourceforge.net>
+
+
+
+

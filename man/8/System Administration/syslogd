@@ -1,0 +1,179 @@
+SYSLOGD(8)                   System Manager's Manual                  SYSLOGD(8)
+
+NAME
+     syslogd – Apple System Log server
+
+SYNOPSIS
+     syslogd [-d] [-D] [-m mark_interval] [-l lib_path] [-db_max size]
+             [-utmp_ttl time] [-mps_limit quota] [-dup_delay time]
+             [-module_name {0|1}]
+
+DESCRIPTION
+     The syslogd server receives and processes log messages.  Several modules
+     receive input messages through various channels, including UNIX domain
+     sockets associated with the syslog(3), asl(3), and kernel printf APIs, and
+     optionally on a UDP socket from network clients.
+
+     The Apple System Log facility comprises the asl(3) API, a new syslogd
+     server, the syslog(1) command-line utility, and a data store file manager,
+     aslmanager(8).  The system supports structured and extensible messages,
+     permitting advanced message browsing and management through search APIs and
+     other components of the Apple system log facility.
+
+     Log messages are retained in a data store, subject to automatic archival,
+     and input filtering as described below, to simplify the task of locating
+     log messages and to facilitate browsing and searching.  The data store is
+     intended to become a replacement for the numerous log files that are
+     currently found in various locations on the system.  Those files will be
+     phased out in future versions of Mac OS.
+
+     The following options are recognized:
+
+     -d          Run syslogd in debugging mode.  The server stays attached to
+                 the controlling terminal and prints debugging messages.
+
+     -D          Start as a daemon.  This option forces syslogd to fork and have
+                 the child process become a daemon.  Since syslogd is started by
+                 launchd, this is not normally required.
+
+     -m          Set the number of minutes between “mark” messages.  Mark
+                 messages are normally disabled.  If -m is specified with no
+                 arguments, mark messages will be written every 20 minutes.  The
+                 “mark” facility is disabled if the setting is zero minutes.
+
+     -db_max     Sets the size limit in bytes for individual files in the data
+                 store.  The default value for -db_max is 25600000 bytes.  Files
+                 are closed upon reaching the maximum size, and a new file is
+                 opened for subsequent messages.
+
+     -utmp_ttl   Sets the time-to-live in seconds for messages used by the utmp,
+                 wtmp, and lastlog subsystems.  The default is 31622400 seconds
+                 (approximately 1 year).  Note that if archival is enabled (see
+                 the aslmanager(8) manual), these messages will be copied to an
+                 archive after the regular time-to-live interval, but will
+                 persist in the data store until their own expiry time.
+
+     -mps_limit  Sets the kernel quota for messages per second allowed by
+                 syslogd.  Any messages in excess of the quota limit from any
+                 process are ignored.  An error message is logged stating that
+                 the kernel message quota has been exceeded, and that remaining
+                 messages for the current second will be discarded.  The default
+                 limit is 500 messages per second per process.  A value of 0
+                 turns off the quota mechanism.
+
+                 Note that this setting only limits the number of kernel
+                 messages that will be saved by syslogd.  User processes are
+                 limited to 36000 messages per hour.  The limit for a user
+                 process is not enforced if a remote-control ASL filter is in
+                 place for the process.
+
+     -dup_delay  Sets the time to delay for coalescing duplicate message in log
+                 files.  If a process logs multiple messages with the same text,
+                 syslogd will wait for the specified period of time to coalesce
+                 duplicates.  If identical messages arrive during this interval,
+                 syslogd will print a message of the form:
+
+                      May 7 12:34:56: --- last message repeated 17 times ---
+
+                 The default delay time is 30 seconds.  Setting the value to 0
+                 disables the coalescing mechanism.
+
+     The remaining options of the form -module_name {0|1} may be used to disable
+     (0) or enable (1) the action of several of internal modules.
+
+     -asl_in      The “asl_in” module receives log messages on the UNIX domain
+                  socket associated with the asl(3) API.  The module may be
+                  disabled using -asl_in 0.  The module is normally enabled.
+
+     -asl_action  The “asl_action” module examines the stream of received log
+                  messages and acts upon them according to the rules specified
+                  in the file /etc/asl.conf.  See asl.conf(5) for details.
+
+     -klog_in     The “klog_in” module receives log messages on the UNIX domain
+                  socket associated with the kernel logging API.  The module may
+                  be disabled using -klog_in 0.  The module is normally enabled.
+
+     -bsd_in      The “bsd_in” module receives log messages on the UNIX domain
+                  socket associated with the syslog(3) API.  The module may be
+                  disabled using -bsd_in 0.  The module is normally enabled.
+
+     -bsd_out     The “bsd_out” module examines the stream of received log
+                  messages and acts upon them according to the rules specified
+                  in the file /etc/syslog.conf.  See syslog.conf(5) for details.
+                  This module exists for backward compatibility with previous
+                  syslogd implementations.  Apple encourages use of the
+                  syslog(1) and asl(3) search APIs over the use of the log files
+                  that are specified in the /etc/syslog.conf file.  Future
+                  versions of Mac OS will move functions that are currently
+                  handled by the “bsd_out” module to the “asl_action” module.
+
+     -udp_in      The “udp_in” module receives log messages on the UDP socket
+                  associated with the Internet syslog message protocol.
+
+                  This module is normally enabled, but is inactive.  The actual
+                  UDP sockets are managed by launchd, and configured in the
+                  syslogd configuration file
+                  /System/Library/LaunchDaemons/com.apple.syslogd.plist.  In the
+                  default configuration, launchd does not open any sockets for
+                  the “syslog” UDP service, so no sockets are provided to the
+                  “udp_in” module.  If no sockets are provided, the module
+                  remains inactive.  A socket may be specified by adding the
+                  following entry to the “Sockets” dictionary in the
+                  com.apple.syslogd.plist file.
+
+                             <key>NetworkListener</key>
+                             <dict>
+                                  <key>SockServiceName</key>
+                                  <string>syslog</string>
+                                  <key>SockType</key>
+                                  <string>dgram</string>
+                             </dict>
+
+                  The module may be specifically disabled using the -udp_in 0
+                  option.
+
+     syslogd reinitializes in response to a HUP signal.
+
+MESSAGE EXPIRY AND ARCHIVAL
+     syslogd periodically invokes the aslmanager utility, which manages files in
+     the ASL data store.  Files are removed or optionally copied to an archival
+     directory after a (default) 2 day time-to-live.  See the aslmanager(8)
+     manual for details.  syslogd invokes aslmanager shortly after it starts up,
+     at midnight local time if it is running, and any time that a data store
+     file reaches the -db_max size limit.
+
+DATA STORE SECURITY
+     Messages saved in the ASL message store are written to files in
+     /var/log/asl.  The message files are given read access controls
+     corresponding to the read UID and GID specified in the messages themselves.
+     Read access UID and GID settings may be attached to messages using the
+     asl(3) library by setting a value for the "ReadUID" and/or "ReadGID"
+     message keys.  The file permissions prevent access-controlled messages from
+     being read by unauthorized users.
+
+     Although clients are generally free to use any value for the "Facility"
+     message key, only processes running with UID 0 may log messages with a
+     facility value of "com.apple.system", or with a value that has
+     "com.apple.system" as a prefix.  Messages logged by non UID 0 processes
+     that use "com.apple.system" as a facility value or prefix will be saved
+     with the facility value "user".
+
+FILES
+     /etc/syslog.conf      bsd_out module configuration file
+     /etc/asl.conf         asl_action module configuration file
+     /var/run/syslog.pid   process ID file
+     /var/run/syslog       name of the UNIX domain datagram log socket
+     /dev/klog             kernel log device
+     /var/log/asl          data store directory
+     /var/log/asl.archive  default archive directory
+     /System/Library/LaunchDaemons/com.apple.syslogd.plist
+                           launchd configuration file for syslogd
+
+SEE ALSO
+     syslog(1), logger(1), asl(3), syslog(3), asl.conf(5) syslog.conf(5)
+
+HISTORY
+     The syslogd utility appeared in 4.3BSD.
+
+     The Apple System Log facility was introduced in Mac OS X 10.4.
+

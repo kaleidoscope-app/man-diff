@@ -1,0 +1,117 @@
+SNCFGGEN(8)                  System Manager's Manual                 SNCFGGEN(8)
+
+
+
+NAME
+       sncfggen - Generate a Xsan Volume configuration file from a reference
+       configuration and a json input file
+
+SYNOPSIS
+       sncfggen -f_json_file -n_VolName -r_refconfig -p_refpath [-d]
+
+       sncfggen -h
+
+DESCRIPTION
+       The sncfggen program will generate a Xsan file system configuration file
+       from a reference configuration file system and a json input file.  The
+       json file is written in JSON which is an open standard light weight data
+       exchange language.
+
+       The json file is required to contain a fileSystems section which contains
+       an entry with a name that matches the file system name.  Global variables
+       are specified as key/value pairs.  These will replace the settings of
+       those variables in the reference configuration.  The json file must also
+       contain a stripeGroups section.  The stripeGroups array contains one
+       entry for each stripe group and must contain the name of the stripe
+       group.  In each stripe group the sgDisks array of disk labels must be
+       present.  Sncfggen will generate a configuration file with the file
+       system name filled in, changes made to global variables and disk labels
+       updated for the disks in the stripe groups.
+
+       The new config file will be written to /Library/Preferences/Xsan.
+
+OPTIONS
+       -h     Display usage.
+
+       -f json_file
+              Required. Specify the json input file.
+
+       -r refconfig
+              Required. Specify the fs name of the reference configuration file
+              system.
+
+       -p refpath
+              Required. Specify the file path to reference configuration file
+              system.
+
+       -n VolName
+              Required. The name of the file system whose config is to be
+              generated.
+
+       -d     Optional. Turn on debug mode.
+
+EXIT VALUES
+       sncfggen will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List usage:
+
+          # sncfggen -h
+          usage sncfggen -h
+                sncfggen -f json file -r refconfig -p refpath -n fsname -d
+                          -h              # display usage
+                          -f json_file    # json file to load
+                          -r refconfig    # refconfig fs name
+                          -p refpath      # refconfig file path
+                          -n fsname       # new file system name
+                          -d              # turn on debug mode
+          #
+
+       Generate /Library/Preferences/Xsan/sl1.cfgx from /tmp/refconfig.cfgx and
+       json input file json_file.
+
+          # sncfggen -f /tmp/json_file -r refconfig -p /tmp/refconfig.cfgx -n sl1
+          Successfully generated configuration file /Library/Preferences/Xsan/sl1.cfgx.
+          #
+
+       Example json file.
+
+          # cat json_file
+          {
+              "fileSystems": [
+                  {
+                      "name": "sl1",
+                      "bufferCacheSize": 4294967296,
+                      "fileLocks": false,
+                      "quotas": true,
+                      "stripeGroups": [
+                          {
+                              "sgName": "sg0",
+                              "sgDisks": [
+                                  "sl_0005"
+                              ]
+                          },
+                          {
+                              "sgName": "sg1",
+                              "sgDisks": [
+                                  "sl_0006"
+                              ]
+                          },
+                          {
+                              "sgName": "sg2",
+                              "sgDisks": [
+                                  "sl_0007",
+                                  "sl_0008"
+                              ]
+                          }
+                      ]
+              }
+              ]
+          }
+          #
+
+SEE ALSO
+       snfs_config(5)
+
+
+

@@ -1,0 +1,70 @@
+sn_scsi_resize(1)            General Commands Manual           sn_scsi_resize(1)
+
+
+
+NAME
+       sn_scsi_resize - Utility to resize a virtual volume
+
+SYNOPSIS
+       sn_scsi_resize [options] [devname1 devname3 devname3...]
+
+DESCRIPTION
+       sn_scsi_resize is a utility that can be used to tell the disk driver
+       infrastructure in the Linux operating system to get the size of a volume.
+       The size of a volume may have increased, particularly in the case of a
+       thin provisioned volume.  The Linux device driver stack does not
+       automatically detect size changes.
+
+       If no devnames are specified, sn_scsi_resize will rescan all multipath
+       devices and their slaves.
+
+       Devnames may be specified as absolute paths like /sys/block/dm-3,
+       /sys/block/dm*, /sys/block/sdg, or shorthand like mpatha, mpathb
+       representing /dev/mapper files.
+
+       sn_scsi_resize will execute a StorNext disk refresh after the SCSI
+       devices have been resized.
+
+
+OPTIONS
+       -?     Display usage and exit.
+
+       -h     Help. Display usage and exit.
+
+       -l     List.  This option will list the device sizes.  No size rescan is
+              done.
+
+       -v     Verbose.  Display the sizes of the devices.  Similar to the list
+              option but works during resize.
+
+EXAMPLES
+       Rescan all multipath devices and their slaves:
+
+              sn_scsi_resize
+
+       Rescan the multipath device dm-3 and its slaves:
+
+              sn_scsi_resize /sys/block/dm-3
+
+       Rescan the multipath device /dev/mapper/mpatha and /dev/mapper/mpathb
+       and their slaves:
+
+              sn_scsi_resize mpatha mpathb
+
+       List the sizes of all device and their slaves:
+
+              sn_scsi_resize -l
+
+
+
+NOTES
+       sn_scsi_resize is currently supported only on Linux.
+
+       Devices representing partitions cannot be resized.  Error messages are
+       suppressed unless the -v option is specified.
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/bin/sn_scsi_resize
+
+
+

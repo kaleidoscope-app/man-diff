@@ -1,0 +1,139 @@
+NEWFS_MSDOS(8)               System Manager's Manual              NEWFS_MSDOS(8)
+
+NAME
+     newfs_msdos – construct a new MS-DOS (FAT) file system
+
+SYNOPSIS
+     newfs_msdos [-N] [-B boot] [-F FAT-type] [-I volid] [-O OEM]
+                 [-S sector-size] [-a FAT-size] [-b block-size]
+                 [-c cluster-size] [-e dirents] [-f format] [-h heads] [-i info]
+                 [-k backup] [-m media] [-n FATs] [-o hidden] [-r reserved]
+                 [-s total] [-u track-size] [-v volume-name] special [disktype]
+
+DESCRIPTION
+     The newfs_msdos utility creates a FAT12, FAT16, or FAT32 file system on
+     device special, using disktab(5) entry disktype to determine geometry, if
+     required.
+
+     The options are as follows:
+
+     -N      Don't create a file system: just print out parameters.
+
+     -B boot
+             Get bootstrap from file.
+
+     -F FAT-type
+             FAT type (one of 12, 16, or 32).
+
+     -I volid
+             Volume ID.
+
+     -O OEM  OEM string (up to 8 characters).  The default is "BSD  4.4" (with
+             two spaces).
+
+     -S sector-size
+             Number of bytes per sector.  Acceptable values are powers of 2 in
+             the range 128 through 32768.
+
+     -a FAT-size
+             Number of sectors per FAT.
+
+     -b block-size
+             File system block size (bytes per cluster).  This should resolve to
+             an acceptable number of sectors per cluster (see below).
+
+     -c cluster-size
+             Sectors per cluster.  Acceptable values are powers of 2 in the
+             range 1 through 128.
+
+     -e dirents
+             Number of root directory entries (FAT12 and FAT16 only).
+
+     -f format
+             Specify a standard (floppy disk) format.  The eight standard
+             formats are (capacities in kilobytes): 160, 180, 320, 360, 640,
+             720, 1200, 1232, 1440, 2880.
+
+     -h heads
+             Number of drive heads.
+
+     -i info
+             Location of the file system info sector (FAT32 only).  A value of
+             0xffff signifies no info sector.
+
+     -k backup
+             Location of the backup boot sector (FAT32 only).  A value of 0xffff
+             signifies no backup sector.
+
+     -m media
+             Media descriptor (acceptable range 0xf0 to 0xff).
+
+     -n FATs
+             Number of FATs.  Acceptable values are 1 to 16 inclusive.  The
+             default is 2.
+
+     -o hidden
+             Number of hidden sectors.
+
+     -r reserved
+             Number of reserved sectors.
+
+     -s total
+             File system size, in sectors.
+
+     -u track-size
+             Number of sectors per track.
+
+     -v volume-name
+             Volume name (filesystem name), up to 11 characters.  The name
+             should consist of only those characters permitted in regular DOS
+             (8+3) filenames.
+
+NOTES
+     FAT file system parameters occupy a "Boot Sector BPB (BIOS Parameter
+     Block)" in the first of the "reserved" sectors which precede the actual
+     file system.  For reference purposes, this structure is presented below.
+
+     struct bsbpb {
+         u_int16_t   bps;            /* [-S] bytes per sector */
+         u_int8_t    spc;            /* [-c] sectors per cluster */
+         u_int16_t   res;            /* [-r] reserved sectors */
+         u_int8_t    nft;            /* [-n] number of FATs */
+         u_int16_t   rde;            /* [-e] root directory entries */
+         u_int16_t   sec;            /* [-s] total sectors */
+         u_int8_t    mid;            /* [-m] media descriptor */
+         u_int16_t   spf;            /* [-a] sectors per FAT */
+         u_int16_t   spt;            /* [-u] sectors per track */
+         u_int16_t   hds;            /* [-h] drive heads */
+         u_int32_t   hid;            /* [-o] hidden sectors */
+         u_int32_t   bsec;           /* [-s] big total sectors */
+     };
+     /* FAT32 extensions */
+     struct bsxbpb {
+         u_int32_t   bspf;           /* [-a] big sectors per FAT */
+         u_int16_t   xflg;           /* control flags */
+         u_int16_t   vers;           /* file system version */
+         u_int32_t   rdcl;           /* root directory start cluster */
+         u_int16_t   infs;           /* [-i] file system info sector */
+         u_int16_t   bkbs;           /* [-k] backup boot sector */
+     };
+
+EXAMPLES
+           newfs_msdos /dev/disk0s1
+     Create a file system, using default parameters, on /dev/disk0s1.
+
+           newfs_msdos -f 1440 -v foo fd0
+     Create a standard 1.44M file system, with volume name "foo", on /dev/fd0.
+
+SEE ALSO
+     fdisk(8), mount(8)
+
+DIAGNOSTICS
+     Exit status is 0 on success and 1 on error.
+
+HISTORY
+     The newfs_msdos command appeared in FreeBSD 3.0.
+
+AUTHORS
+     Robert Nordier ⟨rnordier@FreeBSD.org⟩.
+

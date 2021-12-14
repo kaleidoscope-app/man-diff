@@ -1,0 +1,51 @@
+getstring(n)        A dialog which prompts for a string input       getstring(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       getstring - A string dialog
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require getstring  ?0.1?
+
+       ::getstring::tk_getString pathName variable text ?options?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a dialog which consists of an Entry, OK, and Cancel
+       buttons.
+
+       ::getstring::tk_getString pathName variable text ?options?
+              Creates a dialog which prompts the user with text to input a text
+              string.  The contents of the entry are put in the variable upon
+              closure of the dialog. The command returns a boolean indicating if
+              the user pressed OK or not. If -geometry is not specified, the
+              dialog is centered in its parent toplevel unless its parent is .
+              in which case the dialog is centered in the screen.  Options:
+              -title -allowempty a boolean argument indicating if the dialog
+              should accept an empty entry -entryoptions simply passes its
+              arguments through to the entry widget. This is valuble for
+              performing extra validation using the Entry widget validation
+              hooks.  -geometry specifies the geometry of the window
+
+EXAMPLE
+
+       package require getstring
+       namespace import getstring::*
+
+       if {[tk_getString .gs text "Feed me a string please:"]} {
+           puts "user entered: $text"
+       }
+
+
+
+KEYWORDS
+       dialog, entry, string
+
+
+

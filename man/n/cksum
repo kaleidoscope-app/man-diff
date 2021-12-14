@@ -1,0 +1,127 @@
+cksum(n)                    Cyclic Redundancy Checks                    cksum(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       cksum - Calculate a cksum(1) compatible checksum
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require cksum  ?1.1.3?
+
+       ::crc::cksum ?-format format? ?-chunksize size? [ -channel chan |
+       -filename file | string ]
+
+       ::crc::CksumInit
+
+       ::crc::CksumUpdate token data
+
+       ::crc::CksumFinal token
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a Tcl implementation of the cksum(1) algorithm
+       based upon information provided at in the GNU implementation of this
+       program as part of the GNU Textutils 2.0 package.
+
+COMMANDS
+       ::crc::cksum ?-format format? ?-chunksize size? [ -channel chan |
+       -filename file | string ]
+              The command takes string data or a channel or file name and
+              returns a checksum value calculated using the cksum(1) algorithm.
+              The result is formatted using the format(n) specifier provided or
+              as an unsigned integer (%u) by default.
+
+OPTIONS
+       -channel name
+              Return a checksum for the data read from a channel. The command
+              will read data from the channel until the eof is true. If you need
+              to be able to process events during this calculation see the
+              PROGRAMMING INTERFACE section
+
+       -filename name
+              This is a convenience option that opens the specified file, sets
+              the encoding to binary and then acts as if the -channel option had
+              been used. The file is closed on completion.
+
+       -format string
+              Return the checksum using an alternative format template.
+
+PROGRAMMING INTERFACE
+       The cksum package implements the checksum using a context variable to
+       which additional data can be added at any time. This is expecially useful
+       in an event based environment such as a Tk application or a web server
+       package. Data to be checksummed may be handled incrementally during a
+       fileevent handler in discrete chunks. This can improve the interactive
+       nature of a GUI application and can help to avoid excessive memory
+       consumption.
+
+       ::crc::CksumInit
+              Begins a new cksum context. Returns a token ID that must be used
+              for the remaining functions. An optional seed may be specified if
+              required.
+
+       ::crc::CksumUpdate token data
+              Add data to the checksum identified by token. Calling CksumUpdate
+              $token "abcd" is equivalent to calling CksumUpdate $token "ab"
+              followed by CksumUpdate $token "cb". See EXAMPLES.
+
+       ::crc::CksumFinal token
+              Returns the checksum value and releases any resources held by this
+              token. Once this command completes the token will be invalid. The
+              result is a 32 bit integer value.
+
+EXAMPLES
+
+       % crc::cksum "Hello, World!"
+       2609532967
+
+
+
+       % crc::cksum -format 0x%X "Hello, World!"
+       0x9B8A5027
+
+
+
+       % crc::cksum -file cksum.tcl
+       1828321145
+
+
+
+       % set tok [crc::CksumInit]
+       % crc::CksumUpdate $tok "Hello, "
+       % crc::CksumUpdate $tok "World!"
+       % crc::CksumFinal $tok
+       2609532967
+
+
+AUTHORS
+       Pat Thoyts
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category crc of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       crc32(n), sum(n)
+
+KEYWORDS
+       checksum, cksum, crc, crc32, cyclic redundancy check, data integrity,
+       security
+
+CATEGORY
+       Hashes, checksums, and encryption
+
+COPYRIGHT
+       Copyright (c) 2002, Pat Thoyts
+
+
+
+

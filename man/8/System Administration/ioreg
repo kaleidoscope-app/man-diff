@@ -1,0 +1,76 @@
+IOREG(8)                     System Manager's Manual                    IOREG(8)
+
+NAME
+     ioreg – show I/O Kit registry
+
+SYNOPSIS
+     ioreg [-abfilrtx] [-c class] [-d depth] [-k key] [-n name] [-p plane]
+           [-w width]
+
+DESCRIPTION
+     ioreg displays the I/O Kit registry.  It shows the hierarchical registry
+     structure as an inverted tree.  The provider-client relationships among
+     those objects is shown as follows:
+
+     +-o provider
+       |
+       +-o client
+
+     By default, object properties are not shown.  The use of the -c, -k, -l, or
+     -n options cause ioreg to show properties for objects that match the
+     specified criteria.
+
+     By supplying the -r option, the user may specify the object which will
+     appear at the root of the tree with the -c, -k, or -n options.  If root
+     matches more than one object, multiple trees will be displayed.
+
+     The options are as follows:
+
+     -a    Archive the output in XML.
+
+     -b    Show the object name in bold.
+
+     -c    Show the object properties only if the object is an instance of, or
+           derives from, the specified C++ class (e.g. IOService).
+
+     -d    Limit tree traversal to the specified depth.  The depth limit is
+           applied with respect to each subtree root individually.  Therefore,
+           supplying a depth of 1 will cause ioreg to display only (sub)tree
+           root nodes; children will not be shown.
+
+     -f    Enable smart formatting.  ioreg knows how to format certain
+           properties so that the output is more readable and meaningful,
+           decoding data fields where appropriate.  Currently supported are
+           `reg', `assigned-addresses', `slot-names', `ranges', `interrupt-map',
+           `interrupt-parent`, and `interrupts'.
+
+     -i    Show the object inheritance.
+
+     -k    Show the object properties only if the object has the specified key.
+           Substrings do not match; the specified key must be a full property
+           name.
+
+     -l    Show properties for all displayed objects.
+
+     -n    Show the object properties only if the object has the specified name.
+           The object location, if any, is considered part of the name, thus
+           pci@f0000000 and pci@f4000000 are distinct names.
+
+     -p    Traverse the registry over the specified plane.  The default plane
+           value is ``IOService''.  The other planes, such as ``IODeviceTree'',
+           can be found under the ``IORegistryPlanes'' property of the root
+           object (ioreg -d 1 -k IORegistryPlanes).
+
+     -r    Show subtrees rooted by objects that match the specified criteria.
+           If none of -c, -k, or -n are supplied, -r has no effect.
+
+     -t    Show tree location of each subtree.  This option causes ioreg to
+           display all nodes between the I/O Kit Root and the root of the
+           displayed subtree, i.e. the subtree's parent, grandparent, etc.
+
+     -w    Clip the output to the specified line width.  The default width value
+           is the current screen size.  A value of 0 specifies an unlimited line
+           width.
+
+     -x    Show data and numbers as hexadecimal.
+

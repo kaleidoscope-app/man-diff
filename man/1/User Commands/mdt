@@ -1,0 +1,178 @@
+mdt(1)                       General Commands Manual                      mdt(1)
+
+
+
+NAME
+       mdt - Metadata performance test
+
+SYNOPSIS
+       mdt [options] path [path...]
+
+DESCRIPTION
+       mdt is a utility that can be used to measure the relative metadata
+       performance of a given file system(s).  By default, mdt measures
+       creates/second and removes/second.  Optionally mdt will also measure the
+       per second rates for stat, chmod, and move (rename) operations.
+
+       Each path specified on the command line corresponds to a mount point for
+       a file system to be tested.  By default, mdt will start 8 pthreads.  Each
+       pthread will make a directory and create 16384 files in the directory.
+       The number of pthreads (directories) can be specified via the -n option,
+       and the number of file per directory can be specified via the -f option.
+
+       mdt is a metadata only test and no writes or reads are done.  By default
+       files are zero length.  For a StorNext file system, space may be
+       allocated to the file via the -b option which performs a StorNext API
+       CvApi_VerifyAlloc call.  Be aware that allocating space to files in this
+       manner is not reflected in the file size.
+
+       On completion, mdt will print the number of files and rates for the
+       specified metadata requests in the form of operations/second.  The -v
+       option will expand output listing per stream detail.
+
+       Unless the -R option is specified, mdt will remove all created files and
+       directories in the remove test section.
+
+       For StorNext file systems, mdt will unmount and then mount the target
+       file systems between test sections in order to clear the client metadata
+       cache.  Targeted file systems should not be busy as to prevent
+       remounting.  The -U option will cause mdt to bypass remounting between
+       test sections.
+
+OPTIONS
+       -?     Display usage.
+
+       -a     Run all test sections.  In addition to create and remove, rates
+              for stat, chmod, move (rename) are also measured.
+
+       -b prealloc_size_in_bytes
+              Specify the size in bytes to preallocate after creating a file.
+              The default is 0 bytes and no preallocate.
+
+              Optionally, a single letter suffix can represent bytes in units.
+              mdt single letter unit suffixes are as follows.
+
+                 k    KB   10^3              1,000
+                 m    MB   10^6          1,000,000
+                 b    GB   10^9      1,000,000,000
+                 K    KiB  2^10              1,024
+                 M    MiB  2^20          1,048,576
+                 B    GiB  2^30      1,073,741,824
+
+
+       -C     Do not create files.  This option requires that a create run was
+              done at some previous time and the files were not removed.  See
+              the -R option.
+
+       -c     Run the chmod test section.
+
+       -d[dd] Run in debug mode. The more "d's" specified, the more debug
+              information is printed.
+
+       -E csv_file
+              Create and write results to the specified .csv file. A .csv file,
+              (comma separated value) is a file that can be consumed by a
+              spreadsheet application like Microsoft Excel.
+
+       -e csv_file
+              Write results to the specified .csv file; one that can be read by
+              Microsoft Excel or other spreadsheet application. Data is appended
+              to the specified csv file which must exist.  See the -E option.
+
+       -f number_of_files
+              Specify the number of files per directory.  Optionally a single
+              letter suffix can be provided.  See the -b option for suffix
+              detail.
+
+       -F fsname
+              Specify the name of the file system to use on the remount. The
+              file system name returned by the mount command varies by operating
+              system. If you have trouble with remounts, you may have to specify
+              the file system name.
+
+       -m     Run the move/rename test section.  Files are renamed in within
+              their parent directories.
+
+       -n number_of_directories
+              The specified number of directories are created.  Each will
+              contain the number of files specified by the -f option.  A pthread
+              is created for each directory to execute the designated
+              operations.
+
+       -R     Skip the remove section and leave the files in place.
+
+       -s     Run the stat test section.  This section will execute readdir
+              operations and stat each file in each directory; the equivalent of
+              an ls -l command.
+
+       -T tag_string
+              Write the specified tag string to the standard output and to the
+              csv file if the option to write a csv file is selected.  This can
+              be used to stamp results with a name identifying a given test
+              scenario.
+
+       -U     Do not unmount and remount the file system between test sections.
+
+       -v     Print verbose output.  The result for each stream is reported.
+
+       -V     Print the mdt version information and exit.
+
+EXAMPLES
+       Run the create and remove test sections on a single file system:
+
+          per1-# mdt /jhb10
+          mdt: Timing metadata ops/second on 8 streams of 16384 files on 1 file system(s)
+              mount point        #files    creates  removes
+              /jhb10             131072      18441    23792
+
+       Run the create and remove test sections on four file systems:
+
+          per1-# mdt /jhb10 /jhb11 /jhb12 /jhb13
+          mdt: Timing metadata ops/second on 8 streams of 16384 files on 4 file system(s)
+              mount point        #files    creates  removes
+              /jhb10             131072      13818    12134
+              /jhb11             131072      13772    11821
+              /jhb12             131072      13839    12117
+              /jhb13             131072      13726    12098
+          mdt: Aggregate:        524288      54901    47283
+
+       Run all test sections on four file systems:
+
+          per1-# mdt -a /jhb10 /jhb11 /jhb12 /jhb13
+          mdt: Timing metadata ops/second on 8 streams of 16384 files on 4 file system(s)
+              mount point        #files    creates    stats   chmods    moves  removes
+              /jhb10             131072      14105    32904    16721     8366    12072
+              /jhb11             131072      14135    32912    16616     8375    11969
+              /jhb12             131072      14175    32883    16659     8436    11895
+              /jhb13             131072      14003    33917    17092     8411    12131
+          mdt: Aggregate:        524288      56005   131510    66462    33465    47578
+
+       Run the create and remove test sections on four file systems.  Create 32
+       directories using 32 threads with 8192 files in each.
+
+          per1-# mdt -f8K -n32 /jhb10 /jhb11 /jhb12 /jhb13
+          mdt: Timing metadata ops/second on 32 streams of 8192 files on 4 file system(s)
+              mount point        #files    creates  removes
+              /jhb10             262144      12149    10683
+              /jhb11             262144      12292    10730
+              /jhb12             262144      11859    10780
+              /jhb13             262144      11782    10806
+          mdt: Aggregate:       1048576      47123    42732
+
+NOTES
+       The number of files (-f) and directories (-n) are per file system.
+
+       The number of pthreads (streams) that are run in each file systems
+       corresponds to the number of directories specified.
+
+       Other than #files, the output values represent metadata
+       operations/second.
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/bin/mdt
+
+SEE ALSO
+       cvfs(8)
+
+
+

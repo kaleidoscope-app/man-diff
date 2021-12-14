@@ -1,0 +1,54 @@
+taskgated(8)                 System Manager's Manual                taskgated(8)
+
+NAME
+     taskgated – task_for_pid access control daemon
+
+SYNOPSIS
+     taskgated [-s] [-t timeout] [-i pid]
+
+DESCRIPTION
+     taskgated is a system daemon that implements a policy for the task_for_pid
+     system service.  When the kernel is asked for the task port of a process,
+     and preliminary access control checks pass, it invokes this daemon (via
+     launchd) to make the decision.
+
+OPTIONS
+     -t timeout
+              The daemon will quit after that many seconds of inactivity. It
+              will be relaunched by launchd as needed. A timeout of zero can be
+              specified to make the daemon quit after servicing each request,
+              but a small positive timeout is better for performance.
+
+     -i pid   Inject the service port of taskgated into the process with the
+              given pid, rather than relying on launchd to install it system-
+              wide. This is for testing only, and requires the launchd
+              configuration for taskgated to be removed.
+
+AUTHORIZATION RIGHTS
+     system.privilege.taskport  Authorization right used to check access of
+                                allowed (but not safe) callers.
+
+INFO KEYS
+     SecTaskAccess  A value of "allowed" is required for any program that wants
+                    access to task ports. A value of "safe" bypasses
+                    authorization checks if so configured.  Code must be signed
+                    by any system-trusted signing authority.
+
+FILES
+     /etc/authorization  to configure the authorization used.
+     /System/Library/LaunchDaemons/com.apple.taskgated
+                         startup configuration file for taskgated
+
+SEE ALSO
+     security(1), launchd(8)
+
+HISTORY
+     taskgated was first introduced in Mac OS 10.5 (Leopard).
+
+     Procmod and procview support (-p) was removed in 10.11.
+
+     Certain software updates of Mac OS 10.4 (Tiger) introduced the convention
+     requiring membership in the procmod or procview groups to control task port
+     access. Before that, any process could obtain the task port of any other
+     process with the same user-id.
+

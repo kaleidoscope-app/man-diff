@@ -1,0 +1,255 @@
+iwidgets::selectionbox(1)        [incr Widgets]        iwidgets::selectionbox(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::selectionbox - Create and manipulate a selection box widget
+
+SYNOPSIS
+       iwidgets::selectionbox pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Selectionbox
+
+STANDARD OPTIONS
+
+       activeBackground  background         borderWidth     cursor
+       exportSelection   foreground         highlightColor  highlightThickness
+       insertBackground  insertBorderWidth  insertOffTime   insertOnTime
+       insertWidth       relief             repeatDelay     repeatInterval
+       selectBackground  selectBorderWidth  selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       textBackground  textFont
+
+       See the "entryfield" widget class manual entry for details on the above
+       associated options.
+
+       labelFont       labelMargin
+
+       See the "labeledwidget" class manual entry for details on the above
+       associated options.
+
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" widget class manual entry for details on the above
+       associated options.
+
+       dblClickCommand hscrollMode    sbWidth         scrollMargin
+       textBackground  textFont       vscrollMode
+
+       See the "scrolledlistbox" widget class manual entry for details on the
+       above associated options.
+
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           childSitePos
+       Class:          Position
+       Command-Line Switch:           -childsitepos
+
+              Specifies the position of the child site in the selection box: n,
+              s, e, w, or .  The default is center
+
+       Name:           height
+       Class:          Height
+       Command-Line Switch:           -height
+
+              Specifies the height of the selection box.  The value may be
+              specified in any of the forms acceptable to Tk_GetPixels.  The
+              default is 320 pixels.
+
+       Name:           itemsCommand
+       Class:          Command
+       Command-Line Switch:           -itemscommand
+
+              Specifies a command to be evaluated following selection of an
+              item.
+
+       Name:           itemsLabel
+       Class:          Text
+       Command-Line Switch:           -itemslabel
+
+              Specifies the text of the label for the items list.  The default
+              is "List".
+
+       Name:           itemsLabelPos
+       Class:          Position
+       Command-Line Switch:           -itemslabelpos
+
+              Specifies the position of the label along the side of the items
+              list: n, ne, e, se, s, sw, w, or nw.  The default is nw.
+
+       Name:           itemsOn
+       Class:          ItemsOn
+       Command-Line Switch:           -itemson
+
+              Specifies whether or not to display the items list in any of the
+              forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           margin
+       Class:          Margin
+       Command-Line Switch:           -margin
+
+              Specifies distance between the items list and selection entry in
+              any of the forms acceptable to Tk_GetPixels.  The default is 7
+              pixels.
+
+       Name:           selectionCommand
+       Class:          Command
+       Command-Line Switch:           -selectioncommand
+
+              Specifies a Tcl procedure to be associated with a return key press
+              event in the selection entry field.
+
+       Name:           selectionLabel
+       Class:          Text
+       Command-Line Switch:           -selectionlabel
+
+              Specifies the text of the label for the selection entry field.
+              The default is "Selection".
+
+       Name:           selectionLabelPos
+       Class:          Position
+       Command-Line Switch:           -selectionlabelpos
+
+              Specifies the position of the label along the side of the
+              selection: n, ne, e, se, s, sw, w, or nw.  The default is nw.
+
+       Name:           selectionOn
+       Class:          SelectionOn
+       Command-Line Switch:           -selectionon
+
+              Specifies whether or not to display the selection entry in any of
+              the forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           width
+       Class:          Width
+       Command-Line Switch:           -width
+
+              Specifies the width of the selection box.  The value may be
+              specified in any of the forms acceptable to Tk_GetPixels.  The
+              default is 260 pixels.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::selectionbox command creates a scrolled list of items and a
+       selection entry field.  The user may choose any of the items displayed in
+       the scrolled list of alternatives and the selection field will be filled
+       with the choice.  The user is also free to enter a new value in the
+       selection entry field.  Both the list and entry areas have labels.  A
+       child site is also provided in which the user may create other widgets to
+       be used in conjunction with the selection box.
+
+
+METHODS
+       The iwidgets::selectionbox command creates a new Tcl command whose name
+       is pathName.  This command may be used to invoke various operations on
+       the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.
+
+
+ASSOCIATED METHODS
+       curselection    delete         index           nearest
+       scan            selection      size
+
+       See the "listbox" widget class manual entry for details on the associated
+       methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::selectionbox command.
+
+       pathName childsite
+              Returns the child site widget path name.
+
+       pathName clear component
+              Delete the contents of either the selection entry widget or items
+              list.  The component argument may be either items or selection.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::selectionbox command.
+
+       pathName get
+              Returns the current value of the selection entry widget.
+
+       pathName insert component args
+              Insert element(s) into either the selection entry widget or items
+              list.  The component argument may be either items or selection.
+              The args follow the rules of either an entry or list widget
+              depending on the component value.
+
+       pathName selectitem
+              Replace the selection entry field contents with the currently
+              selected items value.
+
+
+COMPONENTS
+       Name:           childsite
+       Class:          Frame
+
+              The childsite component is the user child site for the selection
+              box.  See the "frame" widget manual entry for details on the
+              childsite component item.
+
+       Name:           items
+       Class:          Scrolledlistbox
+
+              The items component provides the scrolled list box of items for
+              the selection box.  See the "scrolledlistbox" widget manual entry
+              for details on the items component item.
+
+       Name:           selection
+       Class:          Entryfield
+
+              The selection component provides the entry field in the selection
+              box for display of the selected item in the items component.  See
+              the "entryfield" widget manual entry for details on the selection
+              component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               option add *textBackground white
+
+               iwidgets::selectionbox .sb -items {Hello {Out There} World}
+               pack .sb -padx 10 -pady 10 -fill both -expand yes
+
+               set cs [label [.sb childsite].label -text "Child Site"]
+               pack $cs -fill x -padx 10 -pady 10
+
+               .sb insert items 2 {Cruel Cruel}
+
+               .sb selection set 1
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       selectionbox, widget
+
+
+

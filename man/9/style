@@ -1,0 +1,445 @@
+STYLE(9)                    Kernel Developer's Manual                   STYLE(9)
+
+NAME
+     style – kernel source file style guide
+
+DESCRIPTION
+     This file specifies the preferred style for kernel source files in the
+     FreeBSD source tree.  It is also a guide for preferred userland code style.
+
+     /*
+      * Style guide for FreeBSD.  Based on the CSRG's KNF (Kernel Normal Form).
+      *
+      *      @(#)style       1.14 (Berkeley) 4/28/95
+      * $FreeBSD: src/share/man/man9/style.9,v 1.32.2.16 2001/12/17 11:30:19 ru Exp $
+      */
+
+     /*
+      * VERY important single-line comments look like this.
+      */
+
+     /* Most single-line comments look like this. */
+
+     /*
+      * Multi-line comments look like this.  Make them real sentences.  Fill
+      * them so they look like real paragraphs.
+      */
+
+     After any copyright header, there is a blank line, and the rcsid for source
+     files.  Version control system ID tags should only exist once in a file
+     (unlike this one).  Non-C/C++ source files follow the example above, while
+     C/C++ source files follow the one below.  All VCS (version control system)
+     revision identification from files obtained from elsewhere should be
+     maintained, including, where applicable, multiple IDs showing a file's
+     history.  In general, keep the IDs intact, including any ‘$’s.  There is no
+     reason to add "From" in front of foreign VCS IDs.  Most non-FreeBSD VCS IDs
+     should be indented by a tab if in a comment.
+
+     #include <sys/cdefs.h>
+     __RCSID("@(#)style      1.14 (Berkeley) 4/28/95");
+     __FBSDID("$FreeBSD: src/share/man/man9/style.9,v 1.32.2.16 2001/12/17 11:30:19 ru Exp $");
+
+     Leave another blank line before the header files.
+
+     Kernel include files (i.e. sys/*.h) come first; normally, include
+     ⟨sys/types.h⟩ OR ⟨sys/param.h⟩, but not both.  ⟨sys/types.h⟩ includes
+     ⟨sys/cdefs.h⟩, and it is okay to depend on that.
+
+     #include <sys/types.h>  /* Non-local includes in angle brackets. */
+
+     For a network program, put the network include files next.
+
+     #include <net/if.h>
+     #include <net/if_dl.h>
+     #include <net/route.h>
+     #include <netinet/in.h>
+     #include <protocols/rwhod.h>
+
+     Leave a blank line before the next group, the /usr include files, which
+     should be sorted alphabetically by name.
+
+     #include <stdio.h>
+
+     Global pathnames are defined in ⟨paths.h⟩.  Pathnames local to the program
+     go in "pathnames.h" in the local directory.
+
+     #include <paths.h>
+
+     Leave another blank line before the user include files.
+
+     #include "pathnames.h"          /* Local includes in double quotes. */
+
+     Do not #define or declare names in the implementation namespace except for
+     implementing application interfaces.
+
+     The names of “unsafe” macros (ones that have side effects), and the names
+     of macros for manifest constants, are all in uppercase.  The expansions of
+     expression-like macros are either a single token or have outer parentheses.
+     Put a single tab character between the #define and the macro name.  If a
+     macro is an inline expansion of a function, the function name is all in
+     lowercase and the macro has the same name all in uppercase.  If a macro
+     needs more than a single line, use braces (‘{’ and ‘}’).  Right-justify the
+     backslashes; it makes it easier to read.  If the macro encapsulates a
+     compound statement, enclose it in a do loop, so that it can safely be used
+     in if statements.  Any final statement-terminating semicolon should be
+     supplied by the macro invocation rather than the macro, to make parsing
+     easier for pretty-printers and editors.
+
+     #define MACRO(x, y) do {                                                \
+             variable = (x) + (y);                                           \
+             (y) += 2;                                                       \
+     } while(0)
+
+     Enumeration values are all uppercase.
+
+     enum enumtype { ONE, TWO } et;
+
+     When declaring variables in structures, declare them sorted by use, then by
+     size, and then in alphabetical order.  The first category normally does not
+     apply, but there are exceptions.  Each one gets its own line.  Try to make
+     the structure readable by aligning the member names using either one or two
+     tabs depending upon your judgment.  You should use one tab if it suffices
+     to align most of the member names.  Names following extremely long types
+     should be separated by a single space.
+
+     Major structures should be declared at the top of the file in which they
+     are used, or in separate header files if they are used in multiple source
+     files.  Use of the structures should be by separate declarations and should
+     be extern if they are declared in a header file.
+
+     struct foo {
+             struct foo      *next;          /* List of active foo. */
+             struct mumble   amumble;        /* Comment for mumble. */
+             int             bar;            /* Try to align the comments. */
+             struct verylongtypename *baz;   /* Won't fit in 2 tabs. */
+     };
+     struct foo *foohead;                    /* Head of global foo list. */
+
+     Use queue(3) macros rather than rolling your own lists, whenever possible.
+     Thus, the previous example would be better written:
+
+     #include <sys/queue.h>
+
+     struct foo {
+             LIST_ENTRY(foo) link;           /* Use queue macros for foo lists. */
+             struct mumble   amumble;        /* Comment for mumble. */
+             int             bar;            /* Try to align the comments. */
+             struct verylongtypename *baz;   /* Won't fit in 2 tabs. */
+     };
+     LIST_HEAD(, foo) foohead;               /* Head of global foo list. */
+
+     Avoid using typedefs for structure types.  Typedefs are problematic because
+     they do not properly hide their underlying type; for example you need to
+     know if the typedef is the structure itself or a pointer to the structure.
+     In addition they must be declared exactly once, whereas an incomplete
+     structure type can be mentioned as many times as necessary.  Typedefs are
+     difficult to use in stand-alone header files: the header that defines the
+     typedef must be included before the header that uses it, or by the header
+     that uses it (which causes namespace pollution), or there must be a back-
+     door mechanism for obtaining the typedef.
+
+     When convention requires a typedef, make its name match the struct tag.
+
+     /* Make the structure name match the typedef. */
+     typedef struct bar {
+             int     level;
+     } bar_t;
+
+     All functions are prototyped somewhere.
+
+     Function prototypes for private functions (i.e. functions not used
+     elsewhere) go at the top of the first source module.  Functions local to
+     one source module should be declared static.  Functions that are not
+     exported outside of the kernel should be declared __private_extern__.
+
+     Functions used from other parts of the kernel are prototyped in the
+     relevant include file.
+
+     Functions that are used locally in more than one module go into a separate
+     header file, e.g. "extern.h".
+
+     Do not use the __P macro.
+
+     In general code can be considered “new code” when it makes up about 50% or
+     more of the file(s) involved.  This is enough to break precedents in the
+     existing code and use the current style guidelines.
+
+     The kernel has a name associated with parameter types, e.g., in the kernel
+     use:
+
+     void    function(int fd);
+
+     In header files visible to userland applications, prototypes that are
+     visible must use either “protected” names (ones beginning with an
+     underscore) or no names with the types.  It is preferable to use protected
+     names.  E.g., use:
+
+     void    function(int);
+
+     or:
+
+     void    function(int _fd);
+
+     Prototypes may have an extra space after a tab to enable function names to
+     line up:
+
+     static char     *function(int _arg, const char *_arg2, struct foo *_arg3,
+                         struct bar *_arg4);
+     static void      usage(void);
+
+     /*
+      * All major routines should have a comment briefly describing what
+      * they do.  The comment before the "main" routine should describe
+      * what the program does.
+      */
+     int
+     main(int argc, char *argv[])
+     {
+             long num;
+             int ch;
+             char *ep;
+
+
+     For consistency, getopt(3) should be used to parse options.  Options should
+     be sorted in the getopt(3) call and the switch statement, unless parts of
+     the switch cascade.  Elements in a switch statement that cascade should
+     have a FALLTHROUGH comment.  Numerical arguments should be checked for
+     accuracy.  Code that cannot be reached should have a NOTREACHED comment.
+
+             while ((ch = getopt(argc, argv, "abn:")) != -1)
+                     switch (ch) {           /* Indent the switch. */
+                     case 'a':               /* Don't indent the case. */
+                             aflag = 1;
+                             /* FALLTHROUGH */
+                     case 'b':
+                             bflag = 1;
+                             break;
+                     case 'n':
+                             num = strtol(optarg, &ep, 10);
+                             if (num <= 0 || *ep != '\0') {
+                                     warnx("illegal number, -n argument -- %s",
+                                         optarg);
+                                     usage();
+                             }
+                             break;
+                     case '?':
+                     default:
+                             usage();
+                             /* NOTREACHED */
+                     }
+             argc -= optind;
+             argv += optind;
+
+     Space after keywords (if, while, for, return, switch).  No braces are used
+     for control statements with zero or only a single statement unless that
+     statement is more than a single line in which case they are permitted.
+     Forever loops are done with for's, not while's.
+
+             for (p = buf; *p != '\0'; ++p)
+                     ;       /* nothing */
+             for (;;)
+                     stmt;
+             for (;;) {
+                     z = a + really + long + statement + that + needs +
+                         two lines + gets + indented + four + spaces +
+                         on + the + second + and + subsequent + lines;
+             }
+             for (;;) {
+                     if (cond)
+                             stmt;
+             }
+             if (val != NULL)
+                     val = realloc(val, newsize);
+
+     Parts of a for loop may be left empty.  Do not put declarations inside
+     blocks unless the routine is unusually complicated.
+
+             for (; cnt < 15; cnt++) {
+                     stmt1;
+                     stmt2;
+             }
+
+     Variable names should contain underscores to separate words.  DO NOT use
+     StudlyCaps.
+
+     Indentation is an 8 character tab.  All code should fit in 80 columns.  If
+     you have to wrap a long statement, put the operator at the end of the line.
+
+             while (cnt < 20 && this_variable_name_is_too_long &&
+                    ep != NULL)
+                     z = a + really + long + statement + that + needs +
+                         two lines + gets + indented + four + spaces +
+                         on + the + second + and + subsequent + lines;
+
+     Do not add whitespace at the end of a line, and only use tabs followed by
+     spaces to form the indentation.  Do not use more spaces than a tab will
+     produce and do not use spaces in front of tabs.
+
+     Closing and opening braces go on the same line as the else.  Braces that
+     are not necessary may be left out.
+
+             if (test)
+                     stmt;
+             else if (bar) {
+                     stmt;
+                     stmt;
+             } else
+                     stmt;
+
+     No spaces after function names.  Commas have a space after them.  No spaces
+     after ‘(’ or ‘[’ or preceding ‘]’ or ‘)’ characters.
+
+             error = function(a1, a2);
+             if (error != 0)
+                     exit(error);
+
+     Unary operators do not require spaces, binary operators do.  Do not use
+     parentheses unless they are required for precedence or unless the statement
+     is confusing without them.  Remember that other people may confuse easier
+     than you.  Do YOU understand the following?
+
+             a = b->c[0] + ~d == (e || f) || g && h ? i : j >> 1;
+             k = !(l & FLAGS);
+
+     Exits should be 0 on success, or according to the predefined values in
+     sysexits(3).
+
+             exit(EX_OK);    /*
+                              * Avoid obvious comments such as
+                              * "Exit 0 on success."
+                              */
+     }
+
+     The function type should be on a line by itself preceding the function.
+
+     static char *
+     function(int a1, int a2, float fl, int a4)
+     {
+
+     When declaring variables in functions declare them sorted by size, then in
+     alphabetical order; multiple ones per line are okay.  If a line overflows
+     reuse the type keyword.
+
+     Be careful to not obfuscate the code by initializing variables in the
+     declarations.  Use this feature only thoughtfully.  DO NOT use function
+     calls in initializers.
+
+             struct foo one, *two;
+             double three;
+             int *four, five;
+             char *six, seven, eight, nine, ten, eleven, twelve;
+
+             four = myfunction();
+
+     Do not declare functions inside other functions; ANSI C says that such
+     declarations have file scope regardless of the nesting of the declaration.
+     Hiding file declarations in what appears to be a local scope is undesirable
+     and will elicit complaints from a good compiler.
+
+     Casts and sizeof's are not followed by a space.  Note that indent(1) does
+     not understand this rule.  sizeof's are written with parentheses always.
+
+     NULL is the preferred null pointer constant.  Use NULL instead of (type *)0
+     or (type *)NULL in contexts where the compiler knows the type, e.g., in
+     assignments.  Use (type *)NULL in other contexts, in particular for all
+     function args.  (Casting is essential for variadic args and is necessary
+     for other args if the function prototype might not be in scope.)  Test
+     pointers against NULL, e.g., use:
+
+     (p = f()) == NULL
+
+     not:
+
+     !(p = f())
+
+     Do not use ! for tests unless it is a boolean, e.g. use
+
+     if (*p == '\0')
+
+     not
+
+     if (!*p)
+
+     Routines returning void * should not have their return values cast to any
+     pointer type.
+
+     Values in return statements should be enclosed in parentheses.
+
+     Use err(3) or warn(3), do not roll your own.
+
+             if ((four = malloc(sizeof(struct foo))) == NULL)
+                     err(1, (char *)NULL);
+             if ((six = (int *)overflow()) == NULL)
+                     errx(1, "number overflowed");
+             return (eight);
+     }
+
+     Use ANSI function declarations.
+
+     Variable numbers of arguments should look like this.
+
+     #include <stdarg.h>
+
+     void
+     vaf(const char *fmt, ...)
+     {
+             va_list ap;
+
+             va_start(ap, fmt);
+             STUFF;
+             va_end(ap);
+             /* No return needed for void functions. */
+     }
+
+     Use printf(3), not fputs(3), puts(3), putchar(3), whatever; it is faster
+     and usually cleaner, not to mention avoiding stupid bugs.
+
+     Usage statements should look like the manual pages SYNOPSIS.  The usage
+     statement should be structured in the following order:
+
+     1.   Options without operands come first, in alphabetical order, inside a
+          single set of brackets (‘[’ and ‘]’).
+
+     2.   Options with operands come next, also in alphabetical order, with each
+          option and its argument inside its own pair of brackets.
+
+     3.   Required arguments (if any) are next, listed in the order they should
+          be specified on the command line.
+
+     4.   Finally, any optional arguments should be listed, listed in the order
+          they should be specified, and all inside brackets.
+
+     A bar (‘|’) separates “either-or” options/arguments, and multiple
+     options/arguments which are specified together are placed in a single set
+     of brackets.
+
+         "usage: f [-aDde] [-b b_arg] [-m m_arg] req1 req2 [opt1 [opt2]]\n"
+         "usage: f [-a | -b] [-c [-dEe] [-n number]]\n"
+
+             (void)fprintf(stderr, "usage: f [-ab]\n");
+             exit(EX_USAGE);
+     }
+
+     Note that the manual page options description should list the options in
+     pure alphabetical order.  That is, without regard to whether an option
+     takes arguments or not.  The alphabetical ordering should take into account
+     the case ordering shown above.
+
+     New core kernel code should be compliant with the style guides.
+
+     Stylistic changes (including whitespace changes) are hard on the source
+     repository and are to be avoided without good reason.  Code that is
+     approximately FreeBSD KNF style compliant in the repository must not
+     diverge from compliance.
+
+     Code should be run through a code checker (e.g., sparse or gcc -Wall
+     -Werror ).
+
+SEE ALSO
+     indent(1), lint(1), err(3), sysexits(3), warn(3)
+
+HISTORY
+     This man page is largely based on the src/admin/style/style file from the
+     4.4BSD-Lite2 release, with occasional updates to reflect the current
+     practice and desire of the FreeBSD project.
+

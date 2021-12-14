@@ -1,0 +1,50 @@
+bkctl(1)                     General Commands Manual                    bkctl(1)
+
+NAME
+     bkctl – Uses BookKit.framework to manage the iBooks book library
+
+SYNOPSIS
+     bkctl [subcommand [arguments ...]]
+
+DESCRIPTION
+     bkctl uses BookKit.framework to list, import, and remove books in the
+     iBooks library.  bkctl supports a number of subcommands on the command
+     line.
+
+SUBCOMMANDS
+     list     Lists the paths of all of the currently installed (uncompressed)
+              {.epub, .ibooks, .pdf} books in the book library.
+
+     rebuild  Performs a consistency check of the book library. All books in
+              Books.plist must exist as book files/directories. All books in the
+              Books directory must have an entry in Books.plist. All book files
+              must be named <assetID>.{epub,ibooks,pdf}. This command ensures
+              that those requirements are maintained. This can be used to
+              recover lost books.
+
+     import paths ...
+              Imports one or more book files into the book library. The paths
+              may point to individual books files, or to directories containing
+              book files, which will be recursively scanned for
+              {.epub,.ibooks,.pdf} files.
+
+     remove paths ...
+              Removes one or more book files from the book library. Paths must
+              refer to books currently in the book library.
+
+     shutdown
+              Shuts down the BookKit.framework XPC service. Use this when you
+              need to update BookKit.framework from an installer or when using
+              darwinup.
+
+DIRECTORIES & FILES
+     ~/Library/Application Support/iBooks/Books
+                                    Directory containing installed book
+                                    files/directories.
+     ~/Library/Application Support/iBooks/Books.plist
+                                    Binary property list file containing the
+                                    known installed books.
+
+SEE ALSO
+     darwinup(1)
+

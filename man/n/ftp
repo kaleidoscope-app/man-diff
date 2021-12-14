@@ -1,0 +1,394 @@
+ftp(n)                             ftp client                             ftp(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ftp - Client-side tcl implementation of the ftp protocol
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require ftp  ?2.4.9?
+
+       ::ftp::Open server user passwd ?options?
+
+       ::ftp::Close handle
+
+       ::ftp::Cd handle directory
+
+       ::ftp::Pwd handle
+
+       ::ftp::Type handle ?ascii|binary|tenex?
+
+       ::ftp::List handle ?pattern?
+
+       ::ftp::NList handle ?directory?
+
+       ::ftp::FileSize handle file
+
+       ::ftp::ModTime handle file
+
+       ::ftp::Delete handle file
+
+       ::ftp::Rename handle from to
+
+       ::ftp::Put handle (local | -data data | -channel chan) ?remote?
+
+       ::ftp::Append handle (local | -data data | -channel chan) ?remote?
+
+       ::ftp::Get handle remote ?(local | -variable varname | -channel chan)?
+
+       ::ftp::Reget handle remote ?local? ?from? ?to?
+
+       ::ftp::Newer handle remote ?local?
+
+       ::ftp::MkDir handle directory
+
+       ::ftp::RmDir handle directory
+
+       ::ftp::Quote handle arg1 arg2 ...
+
+       ::ftp::DisplayMsg handle msg ?state?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The ftp package provides the client side of the ftp protocol as specified
+       in RFC 959 (http://www.rfc-editor.org/rfc/rfc959.txt).  The package
+       implements both active (default) and passive ftp sessions.
+
+       A new ftp session is started with the ::ftp::Open command. To shutdown an
+       existing ftp session use ::ftp::Close. All other commands are restricted
+       to usage in an an open ftp session. They will generate errors if they are
+       used out of context.  The ftp package includes file and directory
+       manipulating commands for remote sites. To perform the same operations on
+       the local site use commands built into the core, like cd or file.
+
+       The output of the package is controlled by two state variables,
+       ::ftp::VERBOSE and ::ftp::DEBUG. Setting ::ftp::VERBOSE to "1" forces the
+       package to show all responses from a remote server. The default value is
+       "0". Setting ::ftp::DEBUG to "1" enables debugging and forces the package
+       to show all return codes, states, state changes and "real" ftp commands.
+       The default value is "0".
+
+       The command ::ftp::DisplayMsg is used to show the different messages from
+       the ftp session. The setting of ::ftp::VERBOSE determines if this command
+       is called or not. The current implementation of the command uses the log
+       package of tcllib to write the messages to their final destination. This
+       means that the behaviour of ::ftp::DisplayMsg can be customized without
+       changing its implementation. For more radical changes overwriting its
+       implementation by the application is of course still possible. Note that
+       the default implementation honors the option -output to ::ftp::Open for a
+       session specific log command.
+
+       Caution: The default implementation logs error messages like all other
+       messages. If this behaviour is changed to throwing an error instead all
+       commands in the API will change their behaviour too. In such a case they
+       will not return a failure code as described below but pass the thrown
+       error to their caller.
+
+API
+       ::ftp::Open server user passwd ?options?
+              This command is used to start a FTP session by establishing a
+              control connection to the FTP server. The defaults are used for
+              any option not specified by the caller.
+
+              The command takes a host name server, a user name user and a
+              password password as its parameters and returns a session handle
+              that is an integer number greater than or equal to "0", if the
+              connection is successfully established. Otherwise it returns "-1".
+              The server parameter must be the name or internet address (in
+              dotted decimal notation) of the ftp server to connect to. The user
+              and passwd parameters must contain a valid user name and password
+              to complete the login process.
+
+              The options overwrite some default values or set special
+              abilities:
+
+              -blocksize size
+                     The blocksize is used during data transfer. At most size
+                     bytes are transfered at once. The default value for this
+                     option is 4096.  The package will evaluate the -progress
+                     callback for the session after the transfer of each block.
+
+              -timeout seconds
+                     If seconds is non-zero, then ::ftp::Open sets up a timeout
+                     which will occur after the specified number of seconds. The
+                     default value is 600.
+
+              -port number
+                     The port number specifies an alternative remote port on the
+                     ftp server on which the ftp service resides. Most ftp
+                     services listen for connection requests on the default port
+                     21. Sometimes, usually for security reasons, port numbers
+                     other than 21 are used for ftp connections.
+
+              -mode mode
+                     The transfer mode option determines if a file transfer
+                     occurs in active or passive mode. In passive mode the
+                     client will ask the ftp server to listen on a data port and
+                     wait for the connection rather than to initiate the process
+                     by itself when a data transfer request comes in. Passive
+                     mode is normally a requirement when accessing sites via a
+                     firewall. The default mode is active.
+
+              -progress callback
+                     This callback is evaluated whenever a block of data was
+                     transfered. See the option -blocksize for how to specify
+                     the size of the transfered blocks.
+
+                     When evaluating the callback one argument is appended to
+                     the callback script, the current accumulated number of
+                     bytes transferred so far.
+
+              -command callback
+                     Specifying this option places the connection into
+                     asynchronous mode. The callback is evaluated after the
+                     completion of any operation. When an operation is running
+                     no further operations must be started until a callback has
+                     been received for the currently executing operation.
+
+                     When evaluating the callback several arguments are appended
+                     to the callback script, namely the keyword of the operation
+                     that has completed and any additional arguments specific to
+                     the operation.  If an error occurred during the execution
+                     of the operation the callback is given the keyword error.
+
+              -output callback
+                     This option has no default. If it is set the default
+                     implementation of ::ftp::DisplayMsg will use its value as
+                     command prefix to log all internal messages. The callback
+                     will have three arguments appended to it before evaluation,
+                     the id of the session, the message itself, and the
+                     connection state, in this order.
+
+       ::ftp::Close handle
+              This command terminates the specified ftp session. If no file
+              transfer is in progress, the server will close the control
+              connection immediately. If a file transfer is in progress however,
+              the control connection will remain open until the transfers
+              completes. When that happens the server will write the result
+              response for the transfer to it and close the connection
+              afterward.
+
+       ::ftp::Cd handle directory
+              This command changes the current working directory on the ftp
+              server to a specified target directory.  The command returns 1 if
+              the current working directory was successfully changed to the
+              specified directory or 0 if it fails.  The target directory can be
+
+              •      a subdirectory of the current directory,
+
+              •      Two dots, ..  (as an indicator for the parent directory of
+                     the current directory)
+
+              •      or a fully qualified path to a new working directory.
+
+       ::ftp::Pwd handle
+              This command returns the complete path of the current working
+              directory on the ftp server, or an empty string in case of an
+              error.
+
+       ::ftp::Type handle ?ascii|binary|tenex?
+              This command sets the ftp file transfer type to either ascii,
+              binary, or tenex. The command always returns the currently set
+              type. If called without type no change is made.
+
+              Currently only ascii and binary types are supported. There is some
+              early (alpha) support for Tenex mode. The type ascii is normally
+              used to convert text files into a format suitable for text editors
+              on the platform of the destination machine. This mainly affects
+              end-of-line markers. The type binary on the other hand allows the
+              undisturbed transfer of non-text files, such as compressed files,
+              images and executables.
+
+       ::ftp::List handle ?pattern?
+              This command returns a human-readable list of files.  Wildcard
+              expressions such as "*.tcl" are allowed.  If pattern refers to a
+              specific directory, then the contents of that directory are
+              returned.  If the pattern is not a fully-qualified path name, the
+              command lists entries relative to the current remote directory.
+              If no pattern is specified, the contents of the current remote
+              directory is returned.
+
+              The listing includes any system-dependent information that the
+              server chooses to include. For example most UNIX systems produce
+              output from the command ls -l. The command returns the retrieved
+              information as a tcl list with one item per entry. Empty lines and
+              UNIX's "total" lines are ignored and not included in the result as
+              reported by this command.
+
+              If the command fails an empty list is returned.
+
+       ::ftp::NList handle ?directory?
+              This command has the same behavior as the ::ftp::List command,
+              except that it only retrieves an abbreviated listing. This means
+              only file names are returned in a sorted list.
+
+       ::ftp::FileSize handle file
+              This command returns the size of the specified file on the ftp
+              server. If the command fails an empty string is returned.
+
+              ATTENTION! It will not work properly when in ascii mode and is not
+              supported by all ftp server implementations.
+
+       ::ftp::ModTime handle file
+              This command retrieves the time of the last modification of the
+              file on the ftp server as a system dependent integer value in
+              seconds or an empty string if an error occurred. Use the built-in
+              command clock to convert the retrieves value into other formats.
+
+       ::ftp::Delete handle file
+              This command deletes the specified file on the ftp server. The
+              command returns 1 if the specified file was successfully deleted
+              or 0 if it failed.
+
+       ::ftp::Rename handle from to
+              This command renames the file from in the current directory of the
+              ftp server to the specified new file name to. This new file name
+              must not be the same as any existing subdirectory or file name.
+              The command returns 1 if the specified file was successfully
+              renamed or 0 if it failed.
+
+       ::ftp::Put handle (local | -data data | -channel chan) ?remote?
+              This command transfers a local file local to a remote file remote
+              on the ftp server. If the file parameters passed to the command do
+              not fully qualified path names the command will use the current
+              directory on local and remote host. If the remote file name is
+              unspecified, the server will use the name of the local file as the
+              name of the remote file. The command returns 1 to indicate a
+              successful transfer and 0 in the case of a failure.
+
+              If -data data is specified instead of a local file, the system
+              will not transfer a file, but the data passed into it. In this
+              case the name of the remote file has to be specified.
+
+              If -channel chan is specified instead of a local file, the system
+              will not transfer a file, but read the contents of the channel
+              chan and write this to the remote file. In this case the name of
+              the remote file has to be specified. After the transfer chan will
+              be closed.
+
+       ::ftp::Append handle (local | -data data | -channel chan) ?remote?
+              This command behaves like ::ftp::Puts, but appends the transfered
+              information to the remote file. If the file did not exist on the
+              server it will be created.
+
+       ::ftp::Get handle remote ?(local | -variable varname | -channel chan)?
+              This command retrieves a remote file remote on the ftp server and
+              stores its contents into the local file local. If the file
+              parameters passed to the command are not fully qualified path
+              names the command will use the current directory on local and
+              remote host. If the local file name is unspecified, the server
+              will use the name of the remote file as the name of the local
+              file. The command returns 1 to indicate a successful transfer and
+              0 in the case of a failure. The command will throw an error if the
+              directory the file local is to be placed in does not exist.
+
+              If -variable varname is specified, the system will store the
+              retrieved data into the variable varname instead of a file.
+
+              If -channel chan is specified, the system will write the retrieved
+              data into the channel chan instead of a file. The system will not
+              close chan after the transfer, this is the responsibility of the
+              caller to ::ftp::Get.
+
+       ::ftp::Reget handle remote ?local? ?from? ?to?
+              This command behaves like ::ftp::Get, except that if local file
+              local exists and is smaller than remote file remote, the local
+              file is presumed to be a partially transferred copy of the remote
+              file and the transfer is continued from the apparent point of
+              failure.  The command will throw an error if the directory the
+              file local is to be placed in does not exist. This command is
+              useful when transferring very large files over networks that tend
+              to drop connections.
+
+              Specifying the additional byte offsets from and to will cause the
+              command to change its behaviour and to download exactly the
+              specified slice of the remote file. This mode is possible only if
+              a local destination is explicitly provided. Omission of to leads
+              to downloading till the end of the file.
+
+       ::ftp::Newer handle remote ?local?
+              This command behaves like ::ftp::Get, except that it retrieves the
+              remote file only if the modification time of the remote file is
+              more recent than the file on the local system. If the file does
+              not exist on the local system, the remote file is considered
+              newer. The command will throw an error if the directory the file
+              local is to be placed in does not exist.
+
+       ::ftp::MkDir handle directory
+              This command creates the specified directory on the ftp server. If
+              the specified path is relative the new directory will be created
+              as a subdirectory of the current working directory. Else the
+              created directory will have the specified path name. The command
+              returns 1 to indicate a successful creation of the directory and 0
+              in the case of a failure.
+
+       ::ftp::RmDir handle directory
+              This command removes the specified directory on the ftp server.
+              The remote directory has to be empty or the command will fail. The
+              command returns 1 to indicate a successful removal of the
+              directory and 0 in the case of a failure.
+
+       ::ftp::Quote handle arg1 arg2 ...
+              This command is used to send an arbitrary ftp command to the
+              server. It cannot be used to obtain a directory listing or for
+              transferring files. It is included to allow an application to
+              execute commands on the ftp server which are not provided by this
+              package.  The arguments are sent verbatim, i.e. as is, with no
+              changes.
+
+              In contrast to the other commands in this package this command
+              will not parse the response it got from the ftp server but return
+              it verbatim to the caller.
+
+       ::ftp::DisplayMsg handle msg ?state?
+              This command is used by the package itself to show the different
+              messages from the ftp sessions. The package itself declares this
+              command very simple, writing the messages to stdout (if
+              ::ftp::VERBOSE was set, see below) and throwing tcl errors for
+              error messages. It is the responsibility of the application to
+              overwrite it as needed. A state variable for different states
+              assigned to different colors is recommended by the author. The
+              package log is useful for this.
+
+       ::ftp::VERBOSE
+              A state variable controlling the output of the package. Setting
+              ::ftp::VERBOSE to "1" forces the package to show all responses
+              from a remote server. The default value is "0".
+
+       ::ftp::DEBUG
+              A state variable controlling the output of ftp. Setting
+              ::ftp::DEBUG to "1" enables debugging and forces the package to
+              show all return codes, states, state changes and "real" ftp
+              commands. The default value is "0".
+
+BUGS
+       The correct execution of many commands depends upon the proper behavior
+       by the remote server, network and router configuration.
+
+       An update command placed in the procedure ::ftp::DisplayMsg may run into
+       persistent errors or infinite loops. The solution to this problem is to
+       use update idletasks instead of update.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category ftp of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       ftpd, mime, pop3, smtp
+
+KEYWORDS
+       ftp, internet, net, rfc 959
+
+CATEGORY
+       Networking
+
+
+

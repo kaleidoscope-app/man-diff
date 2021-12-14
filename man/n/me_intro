@@ -1,0 +1,78 @@
+grammar::me_intro(n)      Grammar operations and usage      grammar::me_intro(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       grammar::me_intro - Introduction to virtual machines for parsing token
+       streams
+
+DESCRIPTION
+       This document is an introduction to and overview of the basic facilities
+       for the parsing and/or matching of token streams. One possibility often
+       used for the token domain are characters.
+
+       The packages themselves all provide variants of one virtual machine,
+       called a match engine (short ME), which has all the facilities needed for
+       the matching and parsing of a stream, and which are either controlled
+       directly, or are customized with a match program. The virtual machine is
+       basically a pushdown automaton, with additional elements for backtracking
+       and/or handling of semantic data and construction of abstract syntax
+       trees (AST).
+
+       Because of the high degree of similarity in the actual implementations of
+       the aforementioned virtual machine and the data structures they receive
+       and generate these common parts are specified in a separate document
+       which will be referenced by the documentation for packages actually
+       implementing it.
+
+       The relevant documents are:
+
+       grammar::me_vm
+              Virtual machine specification.
+
+       grammar::me_ast
+              Specification of various representations used for abstract syntax
+              trees.
+
+       grammar::me::util
+              Utility commands.
+
+       grammar::me::tcl
+              Singleton ME virtual machine implementation tied to Tcl for
+              control flow and stacks. Hardwired for pull operation.
+              Uninteruptible during processing.
+
+       grammar::me::cpu
+              Object-based ME virtual machine implementation with explicit
+              control flow, and stacks, using bytecodes. Suspend/Resumable.
+              Push/pull operation.
+
+       grammar::me::cpu::core
+              Core functionality for state manipulation and stepping used in the
+              bytecode based implementation of ME virtual machines.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category grammar_me
+       of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       CFG, CFL, LL(k), PEG, TPDL, context-free grammar, context-free languages,
+       expression, grammar, matching, parsing, parsing expression grammar, push
+       down automaton, recursive descent, top-down parsing languages,
+       transducer, virtual machine
+
+CATEGORY
+       Grammars and finite automata
+
+COPYRIGHT
+       Copyright (c) 2005 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

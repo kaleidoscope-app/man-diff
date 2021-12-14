@@ -1,0 +1,36 @@
+APFS_UNLOCKFV(8)             System Manager's Manual            APFS_UNLOCKFV(8)
+
+NAME
+     apfs_unlockfv – unlock an APFS FileVault data volume
+
+SYNOPSIS
+     apfs_unlockfv [-h] [path]
+
+DESCRIPTION
+     The apfs_unlockfv utility unlocks an APFS-formatted FileVault-encrypted
+     data volume.
+
+     The path parameter is optional, but if provided should be a path on a
+     mounted APFS System volume.  (This volume must have the System role, and
+     must be in a volume group with a locked Data volume.)  If path is not
+     provided, apfs_unlockfv will attempt to unlock the data volume paired to
+     the system volume at / .
+
+     Upon invocation, apfs_unlockfv will prompt the user for a password.  This
+     password can be for any user on the volume being unlocked, including the
+     Disk user.
+
+     The options are as follows:
+
+           -h      Print a usage message.
+
+EXIT STATUS
+     apfs_unlockfv exits with 0 on success, and >0 if an error occurs.  If the
+     volume was already unlocked, apfs_unlockfv also exits with 0.
+
+SEE ALSO
+     diskutil(8), mount_apfs(8), newfs_apfs(8)
+
+HISTORY
+     The apfs_unlockfv utility was introduced in macOS 11.
+

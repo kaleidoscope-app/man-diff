@@ -1,0 +1,50 @@
+SLAPD-NULL(5)                  File Formats Manual                 SLAPD-NULL(5)
+
+
+
+NAME
+       slapd-null - Null backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The Null backend to slapd(8) is surely the most useful part of slapd:
+       - Searches return success but no entries.
+       - Compares return compareFalse.
+       - Updates return success (unless readonly is on) but do nothing.
+       - Binds other than as the rootdn fail unless the database option "bind
+       on" is given.
+       - The slapadd(8) and slapcat(8) tools are equally exciting.
+       Inspired by the /dev/null device.
+
+CONFIGURATION
+       This slapd.conf option applies to the NULL backend database.  That is, it
+       must follow a "database null" line and come before any subsequent
+       "database" lines.  Other database options are described in the
+       slapd.conf(5) manual page.
+
+       bind <on/off>
+              Allow binds as any DN in this backend's suffix, with any password.
+              The default is "off".
+
+EXAMPLE
+       Here is a possible slapd.conf extract using the Null backend:
+
+              database null
+              suffix   "cn=Nothing"
+              bind     on
+
+ACCESS CONTROL
+       The null backend does not honor any of the access control semantics
+       described in slapd.access(5).
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd(8), slapadd(8), slapcat(8).
+
+
+

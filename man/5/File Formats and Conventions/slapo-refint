@@ -1,0 +1,66 @@
+SLAPO-REFINT(5)                File Formats Manual               SLAPO-REFINT(5)
+
+
+
+NAME
+       slapo-refint - Referential Integrity overlay to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The Referential Integrity overlay can be used with a backend database
+       such as slapd-bdb(5) to maintain the cohesiveness of a schema which
+       utilizes reference attributes.
+
+       Integrity is maintained by updating database records which contain the
+       named attributes to match the results of a modrdn or delete operation.
+       For example, if the integrity attribute were configured as manager,
+       deletion of the record "uid=robert,ou=people,dc=example,dc=com" would
+       trigger a search for all other records which have a manager attribute
+       containing that DN. Entries matching that search would have their manager
+       attribute removed.  Or, renaming the same record into
+       "uid=george,ou=people,dc=example,dc=com" would trigger a search for all
+       other records which have a manager attribute containing that DN.  Entries
+       matching that search would have their manager attribute deleted and
+       replaced by the new DN.
+
+       rootdn must be set for the database.  refint runs as the rootdn to gain
+       access to make its updates.  rootpw is not needed.
+
+CONFIGURATION
+       These slapd.conf options apply to the Referential Integrity overlay.
+       They should appear after the overlay directive.
+
+       refint_attributes <attribute> [...]
+              Specify one or more attributes for which integrity will be
+              maintained as described above.
+
+       refint_nothing <string>
+              Specify an arbitrary value to be used as a placeholder when the
+              last value would otherwise be deleted from an attribute. This can
+              be useful in cases where the schema requires the existence of an
+              attribute for which referential integrity is enforced. The
+              attempted deletion of a required attribute will otherwise result
+              in an Object Class Violation, causing the request to fail.  The
+              string must be a valid DN.
+
+       refint_modifiersname <DN>
+              Specify the DN to be used as the modifiersName of the internal
+              modifications performed by the overlay.  It defaults to
+              "cn=Referential Integrity Overlay".
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5).
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

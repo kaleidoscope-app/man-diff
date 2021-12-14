@@ -1,0 +1,80 @@
+ttk::spinbox(n)                 Tk Themed Widget                 ttk::spinbox(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ttk::spinbox - Selecting text field widget
+
+SYNOPSIS
+       ttk::spinbox pathName ?options?
+________________________________________________________________________________
+
+DESCRIPTION
+       A ttk::spinbox widget is a ttk::entry widget with built-in up and down
+       buttons that are used to either modify a numeric value or to select among
+       a set of values. The widget implements all the features of the ttk::entry
+       widget including support of the -textvariable option to link the value
+       displayed by the widget to a Tcl variable.
+
+STANDARD OPTIONS
+       -class                -cursor              -style
+       -takefocus            -xscrollcommand
+
+       See the ttk_widget manual entry for details on the standard options.
+
+STANDARD OPTIONS
+       -validate             -validatecommand
+
+       See the ttk_entry manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       [-from from] A floating-point value specifying the lowest value for the
+       spinbox. This is used in conjunction with -to and -increment to set a
+       numerical range.  [-to to] A floating-point value specifying the highest
+       permissible value for the widget. See also -from and -increment.  range.
+       [-increment increment] A floating-point value specifying the change in
+       value to be applied each time one of the widget spin buttons is pressed.
+       The up button applies a positive increment, the down button applies a
+       negative increment.  [-values values] This must be a Tcl list of values.
+       If this option is set then this will override any range set using the
+       -from, -to and -increment options. The widget will instead use the values
+       specified beginning with the first value.  [-wrap wrap] Must be a proper
+       boolean value.  If on, the spinbox will wrap around the values of data in
+       the widget.  [-format format] Specifies an alternate format to use when
+       setting the string value when using the -from and -to range.  This must
+       be a format specifier of the form %<pad>.<pad>f, as it will format a
+       floating-point number.  [-command command] Specifies a Tcl command to be
+       invoked whenever a spinbutton is invoked.
+
+INDICES
+       See the ttk::entry manual for information about indexing characters.
+
+VALIDATION
+       See the ttk::entry manual for information about using the -validate and
+       -validatecommand options.
+
+WIDGET COMMAND
+       The following subcommands are possible for spinbox widgets in addition to
+       the commands described for the ttk::entry widget:
+
+       pathName current index
+
+       pathName get
+              Returns the spinbox's current value.
+
+       pathName set value
+              Set the spinbox string to value. If a -format option has been
+              configured then this format will be applied. If formatting fails
+              or is not set or the -values option has been used then the value
+              is set directly.
+
+SEE ALSO
+       ttk::widget(n), ttk::entry(n), spinbox(n)
+
+KEYWORDS
+       entry, spinbox, widget, text field
+
+
+

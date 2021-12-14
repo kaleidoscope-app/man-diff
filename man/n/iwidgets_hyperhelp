@@ -1,0 +1,171 @@
+iwidgets::hyperhelp(1)           [incr Widgets]           iwidgets::hyperhelp(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::hyperhelp - Create and manipulate a hyperhelp widget
+
+SYNOPSIS
+       iwidgets::hyperhelp pathName ?options?
+
+INHERITANCE
+       itk::Toplevel <- iwidgets::Shell <- iwidgets::Hyperhelp
+
+STANDARD OPTIONS
+       activeBackground    background         borderWidth
+       closecmd            cursor             exportSelection
+       foreground          highlightColor     highlightThickness
+       insertBackground    insertBorderWidth  insertOffTime
+       insertOnTime        insertWidth        padX
+       padY                relief             repeatDelay
+       repeatInterval      selectBackground   selectBorderWidth
+       selectForeground    setGrid
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       hscrollmode     vscrollmode    textbackground  fontname
+       fontsize        fixedfont      link            linkhighlight
+       width           height         state           wrap
+       unknownimage
+
+       See the "scrolledhtml" widget manual entry for details on the above
+       associated options.
+
+INHERITED OPTIONS
+       modality        title
+
+       See the "shell" manual entry for details on the above inherited options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:   topics
+       Class:  Topics
+       Command-Line Switch:    -topics
+
+              Specifies a list of help topics in the form {?topic? ... }. Topic
+              may either be a topic name, in which case the document associated
+              with the topic should be in the file helpdir/topic.html, or it may
+              be of the form {name file}. In the latter case, name is displayed
+              in the topic menu, and selecting the name loads file. If file has
+              a relative path, it is assumed to be relative to helpdir.
+
+       Name:   helpdir
+       Class:  Directory
+       Command-Line Switch:    -helpdir
+
+              Specifies the directory where help files are located.
+
+       Name:   closeCmd
+       Class:  CloseCmd
+       Command-Line Switch:    -closecmd
+
+              Specifies the tcl command to be executed when the close option is
+              selected from the topics menu.
+
+       Name:   maxHistory
+       Class:  MaxHistory
+       Command-Line Switch:    -maxhistory
+
+              Specifies the maximum number of entries stored in the history list
+
+       Name:   beforelink
+       Class:  BeforeLink
+       Command-Line Switch:    -beforelink
+
+              Specifies a command to be eval'ed before a new link is displayed.
+              The path of the link to be displayed is appended before evaling
+              the command. A suggested use might be to busy the widget while a
+              new page is being displayed.
+
+       Name:   afterlink
+       Class:  AfterLink
+       Command-Line Switch:    -afterlink
+
+              Specifies a command to be eval'ed after a new link is completely
+              displayed.  The path of the link that was displayed is appended
+              before evaling the command.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::hyperhelp command creates a shell window with a pulldown
+       menu showing a list of topics. The topics are displayed by importing a
+       HTML formatted file named helpdir/topic.html. For a list of supported
+       HTML tags, see scrolledhtml(n).
+
+
+METHODS
+       The iwidgets::hyperhelp command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for dialog widgets:
+
+INHERITED METHODS
+       activate        center         childsite       deactivate
+
+       See the "shell" manual entry for details on the above inherited methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::hyperhelp command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::hyperhelp command.
+
+       pathName showtopic topic
+              Display html file helpdir/topic.html. Topic may optionally be of
+              the form topicname#anchorname. In this form, either topicname or
+              anchorname or both may be empty. If topicname is empty, the
+              current topic is assumed. If anchorname is empty, the top of the
+              document is assumed
+
+       pathName followlink href
+              Display html file href. Href may be optionally be of the form
+              filename#anchorname. In this form, either filename or anchorname
+              or both may be empty. If filename is empty, the current document
+              is assumed. If anchorname is empty, the top of the document is
+              assumed.
+
+       pathName forward
+              Display html file one forward in history list, if applicable.
+
+       pathName back
+              Display html file one back in history list, if applicable.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::hyperhelp .h -topics { Intro Help } -helpdir ~/help
+               .h showtopic Intro
+
+
+
+AUTHOR
+       Kris Raney
+
+KEYWORDS
+       hyperhelp, html, help, shell, widget
+
+
+

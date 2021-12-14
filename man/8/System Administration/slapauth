@@ -1,0 +1,91 @@
+SLAPAUTH(8C)                                                        SLAPAUTH(8C)
+
+
+
+NAME
+       slapauth - Check a list of string-represented IDs for LDAP authc/authz
+
+SYNOPSIS
+       /usr/sbin/slapauth [-d_debug-level] [-f_slapd.conf] [-F_confdir]
+       [-M_mech] [-o_option[=value]] [-R_realm] [-U_authcID] [-v] [-X_authzID]
+       ID [...]
+
+DESCRIPTION
+       Slapauth is used to check the behavior of the slapd in mapping identities
+       for authentication and authorization purposes, as specified in
+       slapd.conf(5).  It opens the slapd.conf(5) configuration file or the
+       slapd-config(5) backend, reads in the authz-policy/olcAuthzPolicy and
+       authz-regexp/olcAuthzRegexp directives, and then parses the ID list given
+       on the command-line.
+
+OPTIONS
+       -d_debug-level
+              enable debugging messages as defined by the specified debug-level;
+              see slapd(8) for details.
+
+       -f_slapd.conf
+              specify an alternative slapd.conf(5) file.
+
+       -F_confdir
+              specify a config directory.  If both -f and -F are specified, the
+              config file will be read and converted to config directory format
+              and written to the specified directory.  If neither option is
+              specified, an attempt to read the default config directory will be
+              made before trying to use the default config file. If a valid
+              config directory exists then the default config file is ignored.
+
+       -M_mech
+              specify a mechanism.
+
+       -o_option[=value]
+              Specify an option with a(n optional) value.  Possible generic
+              options/values are:
+
+                     syslog=<subsystems>  (see `-s' in slapd(8))
+                     syslog-level=<level> (see `-S' in slapd(8))
+                     syslog-user=<user>   (see `-l' in slapd(8))
+
+
+       -R_realm
+              specify a realm.
+
+       -U_authcID
+              specify an ID to be used as authcID throughout the test session.
+              If present, and if no authzID is given, the IDs in the ID list are
+              treated as authzID.
+
+       -X_authzID
+              specify an ID to be used as authzID throughout the test session.
+              If present, and if no authcID is given, the IDs in the ID list are
+              treated as authcID.  If both authcID and authzID are given via
+              command line switch, the ID list cannot be present.
+
+       -v     enable verbose mode.
+
+EXAMPLES
+       The command
+
+            /usr/sbin/slapauth -f //etc/openldap/slapd.conf -v \
+                   -U bjorn -X u:bjensen
+
+       tests whether the user bjorn can assume the identity of the user bjensen
+       provided the directives
+
+            authz-policy from
+            authz-regexp "^uid=([^,]+).*,cn=auth$"
+                 "ldap:///dc=example,dc=net??sub?uid=$1"
+
+       are defined in slapd.conf(5).
+
+SEE ALSO
+       ldap(3), slapd(8), slaptest(8)
+
+       "OpenLDAP Administrator's Guide" (http://www.OpenLDAP.org/doc/admin/)
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

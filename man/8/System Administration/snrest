@@ -1,0 +1,161 @@
+SNREST(8)                    System Manager's Manual                   SNREST(8)
+
+
+
+NAME
+       snrest - Administer Xsan Volume REST API access
+
+SYNOPSIS
+       snrest gateway admin-url url
+
+       snrest gateway import filename
+
+       snrest gateway show
+
+       snrest gateway remove
+
+       snrest gateway register [ url ]
+
+       snrest gateway unregister
+
+       snrest gateway status [-d]
+
+       snrest gateway ping [url]
+
+       snrest gateway ping [-f filename]
+
+       snrest config set [name=value...]
+
+       snrest config clear [name...]
+
+       snrest config show
+
+DESCRIPTION
+       The snrest program supports control and status display for REST API
+       access to the Xsan Volume.
+
+       The snrest gateway commands support configuration and control of StorNext
+       interactions with a Quantum API Gateway.
+
+       The snrest gateway import command imports configuration information from
+       a Quantum API Gateway.  This command takes a single argument which is a
+       filename containing contact and authentication information and must be
+       obtained from a Quantum API Gateway.
+
+       Alternatively, the snrest gateway admin-url command is a simpler form for
+       configuring access to the API Gateway.  Use this command only if your
+       site has not configured site-specific authentication for gateway
+       registration (in which case you must use snrest gateway import instead).
+
+       With snrest gateway admin-url simply specify the URL of the API Gateway
+       as a command line argument.  If the protocol is not specified it defaults
+       to https and if the port is not specified it defaults to 8443.  This
+       allows the caller to only specify the hostname, as in the following
+       example:
+
+          snrest gateway admin-url <hostname>
+
+       which is the same as explicitly specifying the following:
+
+          snrest gateway admin-url https://<hostname>:8443
+
+       The snrest gateway show command displays the API Gateway configuration.
+
+       The snrest gateway remove command removes the API Gateway configuration
+       and unregisters the system with the API Gateway.
+
+       The snrest gateway register command registers with the API Gateway.  This
+       needs to be called if you use snrest gateway import or snrest gateway
+       admin-url commands to change the API Gateway configuration.  If the
+       gateway is not available when this is called, the system will continue to
+       periodically retry until registration succeeds.  This command does not
+       implicitly unregister with the previously registered gateway so if you
+       are changing gateways run snrest gateway unregister after configuring
+       your new gateway but before registering as in the following example:
+
+          snrest gateway admin-url <new-hostname>
+          snrest gateway unregister
+          snrest gateway register
+
+       This works because snrest gateway unregister uses the currently
+       registered gateway, not the configured gateway.  Then snrest gateway
+       register uses the newly-configured gateway.
+
+       An optional URL parameter may be specified to snrest gateway register.
+       The following command:
+
+          snrest gateway register <url>
+
+       results in the same actions as if the following commands were issued:
+
+          snrest gateway admin-url <url>
+          snrest gateway register
+
+       This allows the caller to configure the URL and register with the API
+       Gateway in a single command.  And, as with the snrest gateway admin-url
+       command, the URL specified can be just the hostname if using the default
+       port and protocol.
+
+       The snrest gateway unregister command unregisters with the currently
+       registered Quantum API Gateway.  However, once unregistered, the system
+       will continue to try periodically to re-register with the configured
+       gateway.  So, to stop any attempt to register with a gateway do the
+       following to remove the configuration and unregister:
+
+          snrest gateway remove
+
+       The snrest gateway status command displays the current status of the
+       StorNext registrations with a Quantum API Gateway.  This typically
+       reports that either all or none of the internal endpoints in StorNext are
+       registered.  But there is also the possibility, especially in transitory
+       states or when connectivity to the API Gateway is problematic, that only
+       a subset of the internal endpoints are registered.  If any endpoints are
+       not currently registered the system will continue to try to register
+       those endpoints until successful.
+
+       There is an additional option to get extra detail on the registration
+       status with the -d option.  This provides a detailed display of
+       individual internal endpoints that register with the API Gateway and thus
+       is primarily intended for use by Quantum Support.
+
+       The snrest gateway ping command tests connectivity to the API Gateway.
+       If the API Gateway cannot be contacted an error message is displayed and
+       the command exits with a non-zero exit status.  By default, the following
+       will ping the currently configured API Gateway:
+
+          snrest gateway ping
+
+       Alternatively, you can ping a specific URL with:
+
+          snrest gateway ping <url>
+
+       or use a file with the gateway configuration with the -f option:
+
+          snrest gateway ping -f <filename>
+
+       In this latter case the file specified would be of the same form used
+       with snrest gateway import.
+
+       The snrest config commands support setting values in the
+       /Library/Preferences/Xsan/snfs_rest_config.json file.  These values
+       should only be changed in consultation with Apple support.  The names are
+       hierachical value separated by spaces.  For example, to change the
+       ssl_enabled value under the ssl json object to true:
+
+          snrest config set ssl.ssl_enabled=true
+
+       To remove the ssl_enabled value:
+
+          snrest config clear ssl.ssl_enabled
+
+       Changes to the snrest config values will take effect the next time that
+       StorNext is restarted.
+
+       The snrest config show command displays the current values of the Xsan
+       REST configuration.
+
+EXIT VALUES
+       snrest will return 0 on success and non-zero on failure.
+
+
+

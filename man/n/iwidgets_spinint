@@ -1,0 +1,157 @@
+iwidgets::spinint(1)             [incr Widgets]             iwidgets::spinint(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::spinint - Create and manipulate a integer spinner widget
+
+SYNOPSIS
+       iwidgets::spinint pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Spinner <-
+       iwidgets::Spinint
+
+STANDARD OPTIONS
+
+       background         borderWidth     cursor              exportSelection
+       foreground         highlightColor  highlightThickness  insertBackground
+       insertBorderWidth  insertOffTime   insertOnTime        insertWidth
+       justify            relief          selectBackground    selectBorderWidth
+       selectForeground   textVariable
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       show            state
+
+       See the "entry" manual entry for details on the associated options.
+
+INHERITED OPTIONS
+       command         childSitePos   fixed           focusCommand
+       invalid         textBackground textFont        validate
+       width
+
+       See the "entryfield" widget manual entry for details on the above
+       inherited options.
+
+       disabledForeground             labelBitmap     labelFontlabelImage
+       labelMargin     labelPos       labelText       labelVariable
+       state           sticky
+
+       See the "labeledwidget" widget manual entry for details on the above
+       inherited options.
+
+       arroworient     decrement      increment       repeatDelay
+       repeatInterval
+
+       See the "spinner" widget manual entry for details on the above inherited
+       options.
+
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           range
+       Class:          Range
+       Command-Line Switch:           -range
+
+              Specifies a two element list of minimum and maximum integer
+              values.  The default is no range, {{} {}}.
+
+       Name:           step
+       Class:          Step
+       Command-Line Switch:           -step
+
+              Specifies the increment/decrement value.  The default is 1.
+
+       Name:           wrap
+       Class:          Wrap
+       Command-Line Switch:           -wrap
+
+              Specifies whether to wrap the spinner value upon reaching the
+              minimum or maximum value in any of the forms acceptable to
+              Tcl_GetBoolean.  The default is true.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::spinint command creates a spinint widget.  The spinint
+       allows "spinning" of integer values within a specified range with wrap
+       support.  The spinner arrows may be drawn horizontally or vertically.
+
+
+
+METHODS
+       The iwidgets::spinint command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for spinint widgets:
+
+ASSOCIATED METHODS
+       delete          get            icursor         index
+       insert          peek           scan            selection
+       xview
+
+       See the "entry" manual entry for details on the associated methods.
+
+INHERITED METHODS
+       childsite       clear
+
+       See the "entryfield" manual entry for details on the associated methods.
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::spinint command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::spinint command.
+
+       pathName down
+              Decrement the spinner value by the value given in the step option.
+
+       pathName up
+              Increment the spinner value by the value given in the step option.
+
+
+COMPONENTS
+              See the "Spinner" widget manual entry for details on the integer
+              spinner component items.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               option add *textBackground white
+
+               iwidgets::spinint .si -labeltext "Temperature" -labelpos w \
+                  -fixed yes -width 5 -range {32 212}
+
+               pack .si -pady 10
+
+
+AUTHOR
+       Sue Yockey
+
+KEYWORDS
+       spinint, widget
+
+
+

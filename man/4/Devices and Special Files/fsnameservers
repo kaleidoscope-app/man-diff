@@ -1,0 +1,159 @@
+FSNAMESERVERS(4)              Device Drivers Manual             FSNAMESERVERS(4)
+
+
+
+NAME
+       fsnameservers - Xsan File System Name Server List
+
+SYNOPSIS
+       /Library/Preferences/Xsan/fsnameservers
+
+DESCRIPTION
+       The Xsan File System fsnameservers file describes to the fsmpm(8) daemon
+       which machines are serving as File System Name Server coordinator(s) for
+       the  Xsan cluster.  The volume name coordinators are a critical component
+       of the Xsan File System Services (FSS). One of the principal functions of
+       the coordinator is to manage failover voting in a high availability
+       configuration. Therefore it is crucial to choose highly reliable systems
+       as the coordinators. Redundancy is provided by listing multiple entries
+       in the fsnameservers file, one entry per line.  When Xsan services are
+       started on a host, the fsmpm daemon sends a heartbeat to each coordinator
+       in the list. The first response received determines the primary
+       coordinator for that client in a given cluster.  The remaining
+       coordinators are backup coordinators and will be used if the primary is
+       lost.  It is recommended to configure at least two systems per cluster to
+       utilize this redundancy benefit.  The systems chosen may also be
+       configured for the File System Manager (FSM) services but this is not
+       required.
+
+       The fsnameservers files on the coordinator hosts should include the host
+       names or IP addresses of all of the coordinators including its own. The
+       fsnameservers files on the client and MDC hosts normally contain all
+       these addresses as well, but these hosts will function normally with the
+       address of at least one active coordinator.
+
+       If you are configuring multiple clusters, it is best practices to include
+       the cluster and the administrative_domain on the same line as the IP
+       address of each coordinator (see below).
+
+       See the fsmcluster(4) man page for a discussion on Xsan clusters and
+       administrative domains.
+
+       If fsnameservers does not exist then the system will operate as a "local"
+       filesystem representing both client and server. It will not communicate
+       with any other Xsan product on the network unless an fsforeignservers(4)
+       file is configured.  A local filesystem may be desired when no SAN
+       sharing is required.
+
+       The fsnameservers file is also used to specify the preferred metadata
+       network(s) used for Xsan.  That is, if an address in the fsnameservers
+       file is on IP network x, then network x will be used to carry Xsan
+       metadata traffic, if possible. Networks available over other interfaces
+       will be used if there is no connectivity from a client to the FSM on a
+       preferred network.  A network other than preferred will also be selected
+       if this network is directly connected (on the same subnet) and none of
+       the preferred networks are directly connected.  Multiple, redundant
+       metadata networks can be created by using additional network interfaces
+       on every system; each coordinator is then specified in fsnameservers
+       multiple times, once for each of its metadata-network addresses.
+
+       It is possible to filter the networks or IP addresses that are advertised
+       to clients using the snfs_metadata_network_filter.json configuration
+       file. See the snfs_metadata_network_filter.json(5) man page for details.
+       This capability is only offerred on Linux systems.
+
+       Proxy coordinators can be configured by specifying a masklength along
+       with the IP address.  A proxy coordinator acts as a coordinator for other
+       clients on the same subnet, relaying information between the clients and
+       the real coordinators.  For a group of clients on the same subnet, this
+       will keep the underlying heartbeat traffic localized to the subnet, and
+       only the proxies will communicate with the real coordinators.  When
+       configured, clients on the same subnet as the proxy will prefer to use
+       the proxy coordinator for their primary coordinator.  If the proxy
+       coordinators are non-responsive, clients will fall back to using the
+       normal coordinators.
+
+UPDATING fsnameservers
+       NOTE The following applies to Xsan coordinators, clients and MDCs that
+       have been updated to a level that supports this procedure. Verify that
+       this text is present in this man page on these nodes before proceeding.
+
+       If a set of coordinators for a cluster is being replaced, the old
+       coordinators should remain active through the transition.  The first step
+       is to synchronize the new and old coordinators.  Populate the
+       fsnameservers file on all coordinators with the IP addresses of all the
+       coordinators. Then start or restart services on all coordinators.  Once
+       this is done, all clients and MDCs will dynamically learn the location of
+       the new coordinators through the NSS protocol.  This can be verified with
+       the coord subcommand of the cvadmin utility. You should see entries for
+       the old and new coordinators.  Next, update all of the clients and MDCs
+       fsnameservers files to contain only the addresses of just the new
+       coordinators.  There is no urgency to update the clients and MDCs as long
+       as at least one of the old coordinators remains active.  When all the
+       client and MDC fsnameservers files have been updated, the old
+       coordinators can be taken off line. The clients and MDCs will now switch
+       over to the new coordinators for primary and secondary.  The
+       fsnameservers file on the new coordinators should now be updated to
+       contain only the new coordinator names or addresses. There is no need to
+       restart services on any of the clients or MDCs.
+
+       The process is similar if only a subset of the coordinators is being
+       replaced.  If, for example, a coordinator node failed, a new coordinator
+       node can be brought on line with the new coordinator configuration in its
+       fsnameservers file. Next, the existing coordinators should have their
+       fsnameservers files updated. Start or restart services on all
+       coordinators.  Then, as above, update all the client and MDC
+       fsnameservers files.
+
+SYNTAX
+       The format for the fsnameservers is simple. It contains the IP address or
+       the hostname to use as either a primary or a secondary coordinator. The
+       use of IP addresses is preferred to avoid problems associated with lookup
+       system (eg., DNS or NIS) failures. The format of an fsnameservers line
+       is:
+
+              host[/masklength][ ][@[cluster[/admin_domain]]]
+
+              The host is a host name or IP address of a host that can
+              coordinate queries and failover votes for the File System
+              Services.  The optional cluster and admin_domain fields specify
+              the name of the cluster and administrative domain to which the
+              coordinator belongs.  To specify that host is a coordinator for
+              more than one cluster, there must be a line for each cluster.
+
+              If only host is specified, the system will attempt to identify the
+              cluster based on responses from the host.  If it responds as an
+              NSS1.X coordinator, it will be added to the default cluster,
+              @_cluster0/_addom0.  If it responds as an NSS2 coordinator, the
+              coordinator will give the client its list of clusters and all the
+              coordinators for each of those clusters.  If you are running a
+              multi-cluster configuration, it is highly recommended that you
+              specify the cluster for each coordinator in the fsnameservers
+              file.
+
+              If admin_domain is not specified, it will use the default name
+              from fsmcluster(4).
+
+              If cluster is not specified, but the @ is present, i. e.,
+
+                     host@
+                     host_@
+
+              it will use the default name from fsmcluster(4).
+
+              The optional /masklength configures host as a proxy coordinator
+              for the specified subnet.
+
+       Lines that contain white space only or that contain the comment token as
+       the first non-white space character are ignored.
+
+FILES
+       /Library/Preferences/Xsan/fsnameservers
+
+SEE ALSO
+       cvfs(8), cvadmin(8), snfs_config(5),
+       snfs_metadata_network_filter.json(5), fsforeignservers(4), fsm(8),
+       fsmpm(8), fsmcluster(4), mount_acfs(8)
+
+
+

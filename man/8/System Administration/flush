@@ -1,0 +1,172 @@
+FLUSH(8)                     System Manager's Manual                    FLUSH(8)
+
+
+
+
+NAME
+       flush - Postfix fast flush server
+
+SYNOPSIS
+       flush [generic Postfix daemon options]
+
+DESCRIPTION
+       The flush(8) server maintains a record of deferred mail by destination.
+       This information is used to improve the performance of the SMTP ETRN
+       request, and of its command-line equivalent, "sendmail -qR" or "postqueue
+       -f".  This program expects to be run from the master(8) process manager.
+
+       The record is implemented as a per-destination logfile with as contents
+       the queue IDs of deferred mail. A logfile is append-only, and is
+       truncated when delivery is requested for the corresponding destination. A
+       destination is the part on the right-hand side of the right-most @ in an
+       email address.
+
+       Per-destination logfiles of deferred mail are maintained only for
+       eligible destinations. The list of eligible destinations is specified
+       with the fast_flush_domains configuration parameter, which defaults to
+       $relay_domains.
+
+       This server implements the following requests:
+
+       add sitename queueid
+              Inform the flush(8) server that the message with the specified
+              queue ID is queued for the specified destination.
+
+       send_site sitename
+              Request delivery of mail that is queued for the specified
+              destination.
+
+       send_file queueid
+              Request delivery of the specified deferred message.
+
+       refresh
+              Refresh non-empty per-destination logfiles that were not read in
+              $fast_flush_refresh_time hours, by simulating send requests (see
+              above) for the corresponding destinations.
+
+              Delete empty per-destination logfiles that were not updated in
+              $fast_flush_purge_time days.
+
+              This request completes in the background.
+
+       purge  Do a refresh for all per-destination logfiles.
+
+SECURITY
+       The flush(8) server is not security-sensitive. It does not talk to the
+       network, and it does not talk to local users.  The fast flush server can
+       run chrooted at fixed low privilege.
+
+DIAGNOSTICS
+       Problems and transactions are logged to syslogd(8).
+
+BUGS
+       Fast flush logfiles are truncated only after a "send" request, not when
+       mail is actually delivered, and therefore can accumulate outdated or
+       redundant data. In order to maintain sanity, "refresh" must be executed
+       periodically. This can be automated with a suitable wakeup timer setting
+       in the master.cf configuration file.
+
+       Upon receipt of a request to deliver mail for an eligible destination,
+       the flush(8) server requests delivery of all messages that are listed in
+       that destination's logfile, regardless of the recipients of those
+       messages. This is not an issue for mail that is sent to a relay_domains
+       destination because such mail typically only has recipients in one
+       domain.
+
+CONFIGURATION PARAMETERS
+       Changes to main.cf are picked up automatically as flush(8) processes run
+       for only a limited amount of time. Use the command "postfix reload" to
+       speed up a change.
+
+       The text below provides only a parameter summary. See postconf(5) for
+       more details including examples.
+
+       config_directory (see 'postconf -d' output)
+              The default location of the Postfix main.cf and master.cf
+              configuration files.
+
+       daemon_timeout (18000s)
+              How much time a Postfix daemon process may take to handle a
+              request before it is terminated by a built-in watchdog timer.
+
+       fast_flush_domains ($relay_domains)
+              Optional list of destinations that are eligible for
+              per-destination logfiles with mail that is queued to those
+              destinations.
+
+       fast_flush_refresh_time (12h)
+              The time after which a non-empty but unread per-destination "fast
+              flush" logfile needs to be refreshed.
+
+       fast_flush_purge_time (7d)
+              The time after which an empty per-destination "fast flush" logfile
+              is deleted.
+
+       ipc_timeout (3600s)
+              The time limit for sending or receiving information over an
+              internal communication channel.
+
+       max_idle (100s)
+              The maximum amount of time that an idle Postfix daemon process
+              waits for an incoming connection before terminating voluntarily.
+
+       max_use (100)
+              The maximal number of incoming connections that a Postfix daemon
+              process will service before terminating voluntarily.
+
+       parent_domain_matches_subdomains (see 'postconf -d' output)
+              A list of Postfix features where the pattern "example.com" also
+              matches subdomains of example.com, instead of requiring an
+              explicit ".example.com" pattern.
+
+       process_id (read-only)
+              The process ID of a Postfix command or daemon process.
+
+       process_name (read-only)
+              The process name of a Postfix command or daemon process.
+
+       queue_directory (see 'postconf -d' output)
+              The location of the Postfix top-level queue directory.
+
+       syslog_facility (mail)
+              The syslog facility of Postfix logging.
+
+       syslog_name (see 'postconf -d' output)
+              A prefix that is prepended to the process name in syslog records,
+              so that, for example, "smtpd" becomes "prefix/smtpd".
+
+FILES
+       /var/spool/postfix/flush, "fast flush" logfiles.
+
+SEE ALSO
+       smtpd(8), SMTP server
+       qmgr(8), queue manager
+       postconf(5), configuration parameters
+       master(5), generic daemon options
+       master(8), process manager
+       syslogd(8), system logging
+
+README FILES
+       Use "postconf readme_directory" or "postconf html_directory" to locate
+       this information.
+       ETRN_README, Postfix ETRN howto
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+HISTORY
+       This service was introduced with Postfix version 1.0.
+
+AUTHOR(S)
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

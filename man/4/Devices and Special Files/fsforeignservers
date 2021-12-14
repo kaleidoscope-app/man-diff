@@ -1,0 +1,75 @@
+FSFOREIGNSERVERS(4)           Device Drivers Manual          FSFOREIGNSERVERS(4)
+
+
+
+NAME
+       fsforeignservers - Xsan File System Foreign Server List
+
+SYNOPSIS
+       /Library/Preferences/Xsan/fsforeignservers
+
+DESCRIPTION
+       The Xsan File System fsforeignservers file contains a list of systems
+       acting as File System Foreign Server(s).  The volume Foreign Servers
+       provide Xsan File System Services (FSS) to computers that do not belong
+       to the Xsan cluster of the nodes acting as Foreign Servers.  A
+       fsforeignservers file is not required, and can be used in place of or in
+       addition to the fsnameservers file.  A Foreign Server will present only
+       those file systems that are hosted locally on the Foreign Server.
+
+       Note:  Instead of using fsforeignservers, you may now configure multiple
+       clusters.  This is a more efficient and flexible way of configuring
+       groups of file systems.  Clients can now configure access to multiple
+       clusters by putting the addresses and cluster names of the NSS
+       coordinators for all clusters into the fsnameservers file.  See the man
+       page for fsnameservers.
+
+       A Foreign Client is a computer that is accessing a Xsan File System via a
+       Foreign Server.  Foreign Clients do not belong to the Xsan cluster per
+       se, meaning that they cannot activate a file system or vote in elections.
+
+       Typically, a fsforeignservers file entry is created on the client to
+       provide the client computer access to a specific Xsan File System on a
+       specific host.  This connection is limited to the Xsan File Systems local
+       to that host.  If additional Xsan access is desired, an entry for the
+       machine(s) hosting the desired file system must be added to the
+       fsforeignservers file.  For failover configurations, both primary and
+       secondary systems must be specified.  This file is needed only on the
+       Foreign Client, it is not needed on the Foreign Server.  To determine
+       what Xsan services are available, use the cvadmin(8) command with the -H
+       host option to view active file systems for each host specified in the
+       fsforeignservers file.
+
+       The Foreign Client will use the IP address of the node that returns the
+       address of the active FSM as the address to connect to for meta data
+       traffic for that file system.
+
+SYNTAX
+       The format for the fsforeignservers is simple.  A fsforeignservers file
+       contains one entry per line.  It contains the IP address or hostname to
+       use as a Foreign Server.  The use of IP addresses is preferred to avoid
+       problems associated with lookup system (eg., DNS or NIS) failures. The
+       format of an fsforeignservers line is:
+
+          IP address
+
+       or
+
+          HostName
+
+       Where HostName is a host name or IP address of a host that can service
+       queries for File System Services for file systems hosted directly on that
+       host.
+
+       Lines that contain white space only or that contain the comment token as
+       the first non-white space character are ignored.
+
+FILES
+       /Library/Preferences/Xsan/fsforeignservers
+
+SEE ALSO
+       cvadmin(8), cvfs(8), dpserver(4), fsm(8), fsmpm(8), fsnameservers(4),
+       mount_acfs(8)
+
+
+

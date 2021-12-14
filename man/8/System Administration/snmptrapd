@@ -1,0 +1,228 @@
+SNMPTRAPD(8)                        Net-SNMP                        SNMPTRAPD(8)
+
+
+
+NAME
+       snmptrapd - Receive and log SNMP trap messages.
+
+SYNOPSIS
+       snmptrapd [OPTIONS] [LISTENING ADDRESSES]
+
+DESCRIPTION
+       snmptrapd is an SNMP application that receives and logs SNMP TRAP and
+       INFORM messages.
+
+       Note: the default is to listen on UDP port 162 on all IPv4 interfaces.
+       Since 162 is a privileged port, snmptrapd must typically be run as root.
+
+OPTIONS
+       -a      Ignore authenticationFailure traps.
+
+       -A      Append to the log file rather than truncating it.
+
+               Note that this needs to come before any -Lf options that it
+               should apply to.
+
+       -c FILE Read FILE as a configuration file (or a comma-separated list of
+               configuration files).
+
+       -C      Do not read any configuration files except the one optionally
+               specified by the -c option.
+
+       -d      Dump (in hexadecimal) the sent and received SNMP packets.
+
+       -D[TOKEN[,...]]
+               Turn on debugging output for the given TOKEN(s).  Try ALL for
+               extremely verbose output.
+
+       -f      Do not fork() from the calling shell.
+
+       -F FORMAT
+               When logging to standard output, use the format in the string
+               FORMAT.  See the section FORMAT SPECIFICATIONS below for more
+               details.
+
+       -h, --help
+               Display a brief usage message and then exit.
+
+       -H      Display a list of configuration file directives understood by the
+               trap daemon and then exit.
+
+       -I [-]INITLIST
+               Specifies which modules should (or should not) be initialized
+               when snmptrapd starts up.  If the comma-separated INITLIST is
+               preceded with a '-', it is the list of modules that should not be
+               started.  Otherwise this is the list of the only modules that
+               should be started.
+
+               To get a list of compiled modules, run snmptrapd with the
+               arguments -Dmib_init -H (assuming debugging support has been
+               compiled in).
+
+       -L[efos]
+               Specify where logging output should be directed (standard error
+               or output, to a file or via syslog).  See LOGGING OPTIONS in
+               snmpcmd(1) for details.
+
+       -m MIBLIST
+               Specifies a colon separated list of MIB modules to load for this
+               application.  This overrides the environment variable MIBS.  See
+               snmpcmd(1) for details.
+
+       -M DIRLIST
+               Specifies a colon separated list of directories to search for
+               MIBs.  This overrides the environment variable MIBDIRS.  See
+               snmpcmd(1) for details.
+
+       -n      Do not attempt to translate source addresses of incoming packets
+               into hostnames.
+
+       -p FILE Save the process ID of the trap daemon in FILE.
+
+       -O [abeEfnqQsStTuUvxX]
+               Specifies how MIB objects and other output should be displayed.
+               See the section OUTPUT OPTIONS in the snmpcmd(1) manual page for
+               details.
+
+       -t      Do not log traps to syslog.  This disables logging to syslog.
+               This is useful if you want the snmptrapd application to only run
+               traphandle hooks and not to log any traps to any location.
+
+       -v, --version
+               Print version information for the trap daemon and then exit.
+
+       -x ADDRESS
+               Connect to the AgentX master agent on the specified address,
+               rather than the default AGENTX_SOCKET.  See snmpd(8) for details
+               of the format of such addresses.
+
+       --name="value"
+               Allows to specify any token ("name") supported in the
+               snmptrapd.conf file and sets its value to "value". Overrides the
+               corresponding token in the snmptrapd.conf file. See
+               snmptrapd.conf(5) for the full list of tokens.
+
+FORMAT SPECIFICATIONS
+       snmptrapd interprets format strings similarly to printf(3).  It
+       understands the following formatting sequences:
+
+           %%  a literal %
+
+           %a  the contents of the agent-addr field of the PDU (v1 TRAPs only)
+
+           %A  the hostname corresponding to the contents of the agent-addr
+               field of the PDU, if available, otherwise the contents of the
+               agent-addr field of the PDU (v1 TRAPs only).
+
+           %b  PDU source address (Note: this is not necessarily an IPv4
+               address)
+
+           %B  PDU source hostname if available, otherwise PDU source address
+               (see note above)
+
+           %h  current hour on the local system
+
+           %H  the hour field from the sysUpTime.0 varbind
+
+           %j  current minute on the local system
+
+           %J  the minute field from the sysUpTime.0 varbind
+
+           %k  current second on the local system
+
+           %K  the seconds field from the sysUpTime.0 varbind
+
+           %l  current day of month on the local system
+
+           %L  the day of month field from the sysUpTime.0 varbind
+
+           %m  current (numeric) month on the local system
+
+           %M  the numeric month field from the sysUpTime.0 varbind
+
+           %N  enterprise string
+
+           %q  trap sub-type (numeric, in decimal)
+
+           %P  security information from the PDU (community name for v1/v2c,
+               user and context for v3)
+
+           %t  decimal number of seconds since the operating system epoch (as
+               returned by time(2))
+
+           %T  the value of the sysUpTime.0 varbind in seconds
+
+           %v  list of variable-bindings from the notification payload.  These
+               will be separated by a tab, or by a comma and a blank if the
+               alternate form is requested See also %V
+
+           %V  specifies the variable-bindings separator. This takes a sequence
+               of characters, up to the next % (to embed a % in the string, use
+               \%)
+
+           %w  trap type (numeric, in decimal)
+
+           %W  trap description
+
+           %y  current year on the local system
+
+           %Y  the year field from the sysUpTime.0 varbind
+
+       In addition to these values, an optional field width and precision may
+       also be specified , just as in printf(3), and a flag value. The following
+       flags are supported:
+
+           -   left justify
+
+           0   use leading zeros
+
+           #   use alternate form
+
+       The "use alternate form" flag changes the behavior of various format
+       string sequences:
+
+              Time information will be displayed based on GMT (rather than the
+              local timezone)
+
+              The variable-bindings will be a comma-separated list (rather than
+              a tab-separated one)
+
+              The system uptime will be broken down into a human-meaningful
+              format (rather than being a simple integer)
+
+   Examples:
+       To get a message like "14:03 TRAP3.1 from humpty.ucd.edu" you could use
+       something like this:
+
+              snmptrapd -P -F "%02.2h:%02.2j TRAP%w.%q from %A\n"
+
+       If you want the same thing but in GMT rather than local time, use
+
+              snmptrapd -P -F "%#02.2h:%#02.2j TRAP%w.%q from %A\n"
+
+LISTENING ADDRESSES
+       By default, snmptrapd listens for incoming SNMP TRAP and INFORM packets
+       on UDP port 162 on all IPv4 interfaces.  However, it is possible to
+       modify this behaviour by specifying one or more listening addresses as
+       arguments to snmptrapd.  See the snmpd(8) manual page for more
+       information about the format of listening addresses.
+
+NOTIFICATION-LOG-MIB SUPPORT
+       As of net-snmp 5.0, the snmptrapd application supports the NOTIFICATION-
+       LOG-MIB.  It does this by opening an AgentX subagent connection to the
+       master snmpd agent and registering the notification log tables.  As long
+       as the snmpd application is started first, it will attach itself to it
+       and thus you should be able to view the last recorded notifications via
+       the nlmLogTable and nlmLogVariableTable.  See the snmptrapd.conf file and
+       the "doNotRetainNotificationLogs" token for turning off this support.
+       See the NOTIFICATION-LOG-MIB for more details about the MIB itself.
+
+EXTENSIBILITY AND CONFIGURATION
+       See the snmptrapd.conf(5) manual page.
+
+SEE ALSO
+       snmpcmd(1), snmpd(8), printf(3), snmptrapd.conf(5), syslog(8),
+       variables(5)
+
+
+

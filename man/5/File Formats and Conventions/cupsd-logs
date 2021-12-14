@@ -1,0 +1,216 @@
+cupsd-logs(5)                      Apple Inc.                      cupsd-logs(5)
+
+
+
+NAME
+       cupsd-logs - cupsd log files (access_log, error_log, and page_log)
+
+DESCRIPTION
+       cupsd(8) normally maintains three log files: access_log to track requests
+       that are submitted to the scheduler, error_log to track progress and
+       errors, and page_log to track pages that are printed.  Configuration
+       directives in cupsd.conf(5) and cups-files.conf(5) control what
+       information is logged and where it is stored.
+
+   ACCESS LOG FILE FORMAT
+       The access_log file lists each HTTP resource that is accessed by a web
+       browser or client.  Each line is in an extended version of the so-called
+       "Common Log Format" used by many web servers and web reporting tools:
+
+           host group user date-time "method resource version" status bytes
+             ipp-operation ipp-status
+
+       For example:
+
+           10.0.1.2 - - [01/Dec/2005:21:50:28 +0000] "POST / HTTP/1.1" 200 317
+             CUPS-Get-Printers successful-ok-ignored-or-substituted-attributes
+           localhost - - [01/Dec/2005:21:50:32 +0000] "GET /admin HTTP/1.1"
+             200 0 - -
+           localhost - - [01/Dec/2005:21:50:32 +0000] "POST / HTTP/1.1"
+             200 157 CUPS-Get-Printers
+             successful-ok-ignored-or-substituted-attributes
+           localhost - - [01/Dec/2005:21:50:32 +0000] "POST / HTTP/1.1"
+             200 1411 CUPS-Get-Devices -
+           localhost - - [01/Dec/2005:21:50:32 +0000] "GET /admin HTTP/1.1"
+             200 6667 - -
+
+       The host field will normally only be an IP address unless you have
+       enabled the HostNameLookups directive in the cupsd.conf file or if the IP
+       address corresponds to your local machine.
+
+       The group field always contains "-".
+
+       The user field is the authenticated username of the requesting user.  If
+       no username and password is supplied for the request then this field
+       contains "-".
+
+       The date-time field is the date and time of the request in local time and
+       is in the format "[DD/MON/YYYY:HH:MM:SS +ZZZZ]".
+
+       The method field is the HTTP method used: "GET", "HEAD", "OPTIONS",
+       "POST", or "PUT".  "GET" requests are used to get files from the server,
+       both for the web interface and to get configuration and log files.
+       "HEAD" requests are used to get information about a resource prior to a
+       "GET".  "OPTIONS" requests are used to upgrade connections to TLS
+       encryption.  "POST" requests are used for web interface forms and IPP
+       requests.  "PUT" requests are used to upload configuration files.
+
+       The resource field is the filename of the requested resource.
+
+       The version field is the HTTP specification version used by the client.
+       For CUPS clients this will always be "HTTP/1.1".
+
+       The status field contains the HTTP result status of the request, as
+       follows:
+
+            200  Successful operation.
+
+            201  File created/modified successfully.
+
+            304  The requested file has not changed.
+
+            400  Bad HTTP request; typically this means that you have a
+                 malicious program trying to access your server.
+
+            401  Unauthorized, authentication (username + password) is required.
+
+            403  Access is forbidden; typically this means that a client tried
+                 to access a file or resource they do not have permission to
+                 access.
+
+            404  The file or resource does not exist.
+
+            405  URL access method is not allowed; typically this means you have
+                 a web browser using your server as a proxy.
+
+            413  Request too large; typically this means that a client tried to
+                 print a file larger than the MaxRequestSize allows.
+
+            426  Upgrading to TLS-encrypted connection.
+
+            500  Server error; typically this happens when the server is unable
+                 to open/create a file - consult the error_log file for details.
+
+            501  The client requested encryption but encryption support is not
+                 enabled/compiled in.
+
+            505  HTTP version number not supported; typically this means that
+                 you have a malicious program trying to access your server.
+
+       The bytes field contains the number of bytes in the request.  For POST
+       requests the bytes field contains the number of bytes of non-IPP data
+       that is received from the client.
+
+       The ipp-operation field contains either "-" for non-IPP requests or the
+       IPP operation name for POST requests containing an IPP request.
+
+       The ipp-status field contains either "-" for non-IPP requests or the IPP
+       status code name for POST requests containing an IPP response.
+
+   ERROR LOG FILE FORMAT
+       The error_log file lists messages from the scheduler - errors, warnings,
+       etc. The LogLevel directive in the cupsd.conf(5) file controls which
+       messages are logged:
+
+           level date-time message
+
+       For example:
+
+           I [20/May/1999:19:18:28 +0000] [Job 1] Queued on 'DeskJet' by 'mike'.
+           D [20/May/1999:19:18:28 +0000] [Job 1] argv[0]="DeskJet"
+           D [20/May/1999:19:18:28 +0000] [Job 1] argv[1]="1"
+           D [20/May/1999:19:18:28 +0000] [Job 1] argv[2]="mike"
+           D [20/May/1999:19:18:28 +0000] [Job 1] argv[3]="myjob"
+           D [20/May/1999:19:18:28 +0000] [Job 1] argv[4]="1"
+           D [20/May/1999:19:18:28 +0000] [Job 1] argv[5]="media=
+             na_letter_8.5x11in sides=one-sided"
+           D [20/May/1999:19:18:28 +0000] [Job 1] argv[6]="/var/spool/cups/
+             d000001-001"
+           I [20/May/1999:19:21:02 +0000] [Job 2] Queued on 'DeskJet' by 'mike'.
+           I [20/May/1999:19:22:24 +0000] [Job 2] Canceled by 'mike'.
+
+       The level field contains the type of message:
+
+       A    Alert message (LogLevel alert)
+
+       C    Critical error message (LogLevel crit)
+
+       D    Debugging message (LogLevel debug)
+
+       d    Detailed debugging message (LogLevel debug2)
+
+       E    Normal error message (LogLevel error)
+
+       I    Informational message (LogLevel info)
+
+       N    Notice message (LogLevel notice)
+
+       W    Warning message (LogLevel warn)
+
+       X    Emergency error message (LogLevel emerg)
+
+       The date-time field contains the date and time of when the page started
+       printing. The format of this field is identical to the data-time field in
+       the access_log file.
+
+       The message field contains a free-form textual message.  Messages from
+       job filters are prefixed with "[Job NNN]" where "NNN" is the job ID.
+
+   PAGE LOG FILE FORMAT
+       The page_log file lists the total number of pages (sheets) that are
+       printed.  By default, each line contains the following information:
+
+           printer user job-id date-time total num-sheets job-billing
+             job-originating-host-name job-name media sides
+
+       For example the entry for a two page job called "myjob" might look like:
+
+           DeskJet root 1 [20/May/1999:19:21:06 +0000] total 2 acme-123
+             localhost myjob na_letter_8.5x11in one-sided
+
+       The PageLogFormat directive in the cupsd.conf(5) file can be used to
+       change this information.
+
+       The printer field contains the name of the printer that printed the page.
+       If you send a job to a printer class, this field will contain the name of
+       the printer that was assigned the job.
+
+       The user field contains the name of the user (the IPP requesting-user-
+       name attribute) that submitted this file for printing.
+
+       The job-id field contains the job number of the page being printed.
+
+       The date-time field contains the date and time of when the page started
+       printing.  The format of this field is identical to the data-time field
+       in the access_log file.
+
+       The num-sheets field provides the total number of pages (sheets) that
+       have been printed on for the job.
+
+       The job-billing field contains a copy of the job-billing or job-account-
+       id attributes provided with the IPP Create-Job or Print-Job requests or
+       "-" if neither was provided.
+
+       The job-originating-host-name field contains the hostname or IP address
+       of the client that printed the job.
+
+       The job-name field contains a copy of the job-name attribute provided
+       with the IPP Create-Job or Print-Job requests or "-" if none was
+       provided.
+
+       The media field contains a copy of the media or media-col/media-size
+       attribute provided with the IPP Create-Job or Print-Job requests or "-"
+       if none was provided.
+
+       The sides field contains a copy of the sides attribute provided with the
+       IPP Create-Job or Print-Job requests or "-" if none was provided.
+
+SEE ALSO
+       cupsd(8), cupsd.conf(5), cups-files.conf(5), CUPS Online Help
+       (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

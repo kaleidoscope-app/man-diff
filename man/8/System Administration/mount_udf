@@ -1,0 +1,84 @@
+MOUNT_UDF(8)                 System Manager's Manual                MOUNT_UDF(8)
+
+NAME
+     mount_udf – mount a UDF filesystem
+
+SYNOPSIS
+     mount_udf [-o options] [-s sessionStart] [-n lastRecordedLBA]
+               [-b blockSize] [-p packetSizeInBlocks] [-v verificationPolicy]
+               [-w] devicePath mountPath
+
+DESCRIPTION
+     The mount_udf command attaches the UDF filesystem residing on the device
+     devicePath to the global filesystem namespace at the location indicated by
+     mountPath.  This command is normally executed by mount(8) at boot time.
+
+     The options are as follows:
+
+     -o options
+             Options are specified with a -o flag followed by a comma separated
+             string of options.  See the mount(8) man page for possible options
+             and their meanings.
+
+     -v verificationPolicy
+             This is an advanced option not useful for regular use.  It
+             controlls the verification policy when writing to RW type optical
+             media.  Its value can be "meta", "all", or "none".  Policy "meta"
+             means only the metadata are verified after they are written.  This
+             is the default policy.  Policy "all" means to verify data written,
+             which could be several times slower than policy "meta".  Policy
+             "none" does not verify any data.  It is only slightly faster than
+             "meta" in normal cases, but may result a corrupted UDF disc if the
+             write of metadata fails.
+
+     -s sessionStart
+             This is an advanced option not useful for regular use.  When
+             manually mounting a UDF volume with Virtual Partition, it specifies
+             the start Logical Block Address of the last session where UDF data
+             structures (VRS and AVDP) resides.  This value overrides the value
+             obtained from the device.
+
+     -n lastRecordedLBA
+             This is an advanced option not useful for regular use.  When
+             manually mounting a UDF volume with Virtual Partition, it specifies
+             the last recorded Logical Block Address where the UDF VAT ICB will
+             be searched.  This value overrides the value obtained from the
+             device.
+
+     -b blockSize
+             This is an advanced option not useful for regular use.  It
+             specifies the block size in bytes used when mounting the UDF
+             volume.  This value overrides the value obtained from the device.
+
+     -p packetSizeInBlocks
+             This is an advanced option not useful for regular use.  It
+             specifies the packet size in blocks when manually mounting the UDF
+             volume.  This value overrides the value obtained from the device.
+
+     -w      This is an advanced option not useful for regular use.  It forces
+             to enable the experimental packet writing function on optical media
+             that has not been fully supported, such as CD-R, CD-RW, DVD-R,
+             DVD+R, HD DVD-R, and BD-R.  Writing to these media does not work on
+             some drives and may cause data corruption or data loss on some
+             other drives.  Therefore, this flag should be used only by file
+             system developers when debugging the experimental write functions.
+
+     The -s, -n, -b, and -p flags are not useful in normal use.  They are mainly
+     used for debugging and data recovery.  Since the -s, -n, and -p flags are
+     all specified in units of block size, when any of these flags are
+     specified, it is strongly recommended that the -b flag is also specified.
+
+SEE ALSO
+     mount(2), unmount(2), fstab(5), mount(8)
+
+BUGS
+     Reading of all UDF revisions (1.02 - 2.60) on both block device (e.g., hard
+     drives and USB drives) and most optical media is supported.  Writing to
+     block devices, DVD-RW and DVD+RW is supported with the following
+     exceptions: (1) Cannot write Finder Info, Resource Fork, or other extended
+     attributes in UDF volumes of revision 1.02 and 1.50; (2) Cannot write to
+     mirrored metadata partition.
+
+HISTORY
+     The mount_udf utility first appeared in Mac OS X.
+

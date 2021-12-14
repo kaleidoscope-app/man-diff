@@ -1,0 +1,467 @@
+math::geometry(n)               Tcl Math Library               math::geometry(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       math::geometry - Geometrical computations
+
+SYNOPSIS
+       package require Tcl  ?8.3?
+
+       package require math::geometry  ?1.1.2?
+
+       ::math::geometry::+ point1 point2
+
+       ::math::geometry::- point1 point2
+
+       ::math::geometry::p x y
+
+       ::math::geometry::distance point1 point2
+
+       ::math::geometry::length point
+
+       ::math::geometry::s* factor point
+
+       ::math::geometry::direction angle
+
+       ::math::geometry::h length
+
+       ::math::geometry::v length
+
+       ::math::geometry::between point1 point2 s
+
+       ::math::geometry::octant point
+
+       ::math::geometry::rect nw se
+
+       ::math::geometry::nwse rect
+
+       ::math::geometry::angle line
+
+       ::math::geometry::calculateDistanceToLine P line
+
+       ::math::geometry::calculateDistanceToLineSegment P linesegment
+
+       ::math::geometry::calculateDistanceToPolyline P polyline
+
+       ::math::geometry::findClosestPointOnLine P line
+
+       ::math::geometry::findClosestPointOnLineSegment P linesegment
+
+       ::math::geometry::findClosestPointOnPolyline P polyline
+
+       ::math::geometry::lengthOfPolyline polyline
+
+       ::math::geometry::movePointInDirection P direction dist
+
+       ::math::geometry::lineSegmentsIntersect linesegment1 linesegment2
+
+       ::math::geometry::findLineSegmentIntersection linesegment1 linesegment2
+
+       ::math::geometry::findLineIntersection line1 line2
+
+       ::math::geometry::polylinesIntersect polyline1 polyline2
+
+       ::math::geometry::polylinesBoundingIntersect polyline1 polyline2
+       granularity
+
+       ::math::geometry::intervalsOverlap y1 y2 y3 y4 strict
+
+       ::math::geometry::rectanglesOverlap P1 P2 Q1 Q2 strict
+
+       ::math::geometry::bbox polyline
+
+       ::math::geometry::pointInsidePolygon P polyline
+
+       ::math::geometry::rectangleInsidePolygon P1 P2 polyline
+
+       ::math::geometry::areaPolygon polygon
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The math::geometry package is a collection of functions for computations
+       and manipulations on two-dimensional geometrical objects, such as points,
+       lines and polygons.
+
+       The geometrical objects are implemented as plain lists of coordinates.
+       For instance a line is defined by a list of four numbers, the x- and y-
+       coordinate of a first point and the x- and y-coordinates of a second
+       point on the line.
+
+       The various types of object are recognised by the number of coordinate
+       pairs and the context in which they are used: a list of four elements can
+       be regarded as an infinite line, a finite line segment but also as a
+       polyline of one segment and a point set of two points.
+
+       Currently the following types of objects are distinguished:
+
+       •      point - a list of two coordinates representing the x- and y-
+              coordinates respectively.
+
+       •      line - a list of four coordinates, interpreted as the x- and y-
+              coordinates of two distinct points on the line.
+
+       •      line segment - a list of four coordinates, interpreted as the x-
+              and y-coordinates of the first and the last points on the line
+              segment.
+
+       •      polyline - a list of an even number of coordinates, interpreted as
+              the x- and y-coordinates of an ordered set of points.
+
+       •      polygon - like a polyline, but the implicit assumption is that the
+              polyline is closed (if the first and last points do not coincide,
+              the missing segment is automatically added).
+
+       •      point set - again a list of an even number of coordinates, but the
+              points are regarded without any ordering.
+
+PROCEDURES
+       The package defines the following public procedures:
+
+       ::math::geometry::+ point1 point2
+              Compute the sum of the two vectors given as points and return it.
+              The result is a vector as well.
+
+       ::math::geometry::- point1 point2
+              Compute the difference (point1 - point2) of the two vectors given
+              as points and return it. The result is a vector as well.
+
+       ::math::geometry::p x y
+              Construct a point from its coordinates and return it as the result
+              of the command.
+
+       ::math::geometry::distance point1 point2
+              Compute the distance between the two points and return it as the
+              result of the command. This is in essence the same as
+
+                  math::geometry::length [math::geomtry::- point1 point2]
+
+
+       ::math::geometry::length point
+              Compute the length of the vector and return it as the result of
+              the command.
+
+       ::math::geometry::s* factor point
+              Scale the vector by the factor and return it as the result of the
+              command. This is a vector as well.
+
+       ::math::geometry::direction angle
+              Given the angle in degrees this command computes and returns the
+              unit vector pointing into this direction. The vector for angle ==
+              0 points to the right (up), and for angle == 90 up (north).
+
+       ::math::geometry::h length
+              Returns a horizontal vector on the X-axis of the specified length.
+              Positive lengths point to the right (east).
+
+       ::math::geometry::v length
+              Returns a vertical vector on the Y-axis of the specified length.
+              Positive lengths point down (south).
+
+       ::math::geometry::between point1 point2 s
+              Compute the point which is at relative distance s between the two
+              points and return it as the result of the command. A relative
+              distance of 0 returns point1, the distance 1 returns point2.
+              Distances < 0 or > 1 extrapolate along the line between the two
+              point.
+
+       ::math::geometry::octant point
+              Compute the octant of the circle the point is in and return it as
+              the result of the command. The possible results are
+
+              [1]    east
+
+              [2]    northeast
+
+              [3]    north
+
+              [4]    northwest
+
+              [5]    west
+
+              [6]    southwest
+
+              [7]    south
+
+              [8]    southeast
+       Each octant is the arc of the circle +/- 22.5 degrees from the cardinal
+       direction the octant is named for.
+
+       ::math::geometry::rect nw se
+              Construct a rectangle from its northwest and southeast corners and
+              return it as the result of the command.
+
+       ::math::geometry::nwse rect
+              Extract the northwest and southeast corners of the rectangle and
+              return them as the result of the command (a 2-element list
+              containing the points, in the named order).
+
+       ::math::geometry::angle line
+              Calculate the angle from the positive x-axis to a given line (in
+              two dimensions only).
+
+              list line
+                     Coordinates of the line
+
+
+       ::math::geometry::calculateDistanceToLine P line
+              Calculate the distance of point P to the (infinite) line and
+              return the result
+
+              list P List of two numbers, the coordinates of the point
+
+              list line
+                     List of four numbers, the coordinates of two points on the
+                     line
+
+
+       ::math::geometry::calculateDistanceToLineSegment P linesegment
+              Calculate the distance of point P to the (finite) line segment and
+              return the result.
+
+              list P List of two numbers, the coordinates of the point
+
+              list linesegment
+                     List of four numbers, the coordinates of the first and last
+                     points of the line segment
+
+
+
+       ::math::geometry::calculateDistanceToPolyline P polyline
+              Calculate the distance of point P to the polyline and return the
+              result.
+
+              list P List of two numbers, the coordinates of the point
+
+              list polyline
+                     List of numbers, the coordinates of the vertices of the
+                     polyline
+
+
+       ::math::geometry::findClosestPointOnLine P line
+              Return the point on a line which is closest to a given point.
+
+              list P List of two numbers, the coordinates of the point
+
+              list line
+                     List of four numbers, the coordinates of two points on the
+                     line
+
+
+       ::math::geometry::findClosestPointOnLineSegment P linesegment
+              Return the point on a line segment which is closest to a given
+              point.
+
+              list P List of two numbers, the coordinates of the point
+
+              list linesegment
+                     List of four numbers, the first and last points on the line
+                     segment
+
+
+       ::math::geometry::findClosestPointOnPolyline P polyline
+              Return the point on a polyline which is closest to a given point.
+
+              list P List of two numbers, the coordinates of the point
+
+              list polyline
+                     List of numbers, the vertices of the polyline
+
+
+       ::math::geometry::lengthOfPolyline polyline
+              Return the length of the polyline (note: it not regarded as a
+              polygon)
+
+              list polyline
+                     List of numbers, the vertices of the polyline
+
+
+       ::math::geometry::movePointInDirection P direction dist
+              Move a point over a given distance in a given direction and return
+              the new coordinates (in two dimensions only).
+
+              list P Coordinates of the point to be moved
+
+              double direction
+                     Direction (in degrees; 0 is to the right, 90 upwards)
+
+              list dist
+                     Distance over which to move the point
+
+
+       ::math::geometry::lineSegmentsIntersect linesegment1 linesegment2
+              Check if two line segments intersect or coincide. Returns 1 if
+              that is the case, 0 otherwise (in two dimensions only).
+
+              list linesegment1
+                     First line segment
+
+              list linesegment2
+                     Second line segment
+
+
+       ::math::geometry::findLineSegmentIntersection linesegment1 linesegment2
+              Find the intersection point of two line segments. Return the
+              coordinates or the keywords "coincident" or "none" if the line
+              segments coincide or have no points in common (in two dimensions
+              only).
+
+              list linesegment1
+                     First line segment
+
+              list linesegment2
+                     Second line segment
+
+
+       ::math::geometry::findLineIntersection line1 line2
+              Find the intersection point of two (infinite) lines. Return the
+              coordinates or the keywords "coincident" or "none" if the lines
+              coincide or have no points in common (in two dimensions only).
+
+              list line1
+                     First line
+
+              list line2
+                     Second line
+       See section References for details on the algorithm and math behind it.
+
+
+       ::math::geometry::polylinesIntersect polyline1 polyline2
+              Check if two polylines intersect or not (in two dimensions only).
+
+              list polyline1
+                     First polyline
+
+              list polyline2
+                     Second polyline
+
+
+       ::math::geometry::polylinesBoundingIntersect polyline1 polyline2
+       granularity
+              Check whether two polylines intersect, but reduce the correctness
+              of the result to the given granularity.  Use this for faster, but
+              weaker, intersection checking.
+
+              How it works:
+
+              Each polyline is split into a number of smaller polylines,
+              consisting of granularity points each. If a pair of those smaller
+              lines' bounding boxes intersect, then this procedure returns 1,
+              otherwise it returns 0.
+
+              list polyline1
+                     First polyline
+
+              list polyline2
+                     Second polyline
+
+              int granularity
+                     Number of points in each part (<=1 means check every edge)
+
+
+       ::math::geometry::intervalsOverlap y1 y2 y3 y4 strict
+              Check if two intervals overlap.
+
+              double y1,y2
+                     Begin and end of first interval
+
+              double y3,y4
+                     Begin and end of second interval
+
+              logical strict
+                     Check for strict or non-strict overlap
+
+
+       ::math::geometry::rectanglesOverlap P1 P2 Q1 Q2 strict
+              Check if two rectangles overlap.
+
+              list P1
+                     upper-left corner of the first rectangle
+
+              list P2
+                     lower-right corner of the first rectangle
+
+              list Q1
+                     upper-left corner of the second rectangle
+
+              list Q2
+                     lower-right corner of the second rectangle
+
+              list strict
+                     choosing strict or non-strict interpretation
+
+
+       ::math::geometry::bbox polyline
+              Calculate the bounding box of a polyline. Returns a list of four
+              coordinates: the upper-left and the lower-right corner of the box.
+
+              list polyline
+                     The polyline to be examined
+
+
+       ::math::geometry::pointInsidePolygon P polyline
+              Determine if a point is completely inside a polygon. If the point
+              touches the polygon, then the point is not completely inside the
+              polygon.
+
+              list P Coordinates of the point
+
+              list polyline
+                     The polyline to be examined
+
+
+       ::math::geometry::rectangleInsidePolygon P1 P2 polyline
+              Determine if a rectangle is completely inside a polygon. If
+              polygon touches the rectangle, then the rectangle is not complete
+              inside the polygon.
+
+              list P1
+                     Upper-left corner of the rectangle
+
+              list P2
+                     Lower-right corner of the rectangle
+
+
+              list polygon
+                     The polygon in question
+
+
+       ::math::geometry::areaPolygon polygon
+              Calculate the area of a polygon.
+
+              list polygon
+                     The polygon in question
+
+REFERENCES
+       [1]    Polygon Intersection [http:/wiki.tcl.tk/12070]
+
+       [2]    http://en.wikipedia.org/wiki/Line-line_intersection
+
+       [3]    http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category math ::
+       geometry of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       angle, distance, line, math, plane geometry, point
+
+CATEGORY
+       Mathematics
+
+COPYRIGHT
+       Copyright (c) 2001 by Ideogramic ApS and other parties
+       Copyright (c) 2004 by Arjen Markus
+       Copyright (c) 2010 by Andreas Kupries
+       Copyright (c) 2010 by Kevin Kenny
+
+
+
+

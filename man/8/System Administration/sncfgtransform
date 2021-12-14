@@ -1,0 +1,145 @@
+SNCFGTRANSFORM(8)            System Manager's Manual           SNCFGTRANSFORM(8)
+
+
+
+NAME
+       sncfgtransform - Check two Xsan Volume configuration files for a valid
+       transformation
+
+SYNOPSIS
+       sncfgtransform [-h] -n VolName caller file1 file2
+
+DESCRIPTION
+       The sncfgtransform program will validate the transformation between two
+       Xsan file system configuration files for the given "caller" and file
+       system.
+
+       The valid caller values are:
+
+       fsm    The transform is checked for a file system manager (fsm) restart.
+              This is the usual transform that administrators are looking for
+              since a change in the config file is usually followed by a file
+              system restart.
+
+       cvupdatefs
+              The transform is checked for a run of the cvupdatefs command.
+              This can be used when adding a stripe group or for stripe group
+              expansion.
+
+       updatefs
+              Same as cvupdatefs.
+
+       cvfsck The transform is checked for a run of cvfsck.
+
+       dbg    The transform is checked for the cvfsdb command.
+
+       cvntfscfg
+              The transform is checked with config files in ASCII format,
+              typically used only on Windows MDCs.
+
+       snadmin
+              The transform is checked with callers of the snadmin library API.
+
+       cvmkfs The transform is checked for the cvmkfs command.
+
+       cvmkfsr
+              The transform is checked for the cvmkfs command with the -r option
+              which means that the file system meta data is being restored from
+              a database created because the restore journal was configured.
+
+       convert
+              The transform is checked for the sncfgconvert command.
+
+       fsmpm  The transform is checked for the fsmpm utility.
+
+       mdarchive
+              The transform is checked for the snhistory and snaudit commands
+              and other logic that interacts with the metadata archive.
+
+       cfggen The transform is checked for the sncfggen command.
+
+       dcap   The transform is checked for the disk capacity license logic.
+
+       sgmanage
+              The transform is checked for sgmanage and other stripe group
+              management commands.
+
+       validate
+              The transform is checked for the sncfgvalidate command.
+
+       Two configurations files must be given and the transformation is assumed
+       to be from file1 to file2.
+
+       Each configuration file is parsed and may fail.  If they both succeed
+       parsing, the transformation is checked with any errors being displayed.
+
+OPTIONS
+       -h     Display usage.
+
+       -n VolName
+              Required. The name of the file system whose config files are
+              given.
+
+EXIT VALUES
+       sncfgtransform will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List usage:
+
+          # sncfgtransform -h
+          Usage: sncfgtransform [-h] -n <fsname> <caller> <file1> <file2>
+            -h        This usage
+            -n        Name of file system to validate
+            caller
+                  fsm
+                  cvfsck
+                  cvmkfs
+                  cvmkfsr
+                  dbg
+                  cvntfscfg
+                  snadmin
+                  sncfgconvert
+                  fsmpm
+                  cvupdatefs
+                  updatefs
+                  mdarchive
+                  cfggen
+                  dcap
+                  sgmange
+                  validate
+            file1     current configuration file
+            file2     proposed configuration file
+
+       Check a new config file under consideration for snfs1 with a copy in /tmp
+       (OK):
+
+          # sncfgtransform -n snfs1 fsm /tmp/snfs1.cfgx /tmp/snfs1.new.cfgx
+          'snfs1' transformation OK
+
+       Check a new config file under consideration for cvupdatefs of snfs1 (OK):
+
+          # sncfgtransform -n snfs1 updatefs /tmp/snfs1.cfgx /tmp/snfs1.new.cfgx
+          'snfs1' transformation OK
+
+       Check a modified config against the installed config (with a valid change
+       for cvupdatefs))
+
+
+             # sncfgtransform -n snfs1 updatefs /Library/Preferences/Xsan/snfs1.cfgx /tmp/cfgx
+             'snfs1' transformation OK
+
+       Check a modified config against the installed config (with an invalid
+       change)
+
+          # sncfgtransform -n snfs1 fsm /tmp/snfs1.cfgx /tmp/snfs1.new.cfgx
+          transformation failed for /tmp/snfs1.cfgx -> /tmp/snfs1.new.cfgx with -1
+          transformation for /tmp/snfs1.cfgx -> /tmp/snfs1.new.cfgx -- error: Stripe group metadata field changed at index 2 - mkfs required
+
+          ./sncfgtransform transformation failed
+
+SEE ALSO
+       cvfsdb(8) fsmpm(8) snaudit(8) snfs_config(5) sncfgconvert(8)
+       sncfgtransform(8) sncfgvalidate(8) sncfggen(8) sgmanage(8) snhistory(8)
+
+
+

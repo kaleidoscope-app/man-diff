@@ -1,0 +1,38 @@
+NBDST(8)                     System Manager's Manual                    NBDST(8)
+
+NAME
+     nbdst – NetBoot deferred shadow tool
+
+SYNOPSIS
+     nbdst [-recycle | -preallocate size] devnode shadowfile
+
+DESCRIPTION
+     nbdst is used during NetBoot to associate a shadow file with the disk image
+     being used as the root device. After the shadow file is attached,
+     subsequent writes to the root device will be redirected to the shadow file,
+     which normally resides on local storage.  nbdst is invoked by
+     /etc/rc.netboot
+
+ARGUMENTS
+     The following arguments must be specified:
+     devnode        The device node of the root device, in the form "disk0"
+     shadowfile     Path to a shadow file which will be created and associated
+                    with the NetBoot root device
+
+OPTIONS
+     -recycle  If a shadow file already exists, reset it and use it again.
+               Otherwise, information written to an existing shadow file will
+               reappear.  Reusing a previous shadow file without resetting it
+               requires that the shadow file be created with the same base
+               image.
+
+     -preallocate size
+               Set the shadow file to the given size up front.  This forces a
+               reset of the shadow file (like -recycle).
+
+NOTE
+     nbdst can only be run as root.
+
+SEE ALSO
+     hdiutil(1), hdik(8)
+

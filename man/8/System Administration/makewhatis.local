@@ -1,0 +1,25 @@
+MAKEWHATIS.LOCAL(8)          System Manager's Manual         MAKEWHATIS.LOCAL(8)
+
+NAME
+     makewhatis.local – start makewhatis for local file systems
+
+SYNOPSIS
+     /usr/libexec/makewhatis.local [options] directories ...
+
+DESCRIPTION
+     The makewhatis.local utility starts makewhatis(8) only for file systems
+     physically mounted on the system where the makewhatis.local is being
+     executed.  Running makewhatis by periodic weekly for rw nfs-mounted /usr
+     may kill your NFS server -- all NFS clients start makewhatis at the same
+     time!  So use this wrapper for cron(8) instead of calling makewhatis
+     directly.
+
+FILES
+     /etc/periodic/weekly/320.whatis      run makewhatis.local every week
+
+SEE ALSO
+     find(1), makewhatis(8), cron(8), periodic(8)
+
+HISTORY
+     The makewhatis.local utility appeared in FreeBSD 2.2.
+

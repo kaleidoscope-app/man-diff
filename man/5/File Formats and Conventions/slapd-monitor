@@ -1,0 +1,82 @@
+SLAPD-MONITOR(5)               File Formats Manual              SLAPD-MONITOR(5)
+
+
+
+NAME
+       slapd-monitor - Monitor backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The monitor backend to slapd(8) is not an actual database; if enabled, it
+       is automatically generated and dynamically maintained by slapd with
+       information about the running status of the daemon.
+
+       To inspect all monitor information, issue a subtree search with base
+       cn=Monitor, requesting that attributes "+" and "*" are returned.  The
+       monitor backend produces mostly operational attributes, and LDAP only
+       returns operational attributes that are explicitly requested.  Requesting
+       attribute "+" is an extension which requests all operational attributes.
+
+CONFIGURATION
+       These slapd.conf options apply to the monitor backend database.  That is,
+       they must follow a "database monitor" line and come before any subsequent
+       "backend" or "database" lines.
+
+       As opposed to most databases, the monitor database can be instantiated
+       only once, i.e. only one occurrence of "database monitor" can occur in
+       the slapd.conf(5) file.  Moreover, the suffix of the database cannot be
+       explicitly set by means of the suffix directive.  The suffix is
+       automatically set to "cn=Monitor".
+
+       The monitor database honors the rootdn and the rootpw directives, and the
+       usual ACL directives, e.g. the access directive.
+
+       Other database options are described in the slapd.conf(5) manual page.
+
+USAGE
+       The usage is:
+
+       1) enable the monitor backend at configure:
+
+              configure --enable-monitor
+
+       2) activate the monitor database in the slapd.conf(5) file:
+
+              database monitor
+
+       3) add ACLs as detailed in slapd.access(5) to control access to the
+       database, e.g.:
+
+              access to dn.subtree="cn=Monitor"
+                   by dn.exact="uid=Admin,dc=my,dc=org" write
+                   by users read
+                   by * none
+
+       4) ensure that the core.schema file is loaded.
+              The monitor backend relies on some standard track attributeTypes
+              that must be already defined when the backend is started.
+
+ACCESS CONTROL
+       The monitor backend honors access control semantics as indicated in
+       slapd.access(5), including the disclose access privilege, on all
+       currently implemented operations.
+
+KNOWN LIMITATIONS
+       The monitor backend does not honor size/time limits in search operations.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5), slapd.access(5), slapd(8), ldap(3).
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

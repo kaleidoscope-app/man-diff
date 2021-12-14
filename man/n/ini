@@ -1,0 +1,127 @@
+inifile(n)                Parsing of Windows INI files                inifile(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       inifile - Parsing of Windows INI files
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require inifile  ?0.2.3?
+
+       ::ini::open file ?access?
+
+       ::ini::close ini
+
+       ::ini::commit ini
+
+       ::ini::revert ini
+
+       ::ini::filename ini
+
+       ::ini::sections ini
+
+       ::ini::keys ini section
+
+       ::ini::get ini section
+
+       ::ini::exists ini section ?key?
+
+       ::ini::value ini section key ?default?
+
+       ::ini::set ini section key value
+
+       ::ini::delete ini section ?key?
+
+       ::ini::comment ini section ?key? ?text?
+
+       ::ini::commentchar ?char?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides an interface for easy manipulation of Windows INI
+       files.
+
+       ::ini::open file ?access?
+              Opens an INI file and returns a handle that is used by other
+              commands.  access is the same as the first form (non POSIX) of the
+              open command, with the exception that mode a is not supported. The
+              default mode is r+.
+
+       ::ini::close ini
+              Close the specified handle. If any changes were made and not
+              written by commit they are lost.
+
+       ::ini::commit ini
+              Writes the file and all changes to disk. The sections are written
+              in arbitrary order. The keys in a section are written in
+              alphabetical order. If the ini was opened in read only mode an
+              error will be thrown.
+
+       ::ini::revert ini
+              Rolls all changes made to the inifile object back to the last
+              committed state.
+
+       ::ini::filename ini
+              Returns the name of the file the ini object is associated with.
+
+       ::ini::sections ini
+              Returns a list of all the names of the existing sections in the
+              file handle specified.
+
+       ::ini::keys ini section
+              Returns a list of all they key names in the section and file
+              specified.
+
+       ::ini::get ini section
+              Returns a list of key value pairs that exist in the section and
+              file specified.
+
+       ::ini::exists ini section ?key?
+              Returns a boolean value indicating the existance of the specified
+              section as a whole or the specified key within that section.
+
+       ::ini::value ini section key ?default?
+              Returns the value of the named key and section. If specified, the
+              default value will be returned if the key does not exist. If the
+              key does not exist and no default is specified an error will be
+              thrown.
+
+       ::ini::set ini section key value
+              Sets the value of the key in the specified section. If the section
+              does not exist then a new one is created.
+
+       ::ini::delete ini section ?key?
+              Removes the key or the entire section and all its keys. A section
+              is not automatically deleted when it has no remaining keys.
+
+       ::ini::comment ini section ?key? ?text?
+              Reads and modifies comments for sections and keys. To write a
+              section comment use an empty string for the key. To remove all
+              comments use an empty string for text.  text may consist of a list
+              of lines or one single line. Any embedded newlines in text are
+              properly handled.  Comments may be written to nonexistant sections
+              or keys and will not return an error. Reading a comment from a
+              nonexistant section or key will return an empty string.
+
+       ::ini::commentchar ?char?
+              Reads and sets the comment character. Lines that begin with this
+              character are treated as comments. When comments are written out
+              each line is preceded by this character. The default is ;.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category inifile of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+CATEGORY
+       Text processing
+
+
+

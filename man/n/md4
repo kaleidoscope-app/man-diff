@@ -1,0 +1,158 @@
+md4(n)                    MD4 Message-Digest Algorithm                    md4(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       md4 - MD4 Message-Digest Algorithm
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require md4  ?1.0?
+
+       ::md4::md4 ?-hex? [ -channel channel | -file filename | string ]
+
+       ::md4::hmac ?-hex? -key key [ -channel channel | -file filename | string
+       ]
+
+       ::md4::MD4Init
+
+       ::md4::MD4Update token data
+
+       ::md4::MD4Final token
+
+       ::md4::HMACInit key
+
+       ::md4::HMACUpdate token data
+
+       ::md4::HMACFinal token
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package is an implementation in Tcl of the MD4 message-digest
+       algorithm as described in RFC 1320 (1) and (2). This algorithm takes an
+       arbitrary quantity of data and generates a 128-bit message digest from
+       the input. The MD4 algorithm is faster but potentially weaker than the
+       related MD5 algorithm (3).
+
+       If you have critcl and have built the tcllibc package then the
+       implementation of the hashing function will be performed by compiled
+       code. Alternatively if cryptkit is available this will be used. If no
+       accelerator package can be found then the pure-tcl implementation is
+       used. The programming interface remains the same in all cases.
+
+COMMANDS
+       ::md4::md4 ?-hex? [ -channel channel | -file filename | string ]
+              Calculate the MD4 digest of the data given in string. This is
+              returned as a binary string by default. Giving the -hex option
+              will return a hexadecimal encoded version of the digest.
+
+              The data to be hashed can be specified either as a string argument
+              to the md4 command, or as a filename or a pre-opened channel. If
+              the -filename argument is given then the file is opened, the data
+              read and hashed and the file is closed. If the -channel argument
+              is given then data is read from the channel until the end of file.
+              The channel is not closed.
+
+              Only one of -file, -channel or string should be given.
+
+       ::md4::hmac ?-hex? -key key [ -channel channel | -file filename | string
+       ]      Calculate an Hashed Message Authentication digest (HMAC) using the
+              MD4 digest algorithm. HMACs are described in RFC 2104 (4) and
+              provide an MD4 digest that includes a key. All options other than
+              -key are as for the ::md4::md4 command.
+
+PROGRAMMING INTERFACE
+       For the programmer, the MD4 hash can be viewed as a bucket into which one
+       pours data. When you have finished, you extract a value that is derived
+       from the data that was poured into the bucket. The programming interface
+       to the MD4 hash operates on a token (equivalent to the bucket). You call
+       MD4Init to obtain a token and then call MD4Update as many times as
+       required to add data to the hash. To release any resources and obtain the
+       hash value, you then call MD4Final. An equivalent set of functions gives
+       you a keyed digest (HMAC).
+
+       ::md4::MD4Init
+              Begins a new MD4 hash. Returns a token ID that must be used for
+              the remaining functions.
+
+       ::md4::MD4Update token data
+              Add data to the hash identified by token. Calling MD4Update $token
+              "abcd" is equivalent to calling MD4Update $token "ab" followed by
+              MD4Update $token "cb". See EXAMPLES.
+
+       ::md4::MD4Final token
+              Returns the hash value and releases any resources held by this
+              token. Once this command completes the token will be invalid. The
+              result is a binary string of 16 bytes representing the 128 bit MD4
+              digest value.
+
+       ::md4::HMACInit key
+              This is equivalent to the ::md4::MD4Init command except that it
+              requires the key that will be included in the HMAC.
+
+       ::md4::HMACUpdate token data
+
+       ::md4::HMACFinal token
+              These commands are identical to the MD4 equivalent commands.
+
+EXAMPLES
+
+       % md4::md4 -hex "Tcl does MD4"
+       858da9b31f57648a032230447bd15f25
+
+
+       % md4::hmac -hex -key Sekret "Tcl does MD4"
+       c324088e5752872689caedf2a0464758
+
+
+       % set tok [md4::MD4Init]
+       ::md4::1
+       % md4::MD4Update $tok "Tcl "
+       % md4::MD4Update $tok "does "
+       % md4::MD4Update $tok "MD4"
+       % md4::Hex [md4::MD4Final $tok]
+       858da9b31f57648a032230447bd15f25
+
+
+REFERENCES
+       [1]    Rivest, R., "The MD4 Message Digest Algorithm", RFC 1320, MIT,
+              April 1992. (http://www.rfc-editor.org/rfc/rfc1320.txt)
+
+       [2]    Rivest, R., "The MD4 message digest algorithm", in A.J.  Menezes
+              and S.A. Vanstone, editors, Advances in Cryptology - CRYPTO '90
+              Proceedings, pages 303-311, Springer-Verlag, 1991.
+
+       [3]    Rivest, R., "The MD5 Message-Digest Algorithm", RFC 1321, MIT and
+              RSA Data Security, Inc, April 1992.  (http://www.rfc-
+              editor.org/rfc/rfc1321.txt)
+
+       [4]    Krawczyk, H., Bellare, M. and Canetti, R. "HMAC: Keyed-Hashing for
+              Message Authentication", RFC 2104, February 1997.
+              (http://www.rfc-editor.org/rfc/rfc2104.txt)
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category md4 of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       md5, sha1
+
+KEYWORDS
+       hashing, md4, message-digest, rfc 1320, rfc 1321, rfc 2104, security
+
+CATEGORY
+       Hashes, checksums, and encryption
+
+COPYRIGHT
+       Copyright (c) 2003, Pat Thoyts <patthoyts@users.sourceforge.net>
+
+
+
+

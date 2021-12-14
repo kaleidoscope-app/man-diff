@@ -1,0 +1,199 @@
+tkcon(n)                                                                tkcon(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       tkcon - Controlling TkCon console
+
+SYNOPSIS
+       tkcon attach interpreter
+
+       tkcon buffer ?size?
+
+       tkcon bgerror ?msg errorInfo?
+
+       tkcon close or tkcon destroy
+
+       tkcon congets
+
+       tkcon console args
+
+       tkcon error
+
+       tkcon find string ?-case TCL_BOOLEAN -regexp TCL_BOOLEAN?
+
+       tkcon font ?fontname?
+
+       tkcon gets
+
+       tkcon getcommand
+
+       tkcon hide
+
+       tkcon history ?-newline?
+
+       tkcon iconify
+
+       tkcon linelength ?value?
+
+       tkcon load filename
+
+       tkcon main ?arg arg ...?
+
+       tkcon master args
+
+       tkcon new
+
+       tkcon resultfilter ?command?
+
+       tkcon save ?filename ?type??
+
+       tkcon set var ?value?
+
+       tkcon append var ?value?
+
+       tkcon lappend var ?value?
+
+       tkcon show or tkcon deiconify
+
+       tkcon slave ?slavename ?arg arg ...??
+
+       tkcon title ?title?
+
+       tkcon version
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This provides lots of useful control over a console:
+
+       tkcon attach interpreter
+              Attaches tkcon to the named interpreter.  The name must be that
+              returned by [tk appname] or a valid path to a slave interpreter.
+              It's best to use this via the Console->Attach Console menu.
+
+       tkcon buffer ?size?
+              Sets or queries the allowed size of the console text widget in
+              lines.  The text widget will automatically delete leading lines
+              once this number has been exceeded (read: this is the scroll
+              buffer size).
+
+       tkcon bgerror ?msg errorInfo?
+              Does bgerror stuff in the tkcon master interpreter.
+
+       tkcon close or tkcon destroy
+              Destroys this tkcon widget.
+
+       tkcon congets
+              Behaves like the traditional Tcl gets, but instead of using stdin,
+              it uses the tkcon console window.  By default, tkcon replaces the
+              standard gets with this command.  This behavior can be controlled
+              by altering the ::tkcon::OPT(gets) parameter at startup.  This
+              should not be called directly - instead rely on the overloaded
+              gets, which has support for the optional varName parameter.
+
+       tkcon console args
+              Passes the args to the tkcon text widget (the console).
+
+       tkcon error
+              Pops up a dialog that gives the user a full trace of the last
+              error received in the tkcon console.
+
+       tkcon find string ?-case TCL_BOOLEAN -regexp TCL_BOOLEAN?
+              Highlights all instances of string in the console.  If the string
+              is empty, it clears any previous highlighting.
+
+       tkcon font ?fontname?
+              Sets or returns the font used by tkcon text widgets.
+
+       tkcon gets
+              Behaves like the traditional Tcl gets, but instead of needing
+              stdin, it pops a dialog box up for the user.  The overloaded gets
+              has support for the optional varName parameter.
+
+       tkcon getcommand
+              A variation of the congets method that requires a full command to
+              be input before returning.
+
+       tkcon hide
+              Withdraw the tkcon display from the screen (make sure you have a
+              way to get it back).
+
+       tkcon history ?-newline?
+              Displays the tkcon history in sourceable form.  If -newline is
+              specified, it separates each command by an extra newline.
+
+       tkcon iconify
+              Iconifies the tkcon display.
+
+       tkcon linelength ?value?
+              Sets or displays the number that specifies the limit of long
+              result lines.  True result is still captured in $_ (and 'puts $_'
+              works).
+
+       tkcon load filename
+              Sources named file into the slave interpreter.  If no filename is
+              given, it will attempt to call tk_getOpenFile to pop up the file
+              select box.
+
+       tkcon main ?arg arg ...?
+              Passes the args to the main tkcon interpreter to be evaluated and
+              returns the result.
+
+       tkcon master args
+              Passes the args to the master interpreter to be evaluated and
+              returns the result.
+
+       tkcon new
+              Creates a new tkcon widget.
+
+       tkcon resultfilter ?command?
+              Specify a command to process the results before outputting it to
+              the console window.  The command receives one argument (the result
+              string) and the string returned is placed in the console.
+
+       tkcon save ?filename ?type??
+              Saves the console buffer to the given filename.  If no filename is
+              given, it will attempt to call tk_getSaveFile to pop up the file
+              select box.  If no type is given, a dialog will ask you to specify
+              what portion of the text you want to save.
+
+       tkcon set var ?value?
+              Queries or sets a master interpreter variable.
+
+       tkcon append var ?value?
+              Like set, but uses append on the variable.
+
+       tkcon lappend var ?value?
+              Like set, but uses lappend on the variable.
+
+       tkcon show or tkcon deiconify
+              Redisplays tkcon on the screen.
+
+       tkcon slave ?slavename ?arg arg ...??
+              If called with no args, it returns the name of all the tkcon
+              interpreters.  Otherwise given an interp name it passes the args
+              to the named interpreter to be evaluated and returns the result.
+              If no args are passed, then it returns the [tk appname] of that
+              interpreter.
+
+       tkcon title ?title?
+              Sets or returns the title for tkcon.
+
+       tkcon version
+              Returns of version of tkcon.
+
+SEE ALSO
+       dump(n), observe(n), tkcon(1), tkcon(n), tkconrc(5)
+
+KEYWORDS
+       Tk, console, debug
+
+COPYRIGHT
+       Copyright (c) Jeffrey Hobbs <jeff at hobbs.org>
+
+
+
+

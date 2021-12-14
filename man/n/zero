@@ -1,0 +1,52 @@
+zero(n)                                                                  zero(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       zero - Create and manipulate zero channels
+
+SYNOPSIS
+       package require Tcl
+
+       package require memchan
+
+       zero
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The command described here is only available in a not-yet released
+       version of the package. Use the CVS to get the sources.
+
+       zero   creates a zero channel which absorbs everything written into it.
+              Reading from a zero channel will return the requested number of
+              null bytes. These channels are essentially Tcl-specific variants
+              of the zero device for unixoid operating systems (/dev/zero).
+              Transfering the generated channel between interpreters is possible
+              but does not make much sense.
+
+OPTIONS
+       Memory channels created by zero provide one additional option to set or
+       query.
+
+       -delay ?milliseconds?
+              A zero channel is always writable and readable. This means that
+              all fileevent-handlers will fire continuously.  To avoid
+              starvation of other event sources the events raised by this
+              channel type have a configurable delay. This option is set in
+              milliseconds and defaults to 5.
+
+SEE ALSO
+       fifo, fifo2, memchan, null, random
+
+KEYWORDS
+       channel, i/o, in-memory channel, null, zero
+
+COPYRIGHT
+       Copyright (c) 2004 Pat Thoyts <patthoyts@users.sourceforge.net>
+
+
+
+

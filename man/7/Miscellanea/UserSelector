@@ -1,0 +1,79 @@
+UserSelector(7)         Miscellaneous Information Manual         UserSelector(7)
+
+NAME
+     UserSelector – overview and documentation
+
+DESCRIPTION
+     UserSelector is invoked only internally by the CryptoTokenKit framework. It
+     is not intended to be used directly by an end user or an administrator.
+     Unless the string property UserSelectorPath is set with full executable
+     path value in the configuration file ( /etc/SmartcardLogin.plist ), the
+     system UserSelector is used.
+
+     How CryptoTokenKit framework invokes UserSelector:
+
+           UserSelector -o operation -u username -i pubkeyhash1[,pubkeyhash2,...]
+
+Path and format
+     UserSelector runs in a sandbox which limits its path and file format. A
+     custom UserSelector must be stored in the /Library/CryptoTokenKit
+     directory. The file format of the UserSelector must be binary. Shell
+     scripts are not supported.
+
+Supported Operations
+   Map Operation
+     This operation returns a list of users bound with pubkeyhashes from the
+     SmartCard certificates. The username parameter is optional. If set,
+     bindings are returned only for the specified user. The list of one or more
+     comma separated pubkeyhashes is mandatory.
+
+     Result format:
+
+     Recognized bindings are returned through stdout. Each binding is placed on
+     a separate line. Each line begins with the pubkeyhash string, followed by
+     the TAB character (\t) and by the username.
+
+     Sample:
+
+           $ UserSelector -o map -i 01234567890123456789,ABCDEF01230123456789,98765432109876543210
+           ABCDEF01230123456789    user1
+           98765432109876543210    user2
+
+   Bind Operation
+     This operation creates binding between the provided pubkeyhash and username
+     .
+
+     Result format:
+
+     Exit code is set to 0 when succeeded, error code otherwise
+
+     Sample:
+
+           $ UserSelector -o bind -i ABCDEF01230123456789 -u username1
+
+   Unbind Operation
+     This operation removes SmartCard bindings for the provided username If no
+     pubkeyhash is provided, all bindings for that user are removed. If one or
+     more pubkeyhashes are provided, only bindings for these are removed.
+
+     Result format:
+
+     Exit code is set to 0 when succeeded, error code otherwise
+
+     Sample:
+
+     $ UserSelector -o unbind -u username1 -i ABCDEF01230123456789
+
+   Check Operation
+     This operation checks SmartCard bindings for a specific user. It returns 0
+     on stdout when the user has no SmartCard bindings, or 1 when already does.
+     The username parameter is mandatory.
+
+     Sample:
+
+           $ UserSelector -o check -u username1
+           1
+
+SEE ALSO
+     SmartCardServices(7), sc_auth(8)
+

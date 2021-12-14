@@ -1,0 +1,310 @@
+CVUPDATEFS(8)                System Manager's Manual               CVUPDATEFS(8)
+
+
+
+NAME
+       cvupdatefs - Commit a Xsan Volume configuration change
+
+SYNOPSIS
+       cvupdatefs [-bdfFhlnSv] [-c pathname] [-M] [-R NewVolName] [VolName]
+              [VolPath]
+
+DESCRIPTION
+       The cvupdatefs program is used to commit a configuration change to a Xsan
+       volume. Possible configuration changes include storage pool list
+       modification as well as volume journal modification.
+
+       The volume update program must be run on the machine that the File System
+       Manager (FSM) is running on. This utility reads the configuration file
+       and compares the configuration file against the current on-disk metadata
+       configuration. If there are differences between the configuration and the
+       on-disk metadata, the utility will display what changes need to be made
+       to bring the volume metadata up to date.
+
+       NOTE: All metadata modification must be made on a stopped volume. It is
+       recommended that the volume is stopped and cvfsck(8) has been run before
+       making any changes to a volume configuration.  Maintaining a backup of
+       the original volume configuration file is also strongly recommended.
+
+       When a successful update is completed, the new configuration file is
+       stored in the on-disk metadata and the previous one is saved in
+       /Library/Logs/Xsan/data/<volume_name>/config_history/*.cfg.<TIMESTAMP>
+
+OPTIONS
+       -b     Build info - log the build information.
+
+       -c pathname
+              Provide a specific path to the previous configuration file that is
+              to be used.  This option is used to force cvfsck to be run as a
+              sub-process to insure that the volume meta data is consistent
+              prior to doing a capacity or stripegroup expansion, or any journal
+              changes.
+
+       -d     Debug - use to turn on internal debugging only.
+
+       -F     Force. This option has been deprecated and replaced with -y.  It
+              will cause the same action as that option.
+
+       -f     Failure mode - do not fail if there is a configuration mismatch or
+              other serious abnormal condition detected.  Note:  This option is
+              not intended for general use.  Use only if instructed by Apple
+              support. Incorrect use may result in an unusable file system.
+
+
+       -h     Help - print the synopsis for this command.
+
+       -l     Log - log when the update finished.
+
+       -n     Read-only - set metadata to read-only mode.
+
+       -M     Allow managed file systems with -R option.
+
+       -R NewVolName
+              Rename - Provide a new volume name to rename an existing unmanaged
+              volume.  Use with -M to rename a managed file system.
+
+              The existing config file will be renamed, and the existing data
+              directory containing logs will be migrated to the new name.  See
+              the section below for further details about using this option.
+
+       -s     Slice rebuild - Rebuild the free slice trees to their optimal
+              sizes.  When extending the LUNs in a storagepool, by default it
+              will just add enough additional slices to hold the additional free
+              space.  When the -s option is given, it will instead rebuild the
+              slice trees, which usually results in larger slices.  If the LUNs
+              have been previously extended, this option will allow the slice
+              trees to be rebuilt without extending the LUNs.
+
+
+       -S     Status - write status plist to
+              /var/run/cvupdatefs_status_<FS>.plist.
+
+       -U     When a storagepool is added, do a check for disks that are
+              included in the storagepool that is being added to see if they are
+              currently in use in another file system that is visible to the
+              cluster. In some configurations, this may take a long time.  If
+              there are disks in use, the operation is aborted.
+
+       -v     Verbose - turn on verbose reporting methods.
+
+       -y     Yes - Bypass the prompt and answer yes to the basic warning about
+              proceeding.  If the prompt warning is for an unusual condition,
+              this option will not bypass that prompt.
+
+       Once the volume configuration has been changed to reflect the stripe
+       group or journal changes the cvupdatefs utility may be run.  When
+       cvupdatefs is run it will display a listing of storage pools which will
+       be modified, followed by a prompt. If this list accurately reflects the
+       changes made to the configuration file then answering 'yes' at the prompt
+       will allow the utility to make the needed changes.
+
+       Once the utility has completed, the volume may be started again. After
+       starting the volume, the 'show' command in cvadmin(8) may be used to
+       verify the new storage pools.  The 'show' command will list all of the
+       stripe groups on the volume, including the newly created storage pool(s).
+       Also, if the location of the volume journal has changed this too will be
+       reflected by the cvadmin command 'show'.
+
+WARNINGS
+       It is very important that the consistency of the volume be correct before
+       cvupdatefs is run. If the volume has a bad state cvupdatefs could
+       introduce data corruption. It is recommended that cvfsck is executed on
+       the volume before any changes are made. If cvfsck does not finish with a
+       clean volume do not make any configuration changes until the volume is
+       clean.
+
+ADDING A STORAGE POOL
+       The first step in adding storage pools is to modify the volume's
+       configuration file to reflect the desired changes. For notes on volume
+       configuration format refer to snfs_config(5).  In addition to adding
+       StripeGroup configuration entries, associated Disk and DiskType entries
+       for any new disks must be included.
+
+       Currently the ordering of storage pools in the configuration file and in
+       the metadata must match. Thus, when adding new storage pool configuration
+       entries to the configuration file they must always be added to the end of
+       the StripeGroup configuration section. cvupdatefs will abort if a new
+       storage pool is detected anywhere but the end of the file.
+
+INCREASING THE STRIPE DEPTH OF AN EXISTING STORAGE POOL
+       Warning: This option is not recommended and its use is deprecated.
+       Adding a new stripe group is the recommended way to expand capacity of a
+       file system.
+
+       The stripe depth is the number of disks in the storage pool and is a key
+       factor in the amount of parallel I/O that can be accomplished.  This
+       choice should ideally be made before the volume is created, thus
+       eliminating the need for cvupdatefs to modify this value by adding disks
+       to the storage pool. Consult the StorNext File System Tuning Guide for
+       information on configuring for optimal file system performance.
+
+       Warning: When a storage pool is populated with file data, adding disks
+       will increase free space fragmentation of the storage pool proportional
+       to the amount of pre-existing file data.  It is important to avoid
+       fragmentation, which severely impacts performance and functionality of
+       the volume.  If the storage pool contains little or no file data,
+       expansion will not result in free space fragmentation.  The snfsdefrag
+       utility can be used to relocate pre-existing file data to a different
+       storage pool.
+
+       When new disks are added to an existing storage pool the new disks must
+       exactly match the existing disks in size. All new disks must be added to
+       the end in the disk list in the configuration file StripeGroup section.
+
+       New disks cannot be added to a storage pool containing metadata or
+       journal. A new storage pool must be added if additional capacity or
+       performance is needed for metadata or journal operations.  The cvupdatefs
+       utility can be used to relocate the journal to a new storage pool.
+
+MODIFYING VOLUME JOURNAL CONFIGURATION
+       cvupdatefs will also detect changes in the journal configuration and
+       modify the metadata accordingly. Journal changes include moving the
+       journal to a new storage pool and increasing or decreasing the size of
+       the journal.
+
+       JournalSize
+              (Located in the Global section) Modifying this value will change
+              the size of the on-disk journal.
+
+       Journal
+              (Located in the Storage Pool section) Setting this entry to yes
+              will place the on-disk journal on the given storage pool.
+
+NOTE:
+       There may only be one journal storage pool per volume.
+
+REMOVING A JOURNAL-ONLY STRIPE GROUP
+       For Linux MDCs, if a stripe group has only the journal attribute, i.e. no
+       metadata and no userdata, and the journal is moved to another stripe
+       group, the former journal-only stripe group is left with no attributes
+       pertaining to content type. If it is desired that this stripe group be
+       retired and the disks used for other purposes, you can set the status to
+       down after the journal is moved. Note that the status must be up during
+       the journal move operation because the journal recovery must be executed
+       prior to moving the journal.
+
+       The behavior is similar on Windows MDCs, except that there is no explicit
+       userdata attribute in the ASCII config file. This means that with no
+       journal and no metadata, userdata is assumed. If the desire is to retire
+       the former journal-only stripe group, care should be taken to not run the
+       file system after moving the journal off of the stripe group. Set the
+       status to down immediately after moving the journal and before starting
+       the FSM.
+
+CORRECTING MISCONFIGURED STORAGE POOLS
+       cvupdatefs has a limited ability to address configuration errors. For
+       example, if a storage pool was added but the configuration file shows
+       incorrect disk sizes, this option could be used to rewrite that stripe
+       group. Metadata and Journal storage pools cannot be rewritten.  In
+       addition, data only storage pools that may be overwritten must be empty.
+
+       The types of changes that can be made to a storage pool are as follows
+
+              1) Resize disk definitions in a storage pool
+              2) Modify stripe breadth in a storage pool
+              3) Modify the disk list in a storage pool
+
+       Warning: Always use this option with extreme caution.  Configuration
+       errors could lead to data loss.
+
+RENAMING A VOLUME
+       Warning: Renaming a volume that is managed requires additional steps
+       documented elsewhere.  These are in the StorNext documentation center.
+       When following those instructions, the -M option must be used when
+       invoking this command with the -R option.  Otherwise, renaming a volume
+       is only allowed on an unmanaged volume.  Without the -M option, if
+       cvupdatefs(8) detects that the volume is managed, it will print an error
+       message and exit without doing the rename.
+
+       The -R option for renaming a volume should be used with care, as there
+       are several things that get modified as part of this process.  Before
+       renaming a volume, it is highly recommended that cvfsck(8) be run prior
+       to renaming the volume.  The volume must be unmounted on all SAN and DLAN
+       clients, and the volume stopped, see cvadmin(8).  If a client has the
+       volume mounted when it is renamed, the client might need to be rebooted
+       in order to unmount the old volume name.  On Windows, use the Client
+       Configuration Tool to unmount volume before renaming it.
+
+       The volume that is being renamed will have been configured in one of
+       three modes: non-HA, HA or manual HA, and how it was configured will
+       change how to rename the volume.
+
+       Non-HA mode
+              There are no extra steps needed when renaming a volume that is not
+              in HA mode.
+
+       HA mode
+              When a volume is being used in HA mode, prior to running the
+              rename command on the primary, on the secondary the
+              /Library/Logs/Xsan/data/VolName directory should be manually
+              renamed to /Library/Logs/Xsan/data/NewVolName.  When the rename
+              command is then run on the primary, the HA sync processes will
+              propagate all the other configuration changes to the secondary.
+              Wait for the HA sync to complete before continuing.
+
+       Manual HA mode
+              In manual HA mode, the rename command should be run on both MDCs.
+              When run on the second MDC, cvupdatefs(8) will recognize that the
+              name in the ICB has been changed, but will proceed if NewVolName
+              is the same as the name in the ICB.  In manual HA mode there is no
+              need to manually rename /Library/Logs/Xsan/data/VolName since that
+              will happen as part of running cvupdatefs -R on the second MDC.
+
+       After changing the name of a volume, the change needs to be manually
+       reflected in the /etc/fstab, /etc/vfstab or /etc/vstab files on all the
+       clients before they remount the volume and the corresponding directories
+       renamed or created.  Windows StorNext SAN and DLAN Clients mounts will
+       need to be remapped.  Run the Client Configuration Tool to re-map the
+       mount with new file system name.
+
+       For any client that is operating as an Xsan volume Proxy Client, check to
+       see if it has a /Library/Preferences/Xsan/dpserver.VolName file.  If it
+       does, it will need to be renamed to
+       /Library/Preferences/Xsan/dpserver.NewVolName.
+
+       If something goes wrong during the rename operation, cvupdatefs(8) will
+       revert any partial changes, but it is still possible that in some corner
+       cases it will not be able to fully revert the changes, and manual
+       intervention will be required.  Files that are modified and/or renamed
+       during the rename operation include:
+          /Library/Logs/Xsan/data/VolName
+          /Library/Logs/Xsan/data/NewVolName
+          /Library/Preferences/Xsan/VolName.cfg
+          /Library/Preferences/Xsan/NewVolName.cfg
+          /Library/Preferences/Xsan/fsmlist
+       as well as the ICB in the volume itself.  The OS dependent files that
+       need to be manually updated include:
+          /etc/fstab
+          /etc/vfstab
+          /etc/vstab
+          Windows registry via the Windows Client Configuration Tool
+
+ENABLING CASE INSENSITIVE
+       If a change in the file system configuration is detected such that case
+       insensitive is being enabled, cvupdatefs invokes cvfsck as a sub-process
+       to check for name collisions.  If name collisions are detected, the
+       update operation will be aborted.  It is strongly recommended that cvfsck
+       -A be run prior to attempting the change using cvupdatefs.
+
+EXIT VALUES
+       cvupdatefs will return one of the following condition codes upon exit.
+
+               0 - No error, no changes made to the volume
+               1 - No error, changes have been made to the volume
+               2 - Configuration or volume state error, no changes made
+               3 - ICB error, improper volume found, no changes made
+               4 - Case conversion found name collisions, no changes made
+
+NOTES
+       IMPORTANT: It is highly recommended to run cvfsck(8) prior to making any
+       configuration changes.
+
+FILES
+       /Library/Preferences/Xsan/*.cfg
+       /Library/Logs/Xsan/data/<volume_name>/config_history/*.cfg.<TIMESTAMP>
+
+SEE ALSO
+       snfs_config(5), cvfsck(8), cvadmin(8)
+
+
+

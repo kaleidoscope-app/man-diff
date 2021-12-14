@@ -1,0 +1,54 @@
+SNCFGTEMPLATE(8)             System Manager's Manual            SNCFGTEMPLATE(8)
+
+
+
+NAME
+       sncfgtemplate - Output a Xsan Volume configuration file
+
+SYNOPSIS
+       sncfgtemplate -n VolName [-M output_format]
+
+       sncfgtemplate -h
+
+DESCRIPTION
+       The sncfgtemplate program will output a template Xsan file system
+       configuration file with the given name to stdout.  This can be redirected
+       to a file and edited.  When the configuration file is correct for the
+       file system being created, it can be installed using sncfginstall(8), and
+       made with cvmkfs(8).
+
+       Note: the standard way to create a new configuration file on the
+       commandline is via sncfgedit(8).
+
+OPTIONS
+       -h     Display usage.
+
+       -n VolName
+              Required. The name of the file system whose config is to be
+              created.
+
+       -M msg_format
+              Specify XML if you want messages to come back in XML format.  This
+              defaults to ASCII.
+
+EXIT VALUES
+       sncfgtemplate will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List usage:
+
+          # sncfgtemplate -h
+          Usage: sncfgtemplate -n <fs_name>
+            -n            Name of file system
+            -M            Message format (default ASCII)
+            -h            This usage
+
+       Dump a template config to a temporary file:
+
+          # sncfgtemplate -n snfs1 > /tmp/myconfig
+
+SEE ALSO
+       sncfginstall(8), cvmkfs(8), snfs_config(5)
+
+
+

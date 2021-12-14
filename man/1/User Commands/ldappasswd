@@ -1,0 +1,128 @@
+LDAPPASSWD(1)                General Commands Manual               LDAPPASSWD(1)
+
+
+
+NAME
+       ldappasswd - change the password of an LDAP entry
+
+SYNOPSIS
+       ldappasswd [-A] [-a_oldPasswd] [-t_oldpasswdfile] [-D_binddn]
+       [-d_debuglevel] [-H_ldapuri] [-h_ldaphost] [-n] [-p_ldapport] [-S]
+       [-s_newPasswd] [-T_newpasswdfile] [-v] [-W] [-w_passwd] [-y_passwdfile]
+       [-O_security-properties] [-I] [-Q] [-U_authcid] [-R_realm] [-x]
+       [-X_authzid] [-Y_mech] [-Z[Z]] [user]
+
+DESCRIPTION
+       ldappasswd is a tool to set the password of an LDAP user.  ldappasswd
+       uses the LDAPv3 Password Modify (RFC 3062) extended operation.
+
+       ldappasswd sets the password of associated with the user [or an
+       optionally specified user].  If the new password is not specified on the
+       command line and the user doesn't enable prompting, the server will be
+       asked to generate a password for the user.
+
+       ldappasswd is neither designed nor intended to be a replacement for
+       passwd(1) and should not be installed as such.
+
+OPTIONS
+       -A     Prompt for old password.  This is used instead of specifying the
+              password on the command line.
+
+       -a_oldPasswd
+              Set the old password to oldPasswd.
+
+       -t_oldPasswdFile
+              Set the old password to the contents of oldPasswdFile.
+
+       -x     Use simple authentication instead of SASL.
+
+       -D_binddn
+              Use the Distinguished Name binddn to bind to the LDAP directory.
+              For SASL binds, the server is expected to ignore this value.
+
+       -d_debuglevel
+              Set the LDAP debugging level to debuglevel.  ldappasswd must be
+              compiled with LDAP_DEBUG defined for this option to have any
+              effect.
+
+       -H_ldapuri
+              Specify URI(s) referring to the ldap server(s); only the
+              protocol/host/port fields are allowed; a list of URI, separated by
+              whitespace or commas is expected.
+
+       -h_ldaphost
+              Specify an alternate host on which the ldap server is running.
+              Deprecated in favor of -H.
+
+       -p_ldapport
+              Specify an alternate TCP port where the ldap server is listening.
+              Deprecated in favor of -H.
+
+       -n     Do not set password. (Can be useful when used in conjunction with
+              -v or -d)
+
+       -S     Prompt for new password.  This is used instead of specifying the
+              password on the command line.
+
+       -s_newPasswd
+              Set the new password to newPasswd.
+
+       -T_newPasswdFile
+              Set the new password to the contents of newPasswdFile.
+
+       -v     Increase the verbosity of output.  Can be specified multiple
+              times.
+
+       -W     Prompt for bind password.  This is used instead of specifying the
+              password on the command line.
+
+       -w_passwd
+              Use passwd as the password to bind with.
+
+       -y_passwdfile
+              Use complete contents of passwdfile as the password for simple
+              authentication.
+
+       -O_security-properties
+              Specify SASL security properties.
+
+       -I     Enable SASL Interactive mode.  Always prompt.  Default is to
+              prompt only as needed.
+
+       -Q     Enable SASL Quiet mode.  Never prompt.
+
+       -U_authcid
+              Specify the authentication ID for SASL bind. The form of the ID
+              depends on the actual SASL mechanism used.
+
+       -R_realm
+              Specify the realm of authentication ID for SASL bind. The form of
+              the realm depends on the actual SASL mechanism used.
+
+       -X_authzid
+              Specify the requested authorization ID for SASL bind.  authzid
+              must be one of the following formats: dn:<distinguished name> or
+              u:<username>.
+
+       -Y_mech
+              Specify the SASL mechanism to be used for authentication. If it's
+              not specified, the program will choose the best mechanism the
+              server knows.
+
+       -Z[Z]  Issue StartTLS (Transport Layer Security) extended operation. If
+              you use -ZZ, the command will require the operation to be
+              successful
+
+SEE ALSO
+       ldap_sasl_bind(3), ldap_extended_operation(3), ldap_start_tls_s(3)
+
+AUTHOR
+       The OpenLDAP Project <http://www.openldap.org/>
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

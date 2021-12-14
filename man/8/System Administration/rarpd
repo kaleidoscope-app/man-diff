@@ -1,0 +1,46 @@
+RARPD(8)                     System Manager's Manual                    RARPD(8)
+
+NAME
+     rarpd – Reverse ARP Daemon
+
+SYNOPSIS
+     rarpd [-adf] [interface]
+
+DESCRIPTION
+     Rarpd services Reverse ARP requests on the Ethernet connected to interface.
+     Upon receiving a request, rarpd maps the target hardware address to an IP
+     address via its name, which must be present in both the ethers(5) and
+     hosts(5) databases.  If a host does not exist in both databases, the
+     translation cannot proceed and a reply will not be sent.
+
+     Additionally, a request is honored only if the server (i.e., the host that
+     rarpd is running on) can "boot" the target; that is, if the directory
+     /tftpboot/ipaddr exists, where is the target IP address.
+
+     In normal operation, rarpd forks a copy of itself and runs in the
+     background.  Anomalies and errors are reported via syslog(3).
+
+OPTIONS
+     -a      Listen on all the Ethernets attached to the system.  If ‘-a’ is
+             omitted, an interface must be specified.
+
+     -d      Run in debug mode, with all the output to stderr.  This option
+             implies the -f option.
+
+     -f      Run in the foreground.
+
+FILES
+     /etc/ethers
+     /etc/hosts
+     /tftpboot
+
+SEE ALSO
+     bpf(4),
+
+     Finlayson, R., Mann, T., Mogul, J.C., and Theimer, M., A Reverse Address
+     Resolution Protocol, RFC 903.
+
+AUTHORS
+     Craig Leres (leres@ee.lbl.gov) and Steven McCanne (mccanne@ee.lbl.gov).
+     Lawrence Berkeley Laboratory, University of California, Berkeley, CA.
+

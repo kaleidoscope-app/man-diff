@@ -1,0 +1,100 @@
+EXFAT.UTIL(8)                System Manager's Manual               EXFAT.UTIL(8)
+
+NAME
+     exfat.util – ExFAT file system utility
+
+SYNOPSIS
+     exfat.util -p device removable writable
+     exfat.util -k device
+     exfat.util -s device
+     exfat.util -m device directory removable writable nosuid nodev
+     exfat.util -u device
+
+DESCRIPTION
+     The exfat.util command supports the probing of ExFAT file systems, and
+     getting or setting a volume UUID.
+
+     Options:
+
+     -p device removable writable
+             Probe the device to determine whether it contains an ExFAT file
+             system.  The removable and writable arguments are ignored for
+             compatibility with other file system utilities.  If the device
+             appears to contain an ExFAT file system, the exit status is 255.
+             If the file system contains a label (volume name), that name is
+             written to standard output.  If the device does not appear to
+             contain an ExFAT file system, the exit status is 254.  An exit
+             status of 252 indicates that an I/O error occurred.
+
+     -k device
+             Return the volume UUID of the ExFAT file system on device.  If the
+             device appears to contain an ExFAT file system, the volume's UUID
+             is written to standard output (as formatted by uuid_unparse(3)),
+             and the exit status is 253.  If the root directory contains a
+             Volume GUID entry, that GUID is the value returned; otherwise, the
+             32-bit volume serial number stored in the boot sector is converted
+             to a UUID and returned.  If the device does not appear to contain
+             an ExFAT file system, the exit status is 254.  An exit status of
+             252 indicates that an I/O error occurred.
+
+             device may be mounted or unmounted.  If it is mounted, the UUID is
+             obtained through the file system using the getattrlist(2) call.  If
+             the device is not mounted, exfat.util reads from the device
+             directly.
+
+     -s device
+             Set a new UUID for the ExFAT file system on device, which must not
+             be mounted.  This generates a new UUID using uuid_generate(3) and
+             stores that UUID in a Volume GUID entry in the root directory
+             (creating one if one does not exist, or updating an existing
+             entry).  If the UUID is successfully set, the exit status is 253.
+             If the device does not appear to contain an ExFAT file system, the
+             exit status is 254.  An exit status of 252 indicates that device
+             was already mounted, or an I/O error occurred.
+
+     -m device directory removable writable nosuid nodev
+             Deprecated.  Mount the ExFAT file system from device onto
+             directory.  The removable argument should be either removable if
+             the device is removable, or fixed otherwise.  The actual argument
+             value is currently ignored.  The writable argument must be either
+             readonly or writable which mounts the volume read-only or
+             read/write, respectively.  The nosuid argument must be either suid
+             or nosuid.  That argument is passed as a mount option.  The nodev
+             argument must be either dev or nodev.  That argument is passed as a
+             mount option.
+
+     -u device
+             Deprecated.  Unmount the file system on device.  If the unmount is
+             successful, the exit status is 253.
+
+FILES
+     The exfat.util command is installed in the
+     /System/Library/Filesystems/exfat.fs/Contents/Resources directory, which is
+     typically not in a shell's search path.
+
+COMPATIBILITY
+     The -m and -u options are deprecated.  The preferred way to mount an ExFAT
+     volume is to let diskarbitrationd(8) mount it automatically when the device
+     is discovered, or use the diskutil(8) command to explicitly mount a device.
+     You may also use the mount(8) or mount_exfat(8) commands directly.  The
+     preferred way to unmount an ExFAT volume is with the diskutil(8) command.
+     Note that using the umount(8) command usually will not work because various
+     process are likely to have open files, which will prevent the unmount.  The
+     diskutil(8) command will send a notification that causes many such
+     processes to close their open files so that the unmount will succeed.
+
+SEE ALSO
+     mount_exfat(8), fsck_exfat(8), diskarbitrationd(8,) diskutil(8), uuid(3,)
+     uuid_unparse(3), uuid_generate(3), getattrlist(2)
+
+HISTORY
+     The exfat.util utility first appeared in Mac OS X 10.6.3.
+
+BUGS
+     The choice of non-zero exit status to indicate success was an unfortunate
+     design decision.
+
+     The -u option usually does not work since several processes in Mac OS X
+     leave files open on mounted volumes, thus preventing the unmount.  The
+     diskutil(8) command is preferred for unmounting.
+

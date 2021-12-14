@@ -1,0 +1,502 @@
+CVDB(8)                      System Manager's Manual                     CVDB(8)
+
+
+
+NAME
+       cvdb - Xsan Client File System Debugger
+
+SYNOPSIS
+       cvdb [options]
+
+DESCRIPTION
+       cvdb provides a mechanism for developers and system administrators to
+       extract debugging information from the Xsan File System client
+       filesystem.  It can be used by system administrators to change the level
+       of system logging that the client filesystem performs.  There is also a
+       switch to retrieve various statistics.
+
+USAGE
+       cvdb is a multi-purpose debugging tool, performing a variety of
+       functions. A rich set of options provide the user with control over
+       various debug and logging functions. The main features of cvdb are as
+       follows:
+            Control debug logging.
+            Control level and verbosity of syslog logging.
+            Retrieve statistics.
+
+OPTIONS
+       -g     Retrieve the debug log from a running system. The log pointers are
+              reset after this command, so that the next invocation of cvdb -g
+              will retrieve new information from the buffer.
+
+       -C     Continuously snap the trace.  (Only useful with the -g option.)
+
+       -S stopfile
+              Stop snapping the trace when the file stopfile appears.  (Only
+              useful when also using the -g and -C options.)
+
+       -D msec
+              Delay msec milliseconds between trace snaps.  The default is 1000
+              msec or one second.  (Only useful when also using the -C and -g
+              options.)
+
+       -F     Save the trace output to files named cvdbout.000000,
+              cvdbout.000001, etc.  instead of writing to standard output.
+              These files will appear in the current working directory.  (Only
+              useful when also using the -C and -g options.)
+
+       -n cnt After writing cnt files, overwrite the cvdbout out files starting
+              with cvdbout.000000.  This will essentially "wrap" the trace
+              output.
+
+       -N name
+              Use name instead of cvdbout for the cvdb output files.  (Only
+              useful when also using the -C, -g, and -F options.)
+
+       -d     Disable debug logging. This is the initial (start-up) default.
+
+       -e     Enable debug logging. Disabled by default.  Note: care should be
+              taken when enabling logging in a production environment as this
+              can significantly reduce file system performance.
+
+       -m modules=bitvector logmask=bitvector
+              Specify the trace points for a given module or modules.
+
+       -l     List the current trace points and their mask values.
+
+       -L     List the available trace/debug points.
+
+       -s syslog={none|notice|info|debug}
+              Set the syslog logging value. The default at mount time is notice.
+              See mount_acfs(8) for more information.
+
+       -R size=[nbytes[k|m|g]]
+              Resize the the debug log.  By default, the size of the log is 4MB.
+              The minimum allowed size is 32768 bytes.
+
+       -v     Be verbose about the operations.
+
+       -i     Print various statistics about the directory cache.  If enabled
+              and configured, the directory cache contains a number of buffers
+              of directory contents.  This cache is shared by all mounted Xsan
+              file systems.  Without -v, the following are printed:
+
+                     The number of directory buffers currently cached and the
+                     maximum number allowed.
+
+                     The number of times a buffer has been "hit" in the cache.
+
+                     The number of times a cache search missed and required an
+                     RPC to the MDC.
+
+                     The number of times a read of the directory re-used the
+                     LAST buffer that was used on the previous read of the same
+                     directory (similar to a cache hit but doesn't probe the
+                     cache).
+
+                     The number of times a read of a directory specified the EOF
+                     offset.
+
+                     The number of times the directory cache for a specific
+                     directory was invalidated.  For example, if the directory
+                     contents changed after it was read and a subsequent read
+                     directory was done thereby causing the invalidation.
+
+              If -v is also specified, -i displays more statistics.  Note that
+              there are 2 hashes in the directory cache: one for all buffers and
+              one by directory and file system.
+
+                     The number of entries in the hash used to find dir cache
+                     buffers.
+
+                     The # of searches using the directory cache buffer hash.
+
+                     The total # of probes searching the directory cache for
+                     buffers.  This can be larger than searches in the hash
+                     since multiple buffers may hit the same hash bucket.
+
+                     The maximum probes after hitting a particular hash bucket
+                     (for buffers).
+
+                     The maximum probes in the hash by directory and file
+                     system.
+
+              -b     Print various statistics about each buffer cache.  The only
+                     other option that can be used with this is -v.  There are
+                     buffer caches per cachebufsize, see mount_acfs(8).  For
+                     each buffer cache, the following is printed:
+
+                            # of mounted file systems using this buffer cache
+
+                            # of buffers and total memory used
+
+                            # of cache hits (and percentage)
+
+                            # of cache misses (and percentage)
+
+                            # of checks for write throttling to prevent over use
+                            by one file system.  Write throttles only occur when
+                            more than 1 file system is using the cache.
+
+                            # of times writes were throttled
+
+                     If the -v option is also used with -b, the following
+                     additional statistics are printed for each buffer cache:
+
+                            buffercachecap, see mount_acfs(8)
+
+                            buffercachewant (internal, means thread is waiting
+                            for a buffer)
+
+                            bufhashsize (internal, # of entries in hash used to
+                            search buffers)
+
+                            bcdirtycnt (internal, # of buffers with "dirty" data
+                            queued in cache)
+
+                            dirty_ndone (internal, bcdirtycnt + buffers being
+                            written)
+
+                            flusheractive (internal, flag indicating buffer
+                            flusher is active)
+
+                            deferredflush (internal, # of buffers deferred after
+                            files are closed)
+
+                            dirtywaiters (internal, # of threads waiting due to
+                            throttling)
+
+                            rsvd max (internal, maximum amount of reserved space
+                            seen)
+
+                            non-zero rsvd min (internal, minimum amount of
+                            reserved space seen > 0)
+
+                            successful rsvd requests (internal, # of times
+                            reserved space was needed)
+
+                            failed rsvd requests (internal, # of times reserved
+                            space not available)
+
+              -B     Print buffer cache statistics using a curses based display
+                     that refreshes every second.  Statistics are maintained
+                     separately for reads and writes, for each cache segment,
+                     and each mount point.  Statistics labeled Cumulative are
+                     those representing the totals since the command was invoked
+                     or since the last reset.  Those labeled Current represent
+                     the change in the last one second, roughly corresponding to
+                     the display refresh interval.
+
+                     Two keystrokes are interactively recognized on systems
+                     supporting curses.  A q, quit, will cause the display to
+                     terminate.  An r, reset, will reset the cumulative counters
+                     to zeros.
+
+                     The -B option is intended to be used to to analyze
+                     performance of the buffer cache with various applications,
+                     I/O subsystems, and various configuration parameters.
+
+                     The refreshing display is supported on clients that have a
+                     curses capability.  Other clients will produce a line
+                     oriented output with similar content.
+
+                     A deadman timer will terminate the display after 30 seconds
+                     with no file systems mounted.  This is to avoid hanging
+                     during file system shutdown.
+
+              -x     Print distributed LAN proxy client and server statistics.
+                     The only other options that can be used with this are -X
+                     and -f.  The proxy statistics are collected at both the
+                     client and server ends of each proxy connection. The client
+                     will have a connection entry for each path to a proxy
+                     server for each proxy client file system.  A proxy server
+                     will have a connection entry for each path to each client
+                     which has the file system mounted.
+
+                     Note: The distributed LAN proxy options are only available
+                     on platforms which support the distributed LAN client or
+                     server.
+
+                     The following information is displayed for each proxy
+                     connection:
+
+                            Client/Server System ID This IP address identifies
+                                   the remote host.
+
+                            Client IP Addr The IP address of the Client side of
+                                   the connection.
+
+                            Server IP Addr The IP address of the Server side of
+                                   the connection.
+
+                            Read Bytes/Sec Measured recent read performance of
+                                   the connection.
+
+                            Write Bytes/Sec Measured recent write performance of
+                                   the connection.
+
+                            FS Read Bytes/Sec Measured recent read performance
+                                   for all connections for this file system.
+
+                            FS Write Bytes/Sec Measured recent write performance
+                                   for all connections for this file system.
+
+                            Queued I/O Outstanding I/O (backlog) for this
+                                   connection.  The backlog is meaningful for
+                                   client side connections only.
+
+              -X option
+                     Dump statistics for each path in comma separated value
+                     (CSV) format.  (Only useful with the -x option.) The
+                     following options are available:
+
+                     1  Dump remote endpoint IP address and backlog in bytes.
+                        This option is only relevant for client mounts.
+
+                     2  Dump remote endpoint IP address and read bytes per
+                        second.
+
+                     3  Dump remote endpoint IP address and write bytes per
+                        second.
+
+              -f fsname
+                     Specifies the file system name associated with an action
+                     option.  For proxy statistics(-x option), filter on
+                     connections for the given file system.  This parameter is
+                     required for the read/write statistics (-y or -Y) option.
+
+
+              -U     NOTE: Not intended for general use.  Only use when
+                     recommended by Quantum Support as a fault injection tool.
+
+                     This option resets the network connection to the proxy peer
+                     for all proxy connections on all file systems for which
+                     this node is either a proxy client or gateway.  This
+                     simulates an unexpected network disconnect and reconnect.
+                     It is intended to test the robustness of the error handling
+                     and reconnect logic in the StorNext DLC proxy client and
+                     gateway systems.
+
+              -y, -Y Display the read/write statistics for the file system
+                     specified with the -f option (required). If -Y, also clear
+                     the stats.
+
+              -Z     NOTE: Not intended for general use.  Only use when
+                     recommended by Quantum Support as a fault injection tool.
+
+                     This option resets the network connection to the file
+                     system manager for all active file systems. This simulates
+                     an unexpected network disconnect and reconnect. It is
+                     intended to test the robustness of the error handling and
+                     reconnect logic in the StorNext file system.
+
+              -z     NOTE: Not intended for general use.  Only use when
+                     recommended by Quantum Support as a performance measuring
+                     tool.  Setting this option could result in data corruption,
+                     loss of data, or unintended exposure of uninitialized disk
+                     data!!
+
+                     This option turns on the DEVNULL capability and only
+                     applies to linux clients.  Once enabled this option will
+                     continue to be enabled until reboot.  When this option is
+                     enabled, all I/O for files with the DEVNULL affinity is not
+                     performed at the lowest level.  The code paths are all
+                     executed including the allocation of space, but the data is
+                     not read or written to disk.  Instead, writes simply
+                     complete the I/O and return and reads zero out the "read"
+                     buffer and complete the I/O.
+
+                     Files without the DEVNULL affinity are unaffected by this
+                     setting.
+
+                     Before attempting to use this capability, make sure no one
+                     is already using DEVNULL as an affinity on any file system
+                     the client has access too.  Then, modify the file system
+                     configuration file, snfs_config(5), for the file system
+                     under test to contain DEVNULL as an affinity on at least
+                     one stripe group that can hold data.  Next, restart the
+                     fsm.  Then, use cvmkdir(1) with -k DEVNULL to create a
+                     directory to hold files to be used for this test.  Finally,
+                     enable the feature with this option, cvdb -z.
+
+DEBUG LOGGING
+       Developing code that runs in the kernel is very different than
+       programming a user-level application. To assist plugin developers who may
+       not be familiar with the kernel environment, Xsan provides a simple
+       "tracepoint like" debugging mechanism. This mechanism allows developers
+       to use printf-like statements to assist in debugging their code.
+
+       To use the debugging facility, each module (typically a ".c" file), must
+       declare a structure of type ModuleLogInfo_t. This structure defines the
+       name of the module as it will appear in the debug statements, and
+       indicates the debug level that is in effect for that module.
+
+          ModuleLogInfo_t  MyLogModule =
+                  { "mymodule_name", DEBUGLOG_NONE};
+
+
+       To use the facility, each module must call the AddLogModule() routine.
+       This is typically done when the module is first initialized (in the
+       xxx_start() routine for a plugin). When logging is no longer required (as
+       when the plugin is unloaded), the module should call RemoveLogModule() to
+       free up the system resources.
+
+       Logging is not enabled by default. To enable logging at any time, specify
+       the enable flag (-e)
+
+          shrubbery %h: cvdb -e
+
+       To disable logging, specify the disable flag.
+
+          shrubbery %h: cvdb -d -v
+          Disabling debug logging
+
+       The level of debugging is controlled via a 64-bit mask. This allows each
+       module to have 64 different, discrete trace/log points. If the log point
+       is enabled when the code is executed, the trace point will be dumped to
+       the circular buffer.
+
+       A complete listing of all the pre-defined trace points can be obtained
+       via:
+
+          rabbit %h:   cvdb -L
+          Trace points:
+              cvENTRY      0x0001
+              cvEXIT       0x0002
+              cvINFO       0x0004
+              cvNOTE       0x0008
+              cvWARN       0x0010
+              cvMEM        0x0020
+              cvNUKE       0x0040
+              cvLOOKUP     0x0080
+              cvGATE       0x0100
+              cvSTRAT      0x0200
+              cvRWCVP      0x0400
+
+       These trace points would then be used to control the verbosity of
+       logging. Using the example above, if the cvEXIT and cvINFO trace points
+       are enabled, then only those trace points would be dumped to the log.
+
+       To enable the trace points, the first step is to determine the ID of the
+       module. This is done with the list command.
+
+          shrubbery %h: cvdb -l
+          Module 'cvfs_memalloc'  module 0x000001 logmask 0x0000000000000000
+          Module 'cvfs_fsmsubr'   module 0x000002 logmask 0x0000000000000000
+          Module 'cvfs_fsmdir'    module 0x000004 logmask 0x0000000000000000
+          Module 'cvfs_fsmvfsops' module 0x000008 logmask 0x0000000000000000
+          Module 'cvfs_fsmvnops'  module 0x000010 logmask 0x0000000000000000
+          Module 'cvfs_sockio'    module 0x000020 logmask 0x0000000000000000
+          Module 'cvfs_subr'      module 0x000040 logmask 0x0000000000000000
+          Module 'cvfs_vfsops'    module 0x000080 logmask 0x0000000000000000
+          Module 'cvfs_vnops'     module 0x000100 logmask 0x0000000000000000
+          Module 'cvfs_dmon'      module 0x000200 logmask 0x0000000000000000
+          Module 'cvfs_rwlock'    module 0x000400 logmask 0x0000000000000000
+          Module 'cvfs_rw'        module 0x000800 logmask 0x0000000000000000
+          Module 'cvfs_fsmtokops' module 0x001000 logmask 0x0000000000000000
+          Module 'cvfs_extent'    module 0x002000 logmask 0x0000000000000000
+          Module 'cvfs_plugin'    module 0x004000 logmask 0x0000000000000000
+          Module 'cvfs_disk'      module 0x008000 logmask 0x0000000000000000
+
+       To enable the cvENTRY and cvEXIT trace points of the plugin, rwlock,
+       vnops, and memalloc routines, use the modules command.
+
+          shrubbery %h: cvdb -m modules=0x4501 logmask=3
+
+       The bit masks are additive, not replacement. This means that modules and
+       trace points you do not specify are unaffected. To turn on all debugging
+       on all trace points, specify minus one (-1).
+
+          shrubbery %h: cvdb -m modules=-1 logmask=-1
+
+       Once the module has been added to the system, log messages will then be
+       dumped into a 1 meg circular buffer. Modules may find it convenient to
+       declare a macro in each file so that the form of log messages will be the
+       same in each file. For example, the following macro definition and
+       following log function would dump information to the log buffer if the
+       trace point is enabled:
+
+          #define LOGINFO          (&MyLogModule)
+
+          LogMsg(LOGINFO, cvEXIT, "Plugin read return error %d bytes %llx",
+                    error, num_bytes);
+
+       To extract the messages from the log on a running system, use the -g
+       option of cvdb.
+
+SYSLOG
+       The Xsan client file system can log certain events so that they show up
+       on the system console and in the system log, /var/adm/SYSLOG. The
+       verbosity of messages can be controlled via the syslog parameter. The
+       default is to log all messages.  See syslogd(1M) for more information of
+       setting up system logging.
+
+       There are four log levels: none, notice, info,  and debug . The levels
+       are prioritized so that the debug level is the most verbose; setting the
+       level to none will turn off logging completely.  The events that are
+       logged at each level are as follows:
+
+       notice
+              • reconnection with the FSM.
+
+       info
+              • all notice messages, plus
+              • socket daemon termination
+
+       debug
+              • Currently unused
+
+       The log level is set to debug by default.
+
+BUSY UNMOUNTS
+       Occasionally, it will be impossible to unmount the Xsan volume even when
+       it appears that all processes are no longer using the volume. The problem
+       is that the processes are most likely in the zombie state; while they do
+       not show up in ps, then can be found using crash. Usually, these
+       processes are waiting on a lock in the Xsan file system, or waiting for a
+       response from the FSM.
+
+DEBUG LOGGING EXAMPLES
+       To enable logging:
+              cvdb -e
+
+       To disable logging:
+              cvdb -d
+
+       To retrieve (get) log information on a running system:
+              cvdb -g > cvdbout
+
+       To continuously retrieve log information on a running system, snapping
+       the trace once per second:
+              cvdb -g -C > cvdbout
+
+       To continuously retrieve log information on a running system, snapping
+       the trace once every two seconds and stopping when the file named STOP
+       appears:
+              cvdb -g -C -D 2000 -S STOP > cvdbout
+
+       To continuously retrieve log information on a running system, and save
+       the output to files named cvdbout.000000, cvdbout.0000001, etc.  and
+       wrapping after 100 files have been written:
+              cvdb -g -C -F -n 100
+
+       To continuously snap traces named /tmp/snap.000000, /tmp/snap.000001,
+       etc.:  cvdb -g -C -F -N /tmp/snap
+
+       To list all the modules and their enabled trace points:
+              cvdb -l
+
+       To set trace points in individual modules:
+              cvdb -m modules=bitmask_of_modules logmask=tracepoints.
+
+       To resize the log to 12 megabytes:
+              cvdb -R 12m
+
+       To dump out all the pre-defined trace points:
+              cvdb -L
+
+SEE ALSO
+       syslogd(1M), umount(8), cvdbset(8)
+
+
+

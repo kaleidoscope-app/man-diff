@@ -1,0 +1,87 @@
+SNCFGCONVERT(8)              System Manager's Manual             SNCFGCONVERT(8)
+
+
+
+NAME
+       sncfgconvert - Convert Xsan Volume configuration file format
+
+SYNOPSIS
+       sncfgconvert -n_fsname [-F output_format] [-v] -f_ConfigFile
+
+       sncfgconvert -n_fsname [-F output_format] [-v] ConfigFile
+
+       sncfgconvert -h
+
+DESCRIPTION
+       The sncfgconvert program will convert a Xsan file system configuration
+       file between the old pre-4.0 config and the new XML config file formats
+       (on supported platforms).
+
+       The input file need not have a .cfg or .cfgx suffix - the converter will
+       automatically figure out the format of the input file. Converted output
+       is displayed on stdout.
+
+       Old format output files should have the .cfg suffix and XML formatted
+       files should have the .cfgx suffix when writing them to the
+       /Library/Preferences/Xsan directory.  See snfs_config(5) for more
+       information.
+
+OPTIONS
+       -F output_format
+              The format to convert to.  See -h for applicable formats.  This
+              can also be used to "convert" from one format to the same format.
+              Defaults to the latest format available for the system.
+
+       -h     Display usage, including available formats to convert to.
+
+       -n fsname
+              Required. The name of the file system whose config is to be
+              converted.
+
+       -f ConfigFile
+              Specify the config file.
+
+       -v     Increase verbosity of messages from conversion process
+
+EXIT VALUES
+       sncfgconvert will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List usage:
+
+          # sncfgconvert -h
+          Usage: sncfgconvert -n <fsname> [-F <output_format>] ([-f <filename>] | <filename>)
+            -F <output_format>    Valid formats:
+                                  XML (default)
+                                  ASCII
+            -f <filename> Config file to convert
+            -n <fsname>   File system name
+            -v            increase verbosity (specify multiple -v's for more verbosity)
+       This also displays that the default format is XML.
+
+       Convert a config in a temporary location to XML and write it to a
+       different tempfile (see sncfginstall(8) for details on installing the
+       config to the proper location.
+
+          # sncfgconvert -F XML -n snfs1 -f /tmp/fs1.copy > /tmp/fs1.xml
+
+       Convert a config in a temporary location to the old ASCII format and
+       display it on stdout:
+
+          # sncfgconvert -F ASCII -n test /tmp/test.cfgx
+          # Globals
+
+          AllocationStrategy Round
+          HaFsType HaUnmonitored
+          FileLocks No
+          BrlResyncTimeout 20
+           ...
+          RtTokenTimeout 0
+          MultiPathMethod Rotate
+          Node CvfsDisk_jbod0203 0
+
+SEE ALSO
+       sncfginstall(8), snfs_config(5)
+
+
+

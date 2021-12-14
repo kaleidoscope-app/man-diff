@@ -1,0 +1,134 @@
+ENVIRON(7)              Miscellaneous Information Manual              ENVIRON(7)
+
+NAME
+     environ – user environment
+
+SYNOPSIS
+     extern char **environ;
+
+DESCRIPTION
+     An array of strings called the environment is made available by execve(2)
+     when a process begins.  By convention these strings have the form
+     “name=value”.  The following names are used by various commands:
+
+     BLOCKSIZE    The size of the block units used by several commands, most
+                  notably df(1), du(1) and ls(1).  This variable is processed by
+                  the getbsize(3) function.
+
+     COLUMNS      The user's preferred width in column positions for the
+                  terminal.  Utilities such as ls(1) and who(1) use this to
+                  format output into columns.  If unset or empty, utilities will
+                  use an ioctl(2) call to ask the terminal driver for the width.
+
+     EDITOR       Default editor name.
+
+     EXINIT       A startup list of commands read by ex(1) and vi(1).
+
+     HOME         A user's login directory, set by login(1) from the password
+                  file passwd(5).
+
+     LANG         This variable configures all programs which use setlocale(3)
+                  to use the specified locale unless the LC_* variables are set.
+
+     LC_ALL       Overrides the values of LC_COLLATE, LC_CTYPE, LC_MESSAGES,
+                  LC_MONETARY, LC_NUMERIC, LC_TIME and LANG.
+
+     LC_COLLATE   Locale to be used for ordering of strings.
+
+     LC_CTYPE     Locale to be used for character classification (letter, space,
+                  digit, etc.) and for interpreting byte sequences as multibyte
+                  characters.
+
+     LC_MESSAGES  Locale to be used for diagnostic messages.
+
+     LC_MONETARY  Locale to be used for interpreting monetary input and
+                  formatting output.
+
+     LC_NUMERIC   Locale to be used for interpreting numeric input and
+                  formatting output.
+
+     LC_TIME      Locale to be used for interpreting dates input and for
+                  formatting output.
+
+     MAIL         The location of the user's mailbox instead of the default in
+                  /var/mail, used by mail(1), sh(1), and many other mail
+                  clients.
+
+     NLSPATH      List of directories to be searched for the message catalog
+                  referred to by LC_MESSAGES.  See catopen(3).
+
+     PAGER        Default paginator program.  The program specified by this
+                  variable is used by mail(1), man(1), ftp(1), etc, to display
+                  information which is longer than the current display.
+
+     PATH         The sequence of directories, separated by colons, searched by
+                  csh(1), sh(1), system(3), execvp(3), etc, when looking for an
+                  executable file.  PATH is set to ``/usr/bin:/bin'' initially
+                  by login(1).
+
+     PRINTER      The name of the default printer to be used by lpr(1), lpq(1),
+                  and lprm(1).
+
+     PWD          The current directory pathname.
+
+     SHELL        The full pathname of the user's login shell.
+
+     TERM         The kind of terminal for which output is to be prepared.  This
+                  information is used by commands, such as nroff(1) or plot(1)
+                  which may exploit special terminal capabilities.  See
+                  /usr/share/misc/termcap (termcap(5)) for a list of terminal
+                  types.
+
+     TERMCAP      The string describing the terminal in TERM, or, if it begins
+                  with a '/', the name of the termcap file.  See TERMPATH below,
+                  and termcap(5).
+
+     TERMPATH     A sequence of pathnames of termcap files, separated by colons
+                  or spaces, which are searched for terminal descriptions in the
+                  order listed.  Having no TERMPATH is equivalent to a TERMPATH
+                  of “$HOME/.termcap:/etc/termcap”.  TERMPATH is ignored if
+                  TERMCAP contains a full pathname.
+
+     TMPDIR       The directory in which to store temporary files.  Most
+                  applications use either “/tmp” or “/var/tmp”.  Setting this
+                  variable will make them use another directory.
+
+     TZ           The timezone to use when displaying dates.  The normal format
+                  is a pathname relative to “/usr/share/zoneinfo”.  For example,
+                  the command “env TZ=America/Los_Angeles date” displays the
+                  current time in California.  See tzset(3) for more
+                  information.
+
+     USER         The login name of the user.
+
+     Further names may be placed in the environment by the export command and
+     name=value arguments in sh(1), or by the setenv command if you use csh(1).
+     It is unwise to change certain sh(1) variables that are frequently exported
+     by .profile files, such as MAIL, PS1, PS2, and IFS, unless you know what
+     you are doing.
+
+     The current environment variables can be printed with env(1), set(1) or
+     printenv(1) in sh(1) and env(1), printenv(1) or the printenv built-in
+     command in csh(1).
+
+PROGRAMMING
+     Programs can query and modify the environment, using the environment
+     routines getenv(3), putenv(3), setenv(3) and unsetenv(3).  Direct access
+     can be made through the global variable environ, though it is recommended
+     that changes to the enviroment still be made through the environment
+     routines.
+
+     Shared libraries and bundles don't have direct access to environ, which is
+     only available to the loader ld(1) when a complete program is being linked.
+     The environment routines can still be used, but if direct access to environ
+     is needed, the _NSGetEnviron() routine, defined in <crt_externs.h>, can be
+     used to retrieve the address of environ at runtime.
+
+SEE ALSO
+     cd(1), csh(1), env(1), ex(1), login(1), printenv(1), sh(1), execve(2),
+     execle(3), getenv(3), putenv(3), setenv(3), unsetenv(3), setlocale(3),
+     system(3), termcap(3), termcap(5)
+
+HISTORY
+     The environ manual page appeared in 4.2BSD.
+

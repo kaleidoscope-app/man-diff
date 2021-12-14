@@ -1,0 +1,47 @@
+pam_group(8)                 System Manager's Manual                pam_group(8)
+
+NAME
+     pam_group – Group PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_group [options]
+
+DESCRIPTION
+     The Group PAM module supports the account management function class.  In
+     terms of the function-class parameter, this is the “account” class.
+
+     The Group account management module permits or denies users based on their
+     membership to a particular group (or groups) specified with the group
+     option.  If no groups are specified the default group (“wheel”) will be
+     used.
+
+     The following options may be passed to this account management module:
+
+     deny    Reverse the meaning of the test, i.e., reject the applicant if and
+             only if he or she is a member of the specified group.  This can be
+             useful to exclude certain groups of users from certain services.
+
+     fail_safe
+             If the specified group does not exist, or has no members, act as if
+             it does exist and the applicant is a member.
+
+     group=groupname
+             Specify the name of the group to check.  This can be a comma-
+             separated list (i.e. “group=admin,wheel”).
+
+     root_only
+             Skip this module entirely if the target account is not the
+             superuser account.
+
+     ruser   Check the membership of the applicant (PAM_RUSER), rather than the
+             target account (PAM_USER)
+
+SEE ALSO
+     pam_get_item(3), pam.conf(5), pam(8), DirectoryService(8)
+
+AUTHORS
+     The pam_group module and this manual page were developed for the FreeBSD
+     Project by ThinkSec AS and NAI Labs, the Security Research Division of
+     Network Associates, Inc. under DARPA/SPAWAR contract N66001-01-C-8035
+     (“CBOSS”), as part of the DARPA CHATS research program.
+

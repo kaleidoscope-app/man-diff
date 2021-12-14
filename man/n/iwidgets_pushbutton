@@ -1,0 +1,133 @@
+iwidgets::pushbutton(1)          [incr Widgets]          iwidgets::pushbutton(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::pushbutton - Create and manipulate a push button widget
+
+SYNOPSIS
+       iwidgets::pushbutton pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Pushbutton
+
+STANDARD OPTIONS
+
+       activeBackground       activeForeground       background
+       bitmap                 borderWidth            command
+       cursor                 disabledForeground     font
+       foreground             highlightBackground    highlightColor
+       highlightThickness     image                  padX
+       padY                   state                  text
+       underline              wrapLength
+
+       See the "options" manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           defaultRing
+       Class:          DefaultRing
+       Command-Line Switch:           -defaultring
+
+              Boolean describing whether the button displays its default ring
+              given in any of the forms acceptable to Tcl_GetBoolean.  The
+              default is false.
+
+       Name:           defaultRingPad
+       Class:          Pad
+       Command-Line Switch:           -defaultringpad
+
+              Specifies the amount of space to be allocated to the indentation
+              of the default ring ring given in any of the forms acceptable to
+              Tcl_GetPixels.  The option has no effect if the defaultring option
+              is set to false.  The default is 2 pixels.
+
+       Name:           height
+       Class:          Height
+       Command-Line Switch:           -height
+
+              Specifies the height of the button inclusive of any default ring
+              given in any of the forms acceptable to Tk_GetPixels.  A value of
+              zero lets the push button determine the height based on the
+              requested height plus highlightring and defaultringpad.
+
+       Name:           width
+       Class:          Width
+       Command-Line Switch:           -width
+
+              Specifies the width of the button inclusive of any default ring
+              given in any of the forms acceptable to Tk_GetPixels.  A value of
+              zero lets the push button determine the width based on the
+              requested width plus highlightring and defaultringpad.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::pushbutton command creates a push button with an optional
+       default ring used for default designation and traversal.
+
+
+METHODS
+       The iwidgets::pushbutton command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for pushbutton widgets:
+
+ASSOCIATED METHODS
+       flash           invoke
+
+       See the "button" manual entry for details on the associated methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::pushbutton command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::pushbutton command.
+
+
+COMPONENTS
+       Name:           pushbutton
+       Class:          Button
+
+              The pushbutton component is the button surrounded by the optional
+              default ring.  See the "button" widget manual entry for details on
+              the pushbutton component item.
+
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              iwidgets::pushbutton .pb -text "Hello" -command {puts "Hello World"} -defaultring 1
+              pack .pb -padx 10 -pady 10
+
+
+AUTHOR
+       Bret A. Schuhmacher
+
+       Mark L. Ulferts
+
+KEYWORDS
+       pushbutton, widget
+
+
+

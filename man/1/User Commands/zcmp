@@ -1,0 +1,58 @@
+ZDIFF(1)                     General Commands Manual                    ZDIFF(1)
+
+NAME
+     zcmp, zdiff – compare compressed files
+
+SYNOPSIS
+     zcmp [options] file [file2]
+     zdiff [options] file [file2]
+
+DESCRIPTION
+     zcmp and zdiff are filters that invoke cmp(1) or diff(1) respectively to
+     compare compressed files.  Any options that are specified are passed to
+     cmp(1) or diff(1).
+
+     If only file1 is specified, it is compared against a file with the same
+     name, but with the extension removed.  When both file1 or file2 are
+     specified, either file may be compressed.
+
+     Extensions handled by gzip(1):
+     •   z, Z,
+     •   gz,
+     •   taz,
+     •   tgz.
+
+     Extensions handled by bzip2(1):
+     •   bz,
+     •   bz2,
+     •   tbz,
+     •   tbz2.
+
+     Extensions handled by xz(1):
+     •   lzma,
+     •   xz,
+     •   tlz,
+     •   txz.
+
+ENVIRONMENT
+     TMPDIR  Directory in which to place temporary files.  If unset, /tmp is
+             used.
+
+FILES
+     /tmp/zcmp.XXXXXXXXXX   Temporary file for zcmp.
+     /tmp/zdiff.XXXXXXXXXX  Temporary file for zdiff.
+
+SEE ALSO
+     bzip2(1), cmp(1), diff(1), gzip(1), xz(1)
+
+CAVEATS
+     zcmp and zdiff rely solely on the file extension to determine what is, or
+     is not, a compressed file.  Consequently, the following are not supported
+     as arguments:
+
+     -   directories
+
+     -   device special files
+
+     -   filenames indicating the standard input (“-”)
+

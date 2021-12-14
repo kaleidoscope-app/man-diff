@@ -1,0 +1,269 @@
+iwidgets::scrolledhtml(1)        [incr Widgets]        iwidgets::scrolledhtml(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::scrolledhtml - Create and manipulate a scrolled text widget
+       with the capability of displaying HTML formatted documents.
+
+SYNOPSIS
+       iwidgets::scrolledhtml pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Scrolledtext <-
+       iwidgets::Scrolledhtml
+
+STANDARD OPTIONS
+
+       activeBackground  background         borderWidth       cursor
+       exportSelection   foreground         highlightColor    highlightThickness
+       insertBackground  insertBorderWidth  insertOffTime     insertOnTime
+       insertWidth       padX               padY              relief
+       repeatDelay       repeatInterval     selectBackground  selectBorderWidth
+       selectForeground  setGrid
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" widget manual entry for details on the above
+       associated options.
+
+       spacing1        spacing2       spacing3        state
+       tabs            wrap
+
+       See the "text" widget manual entry for details on the above associated
+       options.
+
+INHERITED OPTIONS
+       labelBitmap     labelFont      labelImage      labelMargin
+       labelPos        labelText      labelVariable   height
+       hscrollMode     sbWidth        scrollMargin    visibleitems
+       vscrollMode     width
+
+       See the "scrolledtext" class manual entry for details on the inherited
+       options.
+
+       sticky
+
+       See the "labeledwidget" class manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           feedback
+       Class:          FeedBack
+       Command-Line Switch:           -feedback
+
+              Specifies the callback command to use to give feedback on current
+              status. The command is executed in the form command <number of
+              characters remaining>
+
+       Name:           fixedfont
+       Class:          FixedFont
+       Command-Line Switch:           -fixedfont
+
+              Specifies the name of the font to be used for fixed-width
+              character text (such as <pre>...</pre> or <tt>...</tt>.) The size,
+              style, and other font attributes are determined by the format tags
+              in the document. The default is courier.
+
+       Name:           fontname
+       Class:          FontName
+       Command-Line Switch:           -fontname
+
+              Specifies the name of the font to be used for normal-width
+              character spaced text. The size, style, and other font attributes
+              are determined by the format tags in the document. The default is
+              times.
+
+       Name:           fontsize
+       Class:          FontSize
+       Command-Line Switch:           -fontsize
+
+              Specifies the general size of the fonts used. One of small,
+              medium, large, or huge. The default is medium.
+
+       Name:           foreground
+       Class:          Foreground
+       Command-Line Switch:           -foreground
+
+              Specifies the color of text other than hypertext links, in any of
+              the forms acceptable to Tk_GetColor. This value may be overridden
+              in a particular document by the text attribute of the Body HTML
+              tag.
+
+       Name:           link
+       Class:          Link
+       Command-Line Switch:           -link
+
+              Specifies the default color of hypertext links in any of the forms
+              acceptable to Tk_GetColor. This value may be overridden in a
+              particular document by the link attribute of the Body HTML tag.
+              The default is blue.
+
+       Name:           linkcommand
+       Class:          LinkCommand
+       Command-Line Switch:           -linkcommand
+
+              Specifies the command to execute when the user clicks on a
+              hypertext link. Execution is of the form linkcommand href, where
+              href is the value given in the href attribute of the A HTML tag.
+
+       Name:           alink
+       Class:          alink
+       Command-Line Switch:           -alink
+
+              Specifies the color of hypertext links when the cursor is over the
+              link in any of the forms acceptable to Tk_GetColor. The default is
+              red.
+
+       Name:           textBackground
+       Class:          Background
+       Command-Line Switch:           -textbackground
+
+              Specifies the background color for the text area in any of the
+              forms acceptable to Tk_GetColor. This value may be overridden in a
+              particular document by the bgcolor attribute of the Body HTML tag.
+
+       Name:           unknownimage
+       Class:          UnknownImage
+       Command-Line Switch:           -unknownimage
+
+              Specifies the name of the image file to display when an img
+              specified in the html document cannot be loaded.
+
+       Name:           update
+       Class:          Update
+       Command-Line Switch:           -alink
+
+              A boolean value indicating whether to call update during html
+              rendering.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::scrolledhtml command creates a scrolled text widget with
+       the additional capability to display html formatted documents.  An import
+       method is provided to read an html document file, and a render method is
+       provided to display a html formatted text string.
+
+
+METHODS
+       The iwidgets::scrolledhtml command creates a new Tcl command whose name
+       is pathName.  This command may be used to invoke various operations on
+       the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for scrolledhtml widgets:
+
+ASSOCIATED METHODS
+       bbox            compare        debug           delete
+       dlineinfo       get            index           insert
+       mark            scan           search          see
+       tag             window         xview           yview
+
+       See the "text" manual entry for details on the standard methods.
+
+INHERITED METHODS
+       export          clear
+
+       See the "scrolledhtml" manual entry for details on the inherited methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::scrolledhtml command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::scrolledhtml command.
+
+       pathName import ?option? href
+              Load html formatted text from a file.  Href must exist.  If option
+              is -link, href is assumed to be relative to the application's
+              current working directory. Otherwise, href is assumed to be
+              relative to the path of the last page loaded. Href is either a
+              filename, or a reference of the form filename#anchorname. In the
+              latter form, fIFilename and/or anchorname may be empty.  If
+              filename is empty, the current document is assumed.  If anchorname
+              is empty, the top of the document is assumed.
+
+       pathName pwd
+              Print the current working directory of the widget, i.e. the
+              directory of the last page loaded.
+
+       pathName render htmltext ?wd?
+              Display HTML formatted text htmltext. Wd gives the base path to
+              use for all links and images in the document. Wd defaults to the
+              application's current working directory.
+
+       pathName title
+              Return the title of the current page, as given in the
+              <title>...</title> field in the document.
+
+
+HTML COMPLIANCE
+       This widget is compliant with HTML 3.2 with the following exceptions:
+
+       No features requiring a connection to an http server are supported.
+
+       Some image alignments aren't supported, because they are not supported by
+       the text widget.
+
+       The <br> attributes dealing with image alignments aren't supported.
+
+       Automatic table sizing is not supported very well, due to limitations of
+       the text widget
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               option add *textBackground white
+
+               iwidgets::scrolledhtml .sh -fontname helvetica -linkcommand "this import -link"
+
+               pack .sh -padx 10 -pady 10 -fill both -expand yes
+
+               .sh import ~/public_html/index.html
+
+
+BUGS
+              Cells in a table can be caused to overlap. ex:
+                  <table border width="100%">
+                  <tr><td>cell1</td><td align=right rowspan=2>cell2</td></tr>
+                  <tr><td colspan=2>cell3 w/ overlap</td>
+                  </table> It hasn't been fixed because 1) it's a pain to fix,
+              2) it will slow tables down by a significant amount, and 3)
+              netscape has the same bug, as of V3.01.
+
+ACKNOWLEDGEMENTS
+       Sam Shen
+
+              This code is based largely on his tkhtml.tcl code from tk inspect.
+              Tkhtml is copyright 1995 Lawrence Berkeley Laboratory.
+
+AUTHOR
+       Kris Raney
+
+KEYWORDS
+       scrolledhtml, html, text, widget
+
+
+

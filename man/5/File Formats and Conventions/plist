@@ -1,0 +1,117 @@
+PLIST(5)                       File Formats Manual                      PLIST(5)
+
+NAME
+     plist – property list format
+
+SYNOPSIS
+     plist
+
+DESCRIPTION
+     Property lists organize data into named values and lists of values using
+     several Core Foundation types: CFString, CFNumber, CFBoolean, CFDate,
+     CFData, CFArray, and CFDictionary. These types give you the means to
+     produce data that is meaningfully structured, transportable, storable, and
+     accessible, but still as efficient as possible. The property list
+     programming interface allows you to convert hierarchically structured
+     combinations of these basic types to and from two formats: standard XML and
+     an optimized, opaque binary format. This document describes the standard
+     XML format. The data can be saved to disk and later used to reconstruct the
+     original Core Foundation objects. Note that property lists should be used
+     for data that consists primarily of strings and numbers because they are
+     very inefficient when used with large blocks of binary data.
+
+     PROPERTY LIST STRUCTURE AND CONTENTS
+
+     Property lists are constructed from the basic Core Foundation types
+     CFString, CFNumber, CFBoolean, CFDate, and CFData. To build a complex data
+     structure out of these basic types, you put them inside a CFDictionary or
+     CFArray. To simplify programming with property lists, any of the property
+     list types can also be referred to using a reference of type
+     CFPropertyListRef.
+
+     In a CFDictionary, data is structured as key-value pairs, where each key is
+     a string and the key's value can be a CFString, a CFNumber, a CFBoolean, a
+     CFDate, a CFData, a CFArray, or another CFDictionary. When using
+     CFDictionary as a property list, all keys must be strings.
+
+     In a CFArray, data is structured as an ordered collection of objects that
+     can be accessed by index. In a property list, a CFArray can contain any of
+     the basic property list types, as well as CFDictionary and other CFArray
+     objects.
+
+     PROPERTY LIST XML TAGS
+
+     When property lists convert a collection of Core Foundation objects into an
+     XML property list, it wraps the property list using the document type tag
+     <plist>. The other tags used for the Core Foundation data types are listed
+     in the table below:
+
+     Core Foundation Types with XML Equivalents
+         CF type         XML tag
+         CFString        <string>
+         CFNumber        <real> or <integer>
+         CFDate          <date>
+         CFBoolean       <true/> or <false/>
+         CFData          <data>
+         CFArray         <array>
+         CFDictionary    <dict>
+
+     When encoding the contents of a CFDictionary, each member is encoded by
+     placing the dictionary key in a <key> tag and immediately following it with
+     the corresponding value in the appropriate tag from the table above. See
+     EXAMPLES below for an example XML data generated from a property list.
+
+     The XML data format is documented here strictly for help in understanding
+     property lists and as a debugging aid. These tags may change in future
+     releases so you shouldn't rely on them directly. You should not edit the
+     XML data by hand unless you are very familiar with XML syntax and the
+     format of property lists. If you want to modify the contents of a property
+     list saved on disk as XML data, use the Property List Editor application.
+
+     More complete documentation can be found on disk at
+
+     /Developer/Documentation/CoreFoundation/ProgrammingTopics/CFPropertyLists/CFPropertyLists.html
+
+     or online at
+
+     https://developer.apple.com/documentation/corefoundation/cfpropertylist
+
+     BINARY FORMAT PROPERTY LISTS
+
+     The binary property list format is opaque and does not use XML. However,
+     binary property lists and XML property lists are generally interchangeable.
+     The plutil(1) utility may be used to convert property lists between
+     different formats. For example, to view a binary property list in XML
+     format on stdout:
+
+           plutil -convert xml1 -o - <file name>
+
+EXAMPLES
+           <?xml version="1.0" encoding="UTF-8"?>
+           <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+                   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+           <plist version="1.0">
+           <dict>
+               <key>Year Of Birth</key>
+               <integer>1965</integer>
+               <key>Pets Names</key>
+               <array/>
+               <key>Picture</key>
+               <data>
+                   PEKBpYGlmYFCPA==
+               </data>
+               <key>City of Birth</key>
+               <string>Springfield</string>
+               <key>Name</key>
+               <string>John Doe</string>
+               <key>Kids Names</key>
+               <array>
+                   <string>John</string>
+                   <string>Kyra</string>
+               </array>
+           </dict>
+           </plist>
+
+SEE ALSO
+     plutil(1)
+

@@ -1,0 +1,227 @@
+FDISK(8)                     System Manager's Manual                    FDISK(8)
+
+NAME
+     fdisk – DOS partition maintenance program
+
+SYNOPSIS
+     fdisk [-ieu] [-f mbrname] [-c cylinders] [-h heads] [-s sectors] [-S size]
+           [-b size] device
+
+DESCRIPTION
+     In order for the BIOS to boot the kernel, certain conventions must be
+     adhered to.  Sector 0 of a bootable hard disk must contain boot code, an
+     MBR partition table, and a magic number (0xAA55).  These MBR partitions
+     (also known as BIOS partitions) can be used to break the disk up into
+     several pieces.
+
+     The BIOS loads sector 0 of the boot disk into memory, verifies the magic
+     number, and begins executing the code at the first byte.  The normal DOS
+     MBR boot code searches the MBR partition table for an “active” partition
+     (indicated by a ‘*’ in the first column), and if one is found, the boot
+     block from that partition is loaded and executed in place of the original
+     (MBR) boot block.
+
+     The options are as follows:
+
+     -i      Initialize the MBR sector.
+
+     -a style
+             Specify an automatic partitioning style.
+
+     -e      Edit existing MBR sectors.
+
+     -f mbrname
+             Specifies an alternate MBR template file.
+
+     -u      Update MBR code, preserving existing partition table.
+
+     -y      Do not ask for confirmation before writing.
+
+     -d      Dump partition table in a format readable by the -r option.
+
+     -r      Read a partition table from the standard input.
+
+     -t      Test if the disk is partitioned.
+
+     -c cylinders, -h heads, -s sectors
+             Specifies an alternate BIOS geometry for fdisk to use.
+
+     -S size
+             Specify the disk size in blocks.
+
+     -b size
+             Specify the number of bytes per disk block.
+
+     The DOS fdisk program can be used to divide space on the disk into
+     partitions and set one active.  This fdisk program serves a similar purpose
+     to the DOS program.  When called with no special flags, it prints the MBR
+     partition table of the specified device, i.e.,
+
+         # fdisk fd0
+         Disk: fd0       geometry: 80/2/18 [2880 sectors]
+         Offset: 0       Signature: 0xAA55
+                  Starting        Ending
+          #: id  cyl  hd sec -  cyl  hd sec [     start -       size]
+         ----------------------------------------------------------------------
+         *1: A6    0   0   1 -   79   1  18 [         0 -       2880] OpenBSD
+          2: 00    0   0   0 -    0   0   0 [         0 -          0] unused
+          3: A7    0   0   2 -   79   1  18 [         1 -       2879] NEXTSTEP
+          4: 00    0   0   0 -    0   0   0 [         0 -          0] unused
+
+     The geometry displayed is a synthetic geometry unless another geometry has
+     been selected using the -c, -h, -s, -S, and -b options.  In the future,
+     fdisk will read the BIOS geometry from the IOKit registry.
+
+     In this example, the disk is divided into two partitions that happen to
+     fill the disk.  The first partition overlaps the third partition.  (Used
+     for debugging purposes.)
+
+     #           Number of partition table entry.  A “*” denotes the bootable
+                 partition.
+
+     id          System identifier.  OpenBSD reserves the magic number 166
+                 decimal (A6 in hex).  If no 166 partition is found, it will use
+                 an older FreeBSD partition (with a magic number of 165 or A5 in
+                 hex).
+
+     cyl/hd/sec  These fields provide the starting and ending address of the
+                 partition in BIOS geometry
+
+     start/size  These fields provide the starting sector and size in sectors of
+                 the partition in linear block addresses.
+
+     NOTE: The sectors field is “1 based”, and the start field is “0 based”.
+     The CHS values may need to be in the BIOS's geometry for older systems to
+     be able to boot and use the drive correctly; most modern systems prefer the
+     starting sector and size in preference to the CHS values.
+
+     The -i flag is used to indicate that the partition data is to be
+     initialized.  In this mode, fdisk will completely overwrite the primary MBR
+     and partition table, either using the default MBR template, or the one
+     specified by the -f flag.
+
+     In the default template, partition number 1 will be configured as a Darwin
+     boot partition spanning from cylinder 0, head 1, sector 1, and extending
+     for 8 megabytes.  Partition number 2 will be configured as a Darwin HFS
+     partition spanning the rest of the disk.  This mode is designed to
+     initialize an MBR the very first time, or when it has been corrupted beyond
+     repair.
+
+     You can specify other default partition styles with the -a flag.  The
+     available styles are:
+
+     boothfs     Creates an 8Mb boot partition (type AB hex) and makes the rest
+                 of the disk a Darwin HFS partition (type AF hex).
+
+     hfs         Makes the entire disk one HFS+ partition (type AF hex).
+
+     dos         Makes the entire disk one DOS partition (type 0C hex).
+
+     raid        Makes the entire disk one type AC hex partition.
+
+     The -u flag is used to update the MBR code on a given drive.  The MBR code
+     extends from offset 0x000 to the start of the partition table at offset
+     0x1BE.  It is similar to the -i flag, except the existing partition table
+     is preserved. This is useful for writing new MBR code onto an existing
+     drive, and is equivalent to the DOS command “FDISK /MBR”.  Note that this
+     option will overwrite the NT disk signature, if present.  The -u and -i
+     flags may not be specified together.
+
+     The flag -e is used to modify a partition table using a interactive edit
+     mode of the fdisk program.  This mode is designed to allow you to change
+     any partition on the drive you choose, including extended partitions.  It
+     is a very powerful mode, but is safe as long as you do not execute the
+     write command, or answer in the negative (the default) when fdisk asks you
+     about writing out changes.
+
+COMMAND MODE
+     When you first enter this mode, you are presented with a prompt, that looks
+     like so: fdisk: 0>.  This prompt has two important pieces of information
+     for you.  It will tell you if the in-memory copy of the boot block has been
+     modified or not.  If it has been modified, the prompt will change to look
+     like: fdisk:*0>.  The second piece of information pertains to the number
+     given in the prompt.  This number specifies the disk offset of the
+     currently selected boot block you are editing.  This number could be
+     something different that zero when you are editing extended partitions.
+     The list of commands and their explanations are given below.
+
+     help    Display a list of commands that fdisk understands in the
+             interactive edit mode.
+
+     manual  Display this manual page.
+
+     reinit  Initialize the currently selected, in-memory copy of the boot
+             block.
+
+     auto    Partition the disk with one of the automatic partition styles.
+
+     disk    Display the current drive geometry that fdisk has probed.  You are
+             given a chance to edit it if you wish.
+
+     edit    Edit a given table entry in the memory copy of the current boot
+             block.  You may edit either in BIOS geometry mode, or in sector
+             offsets and sizes.
+
+     setpid  Change the partition identifier of the given partition table entry.
+             This command is particularly useful for reassigning an existing
+             partition to OpenBSD.
+
+     flag    Make the given partition table entry bootable.  Only one entry can
+             be marked bootable.  If you wish to boot from an extended
+             partition, you will need to mark the partition table entry for the
+             extended partition as bootable.
+
+     update  Update the machine code in the memory copy of the currently
+             selected boot block.  Note that this option will overwrite the NT
+             disk signature, if present.
+
+     select  Select and load into memory the boot block pointed to by the
+             extended partition table entry in the current boot block.
+
+     print   Print the currently selected in-memory copy of the boot block and
+             its MBR table to the terminal.
+
+     write   Write the in-memory copy of the boot block to disk.  You will be
+             asked to confirm this operation.
+
+     exit    Exit the current level of fdisk, either returning to the previously
+             selected in-memory copy of a boot block, or exiting the program if
+             there is none.
+
+     quit    Exit the current level of fdisk, either returning to the previously
+             selected in-memory copy of a boot block, or exiting the program if
+             there is none.  Unlike exit it does write the modified block out.
+
+     abort   Quit program without saving current changes.
+
+NOTES
+     The automatic calculation of starting cylinder etc. uses a set of figures
+     that represent what the BIOS thinks is the geometry of the drive.  These
+     figures are by default taken from the in-core disklabel, or values that
+     /boot has passed to the kernel, but fdisk gives you an opportunity to
+     change them if there is a need to.  This allows the user to create a
+     bootblock that can work with drives that use geometry translation under a
+     potentially different BIOS.
+
+     If you hand craft your disk layout, please make sure that the OpenBSD
+     partition starts on a cylinder boundary.  (This restriction may be changed
+     in the future.)
+
+     Editing an existing partition is risky, and may cause you to lose all the
+     data in that partition.
+
+     You should run this program interactively once or twice to see how it
+     works.  This is completely safe as long as you answer the “write” questions
+     in the negative.
+
+FILES
+     /usr/mdec/mbr  default MBR template
+
+SEE ALSO
+     gpt(8), pdisk(8)
+
+BUGS
+     There are subtleties fdisk detects that are not explained in this manual
+     page.  As well, chances are that some of the subtleties it should detect
+     are being steamrolled.  Caveat Emptor.
+

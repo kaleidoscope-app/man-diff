@@ -1,0 +1,236 @@
+VERIFY(8)                    System Manager's Manual                   VERIFY(8)
+
+
+
+
+NAME
+       verify - Postfix address verification server
+
+SYNOPSIS
+       verify [generic Postfix daemon options]
+
+DESCRIPTION
+       The verify(8) address verification server maintains a record of what
+       recipient addresses are known to be deliverable or undeliverable.
+
+       Addresses are verified by injecting probe messages into the Postfix
+       queue. Probe messages are run through all the routing and rewriting
+       machinery except for final delivery, and are discarded rather than being
+       deferred or bounced.
+
+       Address verification relies on the answer from the nearest MTA for the
+       specified address, and will therefore not detect all undeliverable
+       addresses.
+
+       The verify(8) server is designed to run under control by the Postfix
+       master server. It maintains an optional persistent database.  To avoid
+       being interrupted by "postfix stop" in the middle of a database update,
+       the process runs in a separate process group.
+
+       The verify(8) server implements the following requests:
+
+       update address status text
+              Update the status and text of the specified address.
+
+       query address
+              Look up the status and text for the specified address.  If the
+              status is unknown, a probe is sent and an "in progress" status is
+              returned.
+
+SECURITY
+       The address verification server is not security-sensitive. It does not
+       talk to the network, and it does not talk to local users.  The verify
+       server can run chrooted at fixed low privilege.
+
+       The address verification server can be coerced to store unlimited amounts
+       of garbage. Limiting the cache expiry time trades one problem (disk space
+       exhaustion) for another one (poor response time to client requests).
+
+       With Postfix version 2.5 and later, the verify(8) server no longer uses
+       root privileges when opening the address_verify_map cache file. The file
+       should now be stored under the Postfix-owned data_directory.  As a
+       migration aid, an attempt to open a cache file under a non-Postfix
+       directory is redirected to the Postfix-owned data_directory, and a
+       warning is logged.
+
+DIAGNOSTICS
+       Problems and transactions are logged to syslogd(8).
+
+BUGS
+       Address verification probe messages add additional traffic to the mail
+       queue.  Recipient verification may cause an increased load on down-stream
+       servers in the case of a dictionary attack or a flood of backscatter
+       bounces.  Sender address verification may cause your site to be
+       blacklisted by some providers.
+
+       If the persistent database ever gets corrupted then the world comes to an
+       end and human intervention is needed. This violates a basic Postfix
+       principle.
+
+CONFIGURATION PARAMETERS
+       Changes to main.cf are not picked up automatically, as verify(8)
+       processes are long-lived. Use the command "postfix reload" after a
+       configuration change.
+
+       The text below provides only a parameter summary. See postconf(5) for
+       more details including examples.
+
+PROBE MESSAGE CONTROLS
+
+       address_verify_sender ($double_bounce_sender)
+              The sender address to use in address verification probes; prior to
+              Postfix 2.5 the default was "postmaster".
+
+       Available with Postfix 2.9 and later:
+
+       address_verify_sender_ttl (0s)
+              The time between changes in the time-dependent portion of address
+              verification probe sender addresses.
+
+CACHE CONTROLS
+
+       address_verify_map (see 'postconf -d' output)
+              Lookup table for persistent address verification status storage.
+
+       address_verify_positive_expire_time (31d)
+              The time after which a successful probe expires from the address
+              verification cache.
+
+       address_verify_positive_refresh_time (7d)
+              The time after which a successful address verification probe needs
+              to be refreshed.
+
+       address_verify_negative_cache (yes)
+              Enable caching of failed address verification probe results.
+
+       address_verify_negative_expire_time (3d)
+              The time after which a failed probe expires from the address
+              verification cache.
+
+       address_verify_negative_refresh_time (3h)
+              The time after which a failed address verification probe needs to
+              be refreshed.
+
+       Available with Postfix 2.7 and later:
+
+       address_verify_cache_cleanup_interval (12h)
+              The amount of time between verify(8) address verification database
+              cleanup runs.
+
+PROBE MESSAGE ROUTING CONTROLS
+       By default, probe messages are delivered via the same route as regular
+       messages.  The following parameters can be used to override specific
+       message routing mechanisms.
+
+       address_verify_relayhost ($relayhost)
+              Overrides the relayhost parameter setting for address verification
+              probes.
+
+       address_verify_transport_maps ($transport_maps)
+              Overrides the transport_maps parameter setting for address
+              verification probes.
+
+       address_verify_local_transport ($local_transport)
+              Overrides the local_transport parameter setting for address
+              verification probes.
+
+       address_verify_virtual_transport ($virtual_transport)
+              Overrides the virtual_transport parameter setting for address
+              verification probes.
+
+       address_verify_relay_transport ($relay_transport)
+              Overrides the relay_transport parameter setting for address
+              verification probes.
+
+       address_verify_default_transport ($default_transport)
+              Overrides the default_transport parameter setting for address
+              verification probes.
+
+       Available in Postfix 2.3 and later:
+
+       address_verify_sender_dependent_relayhost_maps
+       ($sender_dependent_relayhost_maps)
+              Overrides the sender_dependent_relayhost_maps parameter setting
+              for address verification probes.
+
+       Available in Postfix 2.7 and later:
+
+       address_verify_sender_dependent_default_transport_maps
+       ($sender_dependent_default_transport_maps)
+              Overrides the sender_dependent_default_transport_maps parameter
+              setting for address verification probes.
+
+SMTPUTF8 CONTROLS
+       Preliminary SMTPUTF8 support is introduced with Postfix 3.0.
+
+       smtputf8_autodetect_classes (sendmail, verify)
+              Detect that a message requires SMTPUTF8 support for the specified
+              mail origin classes.
+
+       Available in Postfix version 3.2 and later:
+
+       enable_idna2003_compatibility (no)
+              Enable 'transitional' compatibility between IDNA2003 and IDNA2008,
+              when converting UTF-8 domain names to/from the ASCII form that is
+              used for DNS lookups.
+
+MISCELLANEOUS CONTROLS
+
+       config_directory (see 'postconf -d' output)
+              The default location of the Postfix main.cf and master.cf
+              configuration files.
+
+       daemon_timeout (18000s)
+              How much time a Postfix daemon process may take to handle a
+              request before it is terminated by a built-in watchdog timer.
+
+       ipc_timeout (3600s)
+              The time limit for sending or receiving information over an
+              internal communication channel.
+
+       process_id (read-only)
+              The process ID of a Postfix command or daemon process.
+
+       process_name (read-only)
+              The process name of a Postfix command or daemon process.
+
+       queue_directory (see 'postconf -d' output)
+              The location of the Postfix top-level queue directory.
+
+       syslog_facility (mail)
+              The syslog facility of Postfix logging.
+
+       syslog_name (see 'postconf -d' output)
+              A prefix that is prepended to the process name in syslog records,
+              so that, for example, "smtpd" becomes "prefix/smtpd".
+
+SEE ALSO
+       smtpd(8), Postfix SMTP server
+       cleanup(8), enqueue Postfix message
+       postconf(5), configuration parameters
+       syslogd(5), system logging
+
+README FILES
+       Use "postconf readme_directory" or "postconf html_directory" to locate
+       this information.
+       ADDRESS_VERIFICATION_README, address verification howto
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+HISTORY
+       This service was introduced with Postfix version 2.1.
+
+AUTHOR(S)
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

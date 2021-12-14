@@ -1,0 +1,86 @@
+ttk::combobox(n)                Tk Themed Widget                ttk::combobox(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ttk::combobox - text field with popdown selection list
+
+SYNOPSIS
+       ttk::combobox pathName ?options?
+________________________________________________________________________________
+
+DESCRIPTION
+       A ttk::combobox combines a text field with a pop-down list of values; the
+       user may select the value of the text field from among the values in the
+       list.
+
+STANDARD OPTIONS
+       -class                -cursor              -takefocus
+       -style
+
+       See the ttk_widget manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       [-exportselection exportSelection] Boolean value.  If set, the widget
+       selection is linked to the X selection.  [-justify justify] Specifies how
+       the text is aligned within the widget.  Must be one of left, center, or
+       right.  [-height height] Specifies the height of the pop-down listbox, in
+       rows.  [-postcommand postCommand] A Tcl script to evaluate immediately
+       before displaying the listbox.  The -postcommand script may specify the
+       -values to display.  [-state state] One of normal, readonly, or disabled.
+       In the readonly state, the value may not be edited directly, and the user
+       can only select one of the -values from the dropdown list.  In the normal
+       state, the text field is directly editable.  In the disabled state, no
+       interaction is possible.  [-textvariable textVariable] Specifies the name
+       of a variable whose value is linked to the widget value.  Whenever the
+       variable changes value the widget value is updated, and vice versa.
+       [-values values] Specifies the list of values to display in the drop-down
+       listbox.  [-width width] Specifies an integer value indicating the
+       desired width of the entry window, in average-size characters of the
+       widget's font.
+
+WIDGET COMMAND
+       The following subcommands are possible for combobox widgets:
+
+       pathName current ?newIndex?
+              If newIndex is supplied, sets the combobox value to the element at
+              position newIndex in the list of -values.  Otherwise, returns the
+              index of the current value in the list of -values or -1 if the
+              current value does not appear in the list.
+
+       pathName get
+              Returns the current value of the combobox.
+
+       pathName set value
+              Sets the value of the combobox to value.
+
+       The combobox widget also supports the following ttk::entry widget
+       subcommands (see ttk::entry(n) for details):
+
+              bbox                  delete               icursor
+              index                 insert               selection
+              xview
+
+       The combobox widget also supports the following generic ttk::widget
+       widget subcommands (see ttk::widget(n) for details):
+
+              cget                  configure            identify
+              instate               state
+
+
+VIRTUAL EVENTS
+       The combobox widget generates a <<ComboboxSelected>> virtual event when
+       the user selects an element from the list of values.  If the selection
+       action unposts the listbox, this event is delivered after the listbox is
+       unposted.
+
+SEE ALSO
+       ttk::widget(n), ttk::entry(n)
+
+KEYWORDS
+       choice, entry, list box, text box, widget
+
+
+

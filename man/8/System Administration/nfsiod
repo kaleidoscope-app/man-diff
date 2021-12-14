@@ -1,0 +1,37 @@
+NFSIOD(8)                    System Manager's Manual                   NFSIOD(8)
+
+NAME
+     nfsiod – local NFS asynchronous I/O
+
+SYNOPSIS
+     nfsiod [-n num_threads]
+
+DESCRIPTION
+     nfsiod is deprecated.  See nfs.conf(5) for NFS configuration info.
+
+     nfsiod controls the maximum number of asynchronous I/O threads used for NFS
+     mounts.  Historically, it has consisted of a daemon that never exits.
+     However, asynchronous I/O requests are now serviced by threads launched on
+     demand in the kernel and the nfsiod command simply sets the configuration
+     limit.
+
+     Having asynchronous I/O threads improves performance but is not required
+     for correct operation.
+
+     The options are as follows:
+
+     -n      Specify maximum number of asynchronous I/O threads to be used.
+
+     If no maximum is specified, nfsiod displays the current value.  The default
+     value is 16.  A client should allow enough threads to handle its maximum
+     level of concurrency.
+
+     The nfsiod utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     nfs.conf(5), mount_nfs(8), nfsstat(1)
+
+HISTORY
+     The nfsiod utility first appeared in 4.4BSD.  It's use was deprecated in
+     Darwin 9.
+

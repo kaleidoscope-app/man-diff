@@ -1,0 +1,107 @@
+PLUTIL(1)                    General Commands Manual                   PLUTIL(1)
+
+NAME
+     plutil – property list utility
+
+SYNOPSIS
+     plutil [command_option] [other_options] file
+             ...
+
+DESCRIPTION
+     plutil can be used to check the syntax of property list files, or convert a
+     plist file from one format to another.  Specifying - as an input file reads
+     from stdin.
+
+     The first argument indicates the operation to perform, one of:
+
+     -help         Show the usage information for the command and exit.
+
+     -p            Print the property list in a human-readable fashion. The
+                   output format is not stable and not designed for machine
+                   parsing. The purpose of this command is to be able to easily
+                   read the contents of a plist file, no matter what format it
+                   is in.
+
+     -lint         Check the named property list files for syntax errors.  This
+                   is the default command option if none is specified.
+
+     -convert fmt  Convert the named file to the indicated format and write back
+                   to the file system.  If the file can't be loaded due to
+                   invalid syntax, the operation fails. This is the only option
+                   to support objc swift formats.
+
+     -convert objc -header
+                   Converts the named file to Obj-C literal syntax and creates a
+                   .h file. Useful for first time conversions to literal syntax
+                   and only supported with the objc format.
+
+     -insert keypath -type value
+                   Insert a value into the property list before writing it out.
+
+     -replace keypath -type value
+                   Overwrite an existing value in the property list before
+                   writing it out.
+
+     -remove keypath
+                   Removes the value at keypath from the property list before
+                   writing it out.
+
+     -extract keypath fmt
+                   Outputs the value at keypath in the property list as a new
+                   plist of type fmt.
+
+     There are a few additional options:
+
+     --            Specifies that all further arguments are file names
+
+     -s            Don't print anything on success.
+
+     -r            For JSON, add whitespace and indentation to make the output
+                   more human-readable and sort the keys like -p, does.
+
+     -o path       Specify an alternate path name for the result of the -convert
+                   operation; this option is only useful with a single file to
+                   be converted.  Specifying - as the path outputs to stdout.
+
+     -e extension  Specify an alternate extension for converted files, and the
+                   output file names are otherwise the same.
+
+ARGUMENTS
+     fmt is one of:
+           xml1     for version 1 of the XML plist format
+           binary1  for version 1 of the binary plist format
+           json     for the JSON format
+           swift    to convert from plist to swift literal syntax
+           objc     to convert from plist to Obj-C literal syntax
+
+     keypath is a key-value coding key path, with one extension: a numerical
+     path component applied to an array will act on the object at that index in
+     the array or insert it into the array if the numerical path component is
+     the last one in the key path.
+
+     type is one of:
+            -bool     YES if passed "YES" or "true", otherwise NO
+            -integer  any valid 64 bit integer
+            -float    any valid 64 bit float
+            -string   UTF8 encoded string
+            -date     date in XML property list format, not supported if
+                      outputting JSON
+            -data     a base-64 encoded string
+            -xml      an XML property list, useful for inserting compound values
+            -json     JSON fragment, useful for inserting compound values
+
+     value will be assigned to the keypath specified with the -insert or
+     -replace flags.
+
+DIAGNOSTICS
+     The plutil command exits 0 on success, and 1 on failure.
+
+SEE ALSO
+     plist(5)
+
+STANDARDS
+     The plutil command obeys no one's rules but its own.
+
+HISTORY
+     The plutil command first appeared in macOS 10.2.
+

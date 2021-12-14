@@ -1,0 +1,40 @@
+SERVICES(5)                    File Formats Manual                   SERVICES(5)
+
+NAME
+     services – service name data base
+
+DESCRIPTION
+     The services file contains information regarding the known services
+     available in the DARPA Internet.  For each service a single line should be
+     present with the following information:
+
+           official service name
+           port number
+           protocol name
+           aliases
+
+     Items are separated by any number of blanks and/or tab characters.  The
+     port number and protocol name are considered a single item; a ``/'' is used
+     to separate the port and protocol (e.g. ``512/tcp'').  A ``#'' indicates
+     the beginning of a comment; subsequent characters up to the end of the line
+     are not interpreted by the routines which search the file.
+
+     Service names may contain any printable character other than a field
+     delimiter, newline, or comment character.
+
+INTERACTION WITH DIRECTORY SERVICES
+     Processes generally find service records using one of the getservent(3)
+     family of functions, or using getaddrinfo(3).  On Mac OS X, these functions
+     interact with the DirectoryService(8) daemon, which reads the /etc/services
+     file as well as searching other directory information services to determine
+     service name, protocol, and port information.
+
+FILES
+     /etc/services
+
+SEE ALSO
+     getservent(3), getaddrinfo(3), DirectoryService(8)
+
+HISTORY
+     The services file format appeared in 4.2BSD.
+

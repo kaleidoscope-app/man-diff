@@ -1,0 +1,144 @@
+ntext(n)            Alternative Bindings for the Text Widget            ntext(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ntext - Alternative Bindings for the Text Widget
+
+SYNOPSIS
+       package require Tcl  8.5
+
+       package require Tk  8.5
+
+       package require ntext  ?0.81?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The purpose of the ntext package is to make the text widget behave more
+       like other text-editing applications. It makes the text widget more
+       useful for implementing a text editor, and makes it behave in a way that
+       will be more familiar to most users.
+
+       The package provides a binding tag named Ntext for use by text widgets in
+       place of the default Text binding tag.
+
+       Package ntext 's functions and variables are contained entirely in the
+       ::ntext namespace; its other code is contained in the binding tag Ntext.
+       ntext has no exports to the global or other namespaces, and no new widget
+       commands.  It uses modified copies of the Tk code, leaving the original
+       code, and the Text binding tag, unchanged.
+
+       The differences between the Ntext binding tag and the default Text
+       binding tag are in three categories:
+
+       •      Some Text bindings behave differently from most text-editing
+              applications.  Ntext gives these bindings more familiar behaviour.
+              For details see ntextBindings.
+
+       •      When a logical line with leading whitespace is word-wrapped onto
+              more than one display line, the wrapped display lines begin
+              further to the left than the first display line, which can make
+              the text layout untidy and difficult to read.  Ntext can indent
+              the wrapped lines to match the leading whitespace of the first
+              display line (this facility is switched off by default).  For
+              details see ntextIndent.
+
+       •      When the user navigates or selects text, Tcl/Tk sometimes needs to
+              detect word boundaries.  Ntext provides improved rules for word
+              boundary detection.  For details see ntextWordBreak.
+
+       The remainder of this page describes the basic use and configuration of
+       all three aspects of Ntext.  For more detailed information on the
+       different facilities of Ntext, see the pages ntextBindings, ntextIndent,
+       and ntextWordBreak.
+
+       See Section EXAMPLE for how to apply the Ntext binding tag in place of
+       the Text binding tag.
+
+CONFIGURATION OPTIONS
+       Ntext provides alternatives to a number of behaviours of the classic Text
+       binding tag.  Where there is an option, the Ntext behaviour (except for
+       display-line indentation) is switched on by default.
+
+       The behaviour of Ntext may be configured application-wide by setting the
+       values of a number of namespace variables:
+
+       ::ntext::classicAnchor
+
+       •      0 - (default value) selects Ntext behaviour, i.e. the anchor point
+              is fixed
+
+       •      1 - selects classic Text behaviour, i.e. the anchor point is
+              variable
+
+       ::ntext::classicExtras
+
+       •      0 - (default value) selects Ntext behaviour, i.e. several
+              traditional Text bindings are de-activated
+
+       •      1 - selects classic Text behaviour, i.e. all Text bindings are
+              activated
+
+       ::ntext::classicMouseSelect
+
+       •      0 - (default value) selects Ntext behaviour, i.e. the anchor point
+              for mouse selection operations is moved by keyboard navigation
+
+       •      1 - selects classic Text behaviour
+
+       ::ntext::classicWordBreak
+
+       •      0 - (default value) selects Ntext behaviour, i.e. platform-
+              independent, two classes of word characters and one class of non-
+              word characters.
+
+       •      1 - selects classic Text behaviour, i.e. platform-dependent, one
+              class of word characters and one class of non-word characters
+
+       •      After changing this value, the matching patterns should be
+              recalculated.  See ntextWordBreak for details and advanced
+              configuration options.
+
+       ::ntext::classicWrap
+
+       •      0 - selects Ntext behaviour, i.e. display lines of text widgets in
+              -wrap word mode are indented to match the initial whitespace of
+              the first display line of a logical line.  If the widget already
+              holds text when this value is set, a function call may be
+              necessary.  See ntextIndent for detailed instructions on the use
+              of Ntext 's indentation.
+
+       •      1 - (default value) selects classic Text behaviour, i.e. no
+              indentation
+
+       ::ntext::overwrite
+
+       •      0 - (initial value) text typed at the keyboard is inserted into
+              the widget
+
+       •      1 - text typed at the keyboard overwrites text already in the
+              widget
+
+       •      The value is toggled by the Insert key.
+
+EXAMPLE
+       To create a text widget .t and use the Ntext bindings:
+
+       package require ntext
+       text .t
+       bindtags .t {.t Ntext . all}
+
+       See bindtags for more information.
+
+SEE ALSO
+       bindtags, ntextBindings, ntextIndent, ntextWordBreak, re_syntax, regexp,
+       text
+
+KEYWORDS
+       bindtags, re_syntax, regexp, text
+
+
+

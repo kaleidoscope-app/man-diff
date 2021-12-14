@@ -1,0 +1,284 @@
+CVDBSET(8)                   System Manager's Manual                  CVDBSET(8)
+
+
+
+NAME
+       cvdbset - A program to control cvdb tracing.
+
+SYNOPSIS
+       cvdbset [options]
+
+DESCRIPTION
+       cvdbset is a tool for system administrators to control cvdb(8) tracing
+       information from the Xsan File System client file system.
+
+       The level of tracing emitted can be controlled on a per module basis. The
+       set of modules for which tracing is enabled is called the trace set. The
+       level of tracing can be refined further by specifying a set of
+       tracepoints (such as entry/exit points). The set of enabled tracepoints
+       is called the logmask.
+
+       Warning: enabling tracing can have a substantial performance impact.
+
+       cvdbset can be used to:
+
+              List all the current client modules in the trace set.
+
+              Add all modules to the trace set.
+
+              Define the trace set.
+
+              Add selected modules to trace set
+
+              Remove selected modules from the trace set
+
+              Set the logmask for a set of modules in the trace set.
+
+              Resize the logging buffer
+
+              Start/stop continuous tracing
+
+              Disable tracing
+
+OPTIONS
+       no options
+              Display the whether tracing is enabled/disabled, the size of the
+              logging buffer, the modules in the trace set, and their
+              corresponding logmasks.
+
+       all    Enable tracing of all modules.  Once cvdbset with a list of
+              modules is invoked, some modules are turned off.  cvdbset all sets
+              all modules for tracing.  When used with + or -, add or remove all
+              modules.
+
+       [:]module1 [:]module2 ...
+              When invoked with a list of modules, cvdbset first disables all
+              modules.  Then, it enables exactly the given list of modules. To
+              see all modules that can be enabled, use the cvdbset -l
+              command/option. If the module name is preceded by a :, all modules
+              containing the module name will be affected.
+
+       + [:]module1 [:]module2 ...
+              When invoked with a plus sign (+) as the first argument followed
+              by a list of modules, the given list of modules is added to the
+              current trace set. If the module name is preceded by a :, all
+              modules containing the module name will be affected.
+
+       - [:]module1 [:]module2 ...
+              When invoked with a minus sign (-) as the first argument followed
+              by a list of modules, the given list of modules is removed from
+              the current trace set.  If the module name is preceded by a :, all
+              modules containing the module name will be affected.
+
+       -h     Display a help message and exit.
+
+       -c     Enable continuous cvdb tracing. The trace log will be retrieved
+              once per second and placed in files named cvdbout.000001, ...
+
+       -d     Disable cvdb tracing.
+
+       -g     Dump the current trace buffer to standard out.
+
+       -l     Display whether logging is enabled, the buffer size, and the
+              logmask for all modules.
+
+       -L     Display the list of all available tracepoints for use with the -t
+              option.
+
+       -r mb  Resize the trace buffer to mb megabytes.
+
+       -t tracepoint
+              For the indicated modules, enable tracing only for the indicated
+              tracepoints. Multiple -t options can be supplied. Use the -L
+              option to cvdbset to see a listing of tracepoints.
+
+EXAMPLES
+       To see what modules are in the trace set and their logmasks, the command
+       cvdbset with no parameters is used.  Here is the output from this command
+       at start-up.
+
+          Debug logging is DISABLED, Bufsize 4194304
+          Currently set masks:
+          Module '   proxy_clnt' module 0x0000000000000001   logmask 0xffffffffffffffff
+          Module '        cvdir' module 0x0000000000000002   logmask 0xffffffffffffffff
+          Module '       cvdisk' module 0x0000000000000004   logmask 0xffffffffffffffff
+          Module '         cvnc' module 0x0000000000000008   logmask 0xffffffffffffffff
+          Module '       cvpath' module 0x0000000000000010   logmask 0xffffffffffffffff
+          Module '      portmap' module 0x0000000000000020   logmask 0xffffffffffffffff
+          Module '       cvsock' module 0x0000000000000040   logmask 0xffffffffffffffff
+          Module '       cvsubr' module 0x0000000000000080   logmask 0xffffffffffffffff
+          Module '       dmigfs' module 0x0000000000000100   logmask 0xffffffffffffffff
+          Module '         dmig' module 0x0000000000000200   logmask 0xffffffffffffffff
+          Module '         dmon' module 0x0000000000000400   logmask 0xffffffffffffffff
+          Module '       extapi' module 0x0000000000000800   logmask 0xffffffffffffffff
+          Module '       extent' module 0x0000000000001000   logmask 0xffffffffffffffff
+          Module '        fsmat' module 0x0000000000002000   logmask 0xffffffffffffffff
+          Module '       fsmcom' module 0x0000000000004000   logmask 0xffffffffffffffff
+          Module '      fsmdmig' module 0x0000000000008000   logmask 0xffffffffffffffff
+          Module '     fsmproxy' module 0x0000000000010000   logmask 0xffffffffffffffff
+          Module '      fsmrtio' module 0x0000000000020000   logmask 0xffffffffffffffff
+          Module '     fsmtoken' module 0x0000000000040000   logmask 0xffffffffffffffff
+          Module '       fsmvfs' module 0x0000000000080000   logmask 0xffffffffffffffff
+          Module '     fsmvnops' module 0x0000000000100000   logmask 0xffffffffffffffff
+          Module '     memalloc' module 0x0000000000200000   logmask 0xffffffffffffffff
+          Module '    proxy_con' module 0x0000000000400000   logmask 0xffffffffffffffff
+          Module '       quotas' module 0x0000000000800000   logmask 0xffffffffffffffff
+          Module '        recon' module 0x0000000001000000   logmask 0xffffffffffffffff
+          Module '         rtio' module 0x0000000002000000   logmask 0xffffffffffffffff
+          Module '        rwbuf' module 0x0000000004000000   logmask 0xffffffffffffffff
+          Module '      rwproxy' module 0x0000000008000000   logmask 0xffffffffffffffff
+          Module '       rwlock' module 0x0000000010000000   logmask 0xffffffffffffffff
+          Module '           rw' module 0x0000000020000000   logmask 0xffffffffffffffff
+          Module 'slidingbucket' module 0x0000000040000000   logmask 0xffffffffffffffff
+          Module '    sockinput' module 0x0000000080000000   logmask 0xffffffffffffffff
+          Module '    proxy_srv' module 0x0000000100000000   logmask 0xffffffffffffffff
+          Module '   proxy_subr' module 0x0000000200000000   logmask 0xffffffffffffffff
+          Module '       vfsops' module 0x0000000400000000   logmask 0xffffffffffffffff
+          Module '        vnops' module 0x0000000800000000   logmask 0xffffffffffffffff
+          Module '         perf' module 0x0000001000000000   logmask 0xffffffffffffffff
+          Module '     md_cvdir' module 0x0000002000000000   logmask 0xffffffffffffffff
+          Module '    md_cvsock' module 0x0000004000000000   logmask 0xffffffffffffffff
+          Module '    md_cvsubr' module 0x0000008000000000   logmask 0xffffffffffffffff
+          Module '      md_dmon' module 0x0000010000000000   logmask 0xffffffffffffffff
+          Module '    md_fsmcom' module 0x0000020000000000   logmask 0xffffffffffffffff
+          Module '  md_memalloc' module 0x0000040000000000   logmask 0xffffffffffffffff
+          Module '    md_rwlock' module 0x0000080000000000   logmask 0xffffffffffffffff
+          Module '        md_rw' module 0x0000100000000000   logmask 0xffffffffffffffff
+          Module '   md_rwproxy' module 0x0000200000000000   logmask 0xffffffffffffffff
+          Module '  md_socksubr' module 0x0000400000000000   logmask 0xffffffffffffffff
+          Module '    md_vfsops' module 0x0000800000000000   logmask 0xffffffffffffffff
+          Module '     md_vnops' module 0x0001000000000000   logmask 0xffffffffffffffff
+          Module '    sh_cvsubr' module 0x0002000000000000   logmask 0xffffffffffffffff
+          Module '    sh_fsmcom' module 0x0004000000000000   logmask 0xffffffffffffffff
+          Module ' sh_sockinput' module 0x0008000000000000   logmask 0xffffffffffffffff
+          Module '     sh_vnops' module 0x0010000000000000   logmask 0xffffffffffffffff
+
+
+       To enable tracing for selected modules:
+
+              cvdbset md_vnops rw fsmvnops fsmtoken fsmdmig
+
+       This enables tracing for only these five modules and prints the output:
+
+          Setting md_vnops.
+          Setting rw.
+          Setting fsmvnops.
+          Setting fsmtoken.
+          Setting fsmdmig.
+          cvdb -m modules=0x0001000020148000 logmask=0xffffffffffffffff
+
+       If an argument is preceded by a colon (:), then any module whose name
+       contains the argument as a substring is included.
+
+       To enable the md_vnops tracing module and all of the proxy-related
+       modules:
+
+              cvdbset md_vnops :proxy
+
+       This displays the following output:
+
+          Setting md_vnops.
+          Setting proxy_clnt.
+          Setting fsmproxy.
+          Setting proxy_con.
+          Setting rwproxy.
+          Setting proxy_srv.
+          Setting proxy_subr.
+          Setting md_rwproxy.
+          cvdb -m modules=0x0001200308410001 logmask=0xffffffffffffffff
+
+       To add rwbuf and vnops modules to the current tracing set with the
+       cvENTRY and cvEXIT tracepoints enabled:
+
+              cvdbset -t cvENTRY -t cvEXIT + rwbuf vnops
+
+       This displays the following output:
+
+          Adding rwbuf.
+          Adding vnops.
+          cvdb -m modules=0x0000000804000000 logmask=0x0000000000000003
+       To remove rwbuf and vnops from the current tracing set:
+
+              cvdbset - rwbuf vnops
+
+       This displays the following output:
+
+          Clearing rwbuf.
+          Clearing vnops.
+          cvdb -m modules=0x0000000804000000 logmask=0x0000000000000000
+
+       The special module all can be used with both the + and - options to
+       add/remove all modules from the trace.
+
+       After tracing is enabled, cvdbset -g can be used to retrieve the trace.
+       When desired, cvdbset -d can be used to disable tracing.
+
+       Various cvdb(8) command/options can be used for even finer control of
+       tracing. See cvdb(8) for more details.
+
+I/O PERFORMANCE ANALYSIS
+       The 'perf' trace module is very useful to analyze I/O performance, for
+       example:
+
+              cvdbset perf
+
+       Then cvdbset -g will display info like this:
+
+               PERF: Device Write 41 MB/s IOs 2 exts 1 offs 0x0 len 0x400000 mics 95589 ino 0x5
+               PERF: VFS Write EofDmaAlgn 41 MB/s offs 0x0 len 0x400000 mics 95618 ino 0x5
+
+       The 'PERF: Device' trace shows throughput measured for the device I/O.
+       It also shows the number of I/O's that it was broken into and number of
+       extents (sequence of consecutive filesystem blocks).
+
+       The 'PERF: VFS' trace shows throughput measured for the read or write
+       system call and significant aspects of the I/O including:
+
+              Dma  - DMA
+              Buf  - Buffered
+              Eof  - File extended
+              Algn - Well formed DMA I/O
+              Shr  - File is shared by another client
+              Rt   - File is real time
+              Zr   - Hole in file was zeroed
+
+       Both traces also report file offset, I/O size, latency (mics), and inode
+       number.
+
+       Sample use cases:
+
+       1) Verify I/O properties are as expected.
+          The VFS trace can be used to ensure that the displayed properties are
+          consistent with expectations, for example, well formed, buffered vs.
+          DMA, shared/non-shared, or I/O size.  If a small I/O is being
+          performed DMA then performance will be poor.  If DMA I/O is not well
+          formed then it requires an extra data copy and may even be broken into
+          small chunks.  Zeroing holes in files has a performance impact.
+
+       2) Determine if metadata operations are impacting performance.
+          If VFS throughput is inconsistent or significantly less than Device
+          throughput then it may be caused by metadata operations.  In that case
+          it would be useful to display 'fsmtoken', 'fsmvnops', and 'fsmdmig'
+          traces in addition to 'perf'.
+
+       3) Identify disk performance issues.
+          If Device throughput is inconsistent or less than expected then it may
+          indicate a slow disk in a storage pool or that RAID tuning is
+          necessary.
+
+       4) Identify file fragmentation.
+          If the extent count 'exts' is high then it may indicate a
+          fragmentation problem.  This causes the device I/O's to broken into
+          smaller chunks which can significantly impact throughput.
+
+       5) Identify read/modify/write condition.
+          If buffered VFS writes are causing Device reads then it may be
+          beneficial to match I/O request size to a multiple of the
+          'cachebufsize' (default 256KB or 1024K, see mount_acfs(8)).  Another
+          way to avoid this is by truncating the file before writing.
+
+SEE ALSO
+       cvdb(8)
+
+
+

@@ -1,0 +1,62 @@
+QUOTAON(8)                   System Manager's Manual                  QUOTAON(8)
+
+NAME
+     quotaon, quotaoff – turn filesystem quotas on and off
+
+SYNOPSIS
+     quotaon [-g] [-u] [-v] filesystem ...
+     quotaon [-g] [-u] [-v] -a
+     quotaoff [-g] [-u] [-v] filesystem ...
+     quotaoff [-g] [-u] [-v] -a
+
+DESCRIPTION
+     Quotaon announces to the system that disk quotas should be enabled on one
+     or more filesystems.  Quotaoff announces to the system that the specified
+     filesystems should have disk quotas turned off.  The filesystem must be
+     mounted and it must have the appropriate mount option file located at its
+     root, the .quota.ops.user file for user quota configuration, and the
+     .quota.ops.group file for group quota configuration.  Quotaon also expects
+     each filesystem to have the appropriate quota data files located at its
+     root, the .quota.user file for user data, and the .quota.group file for
+     group data.  These filenames and their root location cannot be overridden.
+     By default, quotaon will attempt to enable both user and group quotas.  By
+     default, quotaoff will disable both user and group quotas.
+
+     Available options:
+
+     -a      If the -a flag is supplied in place of any filesystem names,
+             quotaon/quotaoff will enable/disable any filesystems with an
+             existing mount option file at its root.  The mount option file
+             specifies the types of quotas that are to be configured.
+
+     -g      Only group quotas will be enabled/disabled.  The mount option file,
+             .quota.ops.group, must exist at the root of the filesystem.
+
+     -u      Only user quotas will be enabled/disabled.  The mount option file,
+             .quota.ops.user, must exist at the root of the filesystem.
+
+     -v      Causes quotaon and quotaoff to print a message for each filesystem
+             where quotas are turned on or off.
+
+     Specifying both -g and -u is equivalent to the default.
+
+     Quotas for both users and groups will automatically be turned on at
+     filesystem mount if the appropriate mount option file and binary data file
+     is in place at its root.
+
+FILES
+     Each of the following quota files is located at the root of the mounted
+     filesystem.  The mount option files are empty files whose existence
+     indicates that quotas are to be enabled for that filesystem.
+
+     .quota.user       data file containing user quotas
+     .quota.group      data file containing group quotas
+     .quota.ops.user   mount option file used to enable user quotas
+     .quota.ops.group  mount option file used to enable group quotas
+
+SEE ALSO
+     quota(1), quotactl(2), edquota(8), quotacheck(8), repquota(8)
+
+HISTORY
+     The quotaon command appeared in 4.2BSD.
+

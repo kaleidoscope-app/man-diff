@@ -1,0 +1,178 @@
+KADMIN(8)                    System Manager's Manual                   KADMIN(8)
+
+NAME
+     kadmin – Kerberos administration utility
+
+SYNOPSIS
+     kadmin [-p string | --principal=string] [-K string | --keytab=string]
+            [-c file | --config-file=file] [-k file | --key-file=file]
+            [-r realm | --realm=realm] [-a host | --admin-server=host]
+            [-s port number | --server-port=port number] [-l | --local]
+            [-h | --help] [-v | --version] [command]
+
+DESCRIPTION
+     The kadmin program is used to make modifications to the Kerberos database,
+     either remotely via the kadmind(8) daemon, or locally (with the -l option).
+
+     Supported options:
+
+     -p string, --principal=string
+             principal to authenticate as
+
+     -K string, --keytab=string
+             keytab for authentication principal
+
+     -c file, --config-file=file
+             location of config file
+
+     -k file, --key-file=file
+             location of master key file
+
+     -r realm, --realm=realm
+             realm to use
+
+     -a host, --admin-server=host
+             server to contact
+
+     -s port number, --server-port=port number
+             port to use
+
+     -l, --local
+             local admin mode
+
+     If no command is given on the command line, kadmin will prompt for commands
+     to process. Some of the commands that take one or more principals as
+     argument (delete, ext_keytab, get, modify, and passwd) will accept a glob
+     style wildcard, and perform the operation on all matching principals.
+
+     Commands include:
+
+     add [-r | --random-key] [--random-password] [-p string | --password=string]
+     [--key=string] [--max-ticket-life=lifetime] [--max-renewable-life=lifetime]
+     [--attributes=attributes] [--expiration-time=time]
+     [--pw-expiration-time=time] principal...
+
+           Adds a new principal to the database. The options not passed on the
+           command line will be promped for.
+
+     add_enctype [-r | --random-key] principal enctypes...
+
+           Adds a new encryption type to the principal, only random key are
+           supported.
+
+     delete principal...
+
+           Removes a principal.
+
+     del_enctype principal enctypes...
+
+           Removes some enctypes from a principal; this can be useful if the
+           service belonging to the principal is known to not handle certain
+           enctypes.
+
+     ext_keytab [-k string | --keytab=string] principal...
+
+           Creates a keytab with the keys of the specified principals.  Requires
+           get-keys rights.
+
+     get [-l | --long] [-s | --short] [-t | --terse] [-o string |
+     --column-info=string] principal...
+
+           Lists the matching principals, short prints the result as a table,
+           while long format produces a more verbose output. Which columns to
+           print can be selected with the -o option. The argument is a comma
+           separated list of column names optionally appended with an equal sign
+           (‘=’) and a column header. Which columns are printed by default
+           differ slightly between short and long output.
+
+           The default terse output format is similar to -s -o principal=, just
+           printing the names of matched principals.
+
+           Possible column names include: principal, princ_expire_time,
+           pw_expiration, last_pwd_change, max_life, max_rlife, mod_time,
+           mod_name, attributes, kvno, mkvno, last_success, last_failed,
+           fail_auth_count, policy, and keytypes.
+
+     modify [-a attributes | --attributes=attributes]
+     [--max-ticket-life=lifetime] [--max-renewable-life=lifetime]
+     [--expiration-time=time] [--pw-expiration-time=time] [--kvno=number]
+     principal...
+
+           Modifies certain attributes of a principal. If run without command
+           line options, you will be prompted. With command line options, it
+           will only change the ones specified.
+
+           Possible attributes are: new-princ, support-desmd5, pwchange-service,
+           disallow-svr, requires-pw-change, requires-hw-auth,
+           requires-pre-auth, disallow-all-tix, disallow-dup-skey,
+           disallow-proxiable, disallow-renewable, disallow-tgt-based,
+           disallow-forwardable, disallow-postdated
+
+           Attributes may be negated with a "-", e.g.,
+
+           kadmin -l modify -a -disallow-proxiable user
+
+     passwd [--keepold] [-r | --random-key] [--random-password] [-p string |
+     --password=string] [--key=string] principal...
+
+           Changes the password of an existing principal.
+
+     password-quality principal password
+
+           Run the password quality check function locally.  You can run this on
+           the host that is configured to run the kadmind process to verify that
+           your configuration file is correct.  The verification is done
+           locally, if kadmin is run in remote mode, no rpc call is done to the
+           server.
+
+     privileges
+
+           Lists the operations you are allowed to perform. These include add,
+           add_enctype, change-password, delete, del_enctype, get, get-keys,
+           list, and modify.
+
+     rename from to
+
+           Renames a principal. This is normally transparent, but since keys are
+           salted with the principal name, they will have a non-standard salt,
+           and clients which are unable to cope with this will fail. Kerberos 4
+           suffers from this.
+
+     check [realm]
+
+           Check database for strange configurations on important principals. If
+           no realm is given, the default realm is used.
+
+     When running in local mode, the following commands can also be used:
+
+     dump [-d | --decrypt] [dump-file]
+
+           Writes the database in “human readable” form to the specified file,
+           or standard out. If the database is encrypted, the dump will also
+           have encrypted keys, unless --decrypt is used.
+
+     init [--realm-max-ticket-life=string] [--realm-max-renewable-life=string]
+     realm
+
+           Initializes the Kerberos database with entries for a new realm. It's
+           possible to have more than one realm served by one server.
+
+     load file
+
+           Reads a previously dumped database, and re-creates that database from
+           scratch.
+
+     merge file
+
+           Similar to load but just modifies the database with the entries in
+           the dump file.
+
+     stash [-e enctype | --enctype=enctype] [-k keyfile | --key-file=keyfile]
+     [--convert-file] [--master-key-fd=fd] [--random-password]
+     [--no-print-password]
+
+           Writes the Kerberos master key to a file used by the KDC.
+
+SEE ALSO
+     kadmind(8), kdc(8)
+

@@ -1,0 +1,107 @@
+NDP(8)                       System Manager's Manual                      NDP(8)
+
+NAME
+     ndp – control/diagnose IPv6 neighbor discovery protocol
+
+SYNOPSIS
+     ndp -a [-lnt]
+     ndp -A wait [-nt]
+     ndp -c [-nt]
+     ndp -d [-nt] hostname
+     ndp -f [-nt] filename
+     ndp -H
+     ndp -I [delete | interface]
+     ndp -i interface [flags...]
+     ndp -p
+     ndp -P
+     ndp -r
+     ndp -R
+     ndp -s [-nt] nodename ether_addr [temp] [proxy]
+
+DESCRIPTION
+     The ndp command manipulates the address mapping table used by Neighbor
+     Discovery Protocol (NDP).
+
+     -a      Dump the currently existing NDP entries.
+
+     -A wait
+             Repeat -a (dump NDP entries) every wait seconds.
+
+     -c      Erase all the NDP entries.
+
+     -d      Delete specified NDP entry.
+
+     -f      Parse the file specified by filename.
+
+     -H      Harmonize consistency between the routing table and the default
+             router list; install the top entry of the list into the kernel
+             routing table.
+
+     -I [delete | interface]
+             Shows or specifies the default interface used as the default route
+             when there is no default router.  If no argument is given to the
+             option, the current default interface will be shown.  If an
+             interface is specified, the interface will be used as the default.
+             If a special keyword delete is specified, the current default
+             interface will be deleted from the kernel.
+
+     -i interface [flags...]
+             View ND information for the specified interface.  If additional
+             arguments flags are given, ndp sets or clears the specified flags
+             for the interface.  Possible flags are as follows.  All of the
+             flags can begin with the special character ‘-’, which means the
+             flag should be cleared.
+             nud     turn on or off NUD (Neighbor Unreachability Detection) on
+                     the interface.  NUD is usually turned on by default.
+             disabled
+                     IPv6 can be disabled separately from other network
+                     protocols. This flag can be turned on automatically when
+                     Duplicate Address Detection (DAD) indicates that another
+                     device on the network is using the same link-local address.
+             proxy_prefixes
+                     the interface is enabled to proxy neighbor discovery for
+                     global scope prefixes matching those on link at other
+                     interfaces.
+             insecure do not use cryptographically generated addresses (CGA) on
+                     this interface.
+             replicated Address autoconfiguration proceeds under the assumption
+                     that interface configuration is replicated by a sleep proxy
+                     at another node on the link.  Disables optimistic DAD and
+                     sends unsolicited NA with O=1 when DAD completes.  Ignores
+                     DAD failures from other hardware addresses.
+
+     -l      Show link-layer reachability information.
+
+     -n      Do not try to resolve numeric address to hostname.
+
+     -p      Show prefix list.
+
+     -P      Flush all the entries in the prefix list.
+
+     -r      Show default router list.
+
+     -R      Flush all the entries in the default router list.
+
+     -s      Register an NDP entry for a node.  The entry will be permanent
+             unless the word temp is given in the command.  If the word proxy is
+             given, this system will act as an proxy NDP server, responding to
+             requests for hostname even though the host address is not its own.
+
+     -t      Print timestamp on each entries, to make it possible to merge
+             output with tcpdump(1).  Most useful when used with -A.
+
+     -x      Show extended link-layer reachability information in addition to
+             that shown by the -l flag.
+
+     -w      Show the cryptographically generated address (CGA) parameters for
+             the node.
+
+RETURN VALUES
+     The ndp command will exit with 0 on success, and non-zero on errors.
+
+SEE ALSO
+     arp(8)
+
+HISTORY
+     The ndp command first appeared in WIDE Hydrangea IPv6 protocol stack kit.
+

@@ -1,0 +1,184 @@
+jpeg(n)                      JPEG image manipulation                     jpeg(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       jpeg - JPEG querying and manipulation of meta data
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require jpeg  ?0.3.5?
+
+       ::jpeg::isJPEG file
+
+       ::jpeg::imageInfo file
+
+       ::jpeg::dimensions file
+
+       ::jpeg::getThumbnail file
+
+       ::jpeg::getExif file ?section?
+
+       ::jpeg::formatExif keys
+
+       ::jpeg::exifKeys
+
+       ::jpeg::removeExif file
+
+       ::jpeg::stripJPEG file
+
+       ::jpeg::getComments file
+
+       ::jpeg::addComment file text...
+
+       ::jpeg::removeComments file
+
+       ::jpeg::replaceComment file text
+
+       ::jpeg::debug file
+
+       ::jpeg::markers channel
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides commands to query and modify JPEG images. JPEG
+       stands for Joint Photography Experts Group and is a standard for the
+       lossy compression of photographical images. It is specified at LINK_HERE.
+
+COMMANDS
+       ::jpeg::isJPEG file
+              Returns a boolean value indicating if file is a JPEG image.
+
+       ::jpeg::imageInfo file
+              Returns a dictionary with keys version, units, xdensity, ydensity,
+              xthumb, and ythumb. The values are the associated properties of
+              the JPEG image in file.  Throws an error if file is not a JPEG
+              image.
+
+       ::jpeg::dimensions file
+              Returns the dimensions of the JPEG file as a list of the
+              horizontal and vertical pixel count.  Throws an error if file is
+              not a JPEG image.
+
+       ::jpeg::getThumbnail file
+              This procedure will return the binary thumbnail image data, if a
+              JPEG thumbnail is included in file, and the empty string
+              otherwise. Note that it is possible to include thumbnails in
+              formats other than JPEG although that is not common. The command
+              finds thumbnails that are encoded in either the JFXX or EXIF
+              segments of the JPEG information. If both are present the EXIF
+              thumbnail will take precedence.  Throws an error if file is not a
+              JPEG image.
+
+                  set fh [open thumbnail.jpg w+]
+                  fconfigure $fh -translation binary -encoding binary
+                  puts -nonewline $fh [::jpeg::getThumbnail photo.jpg]
+                  close $fh
+
+
+       ::jpeg::getExif file ?section?
+              section must be one of main or thumbnail.  The default is main.
+              Returns a dictionary containing the EXIF information for the
+              specified section.  For example:
+
+
+                  set exif {
+                   Make     Canon
+                   Model    {Canon DIGITAL IXUS}
+                   DateTime {2001:06:09 15:17:32}
+                  }
+
+              Throws an error if file is not a JPEG image.
+
+       ::jpeg::formatExif keys
+              Takes a list of key-value pairs as returned by getExif and formats
+              many of the values into a more human readable form. As few as one
+              key-value may be passed in, the entire exif is not required.
+
+                  foreach {key val} [::jpeg::formatExif [::jpeg::getExif photo.jpg]] {
+                      puts "$key: $val"
+                  }
+
+
+
+                  array set exif [::jpeg::getExif photo.jpg]
+                  puts "max f-stop: [::jpeg::formatExif [list MaxAperture $exif(MaxAperture)]]
+
+
+       ::jpeg::exifKeys
+              Returns a list of the EXIF keys which are currently understood.
+              There may be keys present in getExif data that are not understood.
+              Those keys will appear in a 4 digit hexadecimal format.
+
+       ::jpeg::removeExif file
+              Removes the Exif data segment from the specified file and replaces
+              it with a standard JFIF segment.  Throws an error if file is not a
+              JPEG image.
+
+       ::jpeg::stripJPEG file
+              Removes all metadata from the JPEG file leaving only the image.
+              This includes comments, EXIF segments, JFXX segments, and
+              application specific segments.  Throws an error if file is not a
+              JPEG image.
+
+       ::jpeg::getComments file
+              Returns a list containing all the JPEG comments found in the file.
+              Throws an error if file is not a valid JPEG image.
+
+       ::jpeg::addComment file text...
+              Adds one or more plain text comments to the JPEG image in file.
+              Throws an error if file is not a valid JPEG image.
+
+       ::jpeg::removeComments file
+              Removes all comments from the file specified.  Throws an error if
+              file is not a valid JPEG image.
+
+       ::jpeg::replaceComment file text
+              Replaces the first comment in the file with the new text.  This is
+              merely a shortcut for ::jpeg::removeComments and
+              ::jpeg::addComment Throws an error if file is not a valid JPEG
+              image.
+
+       ::jpeg::debug file
+              Prints everything we know about the given file in a nice format.
+
+       ::jpeg::markers channel
+              This is an internal helper command, we document it for use by
+              advanced users of the package. The argument channel is an open
+              file handle positioned at the start of the first marker (usually 2
+              bytes). The command returns a list with one element for each JFIF
+              marker found in the file. Each element consists of a list of the
+              marker name, its offset in the file, and its length. The offset
+              points to the beginning of the sections data, not the marker
+              itself.  The length is the length of the data from the offset
+              listed to the start of the next marker.
+
+LIMITATIONS
+       can only work with files cant write exif data gps exif data not parsed
+       makernote data not yet implemented
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category jpeg of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       comment, exif, image, jfif, jpeg, thumbnail
+
+CATEGORY
+       File formats
+
+COPYRIGHT
+       Copyright (c) 2004-2005, Code: Aaron Faupell <afaupell@users.sourceforge.net>
+       Copyright (c) 2007, Code:  Andreas Kupries <andreas_kupries@users.sourceforge.net>
+       Copyright (c) 2004-2009, Doc:  Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

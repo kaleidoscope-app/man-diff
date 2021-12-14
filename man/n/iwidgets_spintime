@@ -1,0 +1,225 @@
+iwidgets::spintime(1)            [incr Widgets]            iwidgets::spintime(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::spintime - Create and manipulate time spinner widgets
+
+SYNOPSIS
+       iwidgets::spintime pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Spintime
+
+
+STANDARD OPTIONS
+       background      cursor         foreground      relief
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       textBackground  textFont
+
+       See the "entryfield" manual entry for details on the above associated
+       options.
+
+       labelFont       labelMargin
+
+       See the "labeledwidget" manual entry for details on the above associated
+       options.
+
+       arrowOrient     repeatDelay    repeatInterval
+
+       See the "spinner" manual entry for details on the above associated
+       options.
+
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           labelPos
+       Class:          Position
+       Command-Line Switch:           -labelpos
+
+              Specifies the position of the label along the sides of the various
+              spinners: n, e, s, or w.  The default is w.
+
+       Name:           hourLabel
+       Class:          Text
+       Command-Line Switch:           -hourlabel
+
+              Specifies the text of the label for the hour spinner.  The default
+              is "Hour".
+
+       Name:           hourOn
+       Class:          hourOn
+       Command-Line Switch:           -houron
+
+              Specifies whether or not to display the hour spinner in any of the
+              forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           hourWidth
+       Class:          Width
+       Command-Line Switch:           -hourwidth
+
+              Specifies the width of the hour spinner in any of the forms
+              acceptable to Tcl_GetPixels.  The default is 3 pixels.
+
+       Name:           militaryOn
+       Class:          militaryOn
+       Command-Line Switch:           -militaryon
+
+              Specifies use of a 24 hour clock for hour display in any of the
+              forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           minuteLabel
+       Class:          Text
+       Command-Line Switch:           -minutelabel
+
+              Specifies the text of the label for the minute spinner.  The
+              default is "Minute".
+
+       Name:           minuteOn
+       Class:          minuteOn
+       Command-Line Switch:           -minuteon
+
+              Specifies whether or not to display the minute spinner in any of
+              the forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           minuteWidth
+       Class:          Width
+       Command-Line Switch:           -minutewidth
+
+              Specifies the width of the minute spinner in any of the forms
+              acceptable to Tcl_GetPixels.  The default is 3 pixels.
+
+       Name:           orient
+       Class:          Orient
+       Command-Line Switch:           -orient
+
+              Specifies the orientation of the hour, minute, and second
+              spinners: vertical or horizontal.  The default is horizontal.
+
+       Name:           secondLabel
+       Class:          Text
+       Command-Line Switch:           -secondlabel
+
+              Specifies the text of the label for the second spinner.  The
+              default is "Second"
+
+       Name:           secondOn
+       Class:          secondOn
+       Command-Line Switch:           -secondon
+
+              Specifies whether or not to display the second spinner in any of
+              the forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           secondWidth
+       Class:          Width
+       Command-Line Switch:           -secondwidth
+
+              Specifies the width of the second spinner in any of the forms
+              acceptable to Tcl_GetPixels.  The default is 3 pixels.
+
+       Name:           timeMargin
+       Class:          Margin
+       Command-Line Switch:           -timemargin
+
+              Specifies the margin space between the hour, minute, and second
+              spinners is any of the forms accpetable to Tcl_GetPixels.  The
+              default is 1 pixel.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::spintime command creates a set of spinners for use in time
+       value entry.  The set includes an hour, minute, and second spinner
+       widget.
+
+
+METHODS
+       The iwidgets::spintime command creates a new Tcl command whose name is
+       pathName. This command may be used to invoke various operations on the
+       widget. It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command. The
+       following commands are possible for spintime widgets:
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::spintime command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::spintime command.
+
+       pathName get ?format?
+              Returns the current contents of the spintime widget in a format of
+              string or as an integer clock value using the -string and -clicks
+              format options respectively.  The default is by string.  Reference
+              the clock command for more information on obtaining time and its
+              formats.
+
+       pathName show time
+              Changes the currently displayed time to be that of the time
+              argument.  The time may be specified either as a string, an
+              integer clock value or the keyword "now".  Reference the clock
+              command for more information on obtaining times and its format.
+
+
+COMPONENTS
+       Name:           hour
+       Class:          Spinint
+
+              The hour component is the hour spinner of the time spinner.  See
+              the SpinInt widget manual entry for details on the hour component
+              item.
+
+       Name:           minute
+       Class:          Spinint
+
+              The minute component is the minute spinner of the time spinner.
+              See the SpinInt widget manual entry for details on the minute
+              component item.
+
+       Name:           second
+       Class:          Spinint
+
+              The second component is the second spinner of the time spinner.
+              See the SpinInt widget manual entry for details on the second
+              component item.
+
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              iwidgets::spintime .st
+              pack .st -padx 10 -pady 10
+
+
+AUTHOR
+       Sue Yockey
+
+       Mark L. Ulferts
+
+KEYWORDS
+       spintime, spinint, spinner, entryfield, entry, widget
+
+
+
+

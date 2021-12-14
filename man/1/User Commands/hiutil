@@ -1,0 +1,178 @@
+HIUTIL(1)                    General Commands Manual                   HIUTIL(1)
+
+NAME
+     hiutil – utility for creating and examining Help Viewer indices
+
+SYNOPSIS
+     hiutil -I FORMAT -Cf file [-1agv] [-m NUM] [-s LANG | PATH] [-r URL]
+            [-t EXT] dir
+     hiutil [-ADEFMST] -f file
+
+DESCRIPTION
+     hiutil is used to create .helpindex files in the Latent Symantic Mapping
+     (LSM) help format and .cshelpindex files in the Spotlight help format. It
+     is also capable of examining Spotlight help indices using the modes listed
+     below. To examine LSM indices, use a version of hiutil earlier than 2.0.
+
+     Spotlight help indices are required in macOS Mojave or later. Spotlight
+     indices are not compatible with versions earlier than macOS Mojave.
+
+     The macOS help system automatically generates indices for local help books
+     (see ~/Library/Caches/com.apple.helpd/). If your help content will be
+     hosted remotely, you may want to manually generate an index to include with
+     your remote help book.
+
+     Creation, management, inspection, and information modes are listed directly
+     below.
+
+     Create and manage modes:
+
+     -C, --create
+              Create an index file at the location you specify. You must provide
+              both a directory of HTML files to index and a path to an output
+              file, which will be overwritten if the ouput file already exists.
+
+     -I, --index-format
+              Pass the index format type as either 'lsm' or 'corespotlight'.
+
+     -P, --purge-caches
+              Terminate Help Viewer and helpd if they are running and purge
+              persisted Help Viewer related caches.
+
+     Inspection and infomation modes:
+
+     -A, --list-anchors
+              List the index's anchors separated by newlines.
+
+     -D, --list-anchor-dictionary
+              List the index's anchor dictionary in XML. This includes a list of
+              which files contain each anchor.
+
+     -E, --list-index-versions
+              List the index's version dictionary in XML. It describes the
+              system environment on which the index was created.
+
+     -F, --list-files
+              List all the files included in the index, separated by newlines.
+              You can use the -v option with this mode to get titles and
+              descriptions as well.
+
+     -H, --help
+              Print out usage data.
+
+     -M, --list-min-term-length
+              List the index's minimum term length.
+
+     -S, --list-stopwords
+              List the index's stopwords separated by newlines.
+
+     -T, --list-terms
+              List the terms indexed in each file.
+
+     -V, --version
+              Print out the version of the tool.
+
+GENERAL OPTIONS
+     These can be used with any mode.
+
+     -f, --file
+              Pass in the path to a file, either one to be created or one to be
+              examined.
+
+     -v, --verbose
+              Specify verbose output. Errors are always shown, but passing this
+              argument once prints out warnings also. Passing the argument twice
+              prints out errors, warnings, and progress notes.
+
+CREATE OPTIONS
+     These can only be used with the create mode.
+
+     -1       Index one file at a time. The default is to use a queue to index
+              several files in parallel. In combination with -vvv, this option
+              can be useful in determining which file an error message is from.
+
+     -a, --anchors
+              Specify index anchors. The default is to have none. Without this
+              flag, there will be no anchor dictionary in the index.
+
+     -e, --exclude=PATTERN
+              Exclude files that match the specified pattern. Uses NSPredicate's
+              MATCHES comparison method on the file's path relative to the
+              directory being indexed. This option can be passed as many times
+              as necessary, once per pattern. Exclusions take precedence over
+              files included with -i.
+
+     -g, --generate-summaries
+              Generate summary text. This can be slow, but is useful if you
+              don't have DESCRIPTION meta tags on some pages.
+
+     -i, --include=PATTERN
+              Include files that match the specified pattern. Uses NSPredicate's
+              MATCHES comparison method on the file's path relative to the
+              directory being indexed. The default patterns to index are ".htm"
+              and ".html". If these defaults are undesirable, you may use -e
+              above to exclude them. This option can be passed as many times as
+              necessary, once per pattern.
+
+     -m, --min-term-length=NUM
+              Specify a minimum term length. The value can be 1, 2 or 3. It
+              represents the number of consecutive tokens (typically a
+              character) required for a term not to be ignored by the indexer.
+              Recommended values are 3 for English and 1 for Chinese and other
+              ideographic languages.
+
+     -r, --remote-url=URL
+              Include a remote URL with the index. This is only useful in Type 1
+              or Type 2 help books, because the URL is in the help bundle's
+              Info.plist for Type 3 books. The URL should be fully qualified.
+              For example:
+
+                    https://www.mycompany.com/help_v1/
+
+     -s, --stopwords=LANG|PATH
+              Use stopwords. If you have your own stopwords .plist, provide that
+              path. Otherwise, pass the two-character language code. For
+              example:
+
+                     en     English
+                     es     Spanish
+                     de     German
+                     fr     French
+                     hu     Hungarian
+                     it     Italian
+                     sv     Swedish
+
+     -l, --locale=LANG
+              Specify a locale for the index. Instead of having to boot into the
+              locale to index, pass the language code or locale identifier here
+              to index for that language. Example locale identifiers:
+
+                     en_US  US English
+                     es_ES  Spanish
+                     de     German
+                     fr     French
+                     hu     Hungarian
+                     ru_RU  Russian
+
+FILES
+     /usr/share/hiutil/Stopwords.plist
+
+     List of default stopwords in different languages
+
+EXAMPLES
+     Create .cshelpindex file from a directory of HTML help:
+
+           hiutil -I corespotlight -Caf /pathto/myhelp.cshelpindex
+           /pathto/myhelpdir/
+
+     Inspect the anchors in a .cshelpindex file:
+
+           hiutil -I corespotlight -Af /pathto/myhelp.cshelpindex
+
+     Verbosely inspect the terms in a .cshelpindex file:
+
+           hiutil -I corespotlight -Tvf /pathto/myhelp.cshelpindex
+
+NOTES
+     hiutil requires macOS 10.14 or later.
+

@@ -1,0 +1,64 @@
+MAKEWHATIS(8)                System Manager's Manual               MAKEWHATIS(8)
+
+NAME
+     makewhatis – create whatis database
+
+SYNOPSIS
+     makewhatis [-a] [-i column] [-n name] [-o file] [-v] [-L] [directories ...]
+
+DESCRIPTION
+     The makewhatis utility collects the names and short descriptions from all
+     the unformatted man pages in the directories and puts them into a file used
+     by the whatis(1) and apropos(1) commands.  Directories may be separated by
+     colons instead of spaces.  If no directories are specified, the contents of
+     the MANPATH environment variable will be used, or if that is not set, the
+     default directory /usr/share/man will be processed.
+
+     The options are as follows:
+
+     -a               Appends to the output file(s) instead of replacing them.
+                      The output will be sorted with duplicate lines removed,
+                      but may have obsolete entries.
+
+     -i column        Indents the description by column characters.  The default
+                      value is 24.
+
+     -n name          Uses name instead of whatis.
+
+     -o file          Outputs all lines to the file instead of */man/whatis.
+
+     -v               Makes makewhatis more verbose about what it is doing.
+
+     -L               Process only localized subdirectories corresponding to the
+                      locale specified in the standard environment variables.
+
+ENVIRONMENT
+     LC_ALL, LC_CTYPE, LANG
+                  These variables control what subdirectories will be processed
+                  if the -L option is used.
+
+     MACHINE      If set, its value is used to override the current machine type
+                  when searching machine specific subdirectories.
+
+     MANPATH      Determines the set of directories to be processed if none are
+                  given on the command line.
+
+FILES
+     /usr/share/man      Default directory to process if the MANPATH environment
+                         variable is not set.
+     */man/whatis        The default output file.
+
+DIAGNOSTICS
+     The makewhatis utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     apropos(1), whatis(1)
+
+HISTORY
+     The makewhatis command appeared in FreeBSD 2.1.
+
+AUTHORS
+     The makewhatis program was originally written in Perl and was contributed
+     by Wolfram Schneider.  The current version of makewhatis was rewritten in C
+     by John Rochester.
+

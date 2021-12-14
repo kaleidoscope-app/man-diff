@@ -1,0 +1,67 @@
+datefield(n)                   Tk datefield widget                  datefield(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       datefield - Tk datefield widget
+
+SYNOPSIS
+       package require Tk
+
+       package require datefield  ?0.2?
+
+       ::datefield::datefield widgetpath ?options?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The datefield package provides the datefield widget which is an enhanced
+       text entry widget for the purpose of date entry. Only valid dates of the
+       form MM/DD/YYYY can be entered.
+
+       The datefield widget is, in fact, just an entry widget with specialized
+       bindings. This means all the command and options for an entry widget
+       apply equally here.
+
+COMMANDS
+       ::datefield::datefield widgetpath ?options?
+              Creates and configures a date field widget.
+
+OPTIONS
+       See the entry manual entry for details on all available options.
+
+EXAMPLE
+
+        package require datefield
+
+        wm title . "Datefield example"
+        proc DayOfWeek {args} {
+            set now [clock scan $::myDate]
+            set ::myDate2 [clock format $now -format %A]
+        }
+        trace variable myDate w DayOfWeek
+
+        ::datefield::datefield .df -textvariable myDate
+        label .l1 -text "Enter a date:"   -anchor e
+        label .l2 -text "That date is a:" -anchor e
+        label .l3 -textvariable myDate2 -relief sunken -width 12
+
+        grid .l1 .df -sticky ew
+        grid .l2 .l3 -sticky ew
+        focus .df
+
+
+SEE ALSO
+       clock(n), entry(n)
+
+KEYWORDS
+       clock, entry, widget
+
+COPYRIGHT
+       Copyright (c) Keith Vetter <keith@ebook.gemstar.com>
+
+
+
+

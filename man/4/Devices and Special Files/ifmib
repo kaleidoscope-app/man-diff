@@ -1,0 +1,98 @@
+IFMIB(4)                      Device Drivers Manual                     IFMIB(4)
+
+NAME
+     ifmib – Management Information Base for network interfaces
+
+SYNOPSIS
+     #include <sys/types.h>
+     #include <sys/socket.h>
+     #include <sys/sysctl.h>
+     #include <sys/time.h>
+     #include <net/if.h>
+     #include <net/if_mib.h>
+
+DESCRIPTION
+     The ifmib facility is an application of the sysctl(3) interface to provide
+     management information about network interfaces to client applications such
+     as netstat(1), slstat(8), and SNMP management agents.  This information is
+     structured as a table, where each row in the table represents a logical
+     network interface (either a hardware device or a software pseudo-device
+     like lo(4)).  There are two columns in the table, each containing a single
+     structure: one column contains generic information relevant to all
+     interfaces, and the other contains information specific to the particular
+     class of interface.  (Generally the latter will implement the SNMP MIB
+     defined for that particular interface class, if one exists and can be
+     implemented in the kernel.)
+
+     The ifmib facility is accessed via the “net.link.generic” branch of the
+     sysctl(3) MIB.  The manifest constants for each level in the sysctl(3) name
+     are defined in <net/if_mib.h>.  The index of the last row in the table is
+     given by “net.link.generic.system.ifcount” (or, using the manifest
+     constants, CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_SYSTEM, IFMIB_IFCOUNT).
+     A management application searching for a particular interface should start
+     with row 1 and continue through the table row-by-row until the desired
+     interface is found, or the interface count is reached.  Note that the table
+     may be sparse, i.e., a given row may not exist, indicated by an errno of
+     ENOENT.  Such an error should be ignored, and the next row should be
+     checked.
+
+     The generic interface information, common to all interfaces, can be
+     accessed via the following procedure:
+
+           int
+           get_ifmib_general(int row, struct ifmibdata *ifmd)
+           {
+                   int name[6];
+                   size_t len;
+
+                   name[0] = CTL_NET;
+                   name[1] = PF_LINK;
+                   name[2] = NETLINK_GENERIC;
+                   name[3] = IFMIB_IFDATA;
+                   name[4] = row;
+                   name[5] = IFDATA_GENERAL;
+
+                   len = sizeof(*ifmd);
+
+                   return sysctl(name, 6, ifmd, &len, (void *)0, 0);
+           }
+
+     The fields in struct ifmibdata are as follows:
+
+     ifmd_name       (char []) the name of the interface, including the unit
+                     number
+
+     ifmd_pcount     (int) the number of promiscuous listeners
+
+     ifmd_flags      (int) the interface's flags (defined in <net/if.h>)
+
+     ifmd_snd_len    (int) the current instantaneous length of the send queue
+
+     ifmd_snd_drops  (int) the number of packets dropped at this interface
+                     because the send queue was full
+
+     ifmd_data       (struct if_data) more information from a structure defined
+                     in <net/if.h> (see if_data(9))
+
+     Class-specific information can be retrieved by examining the
+     IFDATA_LINKSPECIFIC column instead.  Note that the form and length of the
+     structure will depend on the class of interface.  For IFT_ETHER,
+     IFT_ISO88023, and IFT_STARLAN interfaces, the structure is called “struct
+     ifmib_iso_8802_3” (defined in <net/if_mib.h>), and implements a superset of
+     the RFC 1650 MIB for Ethernet-like networks.  For IFT_SLIP, the structure
+     is a “struct sl_softc” (<net/if_slvar.h>).
+
+SEE ALSO
+     sysctl(3), intro(4), ifnet(9)
+
+     F. Kastenholz, Definitions of Managed Objects for the Ethernet-like
+     Interface Types Using SMIv2, August 1994, RFC 1650.
+
+BUGS
+     Many Ethernet-like interfaces do not yet support the Ethernet MIB; the
+     interfaces known to support it include ed(4) and de(4).  Regardless, all
+     interfaces automatically support the generic MIB.
+
+HISTORY
+     The ifmib interface first appeared in FreeBSD 2.2.
+

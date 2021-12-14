@@ -1,0 +1,140 @@
+iwidgets::canvasprintdialog(1)   [incr Widgets]   iwidgets::canvasprintdialog(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::canvasprintdialog - Create and manipulate a canvas print dialog
+       widget
+
+SYNOPSIS
+       iwidgets::canvasprintdialog pathName ?options?
+
+INHERITANCE
+       itk::Toplevel <- iwidgets::Dialogshell <- iwidgets::Dialog <-
+       iwidgets::Canvasprintdialog
+
+STANDARD OPTIONS
+
+       activeBackground  background           borderWidth      cursor
+       foreground        highlightBackground  highlightColor   highlightThickness
+       insertBackground  insertBorderWidth    insertOffTime    insertOnTime
+       insertWidth       relief               repeatDelay      repeatInterval
+       selectBackground  selectBorderWidth    selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       filename        hpagecnt       orient          output
+       pagesize        posterize      printcmd        printregion
+       vpagecnt
+
+       See the "canvasprintbox" widget manual entry for details on the above
+       associated options.
+
+
+INHERITED OPTIONS
+       buttonBoxPadX   buttonBoxPadY  buttonBoxPos    padX
+       padY            separator      thickness
+
+       See the "dialogshell" widget manual entry for details on the above
+       inherited options.
+
+       master          modality
+
+       See the "shell" widget manual entry for details on the above inherited
+       options.
+
+       title
+
+       See the "Toplevel" widget manual entry for details on the above inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::canvasprintdialog command creates a print dialog for
+       printing the contents of a canvas widget to a printer or a file. It is
+       possible to specify page orientation, the number of pages to print the
+       image on and if the output should be stretched to fit the page.
+
+
+METHODS
+       The iwidgets::canvasprintdialog command creates a new Tcl command whose
+       name is pathName.  This command may be used to invoke various operations
+       on the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for canvasprintdialog widgets:
+
+ASSOCIATED METHODS
+       getoutput       setcanvas      refresh         print
+
+       See the "canvasprintbox" class manual entry for details on the associated
+       methods.
+
+INHERITED METHODS
+       add             buttonconfigure                defaulthide
+       insert          invoke         show
+
+       See the "buttonbox" widget manual entry for details on the above
+       inherited methods.
+
+       activate        deactivate
+
+       See the "dialogshell" widget manual entry for details on the above
+       inherited methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::canvasprintdialog command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::canvasprintdialog
+              command.
+
+
+COMPONENTS
+       Name:           cpb
+       Class:          Canvasprintbox
+
+              The cpb component is the canvas print box for the canvas print
+              dialog.  See the "canvasprintbox" widget manual entry for details
+              on the cpb component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::canvasprintdialog .cpb
+               .cpb activate
+
+
+AUTHOR
+       Tako Schotanus
+
+       Tako.Schotanus@bouw.tno.nl
+
+KEYWORDS
+       canvasprintdialog, canvasprintbox, dialog, widget
+
+
+

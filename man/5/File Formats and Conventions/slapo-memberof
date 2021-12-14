@@ -1,0 +1,102 @@
+SLAPO-MEMBEROF(5)              File Formats Manual             SLAPO-MEMBEROF(5)
+
+
+
+NAME
+       slapo-memberof - Reverse Group Membership overlay to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The memberof overlay to slapd(8) allows automatic reverse group
+       membership maintenance.  Any time a group entry is modified, its members
+       are modified as appropriate in order to keep a DN-valued "is member of"
+       attribute updated with the DN of the group.
+
+
+CONFIGURATION
+       The config directives that are specific to the memberof overlay must be
+       prefixed by memberof-, to avoid potential conflicts with directives
+       specific to the underlying database or to other stacked overlays.
+
+
+       overlay memberof
+              This directive adds the memberof overlay to the current database;
+              see slapd.conf(5) for details.
+
+
+       The following slapd.conf configuration options are defined for the
+       memberof overlay.
+
+
+       memberof-group-oc_<group-oc>
+              The value <group-oc> is the name of the objectClass that triggers
+              the reverse group membership update.  It defaults to groupOfNames.
+
+
+       memberof-member-ad_<member-ad>
+              The value <member-ad> is the name of the attribute that contains
+              the names of the members in the group objects; it must be DN-
+              valued.  It defaults to member.
+
+
+       memberof-memberof-ad_<memberof-ad>
+              The value <memberof-ad> is the name of the attribute that contains
+              the names of the groups an entry is member of; it must be DN-
+              valued.  Its contents are automatically updated by the overlay.
+              It defaults to memberOf.
+
+
+       memberof-dn_<dn>
+              The value <dn> contains the DN that is used as modifiersName for
+              internal modifications performed to update the reverse group
+              membership.  It defaults to the rootdn of the underlying database.
+
+
+       memberof-dangling {ignore, drop, error}
+              This option determines the behavior of the overlay when, during a
+              modification, it encounters dangling references.  The default is
+              ignore, which may leave dangling references.  Other options are
+              drop, which discards those modifications that would result in
+              dangling references, and error, which causes modifications that
+              would result in dangling references to fail.
+
+
+       memberof-dangling-error_<error-code>
+              If memberof-dangling is set to error, this configuration parameter
+              can be used to modify the response code returned in case of
+              violation.  It defaults to "constraint violation", but other
+              implementations are known to return "no such object" instead.
+
+
+       memberof-refint {true|FALSE}
+              This option determines whether the overlay will try to preserve
+              referential integrity or not.  If set to TRUE, when an entry
+              containing values of the "is member of" attribute is modified, the
+              corresponding groups are modified as well.
+
+
+       The memberof overlay may be used with any backend that provides full
+       read-write functionality, but it is mainly intended for use with local
+       storage backends. The maintenance operations it performs are internal to
+       the server on which the overlay is configured and are never replicated.
+       Replica servers should be configured with their own instances of the
+       memberOf overlay if it is desired to maintain these memberOf attributes
+       on the replicas.
+
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5), slapd(8).  The slapo-memberof(5) overlay
+       supports dynamic configuration via back-config.
+
+ACKNOWLEDGEMENTS
+       This module was written in 2005 by Pierangelo Masarati for SysNet s.n.c.
+
+
+
+

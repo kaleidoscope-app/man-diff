@@ -1,0 +1,157 @@
+NEWFS_UDF(8)                 System Manager's Manual                NEWFS_UDF(8)
+
+NAME
+     newfs_udf – construct a new UDF file system.
+
+SYNOPSIS
+     newfs_udf [-Ndeouw] [-b block-size] [-D defect-file-name]
+               [--dup-meta-part-file] [-E ecc-in-blks] [--enc encoding-name]
+               [-v vol-name] [-m media-type] [--meta-part-alloc-unit n]
+               [--meta-part-align-unit n] [--meta-part-init-size n]
+               [-p packet-size] [-r rev] [-s size] [-S start-block-address]
+               [--spare-blks n] [-t access-type]
+               [--unalloc-spc blk-addr num-blks] [--wipefs yes|no]
+               [--userid uid] [-U uid] [--groupid gid] [-G gid] special
+
+DESCRIPTION
+     The newfs_udf command builds the UDF filesystem on the specified special
+     device.
+
+     The options are as follows:
+
+     General options:
+
+     -N      Causes the file system parameters to be printed out without really
+             creating the file system.
+
+     -w      Stop processing on warnings, default: no
+
+     --wipefs yes|no
+             Whether wipe existing file systems on the volume before formatting
+             it.  Default: wipe existing file systems when media-type is block
+             device (blk), access-type is overwrite (ow), and the Keep Disc Open
+             option (-o) is not specified; do not wipe existing file systems by
+             default in all other cases.
+
+     --largesparse
+             Format the volume to use a non UDF-compliant format to efficiently
+             support very large sparse files (up to 2^63 - 1, or
+             9,223,372,036,854,775,807 bytes).  Sparse files on this volume that
+             has holes larger than 1GB cannot be accessed by other UDF
+             implementations.
+
+     Disc properties:
+
+     -b block-size
+             The block size of the file system, in bytes, default: the native
+             block size of the device, or 2048 for an image file
+
+     -d      The file system manages defects by creating a sparable partition,
+             default: no
+
+     -e      Use extended file entry instead of file entry, default: no
+
+     -E ecc-in-blks
+             ECC block size in number of blocks
+
+     -m media-type
+             The type of the media, can be blk (block device), var-packet
+             (varible size packet writing), fix-packet (fixed size packet
+             writing), or pow (pseudo overwrite), default: blk
+
+     -t access-type
+             The access type of the partition, can be wo (writeonce), ow
+             (overwrite), or pow (pseudo overwrite), default: ow
+
+     -o      Keep the disc as open by only writing the first AVDP (e.g.,
+             background formating haven't finish, so the write of the last two
+             AVDPs is not possible), default: close the disc for overwrite
+             media, and keep it open for write once media
+
+     -p packet-size
+             The size of a packet in number of blocks, default: 1
+
+     -s size
+             Size of the file system in blocks, default: size of the device
+
+     UDF parameters:
+
+     General:
+
+     -r rev  UDF version number, can be 1.02, 1.50, 2.00, 2.01, 2.50, or 2.60,
+             default: 2.01
+
+     -u      Creates unique id table (or unique id stream), default: no
+
+     --unalloc-spc blk-addr num-blks
+             Unallocated space recorded in unallocated space descriptor,
+             default: no unallocated spc
+
+     -v vol-name
+             Volume identifier, max 127 ascii or 63 unicode chars, default:
+             "Untitled UDF Volume"
+
+     --enc encoding-name
+             The character encoding of the volume name, can be "utf8" or
+             "utf16", default: utf8
+
+     Virtual partitions (for CD-R, DVD-R SL/DL, DVD+R SL/DL, and HD DVD-R
+     SL/DL):
+
+     -S start-block-address
+             The start block address of the last session.  Newfs_udf will search
+             for this value for optical media
+
+     Sparable partitions (for CD-RW, DVD-RW, and DVD+RW):
+
+     --spare-blks n
+             Total number of sparing blocks (2 sparing tables are always used),
+             default: 128
+
+     -D defect-file-name
+             The name of the file containing all defect blocks.  This file is a
+             text file, contains the physical block address of the media that
+             has defects.  When one block of a packet is defective, the whole
+             packet is marked as defective.  The block numbers in the file is
+             delimited by space.  Multiple numbers can be on the same line.
+
+     Metadata partitions (for BD-R with POW, BD-RE and other overwritable media
+     with UDF 2.50 or higher ):
+
+     --dup-meta-part-file
+             Duplicate the content of the metadata file in the metadata mirror
+             file, default: no
+
+     --meta-part-alloc-unit n
+             The allocation unit size of the metadata partition in number of
+             blocks, default: max(32, eccSizeInBlks, packetSize)
+
+     --meta-part-align-unit n
+             The alignment unit size of the metadata partition in number of
+             blocks, default: max(eccSizeInBlks, packetSize)
+
+     --meta-part-init-size n
+             The initial size of the metadata partition in number of blocks,
+             default: 32
+
+     --userid uid
+             or
+
+     -U uid  Use the specified uid (numeric value only) as the owner of the root
+             directory.
+
+     --groupid gid
+             or
+
+     -G gid  Use the specified gid (numeric value only) as the group of the root
+             directory.
+
+SEE ALSO
+     newfs(8)
+
+BUGS
+     Unallocated space is not supported yet.
+
+HISTORY
+     The newfs_udf utility first appeared in Mac OS X Leopard (10.5.0).
+

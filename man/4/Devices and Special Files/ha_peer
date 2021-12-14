@@ -1,0 +1,68 @@
+HA_PEER(4)                    Device Drivers Manual                   HA_PEER(4)
+
+
+
+NAME
+       ha_peer - Xsan HA Peer Server IP Address
+
+SYNOPSIS
+       /Library/Preferences/Xsan/ha_peer
+
+DESCRIPTION
+       The Xsan File System /Library/Preferences/Xsan/ha_peer file provides the
+       IP address of the peer server in an Xsan High Availability (HA) cluster
+       configuration to the snhamgr_daemon and fsmpm processes.  It must be
+       configured on both servers.  The ha_peer file may also be used to change
+       the default IP port (5189) used by the snhamgr_daemon and snhamgr
+       processes.
+
+       The ha_peer IP address allows the fsmpm processes to negotiate the
+       restarting of HA Timers to avoid unnecessary HA Reset incidents when
+       metadata writes are delayed by heavy disk activity, and to detect
+       misconfigured /Library/Preferences/Xsan/ha_smith_interval HA Timer
+       override values.  For HA clusters with an HaShared file system, the
+       address also allows communication between the snhamgr_daemon processes
+       running on the metadata controllers to collect operational status for the
+       snhamgr command.
+
+SYNTAX
+       Any entry that does not begin with # is assumed to be the peer IP address
+       and optional port number.  The address should be in IPv4 or IPv6
+       numerical format.  The address and port entries are specified as follows:
+
+          <address>
+       or
+
+          <address>:<port>
+
+       For IPv6, enclose the address portion in square brackets if also
+       specifying a port.
+
+EXAMPLE
+       To set the peer address, the ha_peer file would contain the following
+       line:
+
+          192.168.10.1
+
+       To set the peer address and port, the ha_peer file would contain the
+       following line:
+
+          192.168.10.1:8888
+
+       To set an IPv6 address or address and port, the following lines could be
+       specified:
+
+          fe80::250:56ff:fe9b:74b8
+
+       or
+
+          [fe80::250:56ff:fe9b:74b8]:4600
+
+FILES
+       /Library/Preferences/Xsan/ha_peer
+
+SEE ALSO
+       snhamgr(8), fsmpm(8), Quantum StorNext User's Guide
+
+
+

@@ -1,0 +1,102 @@
+sysdiagnose(1)               General Commands Manual              sysdiagnose(1)
+
+NAME
+     sysdiagnose – gathers system-wide diagnostic information helpful in
+     investigating system performance issues
+
+SYNOPSIS
+     sysdiagnose -h
+     sysdiagnose [-f results_directory] [-A archive_name] [-V volume_path] [-n]
+                 [-k] [-F] [-S] [-u] [-Q] [-b] [-p] [-P] [-d] [-D] [-r] [-R]
+                 [process_name | pid]
+
+DESCRIPTION
+     The sysdiagnose tool gathers system diagnostic information helpful in
+     investigating system performance issues.  A great deal of information is
+     harvested, spanning system state and configuration. The data is stored
+     /var/tmp directory.  sysdiagnose needs to be run as root. To cancel an in-
+     flight sysdiagnose triggered via command line interface, press Ctrl-\.
+     sysdiagnose is automatically triggered when the following key chord is
+     pressed: Control-Option-Command-Shift-Period.
+
+   What sysdiagnose collects:
+           •   A spindump of the system
+           •   Several seconds of fs_usage ouput
+           •   Several seconds of top output
+           •   Data about kernel zones
+           •   Status of loaded kernel extensions
+           •   Resident memory usage of user processes
+           •   Recent system logs
+           •   A System Profiler report
+           •   Recent crash reports
+           •   Disk usage information
+           •   I/O Kit registry information
+           •   Network status
+           •   If a specific process is supplied as an argument: list of malloc-
+               allocated buffers in the process's heap is collected
+           •   If a specific process is supplied as an argument: data about
+               unreferenced malloc buffers in the process's memory is collected
+           •   If a specific process is supplied as an argument: data about the
+               virtual memory regions allocated in the process
+
+OPTIONS
+     -h       Display help.
+
+     -v       Enable verbose mode to display the container information as it
+              executes.
+
+     -f results_directory
+              Specify the directory where the results will be stored. The
+              default results directory is /var/tmp.
+
+     -A archive_name
+              Specify the name of the archive created in the results directory.
+
+     -V volume_path
+              Specify the root volume for sysdiagnose to run on.
+
+     -n       Do not tar the resulting sysdiagnose directory.
+
+     -k       Do not remove the temporary directory.
+
+     -F       Get feedback data.
+
+     -S       Disable streaming to tarball.
+
+     -u       Disable UI feedback.
+
+     -Q       Skip footprint.
+
+     -b       Do NOT show the resulting archive in a Finder window upon
+              completion.
+
+     -p       Collect only time-sensitive data. Disregards previous -d or -r
+              flags.
+
+     -P       Do not collect time-sensitive data.
+
+     -d       Collect only log collection data. Disregards previous -p or -r
+              flags.
+
+     -D       Do not collect log collection data.
+
+     -g       Collect only log generation data. Disregards previous -p or -r
+              flags.
+
+     -G       Do not collect log generation data.
+
+     -r       Collect only log archive. Disregards previous -p or -d flags.
+
+     -R       Do not collect log archive.
+
+     process_name | pid
+              If a single process appears to be slowing down the system, passing
+              in the process name or ID as the argument gathers additional
+              process-specific diagnostic data. Specify only ONE process at a
+              time -- specifying multiple processes is not supported.
+
+EXIT STATUS
+     sysdiagnose exits with status 0 if there were no internal errors
+     encountered during the diagnostic, or >0 when an error unrelated to
+     external state occurs or unusable input is provided by the user.
+

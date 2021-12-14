@@ -1,0 +1,190 @@
+IPCONFIG(8)                  System Manager's Manual                 IPCONFIG(8)
+
+NAME
+     ipconfig – view and control IP configuration state
+
+SYNOPSIS
+     ipconfig waitall
+     ipconfig getifaddr interface-name
+     ipconfig ifcount
+     ipconfig getoption interface-name (option-name | option-code)
+     ipconfig getpacket interface-name
+     ipconfig getv6packet interface-name
+     ipconfig getra interface-name
+     ipconfig setverbose level
+     ipconfig set interface-name NONE
+     ipconfig set interface-name (DHCP | BOOTP)
+     ipconfig set interface-name (MANUAL | INFORM) ip-address subnet-mask
+     ipconfig set interface-name NONE-V6
+     ipconfig set interface-name AUTOMATIC-V6
+     ipconfig set interface-name MANUAL-V6 ipv6-address prefix-length
+     ipconfig set interface-name 6TO4
+
+DESCRIPTION
+     ipconfig is a utility that communicates with the IPConfiguration agent to
+     retrieve and set IP configuration parameters.  It should only be used in a
+     test and debug context.  Using it for any other purpose is strongly
+     discouraged. Public API's in the SystemConfiguration framework are
+     currently the only supported way to access and control the state of
+     IPConfiguration.
+
+     The IPConfiguration agent is responsible for configuring and managing the
+     IPv4 and IPv6 addresses on direct, connectionless interfaces such as
+     ethernet and Wi-Fi.  The IPConfiguration agent is a program bundle that is
+     loaded and executed by the configd(8) process.
+
+     The IPConfiguration agent implements the client side of the DHCP and BOOTP
+     protocols described in RFC951, RFC1542, RFC2131, and RFC2132.  It also
+     assigns and maintains static IP addresses.  It may also allocate and assign
+     a link-local IP address if DHCP fails to acquire an IP address.
+
+     The IPConfiguration agent enables and controls the IPv6 SLAAC (RFC 4862)
+     state in the kernel, and also handles statically configured IPv6 addresses.
+     The agent implements the client side of the DHCPv6 protocol (RFC 3315) and
+     supports both stateless and stateful operation.
+
+     In all cases, the IPConfiguration agent performs IP address conflict
+     detection before assigning an IP address to an interface.
+
+COMMANDS
+     The ipconfig utility provides several commands:
+
+     waitall
+             Blocks until all network services have completed configuring, or
+             have timed out in the process of configuring.  This is only useful
+             for initial system start-up time synchronization for legacy network
+             services that are incapable of dealing with dynamic network
+             configuration changes.
+
+     getifaddr interface-name
+             Prints to standard output the IP address for the first network
+             service associated with the given interface.  The output will be
+             empty if no service is currently configured or active on the
+             interface.
+
+     ifcount
+             Prints the number of interfaces that IPConfiguration is capable of
+             configuring.  The value that's printed will not change unless
+             relevant network interfaces are either added to or removed from the
+             system.
+
+     getoption interface-name (option-name | option-code)
+             Prints the BOOTP/DHCP option with the given name or option code
+             integer value.  See bootpd(8) for option code names.  If an option
+             has multiple values e.g. domain_name_server, only the first value
+             is printed.
+
+     getpacket interface-name
+             Prints to standard output the DHCP/BOOTP packet that the client
+             accepted from the DHCP/BOOTP server.  This command is useful to
+             check what the server provided, and whether the values are
+             sensible.  This command outputs nothing if DHCP/BOOTP is not active
+             on the interface, or the attempt to acquire an IP address was
+             unsuccessful.
+
+     getv6packet interface-name
+             Prints to standard output the latest DHCPv6 packet that the client
+             accepted from the DHCPv6 server.  In the case of stateful DHCPv6,
+             it corresponds to the last packet from the server that contained
+             addressing information.  This command is useful to check what the
+             server provided, and whether the values are sensible.  This command
+             outputs nothing if DHCPv6 is not active on the interface.
+
+     getra interface-name
+             Prints to standard output the latest IPv6 Router Advertisement
+             packet that the client accepted from an advertising router. This
+             command outputs nothing if no router is present.
+
+     set interface-name NONE
+     set interface-name (DHCP | BOOTP)
+     set interface-name (MANUAL | INFORM) ip-address subnet-mask
+     set interface-name NONE-V6
+     set interface-name AUTOMATIC-V6
+     set interface-name MANUAL-V6 ipv6-address prefix-length
+     set interface-name 6TO4
+             Sets the interface to have a new temporary network service of the
+             given type.  Any existing services on the interface for the
+             particular protocol (IPv4 or IPv6) are first de-configured before
+             the new service is instantiated.
+
+             If NONE is specified, all existing IPv4 services are de-configured.
+             If NONE-V6 is specified, all existing IPv6 services are de-
+             configured.
+
+             DHCP and BOOTP require no additional arguments. The IP address,
+             subnet mask, router, and DNS information are retrieved
+             automatically.
+
+             Both MANUAL and INFORM require the specification of an IP address
+             ip-address and a subnet mask subnet-mask.
+
+             The INFORM service configures the IP address statically like
+             MANUAL, but then broadcasts DHCP INFORM packets to retrieve DHCP
+             option information. If the DHCP server responds and supplies a
+             subnet mask, that subnet mask is used instead of the specified
+             subnet-mask.
+
+             AUTOMATIC-V6 requires no additional arguments.  The IPv6 address,
+             prefix length and router are retrieved automatically.
+
+             MANUAL-V6 requires the specification of the IPv6 address
+             ipv6-address and a prefix length prefix-length.
+
+             6TO4 only works on Six To Four (IFT_STF) interfaces e.g. stf0.  If
+             it is specified on a non-IFT_STF interface, it has the same effect
+             as specifying NONE-V6.
+
+             The set command requires root privileges.
+
+             Note: The set command is very useful for debugging, but it can't be
+             used to configure a persistent service.  The temporary services
+             that are created only remain until the next network configuration
+             change occurs. See scselect(8).
+
+     setverbose level
+             Enables or disables verbose mode logging in the IPConfiguration
+             agent. Specify a level value of 0 to disable verbose logging, the
+             default.  Specify a value of 1 to enable verbose logging. This
+             setting is persistent across boots of the operating system.
+
+             All logging generated by the IPConfiguration agent can be filtered
+             using the "com.apple.IPConfiguration" subsystem identifier.
+
+             The setverbose command requires root privileges.
+
+EXAMPLES
+     # ipconfig getpacket en0
+     op = BOOTREPLY
+     htype = 1
+     dp_flags = 0
+     hlen = 6
+     hops = 0
+     xid = 1956115059
+     secs = 0
+     ciaddr = 0.0.0.0
+     yiaddr = 192.168.4.10
+     siaddr = 192.168.4.1
+     giaddr = 0.0.0.0
+     chaddr = 0:3:93:7a:d7:5c
+     sname = dhcp.mycompany.net
+     file =
+     options:
+     Options count is 10
+     dhcp_message_type (uint8): ACK 0x5
+     server_identifier (ip): 192.168.4.1
+     lease_time (uint32): 0x164a
+     subnet_mask (ip): 255.255.255.0
+     router (ip_mult): {192.168.4.1}
+     domain_name_server (ip_mult): {192.168.4.1}
+     domain_name (string): mycompany.net
+     end (none):
+
+     # ipconfig getoption en0 router
+     192.168.4.1
+
+SEE ALSO
+     configd(8), bootpd(8), scselect(8)
+
+HISTORY
+     The ipconfig command first appeared in Mac OS X Version 10.0 Public Beta.
+

@@ -1,0 +1,64 @@
+textutil::split(n)                   Text and string utilities, macro processing
+
+
+
+________________________________________________________________________________
+
+NAME
+       textutil::split - Procedures to split texts
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require textutil::split  ?0.7?
+
+       ::textutil::split::splitn string ?len?
+
+       ::textutil::split::splitx string ?regexp?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The package textutil::split provides commands that split strings by size
+       and arbitrary regular expressions.
+
+       The complete set of procedures is described below.
+
+       ::textutil::split::splitn string ?len?
+              This command splits the given string into chunks of len characters
+              and returns a list containing these chunks. The argument len
+              defaults to 1 if none is specified. A negative length is not
+              allowed and will cause the command to throw an error. Providing an
+              empty string as input is allowed, the command will then return an
+              empty list. If the length of the string is not an entire multiple
+              of the chunk length, then the last chunk in the generated list
+              will be shorter than len.
+
+       ::textutil::split::splitx string ?regexp?
+              This command splits the string and return a list. The string is
+              split according to the regular expression regexp instead of a
+              simple list of chars.  Note that if you parentheses are added into
+              the regexp, the parentheses part of separator will be added into
+              the result list as additional element. If the string is empty the
+              result is the empty list, like for split. If regexp is empty the
+              string is split at every character, like split does.  The regular
+              expression regexp defaults to "[\\t \\r\\n]+".
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category textutil of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       regexp(n), split(n), string(n)
+
+KEYWORDS
+       regular expression, split, string
+
+CATEGORY
+       Text processing
+
+
+

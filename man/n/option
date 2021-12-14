@@ -1,0 +1,115 @@
+option(n)                     Tk Built-In Commands                     option(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       option - Add/retrieve window options to/from the option database
+
+SYNOPSIS
+       option add pattern value ?priority?
+       option clear
+       option get window name class
+       option readfile fileName ?priority?
+________________________________________________________________________________
+
+DESCRIPTION
+       The option command allows you to add entries to the Tk option database or
+       to retrieve options from the database.  The add form of the command adds
+       a new option to the database.  Pattern contains the option being
+       specified, and consists of names and/or classes separated by asterisks or
+       dots, in the usual X format (see PATTERN FORMAT).  Value contains a text
+       string to associate with pattern;  this is the value that will be
+       returned in calls to Tk_GetOption or by invocations of the option get
+       command.  If priority is specified, it indicates the priority level for
+       this option (see below for legal values);  it defaults to interactive.
+       This command always returns an empty string.
+
+       The option clear command clears the option database.  Default options
+       (from the RESOURCE_MANAGER property or the .Xdefaults file) will be
+       reloaded automatically the next time an option is added to the database
+       or removed from it.  This command always returns an empty string.
+
+       The option get command returns the value of the option specified for
+       window under name and class.  If several entries in the option database
+       match window, name, and class, then the command returns whichever was
+       created with highest priority level.  If there are several matching
+       entries at the same priority level, then it returns whichever entry was
+       most recently entered into the option database.  If there are no matching
+       entries, then the empty string is returned.
+
+       The readfile form of the command reads fileName, which should have the
+       standard format for an X resource database such as .Xdefaults, and adds
+       all the options specified in that file to the option database.  If
+       priority is specified, it indicates the priority level at which to enter
+       the options;  priority defaults to interactive.
+
+       The priority arguments to the option command are normally specified
+       symbolically using one of the following values:
+
+       widgetDefault
+              Level 20.  Used for default values hard-coded into widgets.
+
+       startupFile
+              Level 40.  Used for options specified in application-specific
+              startup files.
+
+       userDefault
+              Level 60.  Used for options specified in user-specific defaults
+              files, such as .Xdefaults, resource databases loaded into the X
+              server, or user-specific startup files.
+
+       interactive
+              Level 80.  Used for options specified interactively after the
+              application starts running.  If priority is not specified, it
+              defaults to this level.
+
+       Any of the above keywords may be abbreviated.  In addition, priorities
+       may be specified numerically using integers between 0 and 100, inclusive.
+       The numeric form is probably a bad idea except for new priority levels
+       other than the ones given above.
+
+PATTERN FORMAT
+       Patterns consist of a sequence of words separated by either periods, “.”,
+       or asterisks “*”.  The overall pattern may also be optionally preceded by
+       an asterisk.
+
+       Each word in the pattern conventionally starts with either an upper-case
+       letter (in which case it denotes the class of either a widget or an
+       option) or any other character, when it denotes the name of a widget or
+       option. The last word in the pattern always indicates the option; the
+       preceding ones constrain which widgets that option will be looked for in.
+
+       When two words are separated by a period, the latter widget must be a
+       direct child of the former (or the option must apply to only the
+       indicated widgets).  When two words are separated by an asterisk, any
+       depth of widgets may lie between the former and latter widgets (and the
+       option applies to all widgets that are children of the former widget).
+
+       If the overall pattern is preceded by an asterisk, then the overall
+       pattern applies anywhere it can throughout the whole widget hierarchy.
+       Otherwise the first word of the pattern is matched against the name and
+       class of the “.” toplevel, which are usually set by options to wish.
+
+EXAMPLES
+       Instruct every button in the application to have red text on it unless
+       explicitly overridden (note that on some platforms the option is
+       ignored):
+              option add *Button.foreground red startupFile
+
+       Allow users to control what happens in an entry widget when the Return
+       key is pressed by specifying a script in the option database and add a
+       default option for that which rings the bell:
+              entry .e
+              bind .e <Return> [option get .e returnCommand Command]
+              option add *.e.returnCommand bell widgetDefault
+
+SEE ALSO
+       options(n), wish(1)
+
+KEYWORDS
+       database, option, priority, retrieve
+
+
+

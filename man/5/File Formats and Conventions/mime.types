@@ -1,0 +1,121 @@
+mime.types(5)                      Apple Inc.                      mime.types(5)
+
+
+
+NAME
+       mime.types - mime type description file for cups
+
+DESCRIPTION
+       The mime.types file defines the recognized file types.
+
+       Additional file types are specified in files with the extension .types in
+       the CUPS configuration directory.
+
+       Each line in the mime.types file is a comment, blank, or rule line.
+       Comment lines start with the # character.  Rule lines start with the MIME
+       media type and are optionally followed by a series of file recognition
+       rules:
+
+           mime/type [ rule ... rule ]
+
+       Rules can be extended over multiple lines using the backslash character
+       (\):
+
+           mime/type [ really-really-really-long-rule ... \
+             rule ]
+
+       MIME media types specified by the mime/type field are case-insensitive
+       and are sorted in ascending alphanumeric order for the purposes of
+       matching.  See the "TYPE MATCHING AND PRIORITY" section for more
+       information.
+
+       The rules may be grouped using parenthesis, joined using "+" for a
+       logical AND, joined using "," or whitespace for a logical OR, and negated
+       using "!".
+
+   RULES
+       Rules take two forms - a filename extension by itself and functions with
+       test values inside parenthesis.  The following functions are available:
+
+       match("pattern")
+            True if the filename matches the given shell wildcard pattern.
+
+       ascii(offset,length)
+            True if the length bytes starting at offset are valid printable
+            ASCII (CR, NL, TAB, BS, 32-126).
+
+       printable(offset,length)
+            True if the length bytes starting at offset are printable 8-bit
+            chars (CR, NL, TAB, BS, 32-126, 128-254).
+
+       priority(number)
+            Specifies the relative priority of this MIME media type.  The
+            default priority is 100.  Larger values have higher priority while
+            smaller values have lower priority.
+
+       string(offset,"string")
+            True if the bytes starting at offset are identical to string.
+
+       istring(offset,"string")
+            True if the bytes starting at offset match string without respect to
+            case.
+
+       char(offset,value)
+            True if the byte at offset is identical to value.
+
+       short(offset,value)
+            True if the 16-bit big-endian integer at offset is identical to
+            value.
+
+       int(offset,value)
+            True if the 32-bit big-endian integer at offset is identical to
+            value.
+
+       locale("string")
+            True if current locale matches string.
+
+       contains(offset,range,"string")
+            True if the bytes starting at offset for range bytes contains
+            string.
+
+   STRING CONSTANTS
+       String constants can be specified inside quotes ("") for strings
+       containing whitespace and angle brackets (<>) for hexadecimal strings.
+
+   TYPE MATCHING AND PRIORITY
+       When CUPS needs to determine the MIME media type of a given file, it
+       checks every MIME media type defined in the .types files.  When two or
+       more types match a given file, the type chosen will depend on the type
+       name and priority, with higher-priority types being used over lower-
+       priority ones.  If the types have the same priority, the type names are
+       sorted alphanumerically in ascending order and the first type is chosen.
+
+       For example, if two types "text/bar" and "text/foo" are defined as
+       matching the extension "doc", normally the type "text/bar" will be chosen
+       since its name is alphanumerically smaller than "text/foo".  However, if
+       "text/foo" also defines a higher priority than "text/bar", "text/foo"
+       will be chosen instead.
+
+FILES
+       /etc/cups - Typical CUPS configuration directory.
+
+EXAMPLES
+       Define two MIME media types for raster data, with one being a subset with
+       higher priority:
+
+           application/vnd.cups-raster  string(0,"RaSt") string(0,"tSaR") \
+                                         string(0,"RaS2") string(0,"2SaR") \
+                                         string(0,"RaS3") string(0,"3SaR")
+
+           image/pwg-raster              string(0,"RaS2") + \
+                                         string(4,PwgRaster<00>) priority(150)
+
+SEE ALSO
+       cups-files.conf(5), cupsd.conf(5), cupsd(8), cupsfilter(8),
+       mime.convs(5), CUPS Online Help (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

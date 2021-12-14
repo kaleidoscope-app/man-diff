@@ -1,0 +1,458 @@
+KEXTFIND(8)                  System Manager's Manual                 KEXTFIND(8)
+
+NAME
+     kextfind – find kernel extensions (kexts) based on a variety of criteria
+     and print information
+
+SYNOPSIS
+     kextfind [options] [--] [kext_or_directory ...] [query]
+              [-report [-no-header] report_predicate ...]
+
+DEPRECATED
+     The kextfind utility has been deprecated.  Please use the kmutil(8)
+     equivalent: kmutil find.
+
+DESCRIPTION
+     The kextfind utility locates and prints information, or generates reports,
+     about kernel extensions (kexts) matching the search criteria in query from
+     among those in the named directory and extension arguments.  If no
+     directories or extensions are specified, kextfind searches
+     /System/Library/Extensions and /Library/Extensions.  Searches are performed
+     via kext management logic as used by kextload(8) and kextd(8), by which
+     only kexts directly in the repository directory or kexts explicitly named
+     (and their immediate plugins) are eligible; this is specifically not an
+     exhaustive, recursive filesystem search.
+
+     Construct your search using any of the query and command predicates listed
+     below.  You can combine predicates with the logical operators -and, -or,
+     and -not, and group them with parentheses.
+
+     Query command predicates generally print some bit of information about a
+     kext, such as its pathname or bundle identifier, followed by either a
+     newline or an ASCII NUL.  You can also generate a tab-delimited report
+     using the -report keyword after the query expression; if you do, you must
+     not specify any of the command predicates described below.
+
+     If no command predicate or report is specified, kextfind implicitly
+     executes a -print command predicate for each kext matching the query.
+
+OPTIONS
+     -h, -help
+             Print a help message describing each option flag and exit with a
+             success result, regardless of any other options on the command
+             line.
+     -set-arch arch
+             Set the architecture used for such things as architecture-specific
+             properties to arch.  You can only perform a query with one such
+             architecture; searches for multiple executable architectures are
+             possible, for example, but you can't search for two architecture-
+             specific values of a single property.
+     -i, -case-insensitive
+             Perform case-insensitive comparisons for all property, match
+             property, and bundle identifier query predicates when values are
+             strings.  Has no effect when property values are numbers or
+             booleans.  You can also use this option with individual property
+             query predicates.
+     -s, -substring
+             Perform substring searches for all property, match property, and
+             bundle identifier query predicates when values are strings.  Has no
+             effect when property values are numbers or booleans.  You can also
+             use this option with individual property query predicates.
+     -no-paths
+             Print no paths for kexts, just their bundle names, and for info
+             dictionary and executable files, their paths relative to the kext
+             itself.  This can be ambiguous with plugins of the same name and
+             when searching multiple repositories.
+     -relative-paths
+             Print pathnames relative to kexts' repositories (which can be
+             ambiguous if multiple repositories are being searched).
+     -0, -nul
+             Make the -echo and all -print... command predicates except for
+             -print-diagnostics emit an ASCII NUL character (character code 0)
+             in place of any newlines.  This is useful when sending the output
+             to xargs(1).  You can also use this flag individually with those
+             command predicates.
+     -f kext_or_directory, -search-item kext_or_directory
+             Specifies a kext or directory of kexts to search.  May be specified
+             multiple times.  While you can normally just list them without an
+             option flag, these are provided to prevent ambiguity with the query
+             expression.
+     -e, -system-extensions
+             Adds /System/Library/Extensions and /Library/Extensions to the list
+             of directories to search.  If you don't specify any directories or
+             kexts, this is used by default.
+     --      End of options.
+
+QUERY PREDICATES
+     Descriptions of all available search criteria and commands follow, grouped
+     by general category.
+
+Search by Bundle Name, or Info Dictionary or Match (Personality) Properties
+     Most of these predicates take the -case-insensitive (-i) and -substring
+     (-s) options as described above.
+
+     -b [-i|-case-insensitive] [-s|-substring] identifier
+     -bundle-id [-i|-case-insensitive] [-s|-substring] identifier
+             True if the kext's bundle identifier matches identifier.  This is
+             equivalent to -property CFBundleIdentifier identifier.
+     -dup
+     -duplicate-id
+             True if any other kext has the same bundle identifier as the
+             current kext.
+     -B [-i|-case-insensitive] [-s|-substring] name
+     -bundle-name [-i|-case-insensitive] [-s|-substring] name
+             True if the kext's bundle name matches name.
+     -m [-i|-case-insensitive] [-s|-substring] name value
+     -match-property [-i|-case-insensitive] [-s|-substring] name value
+             True if the kext has at least one personality that contains value
+             as a string, number, or boolean value (expressible as “true”,
+             “yes”, “1” or “false”, “no”, “0”) for the named property.
+     -me name
+     -match-property-exists name
+             True if the kext has at least one personality containing any value
+             for the named property.
+     -p [-i|-case-insensitive] [-s|-substring] name value
+     -property [-i|-case-insensitive] [-s|-substring] name value
+             True if the kext's info dictionary contains value as a string,
+             number, or boolean value (expressible as “true”, “yes”, “1” or
+             “false”, “no”, “0”) for the named property.
+     -pe name
+     -property-exists name
+             True if the kext's info dictionary contains any value for the named
+             property.
+
+Search by Loaded/Loadable
+     -a, -authentic
+             True if the kext is owned by root:wheel and has proper permissions.
+     -d, -dependencies-met
+             True if the kext has all its dependencies met.
+     -nd, -dependencies-missing
+             True if the kext is missing dependencies (or can't have its
+             dependencies resolved).
+     -na, -inauthentic
+             True if the kext is not owned by root:wheel or has improper
+             permissions (or can't be so authenticated).
+     -nv, -invalid
+             True if the kext is not valid.
+     -l, -loadable
+             True if the kext appears to be loadable.  (It may still fail to
+             load due to link errors.)
+     -loaded
+             True if the kext is currently loaded (if its bundle identifier,
+             version, and executable UUID match a kext loaded in the kernel).
+     -nl, -nonloadable
+             True if the kext can't be loaded because it is invalid,
+             inauthentic, or missing dependencies.
+     -v, -valid
+             True if the kext is valid.
+     -w, -warnings
+             True if any warnings are noted while validating the kext.
+
+Search by Executable, Architecture, or Symbol
+     -arch arch1[,arch2...]
+             True if the kext contains all of the named CPU architectures
+             (separated by commas only with no spaces), and possibly others, in
+             its executable.
+     -ax arch1[,arch2...], -arch-exact arch1[,arch2...]
+             True if the kext contains all of the named CPU architectures
+             (separated by commas only with no spaces), and no others, in its
+             executable.
+     -dsym symbol, -defines-symbol symbol
+             True if the kext defines the named symbol in any of its
+             architectures.  The name must match exactly with the (possibly
+             mangled) symbol in the kext's executable.  Such names typically
+             begin with at lease one underscore; see nm(1).  A kext must also be
+             a library for others to link against it (see -library).
+     -x, -executable
+             True if the kext declares an executable via the CFBundleExecutable
+             property (whether it actually has one or not; that is, if the kext
+             declares one but it's missing, this predicate is true even though
+             the kext is invalid).
+     -nx, -no-executable
+             True if the kext does not declare an executable via the
+             CFBundleExecutable property.
+     -rsym symbol, -references-symbol symbol
+             True if the kext has an undefined reference to the named symbol in
+             any of its architectures.  The name must match exactly with the
+             (possibly mangled) symbol in the kext's executable.  Such names
+             typically begin with at lease one underscore; see nm(1).
+
+Search by Miscellaneous Attribute
+     -debug  True if the kext has a top-level OSBundleEnableKextLogging property
+             set to true, or if any of its personalities has an IOKitDebug
+             property other than zero.  (Note: As of Mac OS X 10.6 (Snow
+             Leopard), the property OSBundleDebugLevel is no longer used.)
+     -has-plugins
+             True if the kext contains plugins.
+     -integrity { correct|modified|no-receipt|not-apple|unknown }
+             OBSOLETE. As of Mac OS X 10.6 (Snow Leopard), kext integrity is not
+             used and this predicate always evaluates to false.
+     -kernel-resource
+             True if the kext represents a resource built into the kernel.
+     -lib, -library
+             True if the kext is a library that other kexts can link against.
+     -plugin
+             True if the kext is a plugin of another kext.
+
+Search by Startup Requirement
+     These options find kexts that are used at startup or allowed to load during
+     safe boot.  They should be combined with the -or operator.  (The standard
+     system mkext file contains console, local-root, and root kexts, so you
+     would specify “\( -console -or -local-root -or -root \)”.
+
+     -C, -console
+             True if the kext is potentially required for console-mode startup
+             (same as -p OSBundleRequired Console but always case-sensitive).
+     -L, -local-root
+             True if the kext is potentially required for local-root startup
+             (same as -p OSBundleRequired Local-Root but always case-sensitive).
+     -N, -network-root
+             True if the kext is potentially required for network-root startup
+             (same as -p OSBundleRequired Network-Root but always case-
+             sensitive).
+     -R, -root
+             True if the kext is potentially required for root startup (same as
+             -p OSBundleRequired Root but always case-sensitive).
+     -S, -safe-boot
+             True if the kext is potentially allowed to load during safe boot
+             (same as -p OSBundleRequired 'Safe Boot' but always case-
+             sensitive).
+
+Search by Version
+     -compatible-with-version version
+             True if the kext is a library kext compatible with the given
+             version.
+     -V [ne|gt|ge|lt|le]version[-version]
+     -version [ne|gt|ge|lt|le]version[-version]
+             True if the kext's version matches the version expression.  You can
+             either specify an operator before a single version, or a range of
+             versions.  Remember that nonfinal versions such as 1.0d21 compare
+             as less than final versions (in this case 1.0); construct your
+             version expression accordingly.  See also -library.
+
+QUERY COMMAND PREDICATES
+     These predicates print information about kexts that match the query, or run
+     a utility on the kext bundle directory, its info dictionary file, or its
+     executable.  Execpt for -exec, these all have a true result for purposes of
+     query evaluation.
+
+     The -echo and all -print... command predicates except for
+     -print-diagnostics accept a -nul (-0) option to emit an ASCII NUL character
+     (character code 0) in place of any newlines.  This is useful when sending
+     the output to xargs(1).
+
+     -echo [-n|-no-newline] [-0|-nul] string
+             Prints string followed by a newline.  You can specify -n or
+             -no-newline to omit the newline.  If you specify both -n and -nul,
+             string is not followed by either a newline or an ASCII NUL
+             character.
+     -exec utility [argument ...] ;
+             True if the program named utility returns a zero value as its exit
+             status.  Optional arguments may be passed to the utility.  The
+             expression must be terminated by a semicolon (“;”).  If you invoke
+             kextfind from a shell you may need to quote the semicolon if the
+             shell would otherwise treat it as a control operator.  The strings
+             “{}”, “{info-dictionary}”, and “{executable}”, appearing anywhere
+             in the utility name or the arguments are replaced by the pathname
+             of the current kext, its info dictionary, or its executable,
+             respectively.  utility will be executed from the directory from
+             which kextfind was executed.  utility and arguments are not subject
+             to the further expansion of shell patterns and constructs.
+     -print [-0|-nul]
+             Prints the pathname of the kext.  If no command predicate is
+             specified, the query as a whole becomes equivalent to ( query )
+             -and -print.
+     -print0
+             Equivalent to -print -nul, for all you find(1) users out there.
+     -pa [-0|-nul]
+     -print-arches [-0|-nul]
+             Prints the names of all the architectures in the kext executable
+             (if it has one), separated by commas.
+     -print-dependencies [-0|-nul]
+             Prints the pathnames of all direct and indirect dependencies of the
+             kext.
+     -print-dependents [-0|-nul]
+             Prints the pathnames of all direct and indirect dependents of the
+             kext.
+     -pdiag
+     -print-diagnostics
+             Prints validation and authentication failures, missing
+             dependencies, and warnings for the kext.
+     -px [-0|-nul]
+     -print-executable [-0|-nul]
+             Prints the pathname to the kext's executable file.
+     -pid [-0|-nul]
+     -print-info-dictionary [-0|-nul]
+             Prints the pathname to the kext's info dictionary file.  (You can
+             use “-exec cat {info-dictionary} \;” or “-exec pl -input
+             {info-dictionary} \;” to print the contents of the file.)
+     -print-integrity [-0|-nul]
+             OBSOLETE. As of Mac OS X 10.6 (Snow Leopard), kext integrity is not
+             used and this command prints “n/a” for “not applicable”.
+     -print-plugins [-0|-nul]
+             Prints the pathnames of all plugins of the kext.
+     -pm [-0|-nul] name
+     -print-match-property [-0|-nul] name
+             For each matching personality in the kext, if the named property
+             exists, prints the personality's name, a colon, then name followed
+             by an equals sign and the property's value.  Results in true even
+             if the property does not exist for any personality.
+     -pp [-0|-nul] name
+     -print-property [-0|-nul] name
+             If the top-level property exists, prints name followed by an equals
+             sign and its value.  Results in true even if the property does not
+             exist.
+
+OPERATORS
+     The query primaries may be combined using the following operators.  The
+     operators are listed in order of decreasing precedence.
+
+     ( expression )
+             This evaluates to true if the parenthesized expression evaluates to
+             true.  Note that in many shells parentheses are special characters
+             and must be escaped or quoted.
+     ! expression
+     -not expression
+             This is the unary NOT operator.  It evaluates to true if expression
+             is false, to false if expression is true.  Note that in many shells
+             “!” is a special character and must be escaped or quoted.
+     expression -and expression
+     expression expression
+             The and operator is the logical AND operator.  It is implied by the
+             juxtaposition of two expressions and therefore need not be
+             specified.  It evaluates to true if both expressions are true.  If
+             the first expression is false, the second expression is not
+             evaluated.
+     expression -or expression
+             The -or operator is the logical OR operator.  It evaluates to true
+             if either expression is true.  If the first expression is true, the
+             second expression is not evaluated.
+
+REPORTS
+     Use the following predicates in a report expression to generate a tab-
+     delimited format, one kext per line, suitable for further processing (or
+     immediate edification).  The report normally starts with a header line
+     labeling each column; you can skip this by following -report directly with
+     -no-header.
+
+     The report predicate keywords are almost all the same as query predicates,
+     but have different purposes (and arguments in several cases).  In general,
+     where a query predicate is looking for a value, a report predicate is
+     retrieving it.  Thus, the property predicates only take the name of the
+     property, and print the value of that property for the kext being examined.
+     Report predicates based on attributes with multiple values, such as
+     -print-dependencies, print the number of values rather than the values
+     themselves.  Finally, report predicates for yes/no questions print “yes” or
+     “no”.
+
+     Note that many shorthands for inverted meanings, such as -invalid, are not
+     available for reports (they would only be confusing).  Others, such as
+     -match-property, could generate multiple values that would be impossible to
+     embed meaningfully in plain tab-delimited text (and knowing how many of
+     them there are is not useful).
+
+Value Report Predicates
+     -b, -bundle-id
+             Prints the kext's bundle identifier.
+     -B, -bundle-name
+             Prints the kext's bundle name.
+     -integrity, -print-integrity
+             OBSOLETE. As of Mac OS X 10.6 (Snow Leopard), kext integrity is not
+             used and this command prints “n/a” for “not applicable”.
+     -V, -version
+             Prints the kext's version.
+     -print  Prints the kext's pathname.
+     -pa, -print-arches
+             Prints the names of the architectures, if any, in the kext
+             executable.
+     -print-dependencies
+             Prints the number of dependencies found for the kext.
+     -print-dependents
+             Prints the number of kexts found that depend on the kext.
+     -px, -print-executable
+             Prints the pathname of the kext's executable (if it has one).
+     -pid, -print-info-dictionary
+             Prints the pathname of the kext's info dictionary.
+     -print-plugins
+             Prints the number of plugin kexts the kext has.
+     -p name, -property name
+     -pp name, -print-property name
+             Prints the value for the top-level info dictionary property with
+             key name.  If the key is not defined, prints “<null>”.
+     -sym symbol, -symbol symbol
+             Prints “references” or “defines” if the kext references or defines
+             symbol.  (This is the only report predicate that is not also a
+             query predicate.)
+
+Yes/No Report Predicates
+     -arch arch1[,arch2...]
+             “yes” if the kexts contains all the named architectures (and
+             possibly others), “no” otherwise.
+     -ax arch1[,arch2...], -arch-exact arch1[,arch2...]
+             “yes” if the kexts contains exactly the named architectures (and no
+             others), “no” otherwise.
+     -a, -authentic
+     -debug
+     -d, -dependencies-met
+     -dup, -duplicate-identifier
+     -x, -executable
+     -has-plugins
+     -kernel-resource
+     -lib, -library
+     -l, -loadable
+     -loaded
+     -plugin
+     -w, -warnings
+     -v, -valid
+
+EXAMPLES
+     The following examples are shown as given to the shell:
+
+     kextfind -case-insensitive -not -bundle-id -substring 'com.apple.' -print
+             Print a list of all non-Apple kexts.
+
+     kextfind \( -nonloadable -or -warnings \) -print -print-diagnostics
+             Print a list of all kexts that aren't loadable or that have any
+             warnings, along with what's wrong with each.
+
+     kextfind -nonloadable -print-dependents | sort | uniq
+             Print a list of all kexts that can't be loaded because of problems
+             with their dependencies.
+
+     kextfind -defines-symbol __ZTV14IONetworkStack
+             Print a list of all kexts that define the symbol
+             __ZTV14IONetworkStack.
+
+     kextfind -relative-paths -arch-exact ppc,i386
+             Print a list of all kexts kexts that contain only ppc and i386
+             code.
+
+     kextfind -debug -print -pp OSBundleDebugLevel -pm IOKitDebug
+             Print a list of all kexts that have debug options set, along with
+             the values of the debug options.
+
+     kextfind -m IOProviderClass IOMedia -print -exec pl -input
+             {info-dictionary} ;
+             Print a list of all kexts that match on IOMedia, along with their
+             info dictionaries.
+
+     kextfind -no-paths -nl -report -print -v -a -d
+             Print a report of kexts that can't be loaded, with hints as to the
+             problems.
+
+DIAGNOSTICS
+     The kextfind utility exits with a status of 0 on completion (whether or not
+     any kexts are found), or with a nonzero status if an error occurs.
+
+SEE ALSO
+     find(1), kmutil(8), kernelmanagerd(8), kextcache(8), kextd(8), kextload(8),
+     kextstat(8), kextunload(8), xargs(1)
+
+BUGS
+     Many single-letter options are inconsistent in meaning with (or directly
+     contradictory to) the same letter options in other kext tools.
+
+     Several special characters used by kextfind are also special characters to
+     many shell programs.  In particular, the characters “!”, “(”, and “)”, may
+     have to be escaped from the shell.
+

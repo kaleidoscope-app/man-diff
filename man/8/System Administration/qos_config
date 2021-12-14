@@ -1,0 +1,78 @@
+QOS(4)                        Device Drivers Manual                       QOS(4)
+
+
+
+NAME
+       qos - Xsan File System FSM QoS Central Config File
+
+SYNOPSIS
+       /Library/Preferences/Xsan/*_rvio.opt
+
+DESCRIPTION
+       The Xsan File System qos config file defines the bandwidth reservation
+       for non-rtio (rvio) on certain clients from a central place, i.e. the fsm
+       server. The allocated rvio bandwidth is used for non-rtio IOs on the
+       client. The config file has the name of the designated volume's name
+       appended by "_rvio.opt". So if the volume is "default", the QoS config
+       file will be "default_rvio.opt". If this file does not exist, there will
+       be no rvio bandwidth reservation for any client.
+
+       non-rtio reservation (rvio) provides a second priority bandwidth
+       reservation mechanism for certain clients, while rtio request has the
+       highest priority and will be satisfied first. All rvio requests share the
+       remaining bandwidth after rtio requests are satisfied. If all rvio
+       requests cannot be satisfied, then each rvio client is allocated the
+       bandwidth directly proportional to its request amount. With dynamic
+       changes of rtio requests, the allocated rvio bandwidths for clients are
+       dynamically adjusted.
+
+SYNTAX
+       A QoS central config file has multiple lines, each line defines the rvio
+       reservation for a client. If a client has multiple IP addresses, the rvio
+       reservation should be defined for each ip address.
+
+       The format of an line in QoS central config file is:
+
+          <host> <bw-type> <sg=yy>[,sg=yy]
+
+       <host> is the client host name. This can be the IP address (either V4 or
+       V6), host name or FQDN of the client. Note: the host name should be able
+       to be resolved (converted to a valid IP address) by the fsm server.
+
+       The <bw-type> is the type of bandwidth to be specified. Two types exists:
+
+          qosios         the bandwidth unit is IOs per second
+          qosmb          the bandwidth unit is mega bytes per second
+
+       If "qosios" is used, you may also append multiplier suffix to the amount
+       of bandwidth:
+
+          Suffix    Name    Multiplier
+          ------    ----    ----------
+            K       kilo    1,024
+            M       mega    1,048,576
+
+       The <sg=yy> defines the bandwidth on the designated storage pool. sg is
+       the designated storage pool, yy is the reserved bandwidth. You can only
+       reserve bandwidth on storage pools whose QoS parameters have been
+       configured in the volume config file. There are three ways to specify a
+       storage pool:
+
+          *       the wildcard for storage pool, applies to all storage pool
+          sgname  the name of a storage pool
+          sgnum   the number of a storage pool, storage pool starts from 0.
+
+       Lines that contain white space only or that contain the comment token as
+       the first non-white space character are ignored. An example on how to
+       configure QoS central config file can be found:
+
+          /System/Library/Filesystems/acfs.fs/Contents/examples/rvio.example
+
+FILES
+       /Library/Preferences/Xsan/*_rvio.opt
+
+SEE ALSO
+       cvfs(8), snfs_config(5), fsm(8), mount(8)
+
+
+

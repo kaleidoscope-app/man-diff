@@ -1,0 +1,67 @@
+rpcbind(8)                   System Manager's Manual                  rpcbind(8)
+
+NAME
+     rpcbind – portmap
+
+SYNOPSIS
+     rpcbind [-d] [-v] [-h bindip]
+
+DESCRIPTION
+     Rpcbind is a server that converts RPC program numbers into DARPA protocol
+     port numbers.  It is a replacement for the older portmap program.
+
+     rpcbind supports the original version 2 portmap protocol and in addition
+     supports the newer version 3 and version 4 protocols that are necessary for
+     IPv6 support.  It must be running on the server in order to make RPC calls.
+
+     When an RPC server is started, it will tell rpcbind what address it is
+     listening to, and what RPC program numbers it is prepared to serve.  When a
+     client wishes to make an RPC call to a given program number, it will first
+     contact rpcbind on the server machine to determine the address where RPC
+     packets should be sent.
+
+     rpcbind is a launchd service. When the first server tries to register with
+     rpcbind the RPC library will contact launchd and arrange for rpcbind to be
+     started.  Note it is no longer possible to run rpcbind from the command
+     line.  rpcbind logs errors and information using asl(3).  rpcbind uses
+     hosts_access(5) for access control; note access control patterns may only
+     reference IP addresses.
+
+     The following options are available and will need to be added to the
+     rpcbind plist file.
+
+     -d      causes rpcbind errors and debugging information to be printed to
+             the standard error output via asl_log. This option is no longer
+             very useful.
+
+     -v      Enable verbose logging of access control checks.
+
+     -h      Specify specific IP addresses to bind to for UDP requests.  This
+             option may be specified multiple times and is typically necessary
+             when running on a multi-homed host.  If no -h option is specified,
+             rpcbind will bind to INADDR_ANY, which could lead to problems on a
+             multi-homed host due to rpcbind returning a UDP packet from a
+             different IP address than it was sent to.  Note that when
+             specifying IP addresses with -h, rpcbind will automatically add
+             127.0.0.1 to the list.
+
+FILES
+     /System/Library/LaunchDaemons/com.apple.rpcbind.plist  launchd.plist(5)
+                                                            file for rpcbind.
+                                                            Options should be
+                                                            added here.
+
+     /usr/share/sandbox/rpcbind.sb                          sandbox(7) file for
+                                                            rpcbind.
+
+SEE ALSO
+     hosts_access(5), launchd.plist(5), launchd(8), rpcinfo(8)
+
+BUGS
+     If rpcbind crashes, all servers must be restarted.
+
+     Version 4 getstat procedure is not implemented and will always return 0 and
+     null values.  RPC_SYSTEMERROR.
+
+     -h option is not supported for IPv6.
+

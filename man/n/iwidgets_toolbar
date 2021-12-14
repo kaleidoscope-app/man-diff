@@ -1,0 +1,294 @@
+iwidgets::toolbar(1)             [incr Widgets]             iwidgets::toolbar(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::toolbar - Create and manipulate a tool bar
+
+SYNOPSIS
+       iwidgets::toolbar pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Toolbar
+
+STANDARD OPTIONS
+
+       activeBackground     activeForeground    background  borderWidth
+       cursor               disabledForeground  font        foreground
+       highlightBackground  highlightColor      highlightThickness
+       insertBackground     insertForeground    orient      selectBackground
+       selectBorderWidth    selectForeground    state       troughColor
+
+       See the "options" manual entry for details on the standard options. For
+       widgets added to the toolbar, these options will be propogated if the
+       widget supports the option. For example, all widgets that support a font
+       option will be changed if the the toolbar's font option is configured.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           balloonBackground
+       Class:          BalloonBackground
+       Command-Line Switch:           -ballooonbackground
+
+              Specifies the background color of the balloon help displayed at
+              the bottom center of a widget on the toolbar that has a non empty
+              string for its balloonStr option. The default color is yellow.
+
+       Name:           balloonDelay1
+       Class:          BalloonDelay1
+       Command-Line Switch:           -balloondelay1
+
+              Specifies the length of time (in milliseconds) to wait before
+              initially posting a balloon help hint window. This delay is in
+              effect whenever 1) the mouse leaves the toolbar, or 2) a toolbar
+              item is selected with the mouse button.
+
+       Name:           balloonDelay2
+       Class:          BalloonDelay2
+       Command-Line Switch:           -balloondelay2
+
+              Specifies the length of time (in milliseconds) to wait before
+              continuing to post balloon help hint windows. This delay is in
+              effect after the first time a balloon hint window is activated. It
+              remains in effect until 1) the mouse leaves the toolbar, or 2) a
+              toolbar item is selected with the mouse button.
+
+       Name:           balloonFont
+       Class:          BalloonFont
+       Command-Line Switch:           -balloonfont
+
+              Specifies the font of the balloon help text displayed at the
+              bottom center of a widget on the toolbar that has a non empty
+              string for its balloonStr option. The default font is 6x10.
+
+       Name:           balloonForeground
+       Class:          BalloonForeground
+       Command-Line Switch:           -ballooonforeground
+
+              Specifies the foreground color of the balloon help displayed at
+              the bottom center of a widget on the toolbar that has a non empty
+              string for its balloonStr option. The default color is black.
+
+       Name:           helpVariable
+       Class:          HelpVariable
+       Command-Line Switch:           -helpvariable
+
+              Specifies the global variable to update whenever the mouse is in
+              motion over a toolbar widget. This global variable is updated with
+              the current value of the active widget's helpStr. Other widgets
+              can "watch" this variable with the trace command, or as is the
+              case with entry or label widgets, they can set their textVariable
+              to the same global variable. This allows for a simple
+              implementation of a help status bar. Whenever the mouse leaves a
+              menu entry, the helpVariable is set to the empty string {}.
+
+       Name:           orient
+       Class:          Orient
+       Command-Line Switch:           -orient
+
+              Specifies the orientation of the toolbar. Must be either
+              horizontal or vertical.
+________________________________________________________________________________
+
+DESCRIPTION
+       The iwidgets::toolbar command creates a new window (given by the pathName
+       argument) and makes it into a toolbar widget. Additional options,
+       described above may be specified on the command line or in the option
+       database to configure aspects of the toolbar such as its colors, font,
+       and orientation. The iwidgets::toolbar command returns its pathName
+       argument. At the time this command is invoked, there must not exist a
+       window named pathName, but pathName's parent must exist.
+
+       A toolbar is a widget that displays a collection of widgets arranged
+       either in a row or a column (depending on the value of the -orient
+       option).  This collection of widgets is usually for user convenience to
+       give access to a set of commands or settings. Any widget may be placed on
+       a toolbar.  However, command or value-oriented widgets (such as button,
+       radiobutton, etc.) are usually the most useful kind of widgets to appear
+       on a toolbar.
+
+       In addition, the toolbar adds two new options to all widgets that are
+       added to it. These are the helpStr and balloonStr options. See the
+       discussion for the widget command add below.
+
+
+WIDGET-SPECIFIC METHODS
+       The iwidgets::toolbar command creates a new Tcl command whose name is
+       pathName. This command may be used to invoke various operations on the
+       widget. It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and args determine the exact behavior of the command.
+
+       Many of the widget commands for a toolbar take as one argument an
+       indicator of which widget item of the toolbar to operate on. The
+       indicator is called an index and may be specified in any of the following
+       forms:
+
+       number Specifies the widget numerically, where 0 corresponds to the first
+              widget in the notebook, 1 to the second, and so on. (For
+              horizontal, 0 is the leftmost; for vertical, 0 is the topmost).
+
+       end    Specifes the last widget in the toolbar's index. If the toolbar is
+              empty this will return -1.
+
+       last   Same as end.
+
+       pattern
+              If the index doesn't satisfy any of the above forms, then this
+              form is used. Pattern is pattern-matched against the widgetName of
+              each widget in the toolbar, in order from the first to the last
+              widget, until a matching entry is found. An exact match must
+              occur.
+
+       The following commands are possible for toolbar widgets:
+
+       pathName add widgetCommand widgetName ?option value?
+              Adds a widget with the command widgetCommand whose name is
+              widgetName to the toolbar. If widgetCommand is radiobutton or
+              checkbutton, its packing is slightly padded to match the geometry
+              of button widgets. In addition, the indicatorOn option is false by
+              default and the selectColor is that of the toolbar background by
+              default. This allows Radiobutton and Checkbutton widgets to be
+              added as icons by simply setting their bitmap or image options. If
+              additional arguments are present, they are the set of available
+              options that the widget type of widgetCommand supports. In
+              addition they may also be one of the following options:
+
+              -helpstr value
+                     Specifes the help string to associate with the widget. When
+                     the mouse moves over the widget, the variable denoted by
+                     helpVariable is set to helpStr. Another widget can bind to
+                     the helpVariable and thus track status help.
+
+              -balloonstr value
+                     Specifes the string to display in a balloon window for this
+                     widget. A balloon window is a small popup window centered
+                     at the bottom of the widget. Usually the balloonStr value
+                     is the name of the item on the toolbar. It is sometimes
+                     known as a hint window.
+
+                     When the mouse moves into an item on the toolbar, a timer
+                     is set based on the value of balloonDelay1. If the mouse
+                     stays inside the item for balloonDelay1, the balloon window
+                     will pop up displaying the balloonStr value. Once the
+                     balloon window is posted, a new timer based on
+                     balloonDelay2 is set. This is typically a shorter timer. If
+                     the mouse is moved to another item, the window is unposted
+                     and a new window will be posted over the item if the
+                     shorter delay time is satisfied.
+
+                     While the balloon window is posted, it can also be unposted
+                     if the item is selected. In this case the timer is reset to
+                     balloonDelay1.  Whenever the mouse leaves the toolbar, the
+                     timer is also reset to balloonDelay1.
+
+                     This window posting/unposting model is the same model used
+                     in the Windows95 environment.
+
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.
+
+       pathName configure ?option value?
+              Query or modify the configuration options of the widget. If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list). If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified). If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s); in
+              this case the command returns an empty string.
+
+       pathName delete index ?index2?
+              This command deletes all items between index and index2 inclusive.
+              If index2 is omitted then it defaults to index.  Returns an empty
+              string.
+
+       pathName index index
+              Returns the widget's numerical index for the entry corresponding
+              to index. If index is not found, -1 is returned.
+
+       pathName insert beforeIndex widgetCommand widgetName ?option value?
+
+       Insert a new item named widgetName with the
+              command widgetCommand before the item specified by beforeIndex.
+              If widgetCommand is radiobutton or checkbutton, its packing is
+              slightly padded to match the geometry of button widgets. In
+              addition, the indicatorOn option is false by default and the
+              selectColor is that of the toolbar background by default. This
+              allows Radiobutton and Checkbutton widgets to be added as icons by
+              simply setting their bitmap or image options. The set of available
+              options is the same as specified in the ad command.
+
+       pathName itemcget index option
+              Returns the current value of the configuration option given by
+              option for index. The item type of index determines the valid
+              available options.
+
+       pathName itemconfigure index ?option value?
+              Query or modify the configuration options of the widget of the
+              toolbar specified by index. If no option is specified, returns a
+              list describing all of the available options for index (see
+              Tk_ConfigureInfo for information on the format of this list). If
+              option is specified with no value, then the command returns a list
+              describing the one named option (this list will be identical to
+              the corresponding sublist of the value returned if no option is
+              specified). If one or more option-value pairs are specified, then
+              the command modifies the given widget option(s) to have the given
+              value(s); in this case the command returns an empty string. The
+              item type of index determines the valid available options. The set
+              of available options is the same as specified in the ad command.
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::toolbar .tb -helpvariable statusVar
+
+               .tb add button item1 \
+                  -helpstr "Save It" -bitmap @./icons/Tool_32_box.xbm \
+                  -balloonstr "Save" -command {puts 1}
+               .tb add button item2 \
+                  -helpstr "Save It" -bitmap @./icons/Tool_32_brush.xbm \
+                  -balloonstr "Save" -command {puts 1}
+               .tb add button item3 \
+                  -helpstr "Save It" -bitmap @./icons/Tool_32_cut.xbm \
+                  -balloonstr "Save" -command {puts 1}
+               .tb add button item4 \
+                  -helpstr "Save It" -bitmap @./icons/Tool_32_draw.xbm \
+                  -balloonstr "Save" -command {puts 1}
+               .tb add button item5 \
+                  -bitmap @./icons/Tool_32_erase.xbm -helpstr "Play It" \
+                  -command {puts 2}
+               .tb add frame filler \
+                  -borderwidth 1 -width 10 -height 10
+               .tb add radiobutton item6 \
+                  -bitmap @./icons/Tool_32_oval.xbm -command {puts 4} \
+                  -variable result -value OPEN -helpstr "Radio Button # 1" \
+                  -balloonstr "Radio"
+               .tb add radiobutton item7 \
+                  -bitmap @./icons/Tool_32_line.xbm -command {puts 5} \
+                  -variable result -value CLOSED
+               .tb add checkbutton item8 \
+                  -bitmap @./icons/Tool_32_text.xbm -command {puts 6} \
+                  -variable checkit -onvalue yes -offvalue no
+               .tb add checkbutton check2 \
+                  -bitmap @./icons/Tool_32_points.xbm -command {puts 7} \
+                   -variable checkit2 -onvalue yes -offvalue no
+
+               pack .tb -side top -anchor nw
+
+
+AUTHOR
+       Bill Scott
+
+KEYWORDS
+       toolbar, button, radiobutton, checkbutton, iwidgets, widget
+
+
+
+

@@ -1,0 +1,58 @@
+null(n)                                                                  null(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       null - Create and manipulate null channels
+
+SYNOPSIS
+       package require Tcl
+
+       package require memchan
+
+       null
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The command described here is only available in a not-yet released
+       version of the package. Use the CVS to get the sources.
+
+       null   creates a null channel which absorbs everything written into it.
+              Reading from it is not possible, or rather will always return zero
+              bytes. These channels are essentially Tcl-specific variants of the
+              null device for unixoid operating systems (/dev/null). Transfering
+              the generated channel between interpreters is possible but does
+              not make much sense.
+
+OPTIONS
+       Memory channels created by null provide one additional option to set or
+       query.
+
+       -delay ?milliseconds?
+              A null channel is always writable and readable. This means that
+              all fileevent-handlers will fire continuously.  To avoid
+              starvation of other event sources the events raised by this
+              channel type have a configurable delay. This option is set in
+              milliseconds and defaults to 5.
+
+       A null channel is always writable and never readable. This means that a
+       writable fileevent-handler will fire continuously and a readable
+       fileevent-handler never at all. The exception to the latter is only the
+       destruction of the channel which will cause the delivery of an eof event
+       to a readable handler.
+
+SEE ALSO
+       fifo, fifo2, memchan, random, zero
+
+KEYWORDS
+       channel, i/o, in-memory channel, null
+
+COPYRIGHT
+       Copyright (c) 1996-2003 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

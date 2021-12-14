@@ -1,0 +1,82 @@
+CHOWN(8)                     System Manager's Manual                    CHOWN(8)
+
+NAME
+     chown – change file owner and group
+
+SYNOPSIS
+     chown [-fhnv] [-R [-H | -L | -P]] owner[:group] file ...
+     chown [-fhnv] [-R [-H | -L | -P]] :group file ...
+
+DESCRIPTION
+     The chown utility changes the user ID and/or the group ID of the specified
+     files.  Symbolic links named by arguments are silently left unchanged
+     unless -h is used.
+
+     The options are as follows:
+
+     -f      Don't report any failure to change file owner or group, nor modify
+             the exit status to reflect such failures.
+
+     -H      If the -R option is specified, symbolic links on the command line
+             are followed.  (Symbolic links encountered in the tree traversal
+             are not followed.)
+
+     -h      If the file is a symbolic link, change the user ID and/or the group
+             ID of the link itself.
+
+     -L      If the -R option is specified, all symbolic links are followed.
+
+     -P      If the -R option is specified, no symbolic links are followed.
+             Instead, the user and/or group ID of the link itself are modified.
+             This is the default. Use -h to change the user ID and/or the group
+             of symbolic links.
+
+     -R      Change the user ID and/or the group ID for the file hierarchies
+             rooted in the files instead of just the files themselves.
+
+     -n      Interpret user ID and group ID as numeric, avoiding name lookups.
+
+     -v      Cause chown to be verbose, showing files as the owner is modified.
+
+     The -H, -L and -P options are ignored unless the -R option is specified.
+     In addition, these options override each other and the command's actions
+     are determined by the last one specified.
+
+     The owner and group operands are both optional; however, at least one must
+     be specified.  If the group operand is specified, it must be preceded by a
+     colon (``:'') character.
+
+     The owner may be either a numeric user ID or a user name.  If a user name
+     is also a numeric user ID, the operand is used as a user name.  The group
+     may be either a numeric group ID or a group name.  If a group name is also
+     a numeric group ID, the operand is used as a group name.
+
+     For obvious security reasons, the ownership of a file may only be altered
+     by a super-user.  Similarly, only a member of a group can change a file's
+     group ID to that group.
+
+DIAGNOSTICS
+     The chown utility exits 0 on success, and >0 if an error occurs.
+
+COMPATIBILITY
+     Previous versions of the chown utility used the dot (``.'') character to
+     distinguish the group name.  This has been changed to be a colon (``:'')
+     character, so that user and group names may contain the dot character.
+
+     On previous versions of this system, symbolic links did not have owners.
+
+     The -v option is non-standard and its use in scripts is not recommended.
+
+LEGACY DESCRIPTION
+     In legacy mode, the -R and -RP options do not change the user ID or the
+     group ID of symbolic links.
+
+SEE ALSO
+     chgrp(1), find(1), chown(2), fts(3), compat(5), symlink(7)
+
+STANDARDS
+     The chown utility is expected to be IEEE Std 1003.2 (“POSIX.2”) compliant.
+
+HISTORY
+     A chown utility appeared in Version 1 AT&T UNIX.
+

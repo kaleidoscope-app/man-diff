@@ -1,0 +1,131 @@
+multiplexer(n)       One-to-many communication with sockets.      multiplexer(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       multiplexer - One-to-many communication with sockets.
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require logger
+
+       package require multiplexer  ?0.2?
+
+       ::multiplexer::create
+
+       ${multiplexer_instance}::Init port
+
+       ${multiplexer_instance}::Config key value
+
+       ${multiplexer_instance}::AddFilter cmdprefix
+
+       cmdprefix data chan clientaddress clientport
+
+       ${multiplexer_instance}::AddAccessFilter cmdprefix
+
+       cmdprefix chan clientaddress clientport
+
+       ${multiplexer_instance}::AddExitFilter cmdprefix
+
+       cmdprefix chan clientaddress clientport
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The multiplexer package provides a generic system for one-to-many
+       communication utilizing sockets.  For example, think of a chat system
+       where one user sends a message which is then broadcast to all the other
+       connected users.
+
+       It is possible to have different multiplexers running concurrently.
+
+       ::multiplexer::create
+              The create command creates a new multiplexer 'instance'.  For
+              example:
+              set mp [::multiplexer::create]
+              This instance can then be manipulated like so:
+              ${mp}::Init 35100
+
+       ${multiplexer_instance}::Init port
+              This starts the multiplexer listening on the specified port.
+
+       ${multiplexer_instance}::Config key value
+              Use Config to configure the multiplexer instance.  Configuration
+              options currently include:
+
+              sendtoorigin
+                     A boolean flag. If true, the sender will receive a copy of
+                     the sent message.  Defaults to false.
+
+              debuglevel
+                     Sets the debug level to use for the multiplexer instance,
+                     according to those specified by the logger package (debug,
+                     info, notice, warn, error, critical).
+
+       ${multiplexer_instance}::AddFilter cmdprefix
+              Command to add a filter for data that passes through the
+              multiplexer instance.  The registered cmdprefix is called when
+              data arrives at a multiplexer instance. If there is more than one
+              filter command registered at the instance they will be called in
+              the order of registristation, and each filter will get the result
+              of the preceding filter as its argument. The first filter gets the
+              incoming data as its argument. The result returned by the last
+              filter is the data which will be broadcast to all clients of the
+              multiplexer instance.  The command prefix is called as
+
+              cmdprefix data chan clientaddress clientport
+                     Takes the incoming data, modifies it, and returns that as
+                     its result. The last three arguments contain information
+                     about the client which sent the data to filter: The channel
+                     connecting us to the client, its ip-address, and its ip-
+                     port.
+
+       ${multiplexer_instance}::AddAccessFilter cmdprefix
+              Command to add an access filter.  The registered cmdprefix is
+              called when a new client socket tries to connect to the multixer
+              instance. If there is more than one access filter command
+              registered at the instance they will be called in the order of
+              registristation. If any of the called commands returns -1 the
+              access to the multiplexer instance is denied and the client
+              channel is closed immediately. Any other result grants the client
+              access to the multiplexer instance.  The command prefix is called
+              as
+
+              cmdprefix chan clientaddress clientport
+                     The arguments contain information about the client which
+                     tries to connected to the instance: The channel connecting
+                     us to the client, its ip-address, and its ip-port.
+
+       ${multiplexer_instance}::AddExitFilter cmdprefix
+              Adds filter to be run when client socket generates an EOF
+              condition.  The registered cmdprefix is called when a client
+              socket of the multixer signals EOF. If there is more than one exit
+              filter command registered at the instance they will be called in
+              the order of registristation. Errors thrown by an exit filter are
+              ignored, but logged. Any result returned by an exit filter is
+              ignored.  The command prefix is called as
+
+              cmdprefix chan clientaddress clientport
+                     The arguments contain information about the client which
+                     signaled the EOF: The channel connecting us to the client,
+                     its ip-address, and its ip-port.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category multiplexer
+       of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       chat, multiplexer
+
+CATEGORY
+       Programming tools
+
+
+

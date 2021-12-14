@@ -1,0 +1,45 @@
+GROUP(5)                       File Formats Manual                      GROUP(5)
+
+NAME
+     group – format of the group permissions file
+
+DESCRIPTION
+     The file ⟨/etc/group⟩ consists of newline separated ASCII records, one per
+     group, containing four colon ‘:’ separated fields. These fields are as
+     follows:
+           group     Name of the group.
+           passwd    Group's encrypted password.
+           gid       The group's decimal ID.
+           member    Group members.
+
+     The group field is the group name used for granting file access to users
+     who are members of the group.  The gid field is the number associated with
+     the group name.  They should both be unique across the system (and often
+     across a group of systems) since they control file access.  The passwd
+     field is an optional encrypted password.  This field is rarely used and an
+     asterisk is normally placed in it rather than leaving it blank.  The member
+     field contains the names of users granted the privileges of group.  The
+     member names are separated by commas without spaces or newlines.  A user is
+     automatically in a group if that group was specified in their /etc/passwd
+     entry and does not need to be added to that group in the /etc/group file.
+
+INTERACTION WITH DIRECTORY SERVICES
+     Processes generally find group records using one of the getgrent(3) family
+     of functions.  On Mac OS X, these functions interact with the
+     DirectoryService(8) daemon, which reads the /etc/group file as well as
+     searching other directory information services to determine groups and
+     group membership.
+
+FILES
+     /etc/group
+
+SEE ALSO
+     passwd(1), setgroups(2), crypt(3), getgrent(3), initgroups(3), passwd(5),
+     DirectoryService(8)
+
+BUGS
+     The passwd(1) command does not change the group passwords.
+
+HISTORY
+     A group file format appeared in Version 6 AT&T UNIX.
+

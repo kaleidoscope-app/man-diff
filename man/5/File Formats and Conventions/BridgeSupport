@@ -1,0 +1,397 @@
+BRIDGESUPPORT(5)               File Formats Manual              BRIDGESUPPORT(5)
+
+NAME
+     BridgeSupport – Scripting bridges support file
+
+DESCRIPTION
+     BridgeSupport files are XML files that describe the API symbols of
+     frameworks or libraries that cannot be introspected at runtime. These are
+     generally ANSI C symbols that are non-object-oriented items such as
+     constants, enumerations, structures, and functions but can also include
+     some additional information about classes, methods, and informal protocols.
+
+     BridgeSupport files are a major component of the Objective-C bridges
+     (PyObjC) supported in Mac OS X for scripting languages such as Python.
+
+     gen_bridge_metadata(1) is the tool used to generate BridgeSupport files for
+     particular frameworks or libraries.
+
+     To understand the following discussion you should know what “element” and
+     “attribute” mean in XML markup. You should also be familiar with Objective-
+     C and with concepts related to the Objective-C runtime, such as the type-
+     encoding constants.
+
+     As of Mac OS 10.7, BridgeSupport uses an improved parser, based on clang.
+     This means the BridgeSupport files should be more correct and complete, and
+     the true parsing allows the automatic extraction of metadata from existing
+     __attribute__() information supported by the compiler (see below).
+
+     As of Mac OS 11.0, 32-bit support is deprecated.  BridgeSupport files
+     should only contain 64-bit attributes.
+
+STRUCTURE
+     The structure of  BridgeSupport XML consists of a hierarchy of elements
+     under the root element, signatures.
+
+   The signatures element
+     signatures is the top-level, or root, element of a BridgeSupport XML file.
+
+     Mandatory attributes:
+
+     version  The version number of the BridgeSupport format. The only possible
+              value is “1.0” which means the format delivered with Mac OS X
+              10.5.
+
+     Possible children elements: depends_on, struct, cftype, opaque, constant,
+     string_constant, enum, function, function_alias, informal_protocol, class.
+
+   The depends_on element
+     This element describes a dependency on other frameworks. This element is
+     deprecated and no longer provided.
+
+     Mandatory attributes:
+
+     path  The path of the dependency.
+
+   The struct element
+     This element describes a C structure.
+
+     Mandatory attributes:
+
+     name          The name of the C structure.
+
+     type, type64  The complete type of the C structure, including the field
+                   names, as a string of Objective-C runtime encoding types. If
+                   the element has a different type on a 64-bit environment, the
+                   type64 attribute will contain it. If the element does not
+                   exist on a 32-bit environment, only the type64 attribute will
+                   be used.
+
+     Optional attributes:
+
+     opaque  Indicates whether the fields of the structure should be exposed.
+             The default value is “false”.
+
+   The cftype element
+     This element describes a Core Foundation-based type.
+
+     Mandatory attributes:
+
+     name          The name of the Core Foundation type.
+
+     type, type64  The type of the Core Foundation type as a string of
+                   Objective-C runtime encoding types. If the element has a
+                   different type on a 64-bit environment, the type64 attribute
+                   will contain it. If the element does not exist on a 32-bit
+                   environment, only the type64 attribute will be used.
+
+     Optional attributes:
+
+     tollfree        The name of the tollfree-bridged Objective-C class, if any.
+
+     gettypeid_func  The name of the function that retrieves the TypeID value of
+                     the given Core Foundation type, if any. This name usually
+                     ends with “GetTypeID”.
+
+   The opaque element
+     This element describes an opaque type, most generally a C pointer to a C
+     opaque structure.
+
+     Mandatory attributes:
+
+     name          The name of the opaque type.
+
+     type, type64  The type of the opaque type, as a string of Objective-C
+                   runtime encoding types. If the element has a different type
+                   on a 64-bit environment, the type64 attribute will contain
+                   it. If the element does not exist on a 32-bit environment,
+                   only the type64 attribute will be used.
+
+   The constant element
+     This element describes a C constant.
+
+     Mandatory attributes:
+
+     name          The name of the C constant.
+
+     type, type64  The type of the C constant, as a string of Objective-C
+                   runtime encoding types. If the element has a different type
+                   on a 64-bit environment, the type64 attribute will contain
+                   it. If the element does not exist on a 32-bit environment,
+                   only the type64 attribute will be used.
+
+     Optional attributes:
+
+     magic_cookie  Indicates whether the C constant has a “magic” or fixed value
+                   and should not be converted at runtime to the given type. The
+                   default value is “false”.
+
+   The string_constant element
+     This element describes a string constant. The string can either be a C
+     string or an Objective-C string (an NSString object).  string_constant
+     elements are usually created from C preprocessor macros.
+
+     Mandatory attributes:
+
+     name   The name of the string constant.
+
+     value  The value of the string constant.
+
+     Optional attributes:
+
+     nsstring  Indicates whether the string constant has an Objective-C value,
+               and should be converted to an NSString object. The default value
+               is “false”.
+
+   The enum element
+     This element describes a C enumeration.
+
+     Mandatory attributes:
+
+     name  The name of the C enumeration.
+
+     value, value64
+           The value of the C enumeration, as an integer. The value can be
+           negative. If the enumeration has a different value on a 64-bit
+           environment, the value64 attribute will contain it. If the
+           enumeration does not exist on a 32-bit environment, only the value64
+           attribute will be used.  (The le_value and be_value values for little
+           and big endian platforms are no longer supported; only native, little
+           endian order is now used.)
+
+     Optional attributes:
+
+     ignore      Indicates whether the C enumeration should be ignored by the
+                 bridges. The default value is “false”.
+
+     suggestion  If the ignore attribute is “true” , this attribute may contain
+                 a textual message that the bridges can deliver as an exception
+                 or error message to be delivered to the user. By default there
+                 is no suggestion.
+
+   The function element
+     This element describes a C function.
+
+     Mandatory attributes:
+
+     name  The name of the C function.
+
+     Optional attributes:
+
+     variadic  Indicates whether the C function accepts a variable number of
+               arguments. The default value is “false”.
+
+     sentinel  An integer value that specifies which argument (counting
+               backwards from the end of the argument list) must be a NULL value
+               to indicate the end of a variable length argument list (thus,
+               this is only legal for variadic functions).  (The
+               __attribute__((sentinel)) compiler attribute will be
+               automatically recognized by the new parser, and the given
+               sentinel value (defaulting to zero), will be assigned to the
+               sentinel attribute.)
+
+     inline    Indicates whether the C function is inline. In that case, the
+               symbol can be found in the respective .dylib file that comes with
+               the BridgeSupport file. Consult gen_bridge_metadata(1) to know
+               how the dylib files are generated. The default value is “false”.
+
+     Possible children: arg (zero or more), retval (zero or one).
+
+   The function_alias element
+     This element defines an alias or shortcut to a C function.
+
+     Mandatory attributes:
+
+     name      The name of the C function alias.
+
+     original  The name of the original C function the alias points to.
+
+   The class element
+     This element defines an Objective-C class. Only classes where additional
+     metadata is needed are described.
+
+     Mandatory attributes:
+
+     name  The name of the Objective-C class.
+
+     Possible children: method (zero or more).
+
+   The informal_protocol element
+     This element defines an Objective-C informal protocol.
+
+     Mandatory attributes:
+
+     name  The name of the Objective-C informal protocol.
+
+     Possible children: method (zero or more).
+
+   The method element
+     This element defines an Objective-C method. Only methods where additional
+     metadata is needed are described.
+
+     Mandatory attributes:
+
+     selector  The selector of the Objective-C method.
+
+     Mandatory attributes (only when declared under informal_protocol) :
+
+     type, type64  The type of the Objective-C method, as a string of Objective-
+                   C runtime encoding types. If the element has a different type
+                   on a 64-bit environment, the type64 attribute will contain
+                   it. If the element does not exist on a 32-bit environment,
+                   only the type64 attribute will be used.
+
+     Optional attributes:
+
+     class_method  Whether this is a class method or not. The default value is
+                   “false”.
+
+     Optional attributes (only when not declared under informal_protocol) :
+
+     variadic    Indicates whether the method accepts a variable number of
+                 arguments. The default value is “false”.
+
+     sentinel    An integer value that specifies which argument (counting
+                 backwards from the end of the argument list) must be a NULL
+                 value to indicate the end of a variable length argument list
+                 (thus, this is only legal for variadic methods).  (The
+                 __attribute__((sentinel)) compiler attribute will be
+                 automatically recognized by the new parser, and the given
+                 sentinel value (defaulting to zero), will be assigned to the
+                 sentinel attribute.)
+
+     ignore      Indicates whether the method should be ignored by the bridges.
+                 The default value is “false”.
+
+     suggestion  If the ignore attribute is “true” , this attribute may contain
+                 a textual message that the bridges can deliver as an exception
+                 or error message to be delivered to the user. By default there
+                 is no suggestion.
+
+     Possible children (only when not declared under informal_protocol) : arg
+     (zero or more), retval (zero or one).
+
+   The arg and retval elements
+     These elements describe respectively an argument and a return value. They
+     should be defined within both function and method elements, and their
+     attributes depend under which element they are defined under.
+
+     Optional attributes:
+
+     c_array_length_in_arg       Defines the argument or return value as a C
+                                 array whose length is defined by the value of
+                                 the given argument. The value of this attribute
+                                 is the index position of the argument that
+                                 should contain the array size. The value can
+                                 also be two integers separated by a comma,
+                                 which in that case means that the first value
+                                 is used when converting to C / Objective-C, and
+                                 the second when converting back to the
+                                 scripting language. This attribute cannot be
+                                 used with another “c_array_” attribute.
+
+     c_array_of_fixed_length     Defines the argument or return value as a C
+                                 array of a fixed length. The value of this
+                                 attribute is the array size. This attribute
+                                 cannot be used with another “c_array_”
+                                 attribute.
+
+     c_array_delimited_by_null   Defines the argument or return value as a C
+                                 array that ends with a NULL value, if the value
+                                 of this attribute is “true”.  The default value
+                                 of this attribute is “false”.  This attribute
+                                 cannot be used with another “c_array_”
+                                 attribute.
+
+     c_array_of_variable_length  Defines the argument or return value as a C
+                                 array of a variable length, if the value of
+                                 this attribute is “true”.  The default value of
+                                 this attribute is “false”.  This attribute
+                                 cannot be used with another “c_array_”
+                                 attribute.
+
+     function_pointer            Indicates whether the argument or return value
+                                 is a function or block pointer.  If “true”, the
+                                 type attribute will be '^?' for functions and
+                                 '@?' for blocks, and the current element should
+                                 have a set of complete arg and retval child
+                                 elements to define both the argument and the
+                                 return value types of the function or block
+                                 pointer.
+
+     sel_of_type, sel_of_type64  This attribute, used for arguments or return
+                                 value of the type “SEL” (an Objective-C
+                                 selector), is used to provide the signature of
+                                 the method the selector should point to, as a
+                                 string of Objective-C runtime encoding types.
+                                 If the selector has a different type on a
+                                 64-bit environment, the sel_of_type64 attribute
+                                 will contain it. There is no default value.
+                                 This attribute can be used to give a hint to
+                                 the bridges when their default behavior isn't
+                                 sufficient.
+
+     Optional attributes (arg only):
+
+     c_array_length_in_retval  Defines the argument as a C like array whose
+                               length is defined by the value of the return
+                               value, if “true”.  The default value of this
+                               attribute is “false”.  This attribute cannot be
+                               used with another “c_array_” attribute.
+
+     type_modifier             The type modifier of the argument. Possible
+                               values are “n” (in), “o” (out) and “N” (inout).
+                               There is no default value.  (For Objective C
+                               methods arguments, the in, out and inout type
+                               modifiers will be automatically recognized by the
+                               new parser, and the appropriate type_modifier
+                               attribute will be set.)
+
+     null_accepted             Indicates whether a NULL value can be passed to
+                               this argument. The default value is “true”.  (The
+                               __attribute__((nonnull)) compiler attribute will
+                               be automatically recognized by the new parser,
+                               and the corresponding argument's null_accepted
+                               attribute will set to “false”.)
+
+     printf_format             Indicates whether this argument accepts a
+                               printf(3) format string value. The default value
+                               is “false”.  (The __attribute__((format(printf,
+                               m, n))) compiler attribute will be automatically
+                               recognized by the new parser, and the m-th
+                               argument's printf_format attribute will be set to
+                               “true”.)
+
+     Optional attributes (retval only):
+
+     already_retained  A value of “true” indicates that the return value should
+                       not be retained by the bridges. The default value is
+                       “false”.
+
+     Mandatory attributes (when declared under function):
+
+     type, type64  The type of the argument or return value, as a string of
+                   Objective-C runtime encoding types. If the element has a
+                   different type on a 64-bit environment, the type64 attribute
+                   will contain it. If the element does not exist on a 32-bit
+                   environment, only the type64 attribute will be used.
+
+     Mandatory attributes (when declared under method, arg only):
+
+     index  The index position of the argument.
+
+     Optional attributes (when declared under method):
+
+     type, type64  The type of the argument or return value, as a string of
+                   Objective-C runtime encoding types. If the element has a
+                   different type on a 64-bit environment, the type64 attribute
+                   will contain it. If the element does not exist on a 32-bit
+                   environment, only the type64 attribute will be used. This
+                   attribute is optional for methods as the bridges can retrieve
+                   the type by asking the runtime, but it is possible to
+                   override the default type using this attribute. There is no
+                   default value.
+
+SEE ALSO
+     gen_bridge_metadata(1) /System/Library/DTDs/BridgeSupport.dtd
+

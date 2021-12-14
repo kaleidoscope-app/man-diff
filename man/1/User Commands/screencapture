@@ -1,0 +1,105 @@
+SCREENCAPTURE(1)             General Commands Manual            SCREENCAPTURE(1)
+
+NAME
+     screencapture – capture images from the screen and save them to a file or
+     the clipboard
+
+SYNOPSIS
+     screencapture [-SWCTMPcimswxto] file
+
+DESCRIPTION
+     The screencapture utility is not very well documented to date.  A list of
+     options follows.
+
+     -c      Force screen capture to go to the clipboard.
+
+     -b      Capture Touch Bar, only works in non-interactive modes.
+
+     -C      Capture the cursor as well as the screen.  Only allowed in non-
+             interactive modes.
+
+     -d      Display errors to the user graphically.
+
+     -i      Capture screen interactively, by selection or window.  The control
+             key will cause the screen shot to go to the clipboard.  The space
+             key will toggle between mouse selection and window selection modes.
+             The escape key will cancel the interactive screen shot.
+
+     -m      Only capture the main monitor, undefined if -i is set.
+
+     -D      <display> Screen capture or record from the display specified. 1 is
+             main, 2 secondary, etc
+
+     -o      In window capture mode, do not capture the shadow of the window.
+
+     -p      Screen capture will use the default settings for capture. The files
+             argument will be ignored.
+
+     -M      Open the taken picture in a new Mail message.
+
+     -P      Open the taken picture in a Preview window or QuickTime Player if
+             video.
+
+     -I      Open the taken picture in Messages.
+
+     -B      <bundleid> Open in the app matching bundleid.
+
+     -s      Only allow mouse selection mode.
+
+     -S      In window capture mode, capture the screen instead of the window.
+
+     -J      <style> Sets the starting style of interfactive capture
+             "selection","window","video".
+
+     -t      <format> Image format to create, default is png (other options
+             include pdf, jpg, tiff and other formats).
+
+     -T      <seconds> Take the picture after a delay of <seconds>, default is
+             5.
+
+     -w      Only allow window selection mode.
+
+     -W      Start interaction in window selection mode.
+
+     -x      Do not play sounds.
+
+     -a      Do not capture attached windows.
+
+     -r      Do not add screen dpi meta data to captured file.
+
+     -l      <windowid> Captures the window with windowid.
+
+     -R      <rectangle> Capture rectangle using format x,y,width,height.
+
+     -v      Capture video recording of the screen.
+
+     -V      <seconds> Capture video recording of the screen for the specified
+             seconds.
+
+     -G      <id> Captures audio during a video recording using audio source
+             specified by id.
+
+     -g      Captures audio during a video recording using default input.
+
+     -k      Show clicks in video recordings.
+
+     -U      Show interactive toolbar in interactive mode.
+
+     -u      Present UI after screencapture is complete. Files passed to
+             commandline will be ignored.
+
+     files   where to save the screen capture, 1 file per screen
+
+BUGS
+     Better documentation is needed for this utility.
+
+SECURITY CONSIDERATIONS
+     To capture screen content while logged in via ssh, you must launch
+     screencapture in the same mach bootstrap hierarchy as loginwindow:
+
+     PID=pid of loginwindow
+     sudo launchctl bsexec $PID screencapture [options]
+
+HISTORY
+     A screencapture utility first appeared in Mac OS X v10.2.
+

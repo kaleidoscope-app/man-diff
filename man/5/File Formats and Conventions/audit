@@ -1,0 +1,629 @@
+AUDIT.LOG(5)                   File Formats Manual                  AUDIT.LOG(5)
+
+NAME
+     audit – Basic Security Module (BSM) file format
+
+DESCRIPTION (NOW DEPRECATED)
+     The audit file format is based on Sun's Basic Security Module (BSM) file
+     format, a token-based record stream to represent system audit data.  This
+     file format is both flexible and extensible, able to describe a broad range
+     of data types, and easily extended to describe new data types in a
+     moderately backward and forward compatible way.
+
+     BSM token streams typically begin and end with a “file” token, which
+     provides time stamp and file name information for the stream; when
+     processing a BSM token stream from a stream as opposed to a single file
+     source, file tokens may be seen at any point between ordinary records
+     identifying when particular parts of the stream begin and end.  All other
+     tokens will appear in the context of a complete BSM audit record, which
+     begins with a “header” token, and ends with a “trailer” token, which
+     describe the audit record.  Between these two tokens will appear a variety
+     of data tokens, such as process information, file path names, IPC object
+     information, MAC labels, socket information, and so on.
+
+     The BSM file format defines specific token orders for each record event
+     type; however, some variation may occur depending on the operating system
+     in use, what system options, such as mandatory access control, are present.
+
+     This manual page documents the common token types and their binary format,
+     and is intended for reference purposes only.  It is recommended that
+     application programmers use the libbsm(3) interface to read and write
+     tokens, rather than parsing or constructing records by hand.
+
+   File Token
+     The “file” token is used at the beginning and end of an audit log file to
+     indicate when the audit log begins and ends.  It includes a pathname so
+     that, if concatenated together, original file boundaries are still
+     observable, and gaps in the audit log can be identified.  A “file” token
+     can be created using au_to_file(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Seconds                             4 bytes                File time
+                                                                   stamp
+        Microseconds                        4 bytes                File time
+                                                                   stamp
+        File name lengh                     2 bytes                File name of
+                                                                   audit trail
+        File pathname                       N bytes + 1 NUL        File name of
+                                                                   audit trail
+
+   Header Token
+     The “header” token is used to mark the beginning of a complete audit
+     record, and includes the length of the total record in bytes, a version
+     number for the record layout, the event type and subtype, and the time at
+     which the event occurred.  A 32-bit “header” token can be created using
+     au_to_header32(3); a 64-bit “header” token can be created using
+     au_to_header64(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Record Byte Count                   4 bytes                Number of
+                                                                   bytes in
+                                                                   record
+        Version Number                      2 bytes                Record
+                                                                   version
+                                                                   number
+        Event Type                          2 bytes                Event type
+        Event Modifier                      2 bytes                Event
+                                                                   sub-type
+        Seconds                             4/8 bytes              Record time
+                                                                   stamp
+                                                                   (32/64-bits)
+        Nanoseconds                         4/8 bytes              Record time
+                                                                   stamp
+                                                                   (32/64-bits)
+
+   Expanded Header Token
+     The “expanded header” token is an expanded version of the “header” token,
+     with the addition of a machine IPv4 or IPv6 address.  A 32-bit extended
+     “header” token can be created using au_to_header32_ex(3); a 64-bit extended
+     “header” token can be created using au_to_header64_ex(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Record Byte Count                   4 bytes                Number of
+                                                                   bytes in
+                                                                   record
+        Version Number                      2 bytes                Record
+                                                                   version
+                                                                   number
+        Event Type                          2 bytes                Event type
+        Event Modifier                      2 bytes                Event
+                                                                   sub-type
+        Address Type/Length                 1 byte                 Host address
+                                                                   type and
+                                                                   length
+        Machine Address                     4/16 bytes             IPv4 or IPv6
+                                                                   address
+        Seconds                             4/8 bytes              Record time
+                                                                   stamp
+                                                                   (32/64-bits)
+        Nanoseconds                         4/8 bytes              Record time
+                                                                   stamp
+                                                                   (32/64-bits)
+
+   Trailer Token
+     The “trailer” terminates a BSM audit record, and contains a magic number,
+     AUT_TRAILER_MAGIC and length that can be used to validate that the record
+     was read properly.  A “trailer” token can be created using
+     au_to_trailer(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Trailer Magic                       2 bytes                Trailer magic
+                                                                   number
+        Record Byte Count                   4 bytes                Number of
+                                                                   bytes in
+                                                                   record
+
+   Identity Token
+     The “identity” token contains information about the process that triggered
+     the audit record to be created.  An “identity” token can be created using
+     au_to_identity(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Signer Type                         4 bytes                Code signing
+                                                                   signer type
+        Signing ID Length                   2 bytes                Length of
+                                                                   code signing
+                                                                   identifier
+        Signing ID                          N bytes + 1 NUL        Code signing
+                                                                   identifier
+        Signing ID Truncated                1 byte                 Whether or
+                                                                   not the
+                                                                   Signing ID
+                                                                   field was
+                                                                   truncated
+        Team ID Length                      2 bytes                Length of
+                                                                   team
+                                                                   identifier
+        Team ID                             N bytes + 1 NUL        Team
+                                                                   identifier
+        Team ID Truncated                   1 byte                 Whether or
+                                                                   not the Team
+                                                                   ID field was
+                                                                   truncated
+        CDHash Length                       2 bytes                Length of the
+                                                                   CDHash
+        CDHash                              N bytes                CDHash
+
+   Arbitrary Data Token
+     The “arbitrary data” token contains a byte stream of opaque (untyped) data.
+     The size of the data is calculated as the size of each unit of data
+     multipled by the number of units of data.  A “How to print” field is
+     present to specify how to print the data, but interpretation of that field
+     is not currently defined.  An “arbitrary data” token can be created using
+     au_to_data(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        How to Print                        1 byte                 User-defined
+                                                                   printing
+                                                                   information
+        Basic Unit                          1 byte                 Size of a
+                                                                   unit in bytes
+        Unit Count                          1 byte                 Number of
+                                                                   units of data
+                                                                   present
+        Data Items                          Variable               User data
+
+   in_addr Token
+     The “in_addr” token holds a network byte order IPv4 address.  An “in_addr”
+     token can be created using au_to_in_addr(3) for an IPv4 address.
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        IP Address                          4 bytes                IPv4 address
+
+   Expanded in_addr Token
+     The “in_addr_ex” token holds a network byte order IPv4 or IPv6 address.  An
+     “in_addr_ex” token can be created using au_to_in_addr_ex(3) for an IPv6
+     address.
+
+     See the BUGS section for information on the storage of this token.
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        IP Address Type                     1 byte                 Type of
+                                                                   address
+        IP Address                          4/16 bytes             IPv4 or IPv6
+                                                                   address
+
+   ip Token
+     The “ip” token contains an IP packet header in network byte order.  An “ip”
+     token can be created using au_to_ip(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Version and IHL                     1 byte                 Version and
+                                                                   IP header
+                                                                   length
+        Type of Service                     1 byte                 IP TOS field
+        Length                              2 bytes                IP packet
+                                                                   length in
+                                                                   network byte
+                                                                   order
+        ID                                  2 bytes                IP header ID
+                                                                   for
+                                                                   reassembly
+        Offset                              2 bytes                IP fragment
+                                                                   offset and
+                                                                   flags,
+                                                                   network byte
+                                                                   order
+        TTL                                 1 byte                 IP
+                                                                   Time-to-Live
+        Protocol                            1 byte                 IP protocol
+                                                                   number
+        Checksum                            2 bytes                IP header
+                                                                   checksum,
+                                                                   network byte
+                                                                   order
+        Source Address                      4 bytes                IPv4 source
+                                                                   address
+        Destination Address                 4 bytes                IPv4
+                                                                   destination
+                                                                   address
+
+   iport Token
+     The “iport” token stores an IP port number in network byte order.  An
+     “iport” token can be created using au_to_iport(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Port Number                         2 bytes                Port number
+                                                                   in network
+                                                                   byte order
+
+   Path Token
+     The “path” token contains a pathname.  A “path” token can be created using
+     au_to_path(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Path Length                         2 bytes                Length of
+                                                                   path in bytes
+        Path                                N bytes + 1 NUL        Path name
+
+   path_attr Token
+     The “path_attr” token contains a set of NUL-terminated path names.  The
+     libbsm(3) API cannot currently create a “path_attr” token.
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Count                               2 bytes                Number of
+                                                                   NUL-terminated
+                                                                   string(s) in
+                                                                   token
+        Path                                Variable               count
+                                                                   NUL-terminated
+                                                                   string(s)
+
+   Process Token
+     The “process” token contains a description of the security properties of a
+     process involved as the target of an auditable event, such as the
+     destination for signal delivery.  It should not be confused with the
+     “subject” token, which describes the subject performing an auditable event.
+     This includes both the traditional UNIX security properties, such as user
+     IDs and group IDs, but also audit information such as the audit user ID and
+     session.  A “process” token can be created using au_to_process32(3) or
+     au_to_process64(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Audit ID                            4 bytes                Audit user ID
+        Effective User ID                   4 bytes                Effective
+                                                                   user ID
+        Effective Group ID                  4 bytes                Effective
+                                                                   group ID
+        Real User ID                        4 bytes                Real user ID
+        Real Group ID                       4 bytes                Real group ID
+        Process ID                          4 bytes                Process ID
+        Session ID                          4 bytes                Audit session
+                                                                   ID
+        Terminal Port ID                    4/8 bytes              Terminal port
+                                                                   ID
+                                                                   (32/64-bits)
+        Terminal Machine Address            4 bytes                IP address of
+                                                                   machine
+
+   Expanded Process Token
+     The “expanded process” token contains the contents of the “process” token,
+     with the addition of a machine address type and variable length address
+     storage capable of containing IPv6 addresses.  An “expanded process” token
+     can be created using au_to_process32_ex(3) or au_to_process64_ex(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Audit ID                            4 bytes                Audit user ID
+        Effective User ID                   4 bytes                Effective
+                                                                   user ID
+        Effective Group ID                  4 bytes                Effective
+                                                                   group ID
+        Real User ID                        4 bytes                Real user ID
+        Real Group ID                       4 bytes                Real group ID
+        Process ID                          4 bytes                Process ID
+        Session ID                          4 bytes                Audit session
+                                                                   ID
+        Terminal Port ID                    4/8 bytes              Terminal port
+                                                                   ID
+                                                                   (32/64-bits)
+        Terminal Address Type/Length        1 byte                 Length of
+                                                                   machine
+                                                                   address
+        Terminal Machine Address            4 bytes                IPv4 or IPv6
+                                                                   address of
+                                                                   machine
+
+   Return Token
+     The “return” token contains a system call or library function return
+     condition, including return value and error number associated with the
+     global variable errno.  A “return” token can be created using
+     au_to_return32(3) or au_to_return64(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Error Number                        1 byte                 Errno value,
+                                                                   or 0 if
+                                                                   undefined
+        Return Value                        4/8 bytes              Return value
+                                                                   (32/64-bits)
+
+   Subject Token
+     The “subject” token contains information on the subject performing the
+     operation described by an audit record, and includes similar information to
+     that found in the “process” and “expanded process” tokens.  However, those
+     tokens are used where the process being described is the target of the
+     operation, not the authorizing party.  A “subject” token can be created
+     using au_to_subject32(3) and au_to_subject64(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Audit ID                            4 bytes                Audit user ID
+        Effective User ID                   4 bytes                Effective
+                                                                   user ID
+        Effective Group ID                  4 bytes                Effective
+                                                                   group ID
+        Real User ID                        4 bytes                Real user ID
+        Real Group ID                       4 bytes                Real group ID
+        Process ID                          4 bytes                Process ID
+        Session ID                          4 bytes                Audit session
+                                                                   ID
+        Terminal Port ID                    4/8 bytes              Terminal port
+                                                                   ID
+                                                                   (32/64-bits)
+        Terminal Machine Address            4 bytes                IP address of
+                                                                   machine
+
+   Expanded Subject Token
+     The “expanded subject” token consists of the same elements as the “subject”
+     token, with the addition of type/length and variable size machine address
+     information in the terminal ID.  An “expanded subject” token can be created
+     using au_to_subject32_ex(3) or au_to_subject64_ex(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Audit ID                            4 bytes                Audit user ID
+        Effective User ID                   4 bytes                Effective
+                                                                   user ID
+        Effective Group ID                  4 bytes                Effective
+                                                                   group ID
+        Real User ID                        4 bytes                Real user ID
+        Real Group ID                       4 bytes                Real group ID
+        Process ID                          4 bytes                Process ID
+        Session ID                          4 bytes                Audit session
+                                                                   ID
+        Terminal Port ID                    4/8 bytes              Terminal port
+                                                                   ID
+                                                                   (32/64-bits)
+        Terminal Address Type/Length        1 byte                 Length of
+                                                                   machine
+                                                                   address
+        Terminal Machine Address            4 bytes                IPv4 or IPv6
+                                                                   address of
+                                                                   machine
+
+   System V IPC Token
+     The “System V IPC” token contains the System V IPC message handle,
+     semaphore handle or shared memory handle.  A System V IPC token may be
+     created using +.Xr au_to_ipc 3 .
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Object ID type                      1 byte                 Object ID
+        Object ID                           4 bytes                Object ID
+
+   Text Token
+     The “text” token contains a single NUL-terminated text string.  A “text”
+     token may be created using au_to_text(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Text Length                         2 bytes                Length of
+                                                                   text string
+                                                                   including NUL
+        Text                                N bytes + 1 NUL        Text string
+                                                                   including NUL
+
+   Attribute Token
+     The “attribute” token describes the attributes of a file associated with
+     the audit event.  As files may be identified by 0, 1, or many path names, a
+     path name is not included with the attribute block for a file; optional
+     “path” tokens may also be present in an audit record indicating which path,
+     if any, was used to reach the object.  An “attribute” token can be created
+     using au_to_attr32(3) or au_to_attr64(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        File Access Mode                    1 byte                 mode_t
+                                                                   associated
+                                                                   with file
+        Owner User ID                       4 bytes                uid_t
+                                                                   associated
+                                                                   with file
+        Owner Group ID                      4 bytes                gid_t
+                                                                   associated
+                                                                   with file
+        File System ID                      4 bytes                fsid_t
+                                                                   associated
+                                                                   with file
+        File System Node ID                 8 bytes                ino_t
+                                                                   associated
+                                                                   with file
+        Device                              4/8 bytes              Device
+                                                                   major/minor
+                                                                   number
+                                                                   (32/64-bit)
+
+   Groups Token
+     The “groups” token contains a list of group IDs associated with the audit
+     event.  A “groups” token can be created using au_to_groups(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Number of Groups                    2 bytes                Number of
+                                                                   groups in
+                                                                   token
+        Group List                          N * 4 bytes            List of N
+                                                                   group IDs
+
+   System V IPC Permission Token
+     The “System V IPC permission” token contains a System V IPC access
+     permissions.  A System V IPC permission token may be created using
+     au_to_ipc_perm(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Owner user ID                       4 bytes                User ID of
+                                                                   IPC owner
+        Owner group ID                      4 bytes                Group ID of
+                                                                   IPC owner
+        Creator user ID                     4 bytes                User ID of
+                                                                   IPC creator
+        Creator group ID                    4 bytes                Group ID of
+                                                                   IPC creator
+        Access mode                         4 bytes                Access mode
+        Sequnce number                      4 bytes                Sequnce
+                                                                   number
+        Key                                 4 bytes                IPC key
+
+   Arg Token
+     The “arg” token contains informations about arguments of the system call.
+     Depending on the size of the desired argument value, an Arg token may be
+     created using au_to_arg32(3) or au_to_arg64(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Argument ID                         1 byte                 Argument ID
+        Argument value                      4/8 bytes              Argument
+                                                                   value
+        Length                              2 bytes                Length of the
+                                                                   text
+        Text                                N bytes + 1 NUL        The string
+                                                                   including nul
+
+   exec_args Token
+     The “exec_args” token contains informations about arguements of the exec()
+     system call.  An exec_args token may be created using au_to_exec_args(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Count                               4 bytes                Number of
+                                                                   arguments
+        Text                                * bytes                Count
+                                                                   nul-terminated
+                                                                   strings
+
+   exec_env Token
+     The “exec_env” token contains current eviroment variables to an exec()
+     system call.  An exec_args token may be created using au_to_exec_env(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Count ID                            4 bytes                Number of
+                                                                   variables
+        Text                                * bytes                Count
+                                                                   nul-terminated
+                                                                   strings
+
+   Exit Token
+     The “exit” token contains process exit/return code information.  An “exit”
+     token can be created using au_to_exit(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Status                              4 bytes                Process
+                                                                   status on
+                                                                   exit
+        Return Value                        4 bytes                Process
+                                                                   return value
+                                                                   on exit
+
+   Socket Token
+     The “socket” token contains information about UNIX domain and Internet
+     sockets.  Each token has four or eight fields.  Depending on the type of
+     socket, a socket token may be created using au_to_sock_unix(3),
+     au_to_sock_inet32(3) or au_to_sock_inet128(3).
+
+        Field                      Bytes                Description
+        Token ID                   1 byte               Token ID
+        Socket family              2 bytes              Socket family
+        Local port                 2 bytes              Local port
+        Socket address             4 bytes              Socket address
+
+   Expanded Socket Token
+     The “expanded socket” token contains information about IPv4 and IPv6
+     sockets.  A “expanded socket” token can be created using
+     au_to_socket_ex(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Socket domain                       2 bytes                Socket domain
+        Socket type                         2 bytes                Socket type
+        Address type                        2 byte                 Address type
+                                                                   (IPv4/IPv6)
+        Local port                          2 bytes                Local port
+        Local IP address                    4/16 bytes             Local IP
+                                                                   address
+        Remote port                         2 bytes                Remote port
+        Remote IP address                   4/16 bytes             Remote IP
+                                                                   address
+
+   Seq Token
+     The “seq” token contains a unique and monotonically increasing audit event
+     sequence ID.  Due to the limited range of 32 bits, serial number arithmetic
+     and caution should be used when comparing sequence numbers.
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Sequence Number                     4 bytes                Audit event
+                                                                   sequence
+                                                                   number
+
+   privilege Token
+     The “privilege” token ...
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        XXXXX
+
+   Use-of-auth Token
+     The “use-of-auth” token ...
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        XXXXX
+
+   Command Token
+     The “command” token ...
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        XXXXX
+
+   ACL Token
+     The “ACL” token ...
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        XXXXX
+
+   Zonename Token
+     The “zonename” token holds a NUL-terminated string with the name of the
+     zone or jail from which the record originated.  A token can be created
+     using au_to_zonename(3).
+
+        Field                               Bytes                  Description
+        Token ID                            1 byte                 Token ID
+        Zonename length                     2 bytes                Length of
+                                                                   zonename
+                                                                   string
+                                                                   including NUL
+        Zonename                            N bytes + 1 NUL        Zonename
+                                                                   string
+                                                                   including NUL
+
+SEE ALSO
+     auditreduce(1), praudit(1), libbsm(3), audit(4), auditpipe(4), audit(8)
+
+HISTORY
+     The OpenBSM implementation was created by McAfee Research, the security
+     division of McAfee Inc., under contract to Apple Computer Inc. in 2004.  It
+     was subsequently adopted by the TrustedBSD Project as the foundation for
+     the OpenBSM distribution.
+
+AUTHORS
+     The Basic Security Module (BSM) interface to audit records and audit event
+     stream format were defined by Sun Microsystems.
+
+     This manual page was written by Robert Watson ⟨rwatson@FreeBSD.org⟩.
+
+BUGS
+     The “How to print” field in the “arbitrary data” token has undefined
+     values.
+
+     The “in_addr” and “in_addr_ex” token layout documented here appears to be
+     in conflict with the libbsm(3) implementation of au_to_in_addr_ex(3).
+

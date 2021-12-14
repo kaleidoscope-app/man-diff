@@ -1,0 +1,54 @@
+pam_env(8)                   System Manager's Manual                  pam_env(8)
+
+NAME
+     pam_env – The Environment PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_env [options]
+
+DESCRIPTION
+     The Environment PAM module supports the authentication and session
+     management function classes.  In terms of the function-class parameter,
+     these are “auth” and “session” respectively.  The Environment PAM module
+     has identical support for both supported function classes.
+
+     The Environment PAM module allows the setting and unsetting of environment
+     variables.  The use of previously set environment variables as well as
+     PAM_ITEMs such as PAM_RHOST is supported.
+
+     This module can also parse a file with simple KEY=VAL pairs on separate
+     lines (/etc/environment by default).  You can change the default file to
+     parse, with the envfile flag and turn it on or off by setting the readenv
+     flag to 1 or 0 respectively.
+
+     The following options may be passed to this module:
+
+     conffile=/path/to/pam_env.conf
+             Indicate an alternative pam_env.conf style configuration file to
+             override the default. This can be useful when different services
+             need different environments.
+
+     debug   A lot of debug information will be printed to the system log.
+
+     envfile=/path/to/environment
+             Indicate an alternative environment file to override the default.
+             This can be useful when different services need different
+             environments.
+
+     readenv=0|1
+             Turns on or off the reading of the file specified by envfile (0 is
+             off, 1 is on). By default this option is on.
+
+FILES
+     /etc/security/pam_env.conf
+             The default configuration file.
+
+     /etc/environment
+             The default environment file.
+
+SEE ALSO
+     environ(7), pam.conf(5), pam(8)
+
+AUTHORS
+     The pam_env module was written by Dave Kinchlea <kinch@kinch.ark.com>.
+

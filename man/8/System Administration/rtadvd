@@ -1,0 +1,118 @@
+RTADVD(8)                    System Manager's Manual                   RTADVD(8)
+
+NAME
+     rtadvd – router advertisement daemon
+
+SYNOPSIS
+     rtadvd [-dDfMRs] [-c configfile] [-F dumpfile] [-p pidfile] interface ...
+
+DESCRIPTION
+     rtadvd sends router advertisement packets to the specified interfaces.
+
+     The program will daemonize itself on invocation.  It will then send router
+     advertisement packets periodically, as well as in response to router
+     solicitation messages sent by end hosts.
+
+     Router advertisements can be configured on a per-interface basis, as
+     described in rtadvd.conf(5).
+
+     If there is no configuration file entry for an interface, or if the
+     configuration file does not exist altogether, rtadvd sets all the
+     parameters to their default values.  In particular, rtadvd reads all the
+     interface routes from the routing table and advertises them as on-link
+     prefixes.
+
+     rtadvd also watches the routing table.  If an interface direct route is
+     added on an advertising interface and no static prefixes are specified by
+     the configuration file, rtadvd adds the corresponding prefix to its
+     advertising list.
+
+     Similarly, when an interface direct route is deleted, rtadvd will start
+     advertising the prefixes with zero valid and preferred lifetimes to help
+     the receiving hosts switch to a new prefix when renumbering.  Note,
+     however, that the zero valid lifetime cannot invalidate the autoconfigured
+     addresses at a receiving host immediately.  According to the specification,
+     the host will retain the address for a certain period, which will typically
+     be two hours.  The zero lifetimes rather intend to make the address
+     deprecated, indicating that a new non-deprecated address should be used as
+     the source address of a new connection.  This behavior will last for two
+     hours.  Then rtadvd will completely remove the prefix from the advertising
+     list, and succeeding advertisements will not contain the prefix
+     information.
+
+     Moreover, if the status of an advertising interface changes, rtadvd will
+     start or stop sending router advertisements according to the latest status.
+
+     The -s option may be used to disable this behavior; rtadvd will not watch
+     the routing table and the whole functionality described above will be
+     suppressed.
+
+     Basically, hosts MUST NOT send Router Advertisement messages at any time
+     (RFC 2461, Section 6.2.3).  However, it would sometimes be useful to allow
+     hosts to advertise some parameters such as prefix information and link MTU.
+     Thus, rtadvd can be invoked if router lifetime is explicitly set zero on
+     every advertising interface.
+
+     The command line options are:
+
+     -c      Specify an alternate location, configfile, for the configuration
+             file.  By default, /etc/rtadvd.conf is used.
+
+     -d      Print debugging information.
+
+     -D      Even more debugging information is printed.
+
+     -f      This option is now deprecated and ignored.
+
+     -F      Specify an alternative file in which to dump internal states when
+             rtadvd receives signal SIGUSR1.  The default is
+             /var/run/rtadvd.dump.
+
+     -M      Specify an interface to join the all-routers site-local multicast
+             group.  By default, rtadvd tries to join the first advertising
+             interface appearing on the command line.  This option has meaning
+             only with the -R option, which enables routing renumbering protocol
+             support.
+
+     -p      Specify an alternative file in which to store the process ID.  The
+             default is /var/run/rtadvd.pid.
+
+     -R      Accept router renumbering requests.  If you enable it, certain
+             IPsec setup is suggested for security reasons.  This option is
+             currently disabled, and is ignored by rtadvd with a warning
+             message.
+
+     -s      Do not add or delete prefixes dynamically.  Only statically
+             configured prefixes, if any, will be advertised.
+
+     Upon receipt of signal SIGUSR1, rtadvd will dump the current internal state
+     into /var/run/rtadvd.dump or the file specified with option -F.
+
+     Use SIGTERM to kill rtadvd gracefully.  In this case, rtadvd will transmit
+     router advertisement with router lifetime 0 to all the interfaces (in
+     accordance with RFC2461 6.2.5).
+
+FILES
+     /etc/rtadvd.conf                  The default configuration file.
+     /var/run/rtadvd.pid               The default process ID file.
+     /var/run/rtadvd.dump              The default file in which rtadvd dumps
+                                       its internal state.
+
+EXIT STATUS
+     The rtadvd utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     rtadvd.conf(5), rtsol(8)
+
+HISTORY
+     The rtadvd command first appeared in the WIDE Hydrangea IPv6 protocol stack
+     kit.
+
+BUGS
+     There used to be some text that recommended users not to let rtadvd
+     advertise Router Advertisement messages on an upstream link to avoid
+     undesirable icmp6(4) redirect messages.  However, based on the later
+     discussion in the IETF ipng working group, all routers should rather
+     advertise the messages regardless of the network topology, in order to
+     ensure reachability.
+

@@ -1,0 +1,70 @@
+RPC.LOCKD(8)                 System Manager's Manual                RPC.LOCKD(8)
+
+NAME
+     rpc.lockd – NFS file locking daemon
+
+SYNOPSIS
+     rpc.lockd [-d debug_level] [-g grace_period] [-x host_monitor_cache_period]
+
+DESCRIPTION
+     The rpc.lockd utility provides monitored and unmonitored file and record
+     locking services in an NFS environment.  To monitor the status of hosts
+     requesting locks, the locking daemon typically operates in conjunction with
+     rpc.statd(8).
+
+     The rpc.lockd utility runs whenever its services are needed to support
+     either the NFS server (see nfsd(8)) or the NFS client (an NFS file system
+     on which file locking requests have been made).  The daemon will remain
+     running until a short time after its services are no longer needed to
+     support either the NFS client or NFS server.  rpc.lockd will also make sure
+     that the statd service (on which it depends) is running.
+
+     The following is a list of command line options that are available.
+     However, since rpc.lockd is normally started by launchd(8), configuration
+     of these options should be controlled using the equivalent settings in the
+     NFS configuration file.  See nfs.conf(5) for a list of tunable parameters.
+
+     -d      The -d option causes debugging information to be written to syslog,
+             recording all RPC transactions to the daemon.  These messages are
+             logged with level LOG_DEBUG and facility LOG_DAEMON.  Specifying a
+             debug_level of 1 results in the generation of one log line per
+             protocol operation.  Higher debug levels can be specified, causing
+             display of operation arguments and internal operations of the
+             daemon.
+
+     -g      The -g option allows to specify the grace period (in seconds).
+             During the grace period rpc.lockd only accepts requests from hosts
+             which are reinitialising locks which existed before the server
+             restart.  Default is 45 seconds.
+
+     -x      The -x option tells rpc.lockd how long to cache state records for
+             monitored hosts.  Setting it to zero will disable the cache which
+             will make lock and unlock requests from a single client more
+             expensive because of additional interaction with the client's
+             statd.  The default cache time is 60 seconds.
+
+     Error conditions are logged to syslog, irrespective of the debug level,
+     using log level LOG_ERR and facility LOG_DAEMON.
+
+FILES
+     /var/run/lockd.pid              The pid of the current lockd daemon.
+     /System/Library/LaunchDaemons/com.apple.lockd.plist
+                                     The lockd service's property list file for
+                                     launchd(8).
+     /usr/include/rpcsvc/nlm_prot.x  RPC protocol specification for the network
+                                     lock manager protocol.
+
+SEE ALSO
+     nfs.conf(5), rpc.statd(8), syslog(3), launchd(8)
+
+BUGS
+     The current implementation serialises locks requests that could be shared.
+
+STANDARDS
+     The implementation is based on the specification in Protocols for X/Open PC
+     Interworking: XNFS, Issue 4, X/Open CAE Specification C218, ISBN 1 872630
+     66 9.
+
+HISTORY
+     A version of rpc.lockd appeared in SunOS 4.
+

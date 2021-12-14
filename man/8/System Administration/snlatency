@@ -1,0 +1,34 @@
+SNLATENCY(8)                 System Manager's Manual                SNLATENCY(8)
+
+
+
+NAME
+       snlatency - Measure Xsan Volume network latency
+
+SYNOPSIS
+       snlatency pathname [repeat]
+
+DESCRIPTION
+       The snlatency program allows measuring the round trip latency from the
+       Xsan client to  the FSM process on the MDC host.  The file system to
+       measure is selected via the pathname parameter.
+
+       snlatency uses a special RPC to the MDC in a loop to measure the time to
+       send the message, the time for the FSM process to service the request,
+       and the time to send the response back up to the system call level.  The
+       average of repeat calls is averaged and the latencies printed out in
+       micro seconds.
+
+       If the MDC is not local, then the NTP clock algorithm is used to adjust
+       for the difference between the two host's clocks before calculating the
+       results, it is not used when the MDC the same host.  The reason for this
+       is that the NTP algorithm assumes the latency in both directions is the
+       same and in effect averages them out.  Comparing the latencies seen
+       between the client local to the MDC and remote clients will show how much
+       of the latency is caused by network infrastructure.
+
+EXIT VALUES
+       snlatency will return 0 on success and non-zero on failure.
+
+
+

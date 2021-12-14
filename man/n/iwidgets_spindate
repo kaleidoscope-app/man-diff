@@ -1,0 +1,232 @@
+iwidgets::spindate(1)            [incr Widgets]            iwidgets::spindate(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::spindate - Create and manipulate time spinner widgets
+
+SYNOPSIS
+       iwidgets::spindate pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Spindate
+
+
+STANDARD OPTIONS
+       background      cursor         foreground      relief
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       textBackground  textFont
+
+       See the "entryfield" manual entry for details on the above associated
+       options.
+
+       labelFont       labelMargin
+
+       See the "labeledwidget" manual entry for details on the above associated
+       options.
+
+       arrowOrient     repeatDelay    repeatInterval
+
+       See the "spinner" manual entry for details on the above associated
+       options.
+
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           dateMargin
+       Class:          Margin
+       Command-Line Switch:           -datemargin
+
+              Specifies the margin space between the month, day, and year
+              spinners is any of the forms accpetable to Tcl_GetPixels.  The
+              default is 1 pixel.
+
+       Name:           dayLabel
+       Class:          Text
+       Command-Line Switch:           -daylabel
+
+              Specifies the text of the label for the day spinner.  The default
+              is "Day".
+
+       Name:           dayOn
+       Class:          dayOn
+       Command-Line Switch:           -dayon
+
+              Specifies whether or not to display the day spinner in any of the
+              forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           dayWidth
+       Class:          Width
+       Command-Line Switch:           -daywidth
+
+              Specifies the width of the day spinner in any of the forms
+              acceptable to Tcl_GetPixels.  The default is 3 pixels.
+
+       Name:           labelPos
+       Class:          Position
+       Command-Line Switch:           -labelpos
+
+              Specifies the position of the label along the sides of the various
+              spinners: n, e, s, or w.  The default is w.
+
+       Name:           monthFormat
+       Class:          MonthFormat
+       Command-Line Switch:           -monthformat
+
+              Specifies the format of month display, integer (1-12) or brief
+              strings (Jan - Dec), or full strings (January - December).
+
+       Name:           monthLabel
+       Class:          Text
+       Command-Line Switch:           -monthlabel
+
+              Specifies the text of the label for the month spinner.  The
+              default is "Month".
+
+       Name:           monthOn
+       Class:          monthOn
+       Command-Line Switch:           -monthon
+
+              Specifies whether or not to display the month spinner in any of
+              the forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           monthWidth
+       Class:          Width
+       Command-Line Switch:           -monthwidth
+
+              Specifies the width of the month spinner in any of the forms
+              acceptable to Tcl_GetPixels.  The default is 3 pixels.
+
+       Name:           orient
+       Class:          Orient
+       Command-Line Switch:           -orient
+
+              Specifies the orientation of the month, day, and year spinners:
+              vertical or horizontal.  The default is horizontal.
+
+       Name:           yearDigits
+       Class:          YearDigits
+       Command-Line Switch:           -yeardigits
+
+              Specifies the number of digits to be displayed as the value for
+              the year spinner.  The valid values are 2 and 4.  The default is
+              2.
+
+       Name:           yearLabel
+       Class:          Text
+       Command-Line Switch:           -yearlabel
+
+              Specifies the text of the label for the year spinner.  The default
+              is "Year"
+
+       Name:           yearOn
+       Class:          yearOn
+       Command-Line Switch:           -yearon
+
+              Specifies whether or not to display the year spinner in any of the
+              forms acceptable to Tcl_GetBoolean.  The default is true.
+
+       Name:           yearWidth
+       Class:          Width
+       Command-Line Switch:           -yearwidth
+
+              Specifies the width of the year spinner in any of the forms
+              acceptable to Tcl_GetPixels.  The default is 3 pixels.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::spindate command creates a set of spinners for use in date
+       value entry.  The set includes an month, day, and year spinner widget.
+
+
+METHODS
+       The iwidgets::spindate command creates a new Tcl command whose name is
+       pathName. This command may be used to invoke various operations on the
+       widget. It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command. The
+       following commands are possible for spindate widgets:
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::spindate command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::spindate command.
+
+       pathName get ?format?
+              Returns the current contents of the spindate widget in a format of
+              string or as an integer clock value using the -string and -clicks
+              format options respectively.  The default is by string.  Reference
+              the clock command for more information on obtaining dates and
+              their formats.
+
+       pathName show date
+              Changes the currently displayed date to be that of the date
+              argument.  The date may be specified either as a string, an
+              integer clock value or the keyword "now".  Reference the clock
+              command for more information on obtaining dates and their formats.
+
+
+COMPONENTS
+       Name:           month
+       Class:          Spinner
+
+              The month spinner component is the month spinner of the date
+              spinner.  See the Spinner widget manual entry for details on the
+              month component item.
+
+       Name:           day
+       Class:          Spinint
+
+              The day spinner component is the day spinner of the date spinner.
+              See the SpinInt widget manual entry for details on the day
+              component item.
+
+       Name:           year
+       Class:          Spinint
+
+              The year spinner component is the year spinner of the date
+              spinner.  See the SpinInt widget manual entry fordetails on the
+              year component item.
+
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              iwidgets::spindate .sd
+              pack .sd -padx 10 -pady 10
+
+
+AUTHOR
+       Sue Yockey
+
+       Mark L. Ulferts
+
+KEYWORDS
+       spindate, spinint, spinner, entryfield, entry, widget
+
+
+
+

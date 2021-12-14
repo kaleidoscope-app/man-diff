@@ -1,0 +1,60 @@
+mime.convs(5)                      Apple Inc.                      mime.convs(5)
+
+
+
+NAME
+       mime.convs - mime type conversion file for cups (deprecated)
+
+DESCRIPTION
+       The mime.convs file defines the filters that are available for converting
+       files from one format to another.  The standard filters support text,
+       PDF, PostScript, and many types of image files.
+
+       Additional filters are specified in files with the extension .convs in
+       the CUPS configuration directory.
+
+       Each line in the mime.convs file is a comment, blank, or filter line.
+       Comment lines start with the # character.  Filter lines specify the
+       source and destination MIME types along with a relative cost associated
+       with the filter and the filter to run:
+
+           source/type destination/type cost filter
+
+       The source/type field specifies the source MIME media type that is
+       consumed by the filter.
+
+       The destination/type field specifies the destination MIME media type that
+       is produced by the filter.
+
+       The cost field specifies the relative cost for running the filter.  A
+       value of 100 means that the filter uses a large amount of resources while
+       a value of 0 means that the filter uses very few resources.
+
+       The filter field specifies the filter program filename.  Filenames are
+       relative to the CUPS filter directory.
+
+FILES
+       /etc/cups - Typical CUPS configuration directory.
+       /usr/lib/cups/filter - Typical CUPS filter directory.
+       /usr/libexec/cups/filter - CUPS filter directory on macOS.
+
+EXAMPLES
+       Define a filter that converts PostScript documents to CUPS Raster format:
+
+           application/vnd.cups-postscript application/vnd.cups-raster 50 pstoraster
+
+
+NOTES
+       CUPS filters are deprecated and will no longer be supported in a future
+       feature release of CUPS.  Printers that do not support IPP can be
+       supported using applications such as ippeveprinter(1).
+
+SEE ALSO
+       cups-files.conf(5), cupsd.conf(5), cupsd(8), cupsfilter(8),
+       mime.types(5), CUPS Online Help (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

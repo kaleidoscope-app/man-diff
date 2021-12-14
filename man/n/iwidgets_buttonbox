@@ -1,0 +1,173 @@
+iwidgets::buttonbox(1)           [incr Widgets]           iwidgets::buttonbox(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::buttonbox - Create and manipulate a manager widget for buttons
+
+SYNOPSIS
+       iwidgets::buttonbox pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::buttonbox
+
+STANDARD OPTIONS
+       background      cursor
+
+       See the "options" manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           orient
+       Class:          Orient
+       Command-Line Switch:           -orient
+
+              Orientation of the button box: horizontal or vertical.  The
+              default is horizontal.
+
+       Name:           padX
+       Class:          PadX
+       Command-Line Switch:           -padx
+
+              Specifies a non-negative padding distance to leave between the
+              button group and the outer edge of the button box in the x
+              direction.  The value may be given in any of the forms acceptable
+              to Tk_GetPixels.  The default is 5 pixels.
+
+       Name:           padY
+       Class:          PadY
+       Command-Line Switch:           -pady
+
+              Specifies a non-negative padding distance to leave between the
+              button group and the outer edge of the button box in the y
+              direction.  The value may be given in any of the forms acceptable
+              to Tk_GetPixels.  The default is 5 pixels.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::buttonbox command creates a manager widget for controlling
+       buttons.  The button box also supports the display and invocation of a
+       default button.  The button box can be configured either horizontally or
+       vertically.
+
+
+METHODS
+       The iwidgets::buttonbox command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.
+
+       Many of the widget commands for the buttonbox take as one argument an
+       indicator of which button of the button box to operate on.  These
+       indicators are called indexes and allow reference and manipulation of
+       buttons regardless of their current map state.  buttonbox indexes may be
+       specified in any of the following forms:
+
+       number      Specifies the button numerically, where 0 corresponds to the
+                   left/top-most button of the button box.
+
+       end         Indicates the right/bottom-most button of the button box.
+
+       default     Indicates the current default button of the button box.  This
+                   is the button with the default ring displayed.
+
+       pattern     If the index doesn't satisfy one of the above forms then this
+                   form is used.  Pattern is pattern-matched against the tag of
+                   each button in the button box, in order from left/top to
+                   right/left, until a matching entry is found.  The rules of
+                   Tcl_StringMatch are used.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName add tag args
+              Add a button distinguished by tag to the end of the button box.
+              If additional arguments are present they specify options to be
+              applied to the button.  See PushButton for information on the
+              options available.
+
+       pathName buttonconfigure index ?options?
+              This command is similar to the configure command, except that it
+              applies to the options for an individual button, whereas configure
+              applies to the options for the button box as a whole.  Options may
+              have any of the values accepted by the PushButton command.  If
+              options are specified, options are modified as indicated in the
+              command and the command returns an empty string.  If no options
+              are specified, returns a list describing the current options for
+              entry index (see Tk_ConfigureInfo for information on the format of
+              this list).
+
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::buttonbox command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::buttonbox command.
+
+       pathName default index
+              Sets the default button to the button given by index.  This causes
+              the default ring to appear arround the specified button.
+
+       pathName delete index
+              Deletes the button given by index from the button box.
+
+       pathName hide index
+              Hides the button denoted by index.  This doesn't remove the button
+              permanently, just inhibits its display.
+
+       pathName index index
+              Returns the numerical index corresponding to index.
+
+       pathName insert index tag ?option value option value ...?
+              Same as the add command except that it inserts the new button just
+              before the one given by index, instead of appending to the end of
+              the button box.  The option, and value arguments have the same
+              interpretation as for the add widget command.
+
+       pathName invoke ?index?
+              Invoke the command associated with a button.  If no arguments are
+              given then the current default button is invoked, otherwise the
+              argument is expected to be a button index.
+
+       pathName show index
+              Display a previously hidden button denoted by index.
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::buttonbox .bb
+
+               .bb add Yes -text Yes -command "puts Yes"
+               .bb add No -text No -command "puts No"
+               .bb add Maybe -text Maybe -command "puts Maybe"
+               .bb default Yes
+
+               pack .bb -expand yes -fill both
+
+
+AUTHOR
+       Bret A. Schuhmacher
+
+       Mark L. Ulferts
+
+KEYWORDS
+       buttonbox, pushbutton, button, widget
+
+
+

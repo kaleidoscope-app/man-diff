@@ -1,0 +1,81 @@
+CVAFFINITY(1)                General Commands Manual               CVAFFINITY(1)
+
+
+
+NAME
+       cvaffinity - set, get, or delete the affinity of a file or directory
+
+SYNOPSIS
+       cvaffinity -s_key filename
+
+       cvaffinity -l filename
+
+       cvaffinity -d filename
+
+DESCRIPTION
+       cvaffinity can be used to set an affinity for a specific storage pool on
+       a file or directory, or list the current affinity.  An affinity is
+       created in a storage pool through the volume configuration, see
+       snfs_config(5).  It is a name, up to eight (8) characters, describing a
+       special media type. Use cvadmin(8) to see what affinity sets are assigned
+       to the configured storage pools.
+
+       If the affinity does not exist on any of the storage pools, a set will
+       fail.  When allocating space for a file with an affinity, if the affinity
+       does not exist for any of the storage pools, or if the storage pools with
+       the affinity cannot be used to satisfy an allocation request, then the
+       allocation will occur on the non-exclusive storage pools.  If there is no
+       non-exclusive storage pools, an ENOSPC is returned.  See also
+       AffinityPreference in snfs_config(5).
+
+       If a file does not have an affinity, it cannot have space allocated to it
+       on storage pools that have any affinities and are configured to be
+       exclusive.
+
+       A common way to use the affinity capability, is to create a directory
+       with cvmkdir(1) and have all files and directories below that directory
+       inherit the affinity.  Also, files can be created and have space pre-
+       allocated with an affinity using cvmkfile(1).
+
+       For automatic affinity mapping for certain files, see autoAffinity and
+       autoAffinities in snfs_config(5) and snfs.cfgx(5).
+
+OPTIONS
+       -s key Set the given key to be the Affinity Key of the given file or
+              directory.  This key must be configured as an Affinity in the
+              storage pool section of the file system configuration. Use
+              cvadmin(8) to see the affinities in this file system.  For files
+              with an Affinity, new blocks allocated to that file are placed on
+              a storage pool with the specified Affinity.  For directories with
+              an Affinity new files created in that directory inherit the
+              Affinity from the directory.
+
+       -l     This option says to just list the affinity for the specified file
+              and exit.
+
+       -d     This option says to delete the affinity from the specified file or
+              directory, if one exists.
+
+       filename
+              Specifies the file or directory operated on.
+
+EXAMPLES
+       List the affinity on the file /usr/clips/foo.
+
+          rock # cvaffinity -l /usr/clips/foo
+
+       Set this file or directory to use the storage pool that has the jmfn8
+       affinity type.
+
+          rock # cvaffinity -s jmfn8 /usr/clips/filename
+
+       Remove the affinity from the /usr/clips/mydir, if one is currently
+       assigned.
+
+          rock # cvaffinity -d /usr/clips/mydir
+
+SEE ALSO
+       snfs_config(5), cvadmin(8)
+
+
+

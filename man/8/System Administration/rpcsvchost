@@ -1,0 +1,69 @@
+rpcsvchost(8)                System Manager's Manual               rpcsvchost(8)
+
+NAME
+     rpcsvchost – hosting environment for DCE/RPC services
+
+SYNOPSIS
+     rpcsvchost [options] service [service ...]
+
+DESCRIPTION
+     rpcsvchost is a very simple environment for hosting DCE/RPC services.  It
+     loads DCE/RPC services from the list of plugins given as arguments, binds
+     to an appropriate set of endpoints and listens for protocol requests.
+
+     If service is not a relative file name, it is assumed to be the name of a
+     dylib located in /usr/lib/rpcsvc.
+
+OPTIONS
+     -debug, -nodebug
+              rpcsvchost will log debug information and may perform extra
+              diagnostic checks. This option is typically only useful for
+              debugging.
+
+     -endpoints BINDING [,BINDING]
+              This argument specifies additional endpoints that rpcsvchost
+              should attempt to bind.  BINDING must be a comma-separated list of
+              DCE/RPC binding strings that include both the protocol sequence
+              and endpoint fields.
+
+     -help    Prints a usage message and exits.
+
+     -launchd, -nolaunchd
+              Normally, rpcsvchost attempts to bind all the well-known endpoints
+              specified by the service plugins.  If there are no well-known
+              endpoints, it will bind new endpoints on all supported protocol
+              sequences. The -launchd option disables this behavior and causes
+              rpcsvchost to check in with launchd(8) to obtain a set of sockets
+              to bind as protocol endpoints.
+
+              Launchd sockets vended to rpcsvchost must be named with the
+              appropriate DCE/RPC protocol sequence (eg. "ncacn_np").
+
+     -sandbox, -nosandbox
+              When this option is specified, the modules loaded by rpcsvchost
+              will be run in a sandbox.  rpcsvchost will attempt to intialize
+              the sandbox using the sandbox profile with the name
+              com.apple.<module-name>.sb. See sandbox(7) for an overview of the
+              sandbox facility.
+
+     -register, -noregister
+              When this option is specified, rpcsvchost attempts to register the
+              loaded services with the DCE/RPC endpoint mapper.
+
+     -stdout  Causes rpcsvchost to print log messages to standard output instead
+              of the system log.
+
+     -wait-for-debugger
+              Causes rpcsvchost to wait for a debugger to attach after it has
+              loaded and initialized its plugins. This is useful for debugging
+              instances of rpcsvchost that are launched by launchd(8).
+
+DIAGNOSTICS
+     The rpcsvchost utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     launchd.plist(5), launchd(8), sandbox(7)
+
+HISTORY
+     The rpcsvchost utility first appeared in Mac OS 10.7.
+

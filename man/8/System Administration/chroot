@@ -1,0 +1,36 @@
+CHROOT(8)                    System Manager's Manual                   CHROOT(8)
+
+NAME
+     chroot – change root directory
+
+SYNOPSIS
+     chroot [-u -user] [-g -group] [-G -group,group,...] newroot [command]
+
+DESCRIPTION
+     The chroot command changes its root directory to the supplied directory
+     newroot and exec's command, if supplied, or an interactive copy of your
+     shell.
+
+     If the -u, -g or -G options are given, the user, group and group list of
+     the process are set to these values after the chroot has taken place.  See
+     setgid(2), setgroups(2), setuid(2), getgrnam(3) and getpwnam(3).
+
+     Note, command or the shell are run as your real-user-id.
+
+ENVIRONMENT
+     The following environment variable is referenced by chroot:
+
+     SHELL  If set, the string specified by SHELL is interpreted as the name of
+            the shell to exec.  If the variable SHELL is not set, /bin/sh is
+            used.
+
+SEE ALSO
+     chdir(2), chroot(2), environ(7)
+
+HISTORY
+     The chroot utility first appeared in 4.4BSD.
+
+SECURITY CONSIDERATIONS
+     chroot should never be installed setuid root, as it would then be possible
+     to exploit the program to gain root privileges.
+

@@ -1,0 +1,134 @@
+DMC(1)                                                                    DMC(1)
+
+
+
+NAME
+       dmc - controls the Disk Mount Conditioner
+
+SYNOPSIS
+       dmc start mount [profile-name|profile-index [-boot]]
+       dmc stop mount
+       dmc status mount [-json]
+       dmc show profile-name|profile-index
+       dmc list
+       dmc select mount profile-name|profile-index
+       dmc configure mount type access-time read-throughput write-throughput
+       [ioqueue-depth maxreadcnt maxwritecnt segreadcnt segwritecnt]
+       dmc help | -h
+
+DESCRIPTION
+       dmc(1) configures the Disk Mount Conditioner. The Disk Mount Conditioner
+       is a kernel provided service that can degrade the disk I/O being issued
+       to specific mount points, providing the illusion that the I/O is
+       executing on a slower device. It can also cause the conditioned mount
+       point to advertise itself as a different device type, e.g. the disk type
+       of an SSD could be set to an HDD. This behavior consequently changes
+       various parameters such as read-ahead settings, disk I/O throttling,
+       etc., which normally have different behavior depending on the underlying
+       device type.
+
+COMMANDS
+       Common command parameters:
+
+       •   mount - the mount point to be used in the command
+
+       •   profile-name - the name of a profile as shown in dmc list
+
+       •   profile-index - the index of a profile as shown in dmc list
+
+
+
+
+       dmc start mount [profile-name|profile-index [-boot]]
+           Start the Disk Mount Conditioner on the given mount point with the
+       current settings (from dmc status) or the given profile, if provided.
+       Optionally configure the profile to remain enabled across reboots, if
+       -boot is supplied.
+
+       dmc stop mount
+           Disable the Disk Mount Conditioner on the given mount point. Also
+       disables any settings that persist across reboot via the -boot flag
+       provided to dmc start, if any.
+
+       dmc status mount [-json]
+           Display the current settings (including on/off state), optionally as
+       JSON
+
+       dmc show profile-name|profile-index
+           Display the settings of the given profile
+
+       dmc list
+           Display all profile names and indices
+
+       dmc select mount profile-name|profile-index
+           Choose a different profile for the given mount point without enabling
+       or disabling the Disk Mount Conditioner
+
+       dmc configure mount type access-time read-throughput write-throughput
+       [ioqueue-depth maxreadcnt maxwritecnt segreadcnt segwritecnt]
+           Select custom parameters for the given mount point rather than using
+       the settings provided by a default profile.
+
+           See dmc list for example parameter settings for various disk presets.
+
+       •   type - ´SSD´ or ´HDD´. The type determines how various system
+           behaviors like disk I/O throttling and read-ahead algorithms affect
+           the issued I/O. Additionally, choosing ´HDD´ will attempt to simulate
+           seek times, including drive spin-up from idle.
+
+       •   access-time - latency in microseconds for a single I/O. For SSD types
+           this latency is applied exactly as specified to all I/O. For HDD
+           types, the latency scales based on a simulated seek time (thus making
+           the access-time the maximum latency or seek penalty).
+
+       •   read-throughput - integer specifying megabytes-per-second maximum
+           throughput for disk reads
+
+       •   write-throughput - integer specifying megabytes-per-second maxmimu
+           throughput for disk writes
+
+       •   ioqueue-depth - maximum number of commands that a device can accept
+
+       •   maxreadcnt - maximum byte count per read
+
+       •   maxwritecnt - maximum byte count per write
+
+       •   segreadcnt - maximum physically disjoint segments processed per read
+
+       •   segwritecnt - maximum physically disjoint segments processed per
+           write
+
+
+
+
+       dmc help | -h
+           Display help text
+
+EXAMPLES
+       dmc start / ´5400 HDD´
+
+           Turn on the Disk Mount Conditioner for the boot volume, acting like a
+       5400 RPM hard drive.
+
+       dmc configure /Volumes/ExtDisk SSD 100 100 50
+
+           Configure an external disk to use custom parameters to degrade
+       performance as if it were a slow SSD with 100 microsecond latencies,
+       100MB/s read throughput, and 50MB/s write throughput.
+
+IMPORTANT
+       The Disk Mount Conditioner is not a ´simulator´. It can only degrade (or
+       ´condition´) the I/O such that a faster disk device behaves like a slower
+       device, not vice-versa. For example, a 5400 RPM hard drive cannot be
+       conditioned to act like a SSD that is capable of a higher throughput than
+       the theoretical limitations of the hard disk.
+
+       In addition to running dmc stop, rebooting is also a sufficient way to
+       clear any existing settings and disable Disk Mount Conditioner on all
+       mount points (unless started with -boot).
+
+SEE ALSO
+       nlc(1)
+
+
+

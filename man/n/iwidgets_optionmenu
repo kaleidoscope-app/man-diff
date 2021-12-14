@@ -1,0 +1,235 @@
+iwidgets::optionmenu(1)          [incr Widgets]          iwidgets::optionmenu(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::optionmenu - Create and manipulate a option menu widget
+
+SYNOPSIS
+       iwidgets::optionmenu pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Optionmenu
+
+STANDARD OPTIONS
+
+       activeBackground  activeBorderWidth  activeForeground    background
+       borderWidth       cursor             disabledForeground  font
+       foreground        highlightColor     highlightThickness  relief
+
+       See the "options" manual entry for details on the standard options.
+
+INHERITED OPTIONS
+       disabledForeground             labelBitmap     labelFontlabelImage
+       labelMargin     labelPos       labelText       labelVariable
+       state           sticky
+
+       See the "LabeledWidget" manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           clickTime
+       Class:          ClickTime
+       Command-Line Switch:           -clicktime
+
+              Interval time, in msec, used to determine that a single mouse
+              click has occurred. Used to post menu on a "quick" mouse click.
+              Note: changing this value may cause the sigle-click functionality
+              to not work properly.  The default is 150 msec.
+
+       Name:           command
+       Class:          Command
+       Command-Line Switch:           -command
+
+              Specifies a Tcl command procedure to be evaluated following a
+              change in the current option menu selection.
+
+       Name:           cyclicOn
+       Class:          CyclicOn
+       Command-Line Switch:           -cyclicon
+
+              Turns on/off the 3rd mouse button capability. The value may be
+              specified in any of the forms acceptable to Tcl_GetBoolean.  This
+              feature allows the right mouse button to cycle through the popup
+              menu list without poping it up. The right mouse button cycles
+              through the menu in reverse order.  The default is true.
+
+       Name:           popupCursor
+       Class:          Cursor
+       Command-Line Switch:           -popupcursor
+
+              Specifies  the mouse cursor to be used for the popup menu.  The
+              value may have any of the  forms  acceptable to Tk_GetCursor.
+
+       Name:           state
+       Class:          State
+       Command-Line Switch:           -state
+
+              Specified one of two states for the optionmenu: normal, or
+              disabled.  If the optionmenu is disabled, then option menu
+              selection is ignored.
+
+       Name:           width
+       Class:          Width
+       Command-Line Switch:           -width
+
+              Specifies a fixed size for the menu button label in any of the
+              forms acceptable to Tk_GetPixels.  If the text is too small to fit
+              in the label, the text is clipped.  Note: Normally, when a new
+              list is created, or new items are added to an existing list, the
+              menu button label is resized automatically.  Setting this option
+              overrides that functionality.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::optionmenu command creates an option menu widget with
+       options to manage it.  An option menu displays a frame containing a label
+       and a button.  A pop-up menu will allow for the value of the button to
+       change.
+
+
+METHODS
+       The iwidgets::optionmenu command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.
+
+       Many of the widget commands for an optionmenu take as one argument an
+       indicator of which entry of the option menu to operate on.  These
+       indicators are called indexes and may be specified in any of the
+       following forms:
+
+       number      Specifies the entry numerically, where 0 corresponds to the
+                   top-most entry of the option menu, 1 to the entry below it,
+                   and so on.
+
+       end         Indicates the bottommost entry in the menu.  If there are no
+                   entries in the menu then -1 is returned.
+
+       select      Returns the numerical index of the currently selected option
+                   menu entry.  If no entries exist in the menu, then -1 is
+                   returned.
+
+       pattern     If the index doesn't satisfy one of the above forms then this
+                   form is used.  Pattern is pattern-matched against the label
+                   of each entry in the option menu, in order from the top down,
+                   until a matching entry is found.  The rules of
+                   Tcl_StringMatch are used.
+
+       The following widget commands are possible for optionmenu widgets:
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::optionmenu command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::optionmenu command.
+
+       pathName delete first ?last?
+              Delete all of the option menu entries between first and last
+              inclusive.  If last is omitted then it defaults to first.
+
+       pathName disable index
+              Disable the option menu entry specified by index.  Disabling a
+              menu item will prevent the user from being able to select this
+              item from the menu.  This only effects the state of the item in
+              the menu, in other words, should the item be the currently
+              selected item, the programmer is responsible for determining this
+              condition and taking appropriate action.
+
+       pathName enable index
+              Enable the option menu entry specified by index.  Enabling a menu
+              item allows the user to select this item from the menu.
+
+       pathName get ?first? ?last?
+              If no arguments are specified, this operation returns the
+              currently selected option menu item.  Otherwise, it returns the
+              name of the option at index first, or a range of options between
+              first and last.
+
+       pathName index index
+              Returns the numerical index corresponding to index.
+
+       pathName insert index string ?string?
+              Insert an item, or list of items, into the menu at location index.
+
+       pathName select index
+              Select an item from the option menu to be displayed as the
+              currently selected item.
+
+       pathName sort mode
+              Sort the current menu in either ascending, or descending order.
+              The values increasing, or decreasing are also accepted.
+
+
+COMPONENTS
+       Name:           menuBtn
+       Class:          Menubutton
+
+              The menuBtn component is the option menu button which displays the
+              current choice from the popup menu.  See the "menubutton" widget
+              manual entry for details on the menuBtn component item.
+
+       Name:           popupMenu
+       Class:          Menu
+
+              The popupMenu component is menu displayed upon selection of the
+              menu button.  The menu contains the choices for the option menu.
+              See the "menu" widget manual entry for details on the popupMenu
+              component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::optionmenu .om -labelmargin 5 \
+                   -labelon true -labelpos w -labeltext "Operating System :"
+
+               .om insert end Unix VMS Linux OS/2 {Windows NT} DOS
+               .om sort ascending
+               .om select Linux
+
+               pack .om  -padx 10 -pady 10
+
+
+ACKNOWLEDGEMENTS:
+       Michael J. McLennan
+
+              Borrowed some ideas (next & previous) from OptionButton class.
+
+       Steven B. Jaggers
+
+              Provided an initial prototype in [incr Tcl].
+
+       Bret Schuhmacher
+
+              Helped with popup menu functionality.
+
+AUTHOR
+       Alfredo Jahn
+
+KEYWORDS
+       optionmenu, widget
+
+
+

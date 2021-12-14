@@ -1,0 +1,25 @@
+UPSSHUTDOWN(8)               System Manager's Manual              UPSSHUTDOWN(8)
+
+NAME
+     upsshutdown – UPS emergency low power shutdown script
+
+DESCRIPTION
+     upsshutdown is a script that runs automatically when the system performs an
+     emergency UPS low power shutdown.  The script is run before shutdown(8) is
+     invoked.  upsshutdown only runs if one of the three shutdown rules is
+     enabled and true: "percentage remaining," "time remaining," or "time since
+     loss of power."  These settings can be changed using pmset(1) or Energy
+     Saver in System Preferences.
+
+     The system administrator may modify upsshutdown.  The script should only
+     contain commands that must run in the case of an emergency UPS shutdown.
+     It should not contain any commands that would otherwise be executed during
+     a normal shutdown since the normal shutdown procedure follows invocation of
+     upsshutdown.
+
+LOCATION
+     /usr/libexec/upsshutdown
+
+SEE ALSO
+     pmset(1), ioupsd(8)
+

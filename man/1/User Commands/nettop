@@ -1,0 +1,141 @@
+nettop(1)                    General Commands Manual                   nettop(1)
+
+NAME
+     nettop – Display updated information about the network
+
+SYNOPSIS
+     nettop [-ncd] [-m <mode>] [-t <type>] [-s <seconds>]
+            [-p <process-name|pid>] [-n] [-l <samples>] [-L <samples>] [-P]
+            [-j|k|J <column-name[,column-name]...>]
+
+DESCRIPTION
+     The nettop program displays a list of sockets or routes. The counts for
+     network structures are updated periodically. While the program is running
+     the following keys may be used:
+
+     q        Quit
+
+     Up Arrow
+              Scroll up
+
+     Down Arrow
+              Scroll down
+
+     Right Arrow
+              Scroll Right
+
+     Left Arrow
+              Scroll Left
+
+     d        Toggle delta output
+
+     r        Redraw screen
+
+     x        Toggle human readable numbers
+
+     e        Expand all
+
+     c        Collapse all
+
+     h        Bring up the help menu
+
+     j        Bring up the column selection menu.  In this mode you can
+              enable/disable columns and change their order.
+
+     p        Bring up the process selection menu.  In this mode you can
+              enable/disable processes for display.
+
+     l        Change to logging mode, redisplay the current data, and quit.
+
+OPTIONS
+     A list of flags and their descriptions:
+
+     -m <mode>
+              Specify the mode. By default, nettop will monitor TCP and UDP
+              sockets. The following modes are supported:
+
+              tcp      Only TCP sockets will be monitored
+
+              udp      Only UDP sockets will be monitored
+
+              route    Instead of sockets, the routing table will be monitored
+
+     -t <type>
+              Specify the type of interface. By default, all interfaces will be
+              monitored.  Multiple interface types may be specified.  The
+              following types are supported:
+
+              wifi     WiFi interfaces
+
+              wired    Wired interfaces
+
+              loopback
+                       Loopback interfaces
+
+              awdl     Apple Wireless Direct Link  interfaces
+
+              expensive
+                       Interfaces marked as "expensive", for example via hotspot
+
+              undefined
+                       Cases where the underlying socket is not associated with
+                       an interface
+
+              external
+                       The combination of all defined non-loopback interfaces.
+
+     -n       Disable address to name resolution
+
+     -c       Less intensive use of the CPU - draws less often
+
+     -d       Delta mode
+
+     -x       Extended display of numbers instead of human readable suffixes
+              such as MiB
+
+     -P       Display per-process summary only, skipping details of open
+              connections.  This is equivalent to selecting "Collapse All" in
+              the interactive menu.
+
+     -s <delay>
+              Set the delay between updates to <delay> seconds.  The default
+              delay between updates is 1 second.
+
+     -l <samples>
+              Use  logging  mode  and  display  <samples> samples, even if
+              standard output is a terminal.  0 is treated as infinity.  Rather
+              than redisplaying, output is periodically printed in raw form.
+
+     -L <samples>
+              Use  logging  mode  and  display  <samples> samples, even if
+              standard output is a terminal.  Output will be in comma-separated
+              values (CSV) form.  0 is treated as infinity.  Rather than
+              redisplaying, output is periodically printed in raw form.
+
+     -p <process-name|pid>
+              Select a process for display.  A numeric argument identifies a
+              process by its pid.  Alternatively a process name may be given, in
+              which case all processes with that name will be displayed.  The
+              name must be an exact match for the name displayed by nettop,
+              which may require that the name be truncated, for example
+              launchd.develop instead of launchd.development.  The option may be
+              repeated to select multiple processes.
+
+     -j <column name list>
+              Specifiy a list of column headings to be included in the display.
+              List items are separated by commas.  For example, -j uuid,rtt_var
+
+     -J <column name list>
+              Specifiy a list of column headings that are to be the only ones
+              included in the display. List items are separated by commas.  For
+              example, -j uuid,rtt_var.  The ordering is currently as per nettop
+              default, but may change in future revisions to match the order of
+              the supplied column names.  For future compatibility it is
+              recommended that any names supplied here are given an order that
+              matches the output.
+
+     -k <column name list>
+              Specifiy a list of column headings to be excluded from the
+              display. List items are separated by commas.  For example, -k
+              rcvsize,rtt_avg
+

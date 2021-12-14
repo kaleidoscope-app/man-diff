@@ -1,0 +1,204 @@
+ttk::widget(n)                  Tk Themed Widget                  ttk::widget(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ttk::widget - Standard options and commands supported by Tk themed
+       widgets
+________________________________________________________________________________
+
+DESCRIPTION
+       This manual describes common widget options and commands.
+
+STANDARD OPTIONS
+       The following options are supported by all Tk themed widgets:
+       [-class undefined] Specifies the window class.  The class is used when
+       querying the option database for the window's other options, to determine
+       the default bindtags for the window, and to select the widget's default
+       layout and style.  This is a read-only option: it may only be specified
+       when the window is created, and may not be changed with the configure
+       widget command.  [-cursor cursor] Specifies the mouse cursor to be used
+       for the widget.  See Tk_GetCursor and cursors(n) in the Tk reference
+       manual for the legal values.  If set to the empty string (the default),
+       the cursor is inherited from the parent widget.  [-takefocus takeFocus]
+       Determines whether the window accepts the focus during keyboard
+       traversal.  Either 0, 1, a command prefix (to which the widget path is
+       appended, and which should return 0 or 1), or the empty string.  See
+       options(n) in the Tk reference manual for the full description.
+       [-style style] May be used to specify a custom widget style.
+
+SCROLLABLE WIDGET OPTIONS
+       The following options are supported by widgets that are controllable by a
+       scrollbar.  See scrollbar(n) for more information
+       [-xscrollcommand xScrollCommand] A command prefix, used to communicate
+       with horizontal scrollbars.
+              When the view in the widget's window changes, the widget will
+              generate a Tcl command by concatenating the scroll command and two
+              numbers.  Each of the numbers is a fraction between 0 and 1
+              indicating a position in the document; 0 indicates the beginning,
+              and 1 indicates the end.  The first fraction indicates the first
+              information in the widget that is visible in the window, and the
+              second fraction indicates the information just after the last
+              portion that is visible.
+
+              Typically the xScrollCommand option consists of the path name of a
+              scrollbar widget followed by “set”, e.g.  “.x.scrollbar set”.
+              This will cause the scrollbar to be updated whenever the view in
+              the window changes.
+
+              If this option is set to the empty string (the default), then no
+              command will be executed.
+       [-yscrollcommand yScrollCommand] A command prefix, used to communicate
+       with vertical scrollbars.  See the description of -xscrollcommand above
+       for details.
+
+LABEL OPTIONS
+       The following options are supported by labels, buttons, and other button-
+       like widgets: [-text text] Specifies a text string to be displayed inside
+       the widget (unless overridden by -textvariable).
+       [-textvariable textVariable] Specifies the name of variable whose value
+       will be used in place of the -text resource.  [-underline underline] If
+       set, specifies the integer index (0-based) of a character to underline in
+       the text string.  The underlined character is used for mnemonic
+       activation.  [-image image] Specifies an image to display.  This is a
+       list of 1 or more elements.  The first element is the default image name.
+       The rest of the list is a sequence of statespec / value pairs as per
+       style map, specifying different images to use when the widget is in a
+       particular state or combination of states.  All images in the list should
+       have the same size.  [-compound compound] Specifies how to display the
+       image relative to the text, in the case both -text and -image are
+       present.  Valid values are:
+
+              text   Display text only.
+
+              image  Display image only.
+
+              center Display text centered on top of image.
+
+              top
+
+              bottom
+
+              left
+
+              right  Display image above, below, left of, or right of the text,
+                     respectively.
+
+              none   The default; display the image if present, otherwise the
+                     text.
+       [-width width] If greater than zero, specifies how much space, in
+       character widths, to allocate for the text label.  If less than zero,
+       specifies a minimum width.  If zero or unspecified, the natural width of
+       the text label is used.
+
+COMPATIBILITY OPTIONS
+       [-state state] May be set to normal or disabled to control the disabled
+       state bit.  This is a write-only option: setting it changes the widget
+       state, but the state widget command does not affect the -state option.
+
+COMMANDS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s); in
+              this case the command returns an empty string.  If option is
+              specified with no value, then the command returns a list
+              describing the named option: the elements of the list are the
+              option name, database name, database class, default value, and
+              current value.  If no option is specified, returns a list
+              describing all of the available options for pathName.
+
+       pathName identify element x y
+              Returns the name of the element under the point given by x and y,
+              or an empty string if the point does not lie within any element.
+              x and y are pixel coordinates relative to the widget.  Some
+              widgets accept other identify subcommands.
+
+       pathName instate statespec ?script?
+              Test the widget's state.  If script is not specified, returns 1 if
+              the widget state matches statespec and 0 otherwise.  If script is
+              specified, equivalent to
+              if {[pathName instate stateSpec]} script
+
+       pathName state ?stateSpec?
+              Modify or inquire widget state.  If stateSpec is present, sets the
+              widget state: for each flag in stateSpec, sets the corresponding
+              flag or clears it if prefixed by an exclamation point.
+              Returns a new state spec indicating which flags were changed:
+                     set changes [pathName state spec]
+                     pathName state $changes
+              will restore pathName to the original state.  If stateSpec is not
+              specified, returns a list of the currently-enabled state flags.
+
+WIDGET STATES
+       The widget state is a bitmap of independent state flags.  Widget state
+       flags include:
+
+       active The mouse cursor is over the widget and pressing a mouse button
+              will cause some action to occur. (aka “prelight” (Gnome), “hot”
+              (Windows), “hover”).
+
+       disabled
+              Widget is disabled under program control (aka “unavailable”,
+              “inactive”)
+
+       focus  Widget has keyboard focus
+
+       pressed
+              Widget is being pressed (aka “armed” in Motif).
+
+       selected
+              “On”, “true”, or “current” for things like checkbuttons and
+              radiobuttons.
+
+       background
+              Windows and the Mac have a notion of an “active” or foreground
+              window.  The background state is set for widgets in a background
+              window, and cleared for those in the foreground window.
+
+       readonly
+              Widget should not allow user modification.
+
+       alternate
+              A widget-specific alternate display format.  For example, used for
+              checkbuttons and radiobuttons in the “tristate” or “mixed” state,
+              and for buttons with -default active.
+
+       invalid
+              The widget's value is invalid.  (Potential uses: scale widget
+              value out of bounds, entry widget value failed validation.)
+
+       hover  The mouse cursor is within the widget.  This is similar to the
+              active state; it is used in some themes for widgets that provide
+              distinct visual feedback for the active widget in addition to the
+              active element within the widget.
+
+       A state specification or stateSpec is a list of state names, optionally
+       prefixed with an exclamation point (!) indicating that the bit is off.
+
+EXAMPLES
+              set b [ttk::button .b]
+
+              # Disable the widget:
+              $b state disabled
+
+              # Invoke the widget only if it is currently pressed and enabled:
+              $b instate {pressed !disabled} { .b invoke }
+
+              # Reenable widget:
+              $b state !disabled
+
+SEE ALSO
+       ttk::intro(n), ttk::style(n)
+
+KEYWORDS
+       state, configure, option
+
+
+

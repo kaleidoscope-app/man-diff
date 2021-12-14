@@ -1,0 +1,99 @@
+com.apple.Boot.plist(5)        File Formats Manual       com.apple.Boot.plist(5)
+
+NAME
+     com.apple.Boot.plist – Configuration plist for OS X booter
+
+DESCRIPTION
+     The OS X booter ( boot.efi on EFI-based Macintosh systems) is responsible
+     for loading the initial parts of the operating system into memory and
+     executing them. Its default behavior is to start up OS X in graphical mode.
+     However, certain behavior can be configured using the com.apple.Boot.plist
+     file, as well as NVRAM variables, EFI boot options, and keyboard "snag
+     keys".
+
+     The com.apple.Boot.plist is a standard plist(5) format Core Foundation
+     property list stored in XML format. Keys are generally strings like Kernel
+     Flags, with either string or integer values. The following key-values are
+     currently supported:
+
+     Kernel Flags
+            [string] This option specifies arguments to be passed directly to
+            the kernel to change its behavior (although some kernel options are
+            parsed by the booter as well for correctness). Common options
+            include "debug=0x144" to enable kernel debugging, "-v" to enable
+            verbose boot, "-s" to boot to single user mode, "cpus=1" to simulate
+            a single core system, and "maxmem=1024" to cap available memory to
+            1024 MB RAM. All desired options should be space-separated within
+            the <string> tag. The default value is the empty string.
+
+     Kernel Cache
+            [string] This option specifies the prelinked kernel file to be
+            loaded, which contains both the kernel and kernel extensions, linked
+            at their final load addresses. The path uses backslash ("\ ") path
+            delimeters. The default value is calculated programmatically using
+            System\ Library\ PrelinkedKernels\ prelinkedkernel.
+
+     Root UUID
+            [string] This option is rarely used and specifies to the kernel what
+            block device should be probed as the root filesystem ("/"), and is
+            most commonly overriden by the OS installation software when
+            installing onto AppleRAID volumes. It can be either a filesystem
+            volume UUID, as represented by diskutil info, or a GPT partition
+            UUID. The default is generated programmatically based on which
+            filesystem the booter itself was loaded from.
+
+     Since the com.apple.Boot.plist file exists on the root filesystem, it is
+     tied to that  OS volume, and is no longer honored if Startup Disk or
+     bless(8) is used to change the boot preference to another volume.
+
+     The Kernel Flags options can also be specified via --optionto bless(8),
+     which encodes the string in the EFI boot options along with the OS boot
+     volume preference. The space-separated strings are merged with kernel flags
+     specified in the com.apple.Boot.plist and NVRAM.
+
+     At boot time, the booter checks to see if certain keys are being pressed,
+     and alters behavior accordingly. This is in addition to similar
+     functionality that the firmware itself may implement before starting the
+     booter. Since pressing keys requires physical interaction, they take
+     precendence over preferences set through other means, including the
+     com.apple.Boot.plist file and NVRAM. The following key combinations are
+     currently supported:
+
+     Shift  Boot in Safe Mode. Effectively the same as passing "-x" in Kernel
+            Flags, and causes most caches to be ignored by the booter.
+
+     Command-S
+            Boot in Single User Mode. Effectively the same as passing "-s" in
+            Kernel Flags, and causes the system to boot to an interactive shell
+            with no system services started.
+
+     Command-V
+            Boot in Verbose Mode. Effectively the same as passing "-v" in Kernel
+            Flags, and causes the system to boot to verbose text logging before
+            starting the graphical user interface.
+
+     Command-R
+            Boot in Recovery Mode.  This causes the system to boot into special
+            Recovery System image, which can be used to restore the system from
+            Time Machine Backup, re-install OS X, or use Disk Utility to repair
+            or erase disks.
+
+ENVIRONMENT
+     The OS X booter can also be controlled by NVRAM variables, which are
+     analogous to environment variables. NVRAM variables are key-value pairs.
+     The "boot-args" NVRAM variable can be used to provide additional arguments
+     to the kernel, and will be merged with Kernel Flags in the
+     com.apple.Boot.plist file and EFI boot options set with bless(8).
+
+     Since NVRAM variables are system-wide, they are consulted regardless of
+     what OS volume is set as the boot preference. NVRAM variables are
+     persistent even when the boot preference is changed by Startup Disk or
+     bless(8).
+
+FILES
+     /Library/Preferences/SystemConfiguration/com.apple.Boot.plist
+             Location of the com.apple.Boot.plist file.
+
+SEE ALSO
+     nvram(8), bless(8), kextcache(8)
+

@@ -1,0 +1,28 @@
+ATRUN(8)                     System Manager's Manual                    ATRUN(8)
+
+NAME
+     atrun – run jobs queued for later execution
+
+SYNOPSIS
+     atrun
+
+DESCRIPTION
+     The atrun utility runs commands queued by at(1).  It is invoked
+     periodically by launchd(8) as specified in the com.apple.atrun.plist
+     property list.  By default the property list contains the Disabled key set
+     to true, so atrun is never invoked.
+
+     Execute the following command as root to enable atrun:
+           launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
+
+FILES
+     /var/at/jobs      Directory containing job files
+     /var/at/spool     Directory containing output spool files
+     /var/at/lockfile  Job-creation lock file.
+
+SEE ALSO
+     at(1), launchd(8)
+
+AUTHOR
+     Thomas Koenig, ig25@rz.uni-karlsruhe.de
+

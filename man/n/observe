@@ -1,0 +1,69 @@
+observe(n)                                                            observe(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       observe - Runtime debugging output in TkCon
+
+SYNOPSIS
+       observe command cmdname ?maxlevel?
+
+       observe cdelete cmdname
+
+       observe cinfo cmdname
+
+       observe variable varname operation ?args?
+
+       observe vdelete varname operation
+
+       observe vinfo varname
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This command provides runtime debugging output for variables and commands
+       without the need to edit your code.  For variables, the underlying
+       mechanism uses trace and dump var.  For commands, it renames the observed
+       procedure and uses a special wrapper procedure.  WARNING: using this
+       procedure after checkpointing state will result in major problems if you
+       clean state because the renamed (true) commands will be lost.
+
+       This procedure is experimental.  Comments are encouraged.
+
+       observe command cmdname ?maxlevel?
+              This will create a wrapper command which prints out (using dump)
+              the call stack to the console.  maxlevel represents the maximum
+              number of levels of the call stack which will be printed (defaults
+              to 4).
+
+       observe cdelete cmdname
+              Removes the wrapper around an observed command.
+
+       observe cinfo cmdname
+              Prints out useless info.
+
+       observe variable varname operation ?args?
+              Currently a wrapper around trace that uses dump to print out the
+              value of the named variable whenever the specified operation on
+              that variable occurs (must be read, write or unset).
+
+       observe vdelete varname operation
+              Deletes the trace wrapper around the named variable.
+
+       observe vinfo varname
+              Prints out trace info about the named variable.
+
+SEE ALSO
+       dump(n), idebug(n), tkcon(1), tkcon(n), tkconrc(5)
+
+KEYWORDS
+       Tk, console, debug
+
+COPYRIGHT
+       Copyright (c) Jeffrey Hobbs <jeff at hobbs.org>
+
+
+
+

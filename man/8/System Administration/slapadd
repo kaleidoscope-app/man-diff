@@ -1,0 +1,133 @@
+SLAPADD(8C)                                                          SLAPADD(8C)
+
+
+
+NAME
+       slapadd - Add entries to a SLAPD database
+
+SYNOPSIS
+       /usr/sbin/slapadd [-b_suffix] [-c] [-d_debug-level] [-f_slapd.conf]
+       [-F_confdir] [-g] [-j_lineno] [-l_ldif-file] [-n_dbnum]
+       [-o_option[=value]] [-q] [-s] [-S_SID] [-u] [-v] [-w]
+
+DESCRIPTION
+       Slapadd is used to add entries specified in LDAP Directory Interchange
+       Format (LDIF) to a slapd(8) database.  It opens the given database
+       determined by the database number or suffix and adds entries
+       corresponding to the provided LDIF to the database.  Databases configured
+       as subordinate of this one are also updated, unless -g is specified.  The
+       LDIF input is read from standard input or the specified file.
+
+       All files eventually created by slapadd will belong to the identity
+       slapadd is run as, so make sure you either run slapadd with the same
+       identity slapd(8) will be run as (see option -u in slapd(8)), or change
+       file ownership before running slapd(8).
+
+       Note: slapadd will also perform the relevant indexing whilst adding the
+       database if any are configured. For specfic details, please see
+       slapindex(8).
+
+OPTIONS
+       -b_suffix
+              Use the specified suffix to determine which database to add
+              entries to.  The -b cannot be used in conjunction with the -n
+              option.
+
+       -c     enable continue (ignore errors) mode.
+
+       -d_debug-level
+              enable debugging messages as defined by the specified debug-level;
+              see slapd(8) for details.
+
+       -f_slapd.conf
+              specify an alternative slapd.conf(5) file.
+
+       -F_confdir
+              specify a config directory.  If both -f and -F are specified, the
+              config file will be read and converted to config directory format
+              and written to the specified directory.  If neither option is
+              specified, an attempt to read the default config directory will be
+              made before trying to use the default config file. If a valid
+              config directory exists then the default config file is ignored.
+              If dry-run mode is also specified, no conversion will occur.
+
+       -g     disable subordinate gluing.  Only the specified database will be
+              processed, and not its glued subordinates (if any).
+
+       -j_lineno
+              Jump to the specified line number in the LDIF file before
+              processing any entries. This allows a load that was aborted due to
+              errors in the input LDIF to be resumed after the errors are
+              corrected.
+
+       -l_ldif-file
+              Read LDIF from the specified file instead of standard input.
+
+       -n_dbnum
+              Add entries to the dbnum-th database listed in the configuration
+              file.  The -n cannot be used in conjunction with the -b option.
+              To populate the config database slapd-config(5), use -n 0 as it is
+              always the first database. It must physically exist on the
+              filesystem prior to this, however.
+
+       -o_option[=value]
+              Specify an option with a(n optional) value.  Possible generic
+              options/values are:
+
+                     syslog=<subsystems>  (see `-s' in slapd(8))
+                     syslog-level=<level> (see `-S' in slapd(8))
+                     syslog-user=<user>   (see `-l' in slapd(8))
+
+                     schema-check={yes|no}
+                     value-check={yes|no}
+
+       The schema-check option toggles schema checking (default on);
+       the value-check option toggles value checking (default off).
+       The latter is incompatible with -q.
+
+       -q     enable quick (fewer integrity checks) mode.  Does fewer consistency checks
+              on the input data, and no consistency checks when writing the database.
+              Improves the load time but if any errors or interruptions occur the resulting
+              database will be unusable.
+
+       -s     disable schema checking.  This option is intended to be used when loading
+              databases containing special objects, such as fractional objects on a
+              partial replica.  Loading normal objects which do not conform to
+              schema may result in unexpected and ill behavior.
+
+       -S_SID Server ID to use in generated entryCSN.  Also used for contextCSN
+              if -w is set as well.  Defaults to 0.
+
+       -u     enable dry-run (don't write to backend) mode.
+
+       -v     enable verbose mode.
+
+       -w     write syncrepl context information.
+              After all entries are added, the contextCSN
+              will be updated with the greatest CSN in the database.
+
+LIMITATIONS
+       Your slapd(8) should not be running when you do this to ensure
+       consistency of the database.
+
+       slapadd may not provide naming or schema checks.  It is advisable to use
+       ldapadd(1) when adding new entries into an existing directory.
+
+EXAMPLES
+       To import the entries specified in file ldif into your slapd(8) database
+       give the command:
+
+            /usr/sbin/slapadd -l ldif
+
+SEE ALSO
+       ldap(3), ldif(5), slapcat(8), slapindex(8), ldapadd(1), slapd(8)
+
+       "OpenLDAP Administrator's Guide" (http://www.OpenLDAP.org/doc/admin/)
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

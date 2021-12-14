@@ -1,0 +1,91 @@
+unicode(n)                    Unicode normalization                   unicode(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       unicode - Implementation of Unicode normalization
+
+SYNOPSIS
+       package require Tcl  8.3
+
+       package require unicode  1.0
+
+       ::unicode::fromstring string
+
+       ::unicode::tostring uclist
+
+       ::unicode::normalize form uclist
+
+       ::unicode::normalizeS form string
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This is an implementation in Tcl of the Unicode normalization forms.
+
+COMMANDS
+       ::unicode::fromstring string
+              Converts string to list of integer Unicode character codes which
+              is used in unicode for internal string representation.
+
+       ::unicode::tostring uclist
+              Converts list of integers uclist back to Tcl string.
+
+       ::unicode::normalize form uclist
+              Normalizes Unicode characters list ulist according to form and
+              returns the normalized list. Form form takes one of the following
+              values: D (canonical decomposition), C (canonical decomposition,
+              followed by canonical composition), KD (compatibility
+              decomposition), or KC (compatibility decomposition, followed by
+              canonical composition).
+
+       ::unicode::normalizeS form string
+              A shortcut to ::unicode::tostring [unicode::normalize \$form
+              [::unicode::fromstring \$string]].  Normalizes Tcl string and
+              returns normalized string.
+
+EXAMPLES
+
+       % ::unicode::fromstring "\u0410\u0411\u0412\u0413"
+       1040 1041 1042 1043
+       % ::unicode::tostring {49 50 51 52 53}
+       12345
+       %
+
+
+       % ::unicode::normalize D {7692 775}
+       68 803 775
+       % ::unicode::normalizeS KD "\u1d2c"
+       A
+       %
+
+
+REFERENCES
+       [1]    "Unicode Standard Annex #15: Unicode Normalization Forms",
+              (http://unicode.org/reports/tr15/)
+
+AUTHORS
+       Sergei Golovan
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category stringprep
+       of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+SEE ALSO
+       stringprep(n)
+
+KEYWORDS
+       normalization, unicode
+
+COPYRIGHT
+       Copyright (c) 2007, Sergei Golovan <sgolovan@nes.ru>
+
+
+
+

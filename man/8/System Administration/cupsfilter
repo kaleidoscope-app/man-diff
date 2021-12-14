@@ -1,0 +1,105 @@
+cupsfilter(8)                      Apple Inc.                      cupsfilter(8)
+
+
+
+NAME
+       cupsfilter - convert a file to another format using cups filters
+       (deprecated)
+
+SYNOPSIS
+       cupsfilter [ --list-filters ] [ -D ] [ -U user ] [ -c config-file ] [ -d
+       printer ] [ -e ] [ -i mime/type ] [ -j job-id[,N] ] [ -m mime/type ] [ -n
+       copies ] [ -o name=value ] [ -p filename.ppd ] [ -t title ] [ -u ]
+       filename
+
+DESCRIPTION
+       cupsfilter is a front-end to the CUPS filter subsystem which allows you
+       to convert a file to a specific format, just as if you had printed the
+       file through CUPS. By default, cupsfilter generates a PDF file. The
+       converted file is sent to the standard output.
+
+OPTIONS
+       --list-filters
+            Do not actually run the filters, just print the filters used to
+            stdout.
+
+       -D   Delete the input file after conversion.
+
+       -U user
+            Specifies the username passed to the filters. The default is the
+            name of the current user.
+
+       -c config-file
+            Uses the named cups-files.conf configuration file.
+
+       -d printer
+            Uses information from the named printer.
+
+       -e   Use every filter from the PPD file.
+
+       -i mime/type
+            Specifies the source file type. The default file type is guessed
+            using the filename and contents of the file.
+
+       -j job-id[,N]
+            Converts document N from the specified job. If N is omitted,
+            document 1 is converted.
+
+       -m mime/type
+            Specifies the destination file type. The default file type is
+            application/pdf. Use printer/foo to convert to the printer format
+            defined by the filters in the PPD file.
+
+       -n copies
+            Specifies the number of copies to generate.
+
+       -o name=value
+            Specifies options to pass to the CUPS filters.
+
+       -p filename.ppd
+            Specifies the PPD file to use.
+
+       -t title
+            Specifies the document title.
+
+       -u   Delete the PPD file after conversion.
+
+EXIT STATUS
+       cupsfilter returns a non-zero exit status on any error.
+
+ENVIRONMENT
+       All of the standard cups(1) environment variables affect the operation of
+       cupsfilter.
+
+FILES
+       /etc/cups/cups-files.conf
+       /etc/cups/*.convs
+       /etc/cups/*.types
+       /usr/share/cups/mime/*.convs
+       /usr/share/cups/mime/*.types
+
+NOTES
+       CUPS printer drivers, filters, and backends are deprecated and will no
+       longer be supported in a future feature release of CUPS.  Printers that
+       do not support IPP can be supported using applications such as
+       ippeveprinter(1).
+
+       Unlike when printing, filters run using the cupsfilter command use the
+       current user and security session. This may result in different output or
+       unexpected behavior.
+
+EXAMPLE
+       The following command will generate a PDF preview of job 42 for a printer
+       named "myprinter" and save it to a file named "preview.pdf":
+
+           cupsfilter -m application/pdf -d myprinter -j 42 >preview.pdf
+
+SEE ALSO
+       cups(1), cupsd.conf(5), filter(7), mime.convs(7), mime.types(7), CUPS
+       Online Help (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

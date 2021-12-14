@@ -1,0 +1,55 @@
+term::send(n)                   Terminal control                   term::send(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       term::send - General output to terminals
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require term::send  ?0.1?
+
+       ::term::send::wrch chan str
+
+       ::term::send::wr str
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides the most primitive commands for sending characters
+       to a terminal. They are in essence convenient wrappers around the builtin
+       command puts.
+
+       ::term::send::wrch chan str
+              Send the text str to the channel specified by the handle chan.  In
+              contrast to the builtin command puts this command does not
+              terminate the string with a line terminator. It also forces an
+              flush of Tcl internal and OS buffers to ensure that the characters
+              are processed immediately.
+
+       ::term::send::wr str
+              This convenience command is like ::term::send::wrch, except that
+              the destination channel is fixed to stdout.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category term of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       character output, control, terminal
+
+CATEGORY
+       Terminal control
+
+COPYRIGHT
+       Copyright (c) 2006 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

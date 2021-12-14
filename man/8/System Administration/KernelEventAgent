@@ -1,0 +1,33 @@
+KERNELEVENTAGENT(8)          System Manager's Manual         KERNELEVENTAGENT(8)
+
+NAME
+     KernelEventAgent – utility to provide user interface on behalf of the
+     kernel
+
+SYNOPSIS
+     KernelEventAgent [-dv] [-f fsname] [-t timeout]
+
+DESCRIPTION
+     The KernelEventAgent utility is responsible for displaying disk full and
+     unresponsive file server messages.  It is not intended to be run directly,
+     but rather started by the system.  The few options it has are intended as
+     debugging aids.  Typically, allowing the system to start KernelEventAgent
+     by itself, without any additional options, is the ideal configuration.
+
+     The options are as follows:
+
+     -d    Debug mode.  Do not fork into a detached process, and write messages
+           to stderr as well as the system log.
+
+     -v    Verbose mode.  System messages of LOG_INFO level and LOG_DEBUG level
+           are raised to the LOG_NOTICE level.
+
+     -f fsname
+           The file system identified by fsname is also passed the timeout value
+           via the VFS_CTL_TIMEO sysctl.
+
+     -t timeout
+           The timeout value, specified in seconds, is the amount of time to
+           wait before the user is notified again after dismissing notice of an
+           unresponsive network mount point.
+

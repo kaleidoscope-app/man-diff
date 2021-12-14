@@ -1,0 +1,38 @@
+FD(4)                         Device Drivers Manual                        FD(4)
+
+NAME
+     fd, stdin, stdout, stderr – file descriptor files
+
+DESCRIPTION
+     The files /dev/fd/0 through /dev/fd/# refer to file descriptors which can
+     be accessed through the file system.  If the file descriptor is open and
+     the mode the file is being opened with is a subset of the mode of the
+     existing descriptor, the call:
+
+           fd = open("/dev/fd/0", mode);
+
+     and the call:
+
+           fd = fcntl(0, F_DUPFD, 0);
+
+     are equivalent.
+
+     Opening the files /dev/stdin, /dev/stdout and /dev/stderr is equivalent to
+     the following calls:
+
+           fd = fcntl(STDIN_FILENO,  F_DUPFD, 0);
+           fd = fcntl(STDOUT_FILENO, F_DUPFD, 0);
+           fd = fcntl(STDERR_FILENO, F_DUPFD, 0);
+
+     Flags to the open(2) call other than O_RDONLY, O_WRONLY and O_RDWR are
+     ignored.
+
+FILES
+     /dev/fd/#
+     /dev/stdin
+     /dev/stdout
+     /dev/stderr
+
+SEE ALSO
+     tty(4)
+

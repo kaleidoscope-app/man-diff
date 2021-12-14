@@ -1,0 +1,78 @@
+KEXTSTAT(8)                  System Manager's Manual                 KEXTSTAT(8)
+
+NAME
+     kextstat – display status of loaded kernel extensions (kexts)
+
+SYNOPSIS
+     kextstat [-a] [-h] [-k] [-l] [-b identifier] ...
+
+DEPRECATED
+     The kextstat utility has been deprecated.  Please use the kmutil(8)
+     equivalent: kmutil showloaded.
+
+DESCRIPTION
+     The kextstat utility displays the status of any kexts currently loaded in
+     the kernel.  The following information is shown for each loaded kext:
+
+     Index     The load index of the kext (used to track linkage references).
+               Gaps in the list indicate kexts that have been unloaded.
+
+     Refs      The number of references to this kext by others.  If nonzero, the
+               kext cannot be unloaded.
+
+     Address   The address in kernel space where the kext has been loaded.
+
+     Size      The number of bytes of kernel memory that the kext occupies.  If
+               this is zero, the kext is a built-in part of the kernel that has
+               a record as a kext for resolving dependencies among kexts.
+
+     Wired     The number of wired bytes of kernel memory that the kext
+               occupies.
+
+     Architecture (if the -a option is used)
+               The architecture of the kext.
+
+     Name      The CFBundleIdentifier of the kext.
+
+     (Version)
+               The CFBundleVersion of the kext.
+
+     <Linked Against>
+               The index numbers of all other kexts that this kext has a
+               reference to.
+
+OPTIONS
+     These options are available:
+
+     -a, -arch
+               Print the architecture of the kext.
+
+     -b identifier, -bundle-id identifier
+               Display the status of only the kext with the given bundle
+               identifier.  This option trumps the -no-kernel option; if both
+               are given and a kernel component is specified, its information is
+               shown.
+
+     -h, -help
+               Print a help message describing each option flag and exit with a
+               success result, regardless of any other options on the command
+               line.
+
+     -k, -no-kernel
+               Don't show information for built-in components of the kernel.
+
+     -l, -list-only
+               Print the list of loaded kexts only and omit the header (useful
+               for running output through text-analysis tools).
+
+     -s, -sort
+               Sort the list by load address.
+
+DIAGNOSTICS
+     The kextstat utility exits with a status of 0 on success and with a nonzero
+     status if an error occurs.
+
+SEE ALSO
+     kmutil(8), kernelmanagerd(8), kextcache(8), kextd(8), kextload(8),
+     kextunload(8), kextutil(8)
+

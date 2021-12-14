@@ -1,0 +1,123 @@
+SLAPO-UNIQUE(5)                File Formats Manual               SLAPO-UNIQUE(5)
+
+
+
+NAME
+       slapo-unique - Attribute Uniqueness overlay to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The Attribute Uniqueness overlay can be used with a backend database such
+       as slapd-bdb(5) to enforce the uniqueness of some or all attributes
+       within a scope. This subtree defaults to all objects within the subtree
+       of the database for which the Uniqueness overlay is configured.
+
+       Uniqueness is enforced by searching the subtree to ensure that the values
+       of all attributes presented with an add, modify or modrdn operation are
+       unique within the scope.  For example, if uniqueness were enforced for
+       the uid attribute, the subtree would be searched for any other records
+       which also have a uid attribute containing the same value. If any are
+       found, the request is rejected.
+
+       The search is performed using the rootdn of the database, to avoid issues
+       with ACLs preventing the overlay from seeing all of the relevant data. As
+       such, the database must have a rootdn configured.
+
+CONFIGURATION
+       These slapd.conf options apply to the Attribute Uniqueness overlay.  They
+       should appear after the overlay directive.
+
+       unique_uri <[strict ][ignore ]URI[URI...]...>
+              Configure the base, attributes, scope, and filter for uniqueness
+              checking.  Multiple URIs may be specified within a domain,
+              allowing complex selections of objects.  Multiple unique_uri
+              statements or olcUniqueURI attributes will create independent
+              domains, each with their own independent lists of URIs and
+              ignore/strict settings.
+
+              Keywords strict and ignore have to be enclosed in quotes (")
+              together with the URI.
+
+              The LDAP URI syntax is a subset of RFC-4516, and takes the form:
+
+              ldap:///[base dn]?[attributes...]?scope[?filter]
+
+              The base dn defaults to that of the back-end database.  Specified
+              base dns must be within the subtree of the back-end database.
+
+              If no attributes are specified, the URI applies to all non-
+              operational attributes.
+
+              The scope component is effectively mandatory, because LDAP URIs
+              default to base scope, which is not valid for uniqueness, because
+              groups of one object are always unique.  Scopes of sub (for
+              subtree) and one for one-level are valid.
+
+              The filter component causes the domain to apply uniqueness
+              constraints only to matching objects.  e.g.
+              ldap:///?cn?sub?(sn=e*) would require unique cn attributes for all
+              objects in the subtree of the back-end database whose sn starts
+              with an e.
+
+              It is possible to assert uniqueness upon all non-operational
+              attributes except those listed by prepending the keyword ignore If
+              not configured, all non-operational (e.g., system) attributes must
+              be unique. Note that the attributes list of an ignore URI should
+              generally contain the objectClass, dc, ou and o attributes, as
+              these will generally not be unique, nor are they operational
+              attributes.
+
+              It is possible to set strict checking for the uniqueness domain by
+              prepending the keyword strict.  By default, uniqueness is not
+              enforced for null values. Enabling strict mode extends the concept
+              of uniqueness to include null values, such that only one attribute
+              within a subtree will be allowed to have a null value.  Strictness
+              applies to all URIs within a uniqueness domain, but some domains
+              may be strict while others are not.
+
+       It is not possible to set both URIs and legacy slapo-unique configuration
+       parameters simultaneously. In general, the legacy configuration options
+       control pieces of a single unfiltered subtree domain.
+
+       unique_base <basedn>
+              This legacy configuration parameter should be converted to the
+              base dn component of the above unique_uri style of parameter.
+
+       unique_ignore <attribute...>
+              This legacy configuration parameter should be converted to a
+              unique_uri parameter with ignore keyword as described above.
+
+       unique_attributes <attribute...>
+              This legacy configuration parameter should be converted to a
+              unique_uri parameter, as described above.
+
+       unique_strict <attribute...>
+              This legacy configuration parameter should be converted to a
+              strict keyword prepended to a unique_uri parameter, as described
+              above.
+
+CAVEATS
+       unique_uri cannot be used with the old-style of configuration, and vice
+       versa.  unique_uri can implement everything the older system can do,
+       however.
+
+       Typical attributes for the ignore ldap:///...  URIs are intentionally not
+       hardcoded into the overlay to allow for maximum flexibility in meeting
+       site-specific requirements.
+
+       Replication and operations with manageDsaIt control are allowed to bypass
+       this enforcement. It is therefore important that all servers accepting
+       writes have this overlay configured in order to maintain uniqueness in a
+       replicated DIT.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5).
+
+
+

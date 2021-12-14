@@ -1,0 +1,40 @@
+MOUNT_NTFS(8)                System Manager's Manual               MOUNT_NTFS(8)
+
+NAME
+     mount_ntfs – mount an NTFS file system
+
+SYNOPSIS
+     mount_ntfs [-s] [-o options] special node
+
+DESCRIPTION
+     The mount_ntfs command attaches the NTFS file system residing on the device
+     special to the global file system namespace at the location indicated by
+     node.  This command is normally executed by mount(8) at boot time, but can
+     be used by any user to mount an NTFS file system on any directory that they
+     own (provided, of course, that they have appropriate access to the device
+     that contains the file system).
+
+     The options are as follows:
+
+     -s      Mount the volume using case sensitive semantics.  This means that
+             you can create files that have names that only differ in case such
+             as for example "foo" and "Foo".  Without this option the volume is
+             mounted using case insensitive semantics in which case if you
+             create a file with name "foo" you then cannot create a file named
+             "Foo" or rather if you do create a file named "Foo" it would
+             overwrite the existing file "foo".
+
+     -o      Options are specified with a -o flag followed by a comma separated
+             string of options.  See the mount(8) man page for possible options
+             and their meanings.
+
+SEE ALSO
+     mount(2), unmount(2), fstab(5), mount(8)
+
+HISTORY
+     This NTFS implementation first appeared in Mac OS X 10.5.
+
+AUTHORS
+     This NTFS implementation was written by Anton Altaparmakov
+     ⟨aia21@cantab.net⟩.
+

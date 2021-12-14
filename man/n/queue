@@ -1,0 +1,101 @@
+struct::queue(n)               Tcl Data Structures              struct::queue(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       struct::queue - Create and manipulate queue objects
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require struct::queue  ?1.4.2?
+
+       queueName option ?arg arg ...?
+
+       queueName clear
+
+       queueName destroy
+
+       queueName get ?count?
+
+       queueName peek ?count?
+
+       queueName put item ?item ...?
+
+       queueName unget item
+
+       queueName size
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The ::struct namespace contains a commands for processing finite queues.
+
+       It exports a single command, ::struct::queue. All functionality provided
+       here can be reached through a subcommand of this command.
+
+       Note: As of version 1.4.1 of this package a critcl based C implementation
+       is available. This implementation however requires Tcl 8.4 to run.
+
+       The ::struct::queue command creates a new queue object with an associated
+       global Tcl command whose name is queueName.  This command may be used to
+       invoke various operations on the queue.  It has the following general
+       form:
+
+       queueName option ?arg arg ...?
+              Option and the args determine the exact behavior of the command.
+              The following commands are possible for queue objects:
+
+       queueName clear
+              Remove all items from the queue.
+
+       queueName destroy
+              Destroy the queue, including its storage space and associated
+              command.
+
+       queueName get ?count?
+              Return the front count items of the queue and remove them from the
+              queue.  If count is not specified, it defaults to 1.  If count is
+              1, the result is a simple string; otherwise, it is a list.  If
+              specified, count must be greater than or equal to 1.  If there are
+              not enoughs items in the queue to fulfull the request, this
+              command will throw an error.
+
+       queueName peek ?count?
+              Return the front count items of the queue, without removing them
+              from the queue.  If count is not specified, it defaults to 1.  If
+              count is 1, the result is a simple string; otherwise, it is a
+              list.  If specified, count must be greater than or equal to 1.  If
+              there are not enoughs items in the queue to fulfull the request,
+              this command will throw an error.
+
+       queueName put item ?item ...?
+              Put the item or items specified into the queue.  If more than one
+              item is given, they will be added in the order they are listed.
+
+       queueName unget item
+              Put the item into the queue, at the front, i.e. before any other
+              items already in the queue. This makes this operation the
+              complement to the method get.
+
+       queueName size
+              Return the number of items in the queue.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category struct ::
+       queue of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       graph, list, matrix, pool, prioqueue, record, set, skiplist, stack, tree
+
+CATEGORY
+       Data structures
+
+
+

@@ -1,0 +1,51 @@
+GETTY(8)                     System Manager's Manual                    GETTY(8)
+
+NAME
+     getty – set terminal mode
+
+SYNOPSIS
+     getty [type [tty]]
+
+DESCRIPTION
+     The getty utility is called by launchd(8) to open and initialize the tty
+     line, read a login name, and invoke login(1).
+
+     The argument tty is the special device file in /dev to open for the
+     terminal (for example, ``ttyh0'').  If there is no argument or the argument
+     is ‘-’, the tty line is assumed to be open as file descriptor 0.
+
+     The type argument can be used to make getty treat the terminal line
+     specially.  This argument is used as an index into the gettytab(5)
+     database, to determine the characteristics of the line.  If there is no
+     argument, or there is no such table, the default table is used.  If there
+     is no /etc/gettytab a set of system defaults is used.  If indicated by the
+     table located, getty will clear the terminal screen, print a banner
+     heading, and prompt for a login name.  Usually either the banner or the
+     login prompt will include the system hostname.
+
+     Most of the default actions of getty can be circumvented, or modified, by a
+     suitable gettytab table.
+
+     The getty utility can be set to timeout after some interval, which will
+     cause dial up lines to hang up if the login name is not entered reasonably
+     quickly.
+
+FILES
+     /etc/gettytab
+     /etc/ttys
+
+DIAGNOSTICS
+     ttyxx: No such device or address.
+     ttyxx: No such file or address.
+
+     A terminal which is turned on in the ttys file cannot be opened, likely
+     because the requisite lines are either not configured into the system, the
+     associated device was not attached during boot-time system configuration,
+     or the special file in /dev does not exist.
+
+SEE ALSO
+     login(1), ioctl(2), tty(4), gettytab(5), ttys(5), launchd(8)
+
+HISTORY
+     A getty utility appeared in Version 6 AT&T UNIX.
+

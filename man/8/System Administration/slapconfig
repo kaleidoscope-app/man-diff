@@ -1,0 +1,154 @@
+slapconfig(8)                System Manager's Manual               slapconfig(8)
+
+NAME
+     slapconfig -- tool to configure slapd and related daemons
+
+SYNOPSIS
+     slapconfig command [command-options] [-q]
+
+DESCRIPTION
+     slapconfig is a utility for configuring slapd. It must be run by root.
+
+USAGE
+     -q                    suppress prompts.
+
+   Queries
+     -defaultsuffix        Returns the default suffix which is based on the
+                           machine's DNS name, or hostname if DNS is not
+                           available.
+
+     -getclientconfig      Returns whether this machine is an LDAP client, not a
+                           client, or advanced.
+
+     -getldapconfig        Returns the LDAP server settings.
+
+     -getmacosxodpolicy    Returns a property list containing the directory
+                           binding settings.
+
+     -getmasterconfig      Returns the list of replicas and replication
+                           interval.
+
+     -getpasswordserveraddress
+                           Returns the IP address of the default password
+                           server.
+
+     -getreplicaconfig     Returns the master address and last update date.
+
+     -getstyle             Returns whether configuration is master, replica,
+                           client, or standalone.
+
+     -help                 Print usage information.
+
+     -ver                  Displays version information.
+
+   Setup
+     -addreplica [--serverID num] [--guid D1C9C376-D940-404D-9941-7AD24E6A37DA]
+     ⟨replica-address⟩
+     Adds a replication link with the specified server.  The serverID and GUID
+     of the remote machine you'd like to replicate with.  The serverID and GUID
+     can be viewed in the target machine's computer record.  Replication links
+     are unidirectional, the corresponding command should be run on the target
+     server as well to get full replication working.  Caution should be
+     exercised with this command, it is best to avoid replication loops.
+
+     -changeip ⟨old-ip⟩ ⟨new-ip⟩ [⟨old-host⟩ ⟨new-host⟩]
+     Updates configuration records and files to contain the new host
+     information.  It does not change the IP address in Network preferences.
+
+     -createldapmasterandadmin [--allow_local_realm] [--certAuthName ⟨Cert Auth
+     Name⟩] [--certAdminEmail ⟨Cert Admin Email⟩] [--certOrgName ⟨Cert Org
+     Name⟩] ⟨new-admin⟩ ⟨new-fullname⟩ ⟨new-uid⟩ [⟨search base suffix⟩
+     [⟨realm⟩]]
+     Creates a new master LDAP server. Copies the root account to the new master
+     domain. Creates a new directory node administrator.
+
+     -createreplica [--certAdminEmail ⟨Cert Admin Email⟩] ⟨master IP or name⟩
+     ⟨admin user⟩
+     Create a new replica from an existing LDAP master.
+
+     -createrootcertauthority ⟨Certificate Authority Name⟩ ⟨Certificate
+     Authority Admin Email⟩ ⟨Certificate Authority Organization Name⟩
+     Create a CA on the OD master.
+
+     -destroyldapserver [diradmin]
+     Turns off the LDAP server and deletes its database.  The optional argument
+     of the diradmin account name will then prompt for the diradmin password and
+     will inform all replication peers of the server's destruction.
+
+     -promotereplica ⟨admin-user⟩ ⟨archive-path⟩
+     Converts an existing replica into a master using the current database. Path
+     to an archive from the master can given in order to add the root CA's keys
+     to the promoted master.
+
+     -removereplica [--guid D1C9C376-D940-404D-9941-7AD24E6A37DA]
+     -⟨replica-address⟩
+     Removes a replication link with the specified server.  The GUID of the
+     remote server being removed should be passed in with the --guid option.
+     Replication links are unidirectional, so the corresponding command should
+     be run on the target server to remove the other half of an existing
+     replication link.
+
+     -setclient
+     Configures the machine to bind using DHCP if it is not already a client.
+
+     -setldapconfig [-maxresults ⟨maximum search results⟩] [-searchtimeout
+     timeout] [-ssl on|off] [-sslidentity ⟨identity name⟩] [-sslserialnumber
+     ⟨certificate serial number⟩] [-sslsha1fingerprint ⟨certificate sha1
+     fingerprint as a hex encoded colon separated string⟩]
+     Applies the specified settings and restarts slapd. Settings not specified
+     are unchanged.
+
+     -setstandalone
+     Configures the machine to only use the local directory.
+
+     -setmacosxodpolicy [-binding [disabled|enabled|required] [] -cleartext
+     [blocked|allowed] [] -encrypt [yes|no] [] -sign [yes|no] [] -clientcaching
+     [yes|no] [] -man-in-middle [blocked|allowed]]
+     Sets directory binding options.
+
+     -startldapserver      Configures launchd to run slapd.
+
+     -stopldapserver       Configures launchd not to run slapd.
+
+     -updateaddresses      Merges new interfaces into the list of LDAP replicas.
+
+   Password Server
+     -startpasswordserver  Sets up a launchd plist file and starts the password
+                           server.
+
+     -stoppasswordserver   Sets the launchd plist file to be disabled and stops
+                           the password server.
+
+   Runtime
+     -enableslapdlog       Turns on the LDAP server logging to
+                           /var/log/slapd.log.
+
+     -setfullsyncmode [yes | no]
+                           The LDAP server defaults to running in a "full sync
+                           mode" to ensure database transactions are fully
+                           flushed to disk.  This improves data integrity in the
+                           event of a power loss, but can result in slower
+                           performance when importing large datasets.  Setting
+                           this option to no disables this functionality
+                           temporarily in order to speed up large imports.
+                           After the import has been completed, this option
+                           should be set back to yes for normal operation.
+
+   Backup and Restore
+     -backupdb ⟨archive-path⟩
+     Creates an archive containing the LDAP, Password Server and Kerberos
+     databases. It also contains Certificate Authority related data.
+
+     -restoredb ⟨archive-path⟩
+     Restores a directory to the backed-up state.
+
+ENVIRONMENT
+     The environment variable SSOUtilDebugLevel can be set to change the
+     verbosity of the log.  Valid values are [0-9]. The default value is 1.
+
+FILES
+     /usr/sbin/slapconfig
+
+SEE ALSO
+     DirectoryService(1), slapd(8)
+

@@ -1,0 +1,184 @@
+TclXSLT(n)                                                            TclXSLT(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ::xslt::compile -
+
+SYNOPSIS
+       package require xslt
+
+       xslt2.5
+
+       ::xslt
+
+       ::xslt::compile doc
+
+       ssheet method ? option value ... ? ? args ... ?
+
+       ::xslt::extensionadd nsuri tcl-namespace
+________________________________________________________________________________
+
+
+DESCRIPTION
+       TclXSLT is a wrapper for the  that allows an application to perform XSL
+       transformations (XSLT).  The package also provides a binding to the XSLT
+       extension mechanism so that XSLT extension may be implemented using Tcl
+       scripts.
+
+
+       Transformation only works with documents created by TclDOM/libxml2.
+
+
+       The TclXSLT package makes extensive use of Tcl objects.  Compiled XSL
+       stylesheets are stored as the internal representation of a Tcl object.
+       Source and result documents are accessed via TclDOM's C interface as Tcl
+       objects.  This allows the application to cache parsed XML documents and
+       compiled XSL stylesheets for better runtime performance.
+
+
+PACKAGES AND NAMESPACES
+       The TclXSLT package defines the  package and also a Tcl namespace using
+       that name.
+
+
+COMMANDS
+       ::xslt::compile
+
+
+       The ::xslt::compile command pre-compiles a stylesheet document.  It
+       returns a compiled stylesheet object and also defines a Tcl command to
+       access the stylesheet.  This Tcl command may be used to transform XML
+       documents.
+
+
+       NB.  It is advisable to use the  -baseuri option when parsing the source
+       and stylesheet documents to allow external resources to be resolved.
+
+
+
+       Stylesheet Command
+
+
+       The stylesheet command created by ::xslt::compile command accesses a
+       compiled stylesheet.
+
+
+       Following is an example of how to use the stylesheet transform method.
+
+
+              Command Methods
+
+
+              The following command methods may be used:
+
+
+                      cget option
+
+                     Returns the value of an option.  See below for the list of
+                     valid options.
+
+
+                      configure optionvalue
+
+                     Sets the value of an option.  Available options are as
+                     follows:
+
+
+
+                      transform source ? name value?
+
+                     Performs an XSL transformation on the given source
+                     document.  Stylesheet parameters may be specified as name-
+                     value pairs.  The return result is the DOM token for the
+                     result document.
+
+
+              Stylesheet Parameters
+
+
+              Any number of name-value pairs may be specified as arguments to
+              the stylesheet transform method.  These are passed as values for
+              parameters in the stylesheet.   interprets the values as XPath
+              expressions, where the context node is the root node for the
+              source document.  To pass a value as a string it must be XPath-
+              quoted, for example
+
+
+                     set library "Gnome libxslt"
+                     $ssheet transform $source_doc library '$library' author "'Daniel Veillard'" node {/*/Element[3]}
+
+
+
+       ::xslt::extension
+
+
+       The ::xslt::extension command is used to manage extensions of the
+       library.  The add is used to register an extension.  The remove is used
+       to unregister an extension.  See  for more detail.
+
+
+
+
+EXTENSIONS
+       The TclXSLT package allows an application to bind Tcl scripts to the
+       extension mechanism of .  This means that Tcl scripts may provide the
+       implementation of an XSLT extension element or function.  The binding is
+       achieved to associating a Tcl namespace with an XML namespace.
+
+       Implementing An Extension
+
+
+       The Tcl application uses the ::xslt::extension add command to register an
+       extension.  An XML Namespace for the extension is specified as an
+       argument, along with a Tcl namespace that will provide implementations of
+       extension elements and functions.  For example,
+
+
+       Everytime the ::xslt::transform command is executed, a newly-created XSLT
+       engine is initialized.  For each registered extension, every procedure in
+       the associated Tcl namespace is defined in the XSLT engine as either an
+       extension element or an extension function.  The procedure is defined as
+       an extension function if it has a variable argument list, otherwise it is
+       defined as an extension element.  The procedure name is used as the local
+       part of the extension name.  For example,
+
+
+       "myfunc" is defined as an extension function and "myelement" is defined
+       as an extension element.
+
+
+              Extension Functions
+
+
+              The arguments to an extension function are converted to a string
+              value and then passed as parameters to the Tcl procedure.
+
+
+              The return result of the Tcl procedure becomes the return value of
+              the extension function.  The type of the result is preserved where
+              possible, otherwise it is converted to a string value.
+
+              Extension Elements
+
+
+              Extension elements have not been implemented in TclXSLT v1.1.
+
+
+       Using An Extension
+
+
+       To invoke an extension in an XSL stylesheet, use the normal XSLT
+       extension mechanism.  The XML Namespace matches the extension to the
+       registered Tcl namespace (NB. the stylesheet author is free to choose any
+       prefix for the extension namespace).  For example,
+
+
+       This stylesheet would result in the following Tcl script being evaluated:
+
+
+
+
+

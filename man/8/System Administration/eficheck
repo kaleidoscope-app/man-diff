@@ -1,0 +1,98 @@
+EFICHECK(8)                  System Manager's Manual                 EFICHECK(8)
+
+NAME
+     eficheck – check the integrity of the x86 flash chip firmware.
+
+SYNOPSIS
+     eficheck --integrity-check [-h EFI-hash-input-file]
+              [-b EFI-binary-input-file]
+     eficheck --show-hashes [-h EFI-hash-input-file] [-b EFI-binary-input-file]
+     eficheck --generate-hashes [-h EFI-hash-output-file] [-p output-path]
+     eficheck --save [-b EFI-binary-output-file]
+     eficheck --cleanup [-b EFI-binary-input-and-output-file>]
+     eficheck --version
+     eficheck --help
+
+DESCRIPTION
+     eficheck is a tool to check the x86 flash chip firmware.
+
+     The following commands can be used with eficheck:
+
+     --integrity-check hashes portion of the firmware and compares against
+     known-good hashes
+
+     --generate-hashes outputs hashes for a given firmware to be used as known-
+     good hashes
+
+     --show-hashes shows the hashes for the sub-sections of the firmware which
+     are measured
+
+     --save saves the full flash chip contents to a binary file. Requires root
+     privileges.
+
+     --cleanup zeros any privacy-sensitive data (such as nvram), enabling the
+     file to be shared for analysis.
+
+     --version print out eficheck version number.
+
+     --help display a short help.
+
+EXAMPLES
+            'eficheck --save -b firmware.bin'
+
+                Save this system's EFI firmware as firmware.bin
+
+            'eficheck --cleanup -b firmware.bin'
+
+                Overwrite the EFI variables portion of the firmware.bin, in
+     place
+
+            'eficheck --generate-hashes'
+
+                Analyze the current system's installed EFI firmware, and store
+     the hashes into hash file(s) in current folder
+
+                File name(s) will be selected according to image's EFI
+     version(s)
+
+            'eficheck --generate-hashes -b firmware.bin'
+
+                Analyze the firmware.bin, and store the hashes into hash file(s)
+     in current folder. Filename will be based on the detected firmware version.
+
+            'eficheck --generate-hashes -p /usr/local/allowlists'
+
+                Analyze the current system's installed EFI firmware, and store
+     the hashes into hash file(s) in /usr/local/allowlists folder
+
+            'eficheck --integrity-check'
+
+                Attempt to automatically determine which firmware you are
+     running, and integrity check against the appropriate file, and report any
+     differences
+
+            'eficheck --integrity-check -h
+     /usr/libexec/firmwarecheckers/eficheck/EFIAllowListShipping.bundle/allowlists/IM171.88Z.0105.B08.1604111319.0.ealf'
+
+                Compare the current system's EFI firmware against the Apple-
+     provided expected measurements for an "iMac17,1" at firmware revision B08,
+     and report any differences
+
+            'eficheck --integrity-check -h hash.ealf -b firmware.bin'
+
+                Compare the given hash file against against the given firmware
+     image and report any differences
+
+            'eficheck --show-hashes'
+
+                Print the hashes for the current system's installed EFI firmware
+     to stdout
+
+            'eficheck --show-hashes -b firmware.bin'
+
+                Print the hashes for the given firmware.bin to stdout
+
+            'eficheck --show-hashes -h IM171.88Z.0105.B08.1604111319.0.ealf'
+
+                Print the hashes for the given allowlist to stdout
+

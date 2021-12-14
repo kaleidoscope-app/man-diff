@@ -1,0 +1,63 @@
+ttk::radiobutton(n)             Tk Themed Widget             ttk::radiobutton(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ttk::radiobutton - Mutually exclusive option widget
+
+SYNOPSIS
+       ttk::radiobutton pathName ?options?
+________________________________________________________________________________
+
+DESCRIPTION
+       ttk::radiobutton widgets are used in groups to show or change a set of
+       mutually-exclusive options.  Radiobuttons are linked to a Tcl variable,
+       and have an associated value; when a radiobutton is clicked, it sets the
+       variable to its associated value.
+
+STANDARD OPTIONS
+       -class                -compound            -cursor
+       -image                -state               -style
+       -takefocus            -text                -textvariable
+       -underline            -width
+
+       See the ttk_widget manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       [-command command] A Tcl script to evaluate whenever the widget is
+       invoked.  [-value Value] The value to store in the associated -variable
+       when the widget is selected.  [-variable variable] The name of a global
+       variable whose value is linked to the widget.  Default value is
+       ::selectedButton.
+
+WIDGET COMMAND
+       In addition to the standard cget, configure, identify, instate, and state
+       commands, radiobuttons support the following additional widget commands:
+
+       pathname invoke
+              Sets the -variable to the -value, selects the widget, and
+              evaluates the associated -command.  Returns the result of the
+              -command, or the empty string if no -command is specified.
+
+WIDGET STATES
+       The widget does not respond to user input if the disabled state is set.
+       The widget sets the selected state whenever the linked -variable is set
+       to the widget's -value, and clears it otherwise.  The widget sets the
+       alternate state whenever the linked -variable is unset.  (The alternate
+       state may be used to indicate a “tri-state” or “indeterminate”
+       selection.)
+
+STANDARD STYLES
+       Ttk::radiobutton widgets support the Toolbutton style in all standard
+       themes, which is useful for creating widgets for toolbars.
+
+SEE ALSO
+       ttk::widget(n), ttk::checkbutton(n), radiobutton(n)
+
+KEYWORDS
+       widget, button, option
+
+
+

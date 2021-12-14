@@ -1,0 +1,135 @@
+NEWFS_HFS(8)                 System Manager's Manual                NEWFS_HFS(8)
+
+NAME
+     newfs_hfs – construct a new HFS Plus file system
+
+SYNOPSIS
+     newfs_hfs [-N] [-U uid] [-G gid] [-M mask] [-P] [-s] [-b block-size]
+               [-c clump-size-list] [-i first-cnid] [-J [journal-size]]
+               [-D journal-device] [-n node-size-list] [-v volume-name] special
+     newfs_hfs -N partition-size [-U uid] [-G gid] [-M mask] [-P] [-h | -w] [-s]
+               [-b block-size] [-c clump-size-list] [-i first-cnid]
+               [-J [journal-size]] [-D journal-device] [-n node-size-list]
+               [-v volume-name]
+
+DESCRIPTION
+     Newfs_hfs builds an HFS Plus file system on the specified special device.
+     Before running newfs_hfs the disk should be partitioned using the Disk
+     Utility application or pdisk(8).
+
+     The file system default parameters are calculated based on the size of the
+     disk partition. Typically the defaults are reasonable, however newfs_hfs
+     has several options to allow the defaults to be selectively overridden.
+     The options are as follows:
+
+     -N [partition-size]
+                 Causes the file system parameters to be printed out without
+                 really creating the file system.  If the argument following the
+                 -N starts with a decimal digit, it is assumed to be a partition
+                 size.  The paritition size may be given in decimal, octal (with
+                 leading `0'), or hexadecimal (with leading `0x').  The
+                 partition size argument can be specified in 512-byte blocks
+                 (with a `b' suffix), petabytes (`p' suffix), terabytes (`t'
+                 suffix), gigabytes (`g' suffix), megabytes (`m' suffix), or
+                 kilobytes (`k' suffix).  All suffixes indicate binary, not
+                 decimal, multipliers (e.g., `1k' is 1024 bytes).  If no suffix
+                 is specified, the value is assumed to be in bytes; if an
+                 illegal suffix is specified, it results in a size of 0 bytes.
+
+                 If the partition size is given, then no special device argument
+                 shall be provided.  If no partition size is given, then the
+                 size of the given special device is used instead, and the
+                 special device will not be written to.
+
+     -U uid      Set the owner of the file system's root directory to uid.
+
+     -G gid      Set the group of the file system's root directory to gid.
+
+     -M mask     Specify the octal access permissions mask for the file system's
+                 root directory.
+
+     -P          Set kHFSContentProtectionBit in the volume's attributes, which
+                 will cause the volume to be mounted with the "protect" option
+                 if the kernel supports it.
+
+     -s          Creates a case-sensitive HFS Plus filesystem. By default a
+                 case-insensitive filesystem is created.  Case-sensitive HFS
+                 Plus file systems require a Mac OS X version of 10.3 (Darwin
+                 7.0) or later.
+
+     -b block-size
+                 The allocation block size of the file system.  The default
+                 value is 4096.
+
+     -c clump-size-list
+                 This specifies the clump and/or initial sizes, in allocation
+                 blocks, for the various metadata files.  Clump sizes are
+                 specified with the -c option followed by a comma separated list
+                 of the form arg=blocks.
+
+                 Example:  -c c=5000,e=500
+
+                 a=blocks    Set the attribute file clump size.
+
+                 b=blocks    Set the allocation bitmap file clump size.
+
+                 c=blocks    Set the catalog file clump size.
+
+                 d=blocks    Set the data fork clump size.
+
+                 e=blocks    Set the extent overflow file clump size.
+
+                 r=blocks    Set the resource fork clump size.
+
+     -i first-cnid
+                 This specifies the initial catalog node ID for user files and
+                 directories. The default value is 16.
+
+     -I initial-size-list
+                 This specifies the initial size, in allocation blocks, for the
+                 various metadata files.  Initial sizes are specified with the
+                 -I option followed by a comma separated list of the form
+                 arg=blocks.
+
+                 Example:  -I c=5000,e=500
+
+                 a=blocks    Set the initial attribute file size.
+
+                 c=blocks    Set the initial catalog file size.
+
+                 e=blocks    Set the initial extent overflow file size.
+
+     -J [journal-size]
+                 Creates a journaled HFS+ volume.  The default journal size
+                 varies, based on the size of the volume.  Appending an 'M' to
+                 the journal size implies megabytes (i.e. 64M is 64 megabytes).
+                 The maximum journal size is 1024 megabytes.
+
+     -D journal-device
+                 Creates the journal on special device journal-device.
+
+     -n node-size-list
+                 This specifies the b-tree node sizes, in bytes, for the various
+                 b-tree files.  Node sizes are specified with the -n option
+                 followed by a comma separated list of the form arg=bytes. The
+                 node size must be a power of two and no larger than 32768
+                 bytes.
+
+                 Example:  -n c=8192,e=4096
+
+                 a=bytes     Set the attribute b-tree node size.
+
+                 c=bytes     Set the catalog b-tree node size.
+
+                 e=bytes     Set the extent overflow b-tree node size.
+
+     -v volume-name
+                 Volume name (file system name) in ascii or UTF-8 format.
+
+SEE ALSO
+     mount(8), pdisk(8)
+
+HISTORY
+     The newfs_hfs command appeared in Mac OS X Server 1.0 .  As of Mac OS X
+     10.6, this utility no longer generates HFS standard file systems.
+

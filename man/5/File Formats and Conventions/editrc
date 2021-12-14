@@ -1,0 +1,402 @@
+EDITRC(5)                      File Formats Manual                     EDITRC(5)
+
+NAME
+     editrc – configuration file for editline library
+
+SYNOPSIS
+     editrc
+
+DESCRIPTION
+     The editrc file defines various settings to be used by the editline(3)
+     library.
+
+     The format of each line is:
+           [prog:]command [arg [...]]
+
+     command is one of the editline(3) builtin commands.  Refer to BUILTIN
+     COMMANDS for more information.
+
+     prog is the program name string that a program defines when it calls
+     el_init(3) to set up editline(3), which is usually argv[0].  command will
+     be executed for any program which matches prog.
+
+     prog may also be a regex(3) style regular expression, in which case command
+     will be executed for any program that matches the regular expression.
+
+     If prog is absent, command is executed for all programs.
+
+BUILTIN COMMANDS
+     The editline library has some builtin commands, which affect the way that
+     the line editing and history functions operate.  These are based on similar
+     named builtins present in the tcsh(1) shell.
+
+     The following builtin commands are available:
+
+     bind [-a] [-e] [-k] [-l] [-r] [-s] [-v] [key [command]]
+           Without options, list all bound keys, and the editor command to which
+           each is bound.  If key is supplied, show the bindings for key.  If
+           key command is supplied, bind command to key.  Options include:
+
+           -e    Bind all keys to the standard GNU Emacs-like bindings.
+
+           -v    Bind all keys to the standard vi(1)-like bindings.
+
+           -a    List or change key bindings in the vi(1) mode alternate
+                 (command mode) key map.
+
+           -k    key is interpreted as a symbolic arrow key name, which may be
+                 one of ‘up’, ‘down’, ‘left’ or ‘right’.
+
+           -l    List all editor commands and a short description of each.
+
+           -r    Remove a key's binding.
+
+           -s    command is taken as a literal string and treated as terminal
+                 input when key is typed.  Bound keys in command are themselves
+                 reinterpreted, and this continues for ten levels of
+                 interpretation.
+
+           command may be one of the commands documented in EDITOR COMMANDS
+           below, or another key.
+
+           key and command can contain control characters of the form
+           ‘^character’ (e.g.  ‘^A’), and the following backslashed escape
+           sequences:
+
+                 \a    Bell
+                 \b    Backspace
+                 \e    Escape
+                 \f    Formfeed
+                 \n    Newline
+                 \r    Carriage return
+                 \t    Horizontal tab
+                 \v    Vertical tab
+                 \nnn  The ASCII character corresponding to the octal number
+                       nnn.
+
+           ‘\’ nullifies the special meaning of the following character, if it
+           has any, notably ‘\’ and ‘^’.
+
+     echotc [-sv] arg ...
+           Exercise terminal capabilities given in arg ....  If arg is ‘baud’,
+           ‘cols’, ‘lines’, ‘rows’, ‘meta’, or ‘tabs’, the value of that
+           capability is printed, with “yes” or “no” indicating that the
+           terminal does or does not have that capability.
+
+           -s returns an empty string for non-existent capabilities, rather than
+           causing an error.  -v causes messages to be verbose.
+
+     edit [on | off]
+           Enable or disable the editline functionality in a program.
+
+     history list | size n | unique n
+           The list command lists all entries in the history.  The size command
+           sets the history size to n entries.  The unique command controls if
+           history should keep duplicate entries.  If n is non zero, only keep
+           unique history entries.  If n is zero, then keep all entries (the
+           default).
+
+     telltc
+           List the values of all the terminal capabilities (see termcap(5)).
+
+     settc cap val
+           Set the terminal capability cap to val, as defined in termcap(5).  No
+           sanity checking is done.
+
+     setty [-a] [-d] [-q] [-x] [+mode] [-mode] [mode] [char=c]
+           Control which tty modes that editrc won't allow the user to change.
+           -d, -q or -x tells setty to act on the ‘edit’, ‘quote’ or ‘execute’
+           set of tty modes respectively; defaulting to -x.
+
+           Without other arguments, setty lists the modes in the chosen set
+           which are fixed on (‘+mode’) or off (‘-mode’).  -a lists all tty
+           modes in the chosen set regardless of the setting.  With +mode, -mode
+           or mode, fixes mode on or off or removes control of mode in the
+           chosen set.
+
+           Setty can also be used to set tty characters to particular values
+           using char=value.  If value is empty then the character is set to
+           _POSIX_VDISABLE.
+
+EDITOR COMMANDS
+     The following editor commands are available for use in key bindings:
+
+     vi-paste-next
+           Vi paste previous deletion to the right of the cursor.
+
+     vi-paste-prev
+           Vi paste previous deletion to the left of the cursor.
+
+     vi-prev-space-word
+           Vi move to the previous space delimited word.
+
+     vi-prev-word
+           Vi move to the previous word.
+
+     vi-next-space-word
+           Vi move to the next space delimited word.
+
+     vi-next-word
+           Vi move to the next word.
+
+     vi-change-case
+           Vi change case of character under the cursor and advance one
+           character.
+
+     vi-change-meta
+           Vi change prefix command.
+
+     vi-insert-at-bol
+           Vi enter insert mode at the beginning of line.
+
+     vi-replace-char
+           Vi replace character under the cursor with the next character typed.
+
+     vi-replace-mode
+           Vi enter replace mode.
+
+     vi-substitute-char
+           Vi replace character under the cursor and enter insert mode.
+
+     vi-substitute-line
+           Vi substitute entire line.
+
+     vi-change-to-eol
+           Vi change to end of line.
+
+     vi-insert
+           Vi enter insert mode.
+
+     vi-add
+           Vi enter insert mode after the cursor.
+
+     vi-add-at-eol
+           Vi enter insert mode at end of line.
+
+     vi-delete-meta
+           Vi delete prefix command.
+
+     vi-end-word
+           Vi move to the end of the current space delimited word.
+
+     vi-to-end-word
+           Vi move to the end of the current word.
+
+     vi-undo
+           Vi undo last change.
+
+     vi-command-mode
+           Vi enter command mode (use alternative key bindings).
+
+     vi-zero
+           Vi move to the beginning of line.
+
+     vi-delete-prev-char
+           Vi move to previous character (backspace).
+
+     vi-list-or-eof
+           Vi list choices for completion or indicate end of file if empty line.
+
+     vi-kill-line-prev
+           Vi cut from beginning of line to cursor.
+
+     vi-search-prev
+           Vi search history previous.
+
+     vi-search-next
+           Vi search history next.
+
+     vi-repeat-search-next
+           Vi repeat current search in the same search direction.
+
+     vi-repeat-search-prev
+           Vi repeat current search in the opposite search direction.
+
+     vi-next-char
+           Vi move to the character specified next.
+
+     vi-prev-char
+           Vi move to the character specified previous.
+
+     vi-to-next-char
+           Vi move up to the character specified next.
+
+     vi-to-prev-char
+           Vi move up to the character specified previous.
+
+     vi-repeat-next-char
+           Vi repeat current character search in the same search direction.
+
+     vi-repeat-prev-char
+           Vi repeat current character search in the opposite search direction.
+
+     em-delete-or-list
+           Delete character under cursor or list completions if at end of line.
+
+     em-delete-next-word
+           Cut from cursor to end of current word.
+
+     em-yank
+           Paste cut buffer at cursor position.
+
+     em-kill-line
+           Cut the entire line and save in cut buffer.
+
+     em-kill-region
+           Cut area between mark and cursor and save in cut buffer.
+
+     em-copy-region
+           Copy area between mark and cursor to cut buffer.
+
+     em-gosmacs-transpose
+           Exchange the two characters before the cursor.
+
+     em-next-word
+           Move next to end of current word.
+
+     em-upper-case
+           Uppercase the characters from cursor to end of current word.
+
+     em-capitol-case
+           Capitalize the characters from cursor to end of current word.
+
+     em-lower-case
+           Lowercase the characters from cursor to end of current word.
+
+     em-set-mark
+           Set the mark at cursor.
+
+     em-exchange-mark
+           Exchange the cursor and mark.
+
+     em-universal-argument
+           Universal argument (argument times 4).
+
+     em-meta-next
+           Add 8th bit to next character typed.
+
+     em-toggle-overwrite
+           Switch from insert to overwrite mode or vice versa.
+
+     em-copy-prev-word
+           Copy current word to cursor.
+
+     em-inc-search-next
+           Emacs incremental next search.
+
+     em-inc-search-prev
+           Emacs incremental reverse search.
+
+     ed-end-of-file
+           Indicate end of file.
+
+     ed-insert
+           Add character to the line.
+
+     ed-delete-prev-word
+           Delete from beginning of current word to cursor.
+
+     ed-delete-next-char
+           Delete character under cursor.
+
+     ed-kill-line
+           Cut to the end of line.
+
+     ed-move-to-end
+           Move cursor to the end of line.
+
+     ed-move-to-beg
+           Move cursor to the beginning of line.
+
+     ed-transpose-chars
+           Exchange the character to the left of the cursor with the one under
+           it.
+
+     ed-next-char
+           Move to the right one character.
+
+     ed-prev-word
+           Move to the beginning of the current word.
+
+     ed-prev-char
+           Move to the left one character.
+
+     ed-quoted-insert
+           Add the next character typed verbatim.
+
+     ed-digit
+           Adds to argument or enters a digit.
+
+     ed-argument-digit
+           Digit that starts argument.
+
+     ed-unassigned
+           Indicates unbound character.
+
+     ed-tty-sigint
+           Tty interrupt character.
+
+     ed-tty-dsusp
+           Tty delayed suspend character.
+
+     ed-tty-flush-output
+           Tty flush output characters.
+
+     ed-tty-sigquit
+           Tty quit character.
+
+     ed-tty-sigtstp
+           Tty suspend character.
+
+     ed-tty-stop-output
+           Tty disallow output characters.
+
+     ed-tty-start-output
+           Tty allow output characters.
+
+     ed-newline
+           Execute command.
+
+     ed-delete-prev-char
+           Delete the character to the left of the cursor.
+
+     ed-clear-screen
+           Clear screen leaving current line at the top.
+
+     ed-redisplay
+           Redisplay everything.
+
+     ed-start-over
+           Erase current line and start from scratch.
+
+     ed-sequence-lead-in
+           First character in a bound sequence.
+
+     ed-prev-history
+           Move to the previous history line.
+
+     ed-next-history
+           Move to the next history line.
+
+     ed-search-prev-history
+           Search previous in history for a line matching the current.
+
+     ed-search-next-history
+           Search next in history for a line matching the current.
+
+     ed-prev-line
+           Move up one line.
+
+     ed-next-line
+           Move down one line.
+
+     ed-command
+           Editline extended command.
+
+SEE ALSO
+     editline(3), regex(3), termcap(5)
+
+AUTHORS
+     The editline library was written by Christos Zoulas, and this manual was
+     written by Luke Mewburn, with some sections inspired by tcsh(1).
+

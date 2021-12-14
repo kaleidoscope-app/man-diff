@@ -1,0 +1,85 @@
+FSCK(8)                      System Manager's Manual                     FSCK(8)
+
+NAME
+     fsck – filesystem consistency check and interactive repair
+
+SYNOPSIS
+     fsck -p [-f]
+     fsck [-l maxparallel] [-q] [-y] [-n] [-d]
+
+DESCRIPTION
+     The first form of fsck preens a standard set of filesystems or the
+     specified filesystems.  It is normally used in the script /etc/rc during
+     automatic reboot.  Here fsck reads the filesystem descriptor table (using
+     getfsent(3)) to determine which filesystems to check.  Only partitions that
+     have ``rw,'' ``rq'' or ``ro'' as options, and that have non-zero pass
+     number are checked.  Filesystems with pass number 1 (normally just the root
+     filesystem) are checked one at a time.  When pass 1 completes, all
+     remaining filesystems are checked, running one process per disk drive.  The
+     disk drive containing each filesystem is inferred from the shortest prefix
+     of the device name that ends in one or more digits; the remaining
+     characters are assumed to be the partition designator.  In preening mode,
+     filesystems that are marked clean are skipped.  Filesystems are marked
+     clean when they are unmounted, when they have been mounted read-only, or
+     when fsck runs on them successfully.
+
+     It should be noted that fsck is now essentially a wrapper that invokes
+     other fsck_XXX utilities as needed.  Currently, fsck can invoke fsck_hfs,
+     fsck_apfs, fsck_msdos, fsck_exfat, and fsck_udf.  If this underlying
+     process that fsck invokes encounters serious inconsistencies or the
+     filesystem type is not one of the above, it exits with an abnormal return
+     status and an automatic reboot will then fail.  For each corrected
+     inconsistency one or more lines will be printed identifying the filesystem
+     on which the correction will take place, and the nature of the correction.
+
+     If sent a QUIT signal, fsck will finish the filesystem checks, then exit
+     with an abnormal return status that causes an automatic reboot to fail.
+     This is useful when you want to finish the filesystem checks during an
+     automatic reboot, but do not want the machine to come up multiuser after
+     the checks complete.
+
+     Without the -p option, fsck audits and interactively repairs inconsistent
+     conditions for filesystems.  It should be noted that some of the corrective
+     actions which are not correctable under the -p option will result in some
+     loss of data.  The amount and severity of data lost may be determined from
+     the diagnostic output.  If the operator does not have write permission on
+     the filesystem fsck will default to a -n action.
+
+     The following flags are interpreted by fsck and passed along to the
+     underlying tool that it spawns.
+
+     -f      Force fsck to check `clean' filesystems when preening.
+
+     -l      Limit the number of parallel checks to the number specified in the
+             following argument.  By default, the limit is the number of disks,
+             running one process per disk.  If a smaller limit is given, the
+             disks are checked round-robin, one filesystem at a time.
+
+     -R      Specify a particular passno number for which fsck is to check.  You
+             may only specify 1 or 2.  Only those filesystems matching that
+             particular passno entry (if using fstab) will be checked.  For more
+             information on the passno field, see fstab(5).
+
+     -p      "Preen" mode, described above.
+
+     -q      Do a quick check to determine if the filesystem was unmounted
+             cleanly.
+
+     -y      Assume a yes response to all questions asked by fsck; this should
+             be used with great caution as this is a free license to continue
+             after essentially unlimited trouble has been encountered.
+
+     -n      Assume a no response to all questions asked by fsck except for
+             ‘CONTINUE?’, which is assumed to be affirmative; do not open the
+             filesystem for writing.
+
+     If no filesystems are given to fsck then a default list of filesystems is
+     read using getfsent(3).
+
+     Because of inconsistencies between the block device and the buffer cache,
+     the raw device should always be used.
+
+SEE ALSO
+     fs(5), fsck_hfs(8), fsck_apfs(8), fsck_msdos(8), getfsent(3), fstab(5,)
+     reboot(8)
+

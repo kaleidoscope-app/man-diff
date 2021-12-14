@@ -1,0 +1,62 @@
+SNCFGINSTALL(8)              System Manager's Manual             SNCFGINSTALL(8)
+
+
+
+NAME
+       sncfginstall - Install Xsan Volume configuration file
+
+SYNOPSIS
+       sncfginstall -n_VolName -f_config_file [-M msg_format]
+
+       sncfginstall -h
+
+DESCRIPTION
+       The sncfginstall program will install a Xsan file system configuration
+       file into the proper location, after validating that it is a valid config
+       file, and comparing it against an already existing config file for the
+       named file system if one exists.
+
+       The input file need not have a .cfg or .cfgx suffix - the converter will
+       automatically figure out the format of the input file.
+
+OPTIONS
+       -h     Display usage.
+
+       -n VolName
+              Required. The name of the file system whose config is to be
+              installed.
+
+       -f config_file
+              Specify the config file to install.
+
+       -M msg_format
+              Specify XML if you want messages to come back in XML format.  This
+              defaults to ASCII.
+
+EXIT VALUES
+       sncfginstall will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List usage:
+
+          # sncfginstall -h
+          Usage: sncfginstall -f <config_path> -n <fs_name> [-M <fmt>]
+            -f            Path to file to install
+            -n            Name of file system to install
+            -M            Message format: ASCII, XML (default ASCII)
+            -h            This usage
+
+       Install a config in a temporary location to the Xsan configuration
+       directory:
+
+          # sncfginstall -n snfs1 -f /tmp/fs1.copy
+          'snfs1' installed
+
+FILES
+       /Library/Logs/Xsan/data/VolName/config_history/
+
+SEE ALSO
+       snfs_config(5)
+
+
+

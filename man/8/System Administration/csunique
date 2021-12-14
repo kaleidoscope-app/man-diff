@@ -1,0 +1,88 @@
+CSUNIQUE(8)                  System Manager's Manual                 CSUNIQUE(8)
+
+NAME
+     csunique – modify the UUIDs of CoreStorage metadata objects
+
+SYNOPSIS
+     csunique [-v | --verbose] [-n | --dry-run] [-I | --include include]
+              [-X | --exclude exclude] device ...
+
+DESCRIPTION
+     The csunique utility can rewrite CoreStorage logical volume group metadata,
+     changing object UUIDs.  All CoreStorage objects are uniquely identified by
+     UUIDs.  This can be useful when copying an initial "canned image" onto
+     multiple machines to establish these as independent volumes.
+
+     The device parameter(s) should be path(s) to the "raw" (character special)
+     disk device(s) such as /dev/rdisk1s1 that constitute the CoreStorage
+     logical volume group.  If you specify a "non-raw" (block special) path such
+     as /dev/disk1s1, or just the disk name such as disk1s1, it will
+     automatically be converted to the corresponding raw disk device
+     (/dev/rdisk1s1).
+
+     The options are as follows:
+
+           -v      Output verbose progress information of each step and the UUID
+                   re-mappings.
+
+           -n      Operates in "dry run" mode; no changes are made to the on-
+                   disk data.
+
+           -I      Specifies an additional class of UUID objects that should be
+                   modified.
+
+           -X      Specifies a class of UUID objects that should not be
+                   modified.  By default all UUIDs will be changed.
+
+     The classes of CoreStorage UUID objects that can be included or excluded
+     from modification by csunique are indicated using the following characters:
+
+           f       logical volume family (LVF)
+
+           g       logical volume group (LVG)
+
+           l       logical volume (LV)
+
+           p       physical volume (PV)
+
+           w       MLV wipekey
+
+     csunique processes/transforms the CoreStorage metadata in a number of
+     steps:
+
+           1.   Firstly, an initial fsck_cs is performed to ensure the source
+                structure is consistent;
+
+           2.   If the LVG is currently live and mounted by the kext it is
+                temporarily "frozen";
+
+           3.   If the disk partitions are of type Apple_CoreStorage then they
+                are switched offline (which dissociates the kext from the old
+                metadata);
+
+           4.   The CoreStorage metadata is locally parsed and loaded;
+
+           5.   All object UUIDs are located, and new UUIDs generated for
+                classes as set by the -I and -X options;
+
+           6.   UUIDs are re-written to disk;
+
+           7.   A post-modification fsck_cs is performed to ensure the final
+                structure is consistent;
+
+           8.   Finally, any disk partitions taken offline are restored to
+                Apple_CoreStorage (which will reload the kext with the new UUID
+                metadata).
+
+DIAGNOSTICS
+     The csunique utility exits with 0 if the CoreStorage logical volume group
+     was modified as directed, and with >0 if it was unable to do so.  Any error
+     message is written to stderr.
+
+BUGS
+     csunique cannot modify the LVF UUID if there are any encrypted LVs inside
+     it.  Any mounted LVs must be manually unmounted before invocation.
+
+HISTORY
+     The csunique utility first appeared in OS X 10.8.1.
+

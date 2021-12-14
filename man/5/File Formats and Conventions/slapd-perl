@@ -1,0 +1,140 @@
+SLAPD-PERL(5)                  File Formats Manual                 SLAPD-PERL(5)
+
+
+
+NAME
+       slapd-perl - Perl backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The Perl backend to slapd(8) works by embedding a perl(1) interpreter
+       into slapd(8).  Any perl database section of the configuration file
+       slapd.conf(5) must then specify what Perl module to use.  Slapd then
+       creates a new Perl object that handles all the requests for that
+       particular instance of the backend.
+
+       You will need to create a method for each one of the following actions:
+
+         * new        # creates a new object,
+         * search     # performs the ldap search,
+         * compare    # does a compare,
+         * modify     # modifies an entry,
+         * add        # adds an entry to backend,
+         * modrdn     # modifies an entry's rdn,
+         * delete     # deletes an ldap entry,
+         * config     # process unknown config file lines,
+         * init       # called after backend is initialized.
+
+       Unless otherwise specified, the methods return the result code which will
+       be returned to the client.  Unimplemented actions can just return
+       unwillingToPerform (53).
+
+       new    This method is called when the configuration file encounters a
+              perlmod line.  The module in that line is then effectively `use'd
+              into the perl interpreter, then the new method is called to create
+              a new object.  Note that multiple instances of that object may be
+              instantiated, as with any perl object.  The new method receives
+              the class name as argument.
+
+       search This method is called when a search request comes from a client.
+              It arguments are as follows:
+                * object reference
+                * base DN
+                * scope
+                * alias dereferencing policy
+                * size limit
+                * time limit
+                * filter string
+                * attributes only flag (1 for yes)
+                * list of attributes to return (may be empty)
+
+       Return value: (resultcode, ldif-entry, ldif-entry, ...)
+
+       compare
+              This method is called when a compare request comes from a client.
+              Its arguments are as follows.
+                * object reference
+                * dn
+                * attribute assertion string
+
+       modify This method is called when a modify request comes from a client.
+              Its arguments are as follows.
+                * object reference
+                * dn
+                * a list formatted as follows
+                  ({ "ADD" | "DELETE" | "REPLACE" },
+                   attributetype, value...)...
+
+       add    This method is called when a add request comes from a client.  Its
+              arguments are as follows.
+                * object reference
+                * entry in string format
+
+       modrdn This method is called when a modrdn request comes from a client.
+              Its arguments are as follows.
+                * object reference
+                * dn
+                * new rdn
+                * delete old dn flag (1 means yes)
+
+       delete This method is called when a delete request comes from a client.
+              Its arguments are as follows.
+                * object reference
+                * dn
+
+       config This method is called with unknown slapd.conf(5) configuration
+              file lines.  Its arguments are as follows.
+                * object reference
+                * array of arguments on line
+
+       Return value: nonzero if this is not a valid option.
+
+       init   This method is called after backend is initialized.  Its argument
+              is as follows.
+                * object reference
+
+       Return value: nonzero if initialization failed.
+
+CONFIGURATION
+       These slapd.conf options apply to the PERL backend database.  That is,
+       they must follow a "database perl" line and come before any subsequent
+       "backend" or "database" lines.  Other database options are described in
+       the slapd.conf(5) manual page.
+
+       perlModulePath /path/to/libs
+              Add the path to the @INC variable.
+
+       perlModule ModName
+              `Use' the module name ModName from ModName.pm
+
+       filterSearchResults
+              Search results are candidates that need to be filtered (with the
+              filter in the search request), rather than search results to be
+              returned directly to the client.
+
+EXAMPLE
+       There is an example Perl module `SampleLDAP' in the slapd/back-perl/
+       directory in the OpenLDAP source tree.
+
+ACCESS CONTROL
+       The perl backend does not honor any of the access control semantics
+       described in slapd.access(5); all access control is delegated to the
+       underlying PERL scripting.  Only read (=r) access to the entry pseudo-
+       attribute and to the other attribute values of the entries returned by
+       the search operation is honored, which is performed by the frontend.
+
+WARNING
+       The interface of this backend to the perl module MAY change.  Any
+       suggestions would greatly be appreciated.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd(8), perl(1).
+
+
+

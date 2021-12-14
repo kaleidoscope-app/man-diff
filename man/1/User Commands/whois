@@ -1,0 +1,143 @@
+WHOIS(1)                     General Commands Manual                    WHOIS(1)
+
+NAME
+     whois – Internet domain name and network number directory service
+
+SYNOPSIS
+     whois [-aAbfgiIklmPQrRS] [-c TLD | -h host] [-p port] [--] name ...
+
+DESCRIPTION
+     The whois utility looks up records in the databases maintained by several
+     Network Information Centers (NICs).
+
+     By default whois starts by querying the Internet Assigned Numbers Authority
+     (IANA) whois server, and follows referrals to whois servers that have more
+     specific details about the query name.  The IANA whois server knows about
+     IP address and AS numbers as well as domain names.
+
+     There are a few special cases where referrals do not work, so whois goes
+     directly to the appropriate server.  These include point-of-contact handles
+     for ARIN, nic.at, NORID, and RIPE, and domain names under ac.uk.
+
+     The options are as follows:
+
+     -a      Use the American Registry for Internet Numbers (ARIN) database.  It
+             contains network numbers used in those parts of the world covered
+             neither by APNIC, AfriNIC, LACNIC, nor by RIPE.  The query syntax
+             is documented at
+             https://www.arin.net/resources/whoisrws/whois_api.html#nicname
+
+     -A      Use the Asia/Pacific Network Information Center (APNIC) database.
+             It contains network numbers used in East Asia, Australia, New
+             Zealand, and the Pacific islands.  Get query syntax documentation
+             using whois -A help
+
+     -b      Use the Network Abuse Clearinghouse database.  It contains
+             addresses to which network abuse should be reported, indexed by
+             domain name.
+
+     -c TLD  This is the equivalent of using the -h option with an argument of
+             "TLD.whois-servers.net".  This can be helpful for locating country-
+             class TLD whois servers.
+
+     -f      Use the African Network Information Centre (AfriNIC) database.  It
+             contains network numbers used in Africa and the islands of the
+             western Indian Ocean.  Get query syntax documentation using whois
+             -f help
+
+     -g      Use the US non-military federal government database, which contains
+             points of contact for subdomains of .GOV.
+
+     -h host
+             Use the specified host instead of the default.  Either a host name
+             or an IP address may be specified.
+
+     -i      Use the traditional Network Information Center (InterNIC)
+             (whois.internic.net) database.  This now contains only
+             registrations for domain names under .COM, .NET, .EDU.  You can
+             specify the type of object to search for like whois -i 'type name'
+             where type can be domain, nameserver, registrar.  The name can
+             contain * wildcards.
+
+     -I      Use the Internet Assigned Numbers Authority (IANA) database.
+
+     -k      Use the National Internet Development Agency of Korea's (KRNIC)
+             database.  It contains network numbers and domain contact
+             information for Korea.
+
+     -l      Use the Latin American and Caribbean IP address Regional Registry
+             (LACNIC) database.  It contains network numbers used in much of
+             Latin America and the Caribbean.
+
+     -m      Use the Route Arbiter Database (RADB) database.  It contains route
+             policy specifications for a large number of operators' networks.
+
+     -p port
+             Connect to the whois server on port.  If this option is not
+             specified, whois defaults to port 43.
+
+     -P      Use the PeeringDB database of AS numbers.  It contains details
+             about presence at internet peering points for many network
+             operators.
+
+     -Q      Do a quick lookup; whois will not attempt to follow referrals to
+             other whois servers.  This is the default if a server is explicitly
+             specified using one of the other options or in an environment
+             variable.  See also the -R option.
+
+     -r      Use the R´eseaux IP Europ´eens (RIPE) database.  It contains
+             network numbers and domain contact information for Europe.  Get
+             query syntax documentation using whois -r help
+
+     -R      Do a recursive lookup; whois will attempt to follow referrals to
+             other whois servers.  This is the default if no server is
+             explicitly specified.  See also the -Q option.
+
+     -S      By default whois adjusts simple queries (without spaces) to produce
+             more useful output from certain whois servers, and it suppresses
+             some uninformative output.  With the -S option, whois sends the
+             query and prints the output verbatim.
+
+     The operands specified to whois are treated independently and may be used
+     as queries on different whois servers.
+
+ENVIRONMENT
+     WHOIS_SERVER  The primary default whois server.  If this is unset, whois
+                   uses the RA_SERVER environment variable.
+
+     RA_SERVER     The secondary default whois server.  If this is unset, whois
+                   will use whois.iana.org.
+
+EXIT STATUS
+     The whois utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     To obtain contact information about an administrator located in the Russian
+     TLD domain "RU", use the -c option as shown in the following example, where
+     CONTACT-ID is substituted with the actual contact identifier.
+
+           whois -c RU CONTACT-ID
+
+     (Note: This example is specific to the TLD "RU", but other TLDs can be
+     queried by using a similar syntax.)
+
+     The following example demonstrates how to query a whois server using a non-
+     standard port, where “query-data” is the query to be sent to
+     “whois.example.com” on port “rwhois” (written numerically as 4321).
+
+           whois -h whois.example.com -p rwhois query-data
+
+     Some whois servers support complex queries with dash-letter options.  You
+     can use the -- option to separate whois command options from whois server
+     query options.  A query containing spaces must be quoted as one argument to
+     the whois command.  The following example asks the RIPE whois server to
+     return a brief description of its “domain” object type:
+
+           whois -r -- '-t domain'
+
+SEE ALSO
+     Ken Harrenstien and Vic White, NICNAME/WHOIS, 1 March 1982, RFC 812.
+
+HISTORY
+     The whois command appeared in 4.3BSD.
+

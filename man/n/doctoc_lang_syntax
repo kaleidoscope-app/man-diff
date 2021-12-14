@@ -1,0 +1,93 @@
+doctoc_lang_syntax(n)          Documentation tools         doctoc_lang_syntax(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       doctoc_lang_syntax - doctoc language syntax
+
+DESCRIPTION
+       This document contains the formal specification of the syntax of the
+       doctoc markup language, version 1.1 in Backus-Naur-Form. This document is
+       intended to be a reference, complementing the doctoc language command
+       reference.  A beginner should read the much more informally written
+       doctoc language introduction first before trying to understand either
+       this document or the command reference.
+
+FUNDAMENTALS
+       In the broadest terms possible the doctoc markup language is like SGML
+       and similar languages. A document written in this language consists
+       primarily of markup commands, with text embedded into it at some places.
+
+       Each markup command is a just Tcl command surrounded by a matching pair
+       of [ and ]. Which commands are available, and their arguments, i.e.
+       syntax is specified in the doctoc language command reference.
+
+       In this document we specify first the lexeme, and then the syntax, i.e.
+       how we can mix text and markup commands with each other.
+
+LEXICAL DEFINITIONS
+       In the syntax rules listed in the next section
+
+       [1]    <TEXT> stands for all text except markup commands.
+
+       [2]    Any XXX stands for the markup command [xxx] including its
+              arguments. Each markup command is a Tcl command surrounded by a
+              matching pair of [ and ]. Inside of these delimiters the usual
+              rules for a Tcl command apply with regard to word quotation,
+              nested commands, continuation lines, etc.
+
+       [3]    <WHITE> stands for all text consisting only of spaces, newlines,
+              tabulators and the comment markup command.
+
+SYNTAX
+       The rules listed here specify only the syntax of doctoc documents. The
+       lexical level of the language was covered in the previous section.
+
+       Regarding the syntax of the (E)BNF itself
+
+       [1]    The construct { X } stands for zero or more occurrences of X.
+
+       [2]    The construct [ X ] stands for zero or one occurrence of X.
+
+       The syntax:
+
+       toc       = defs
+                   TOC_BEGIN
+                   contents
+                   TOC_END
+                   { <WHITE> }
+
+       defs      = { INCLUDE | VSET | <WHITE> }
+       contents  = { defs entry } [ defs ]
+
+       entry     = ITEM | division
+
+       division  = DIVISION_START
+                   contents
+                   DIVISION_END
+
+
+BUGS, IDEAS, FEEDBACK
+       This document, will undoubtedly contain bugs and other problems.  Please
+       report such in the category doctools of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have.
+
+SEE ALSO
+       doctoc_intro, doctoc_lang_cmdref, doctoc_lang_faq, doctoc_lang_intro
+
+KEYWORDS
+       doctoc commands, doctoc language, doctoc markup, doctoc syntax, markup,
+       semantic markup
+
+CATEGORY
+       Documentation tools
+
+COPYRIGHT
+       Copyright (c) 2007-2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

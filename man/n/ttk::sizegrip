@@ -1,0 +1,58 @@
+ttk::sizegrip(n)                Tk Themed Widget                ttk::sizegrip(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ttk::sizegrip - Bottom-right corner resize widget
+
+SYNOPSIS
+       ttk::sizegrip pathName ?options?
+________________________________________________________________________________
+
+DESCRIPTION
+       A ttk::sizegrip widget (also known as a grow box) allows the user to
+       resize the containing toplevel window by pressing and dragging the grip.
+
+STANDARD OPTIONS
+       -class                -cursor              -state
+       -style                -takefocus
+
+       See the ttk_widget manual entry for details on the standard options.
+
+WIDGET COMMAND
+       Sizegrip widgets support the standard cget, configure, identify, instate,
+       and state methods.  No other widget methods are used.
+
+PLATFORM-SPECIFIC NOTES
+       On Mac OSX, toplevel windows automatically include a built-in size grip
+       by default.  Adding a ttk::sizegrip there is harmless, since the built-in
+       grip will just mask the widget.
+
+EXAMPLES
+       Using pack:
+              pack [ttk::frame $top.statusbar] -side bottom -fill x
+              pack [ttk::sizegrip $top.statusbar.grip] -side right -anchor se
+
+       Using grid:
+              grid [ttk::sizegrip $top.statusbar.grip] \
+                  -row $lastRow -column $lastColumn -sticky se
+              # ... optional: add vertical scrollbar in $lastColumn,
+              # ... optional: add horizontal scrollbar in $lastRow
+
+BUGS
+       If the containing toplevel's position was specified relative to the right
+       or bottom of the screen (e.g., “wm geometry ... wxh-x-y” instead of “wm
+       geometry ... wxh+x+y”), the sizegrip widget will not resize the window.
+
+       ttk::sizegrip widgets only support “southeast” resizing.
+
+SEE ALSO
+       ttk::widget(n)
+
+KEYWORDS
+       widget, sizegrip, grow box
+
+
+

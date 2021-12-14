@@ -1,0 +1,89 @@
+TTYS(5)                        File Formats Manual                       TTYS(5)
+
+NAME
+     ttys – terminal initialization information
+
+DESCRIPTION
+     The file ttys contains information that is used by various routines to
+     initialize and control the use of terminal special files.  This information
+     is read with the getttyent(3) library routines.  There is one line in the
+     ttys file per special device file.  Fields are separated by tabs and/or
+     spaces.  Fields comprised of more than one word should be enclosed in
+     double quotes (``"'').  Blank lines and comments may appear anywhere in the
+     file; comments are delimited by hash marks (``#'') and new lines.  Any
+     unspecified fields will default to null.
+
+     The first field is normally the name of the terminal special file as it is
+     found in /dev.  However, it can be any arbitrary string when the associated
+     command is not related to a tty.
+
+     The second field of the file is the command to execute for the line,
+     usually getty(8), which initializes and opens the line, setting the speed,
+     waiting for a user name and executing the login(1) program.  It can be,
+     however, any desired command, for example the start up for a window system
+     terminal emulator or some other daemon process, and can contain multiple
+     words if quoted.
+
+     The third field is the type of terminal usually connected to that tty line,
+     normally the one found in the termcap(5) data base file.  The environment
+     variable TERM is initialized with the value by either getty(8) or login(1).
+
+     The remaining fields set flags in the ty_status entry (see getttyent(3)),
+     specify a window system process that launchd(8) will maintain for the
+     terminal line.
+
+     As flag values, the strings ``on'' and ``off'' specify that launchd(8)
+     should (should not) execute the command given in the second field, while
+     ``secure'' (if ``on'' is also specified) allows users with a uid of 0 to
+     login on this line.  The flags ``local'', ``rtscts'', ``mdmbuf'', and
+     ``softcar'' modify the default behaviour of the terminal line, and their
+     actions are driver dependent.  The ``local'' flag causes the driver to
+     treat the line as if it locally connected.  The ``rtscts'' flag instructs
+     the driver to use RTS/CTS hardware flow control, if possible.  The
+     ``mdmbuf'' flag instructs the driver to use DTR/DCD flow control, if
+     possible.  The ``softcar'' flag causes the driver to ignore hardware
+     carrier on the line.  These flag fields should not be quoted.
+
+     The string ``window='' may be followed by a quoted command string which
+     launchd(8) will execute before starting the command specified by the second
+     field.
+
+FILES
+     /etc/ttys
+
+NUMERIC SEQUENCES
+     Numeric sequences of terminals can be represented in a more compact format.
+     A matching pair of square bracket may enclose two numbers (the start and
+     stop values), separated by a hyphen.  The numbers are assumed to be
+     decimal, unless prefixed with ``0x'', in which case they are interpreted as
+     hexadecimal.  The number of characters (not including any ``0x'') in the
+     starting value gives the minimum width; sequence values are zero padded up
+     to this width.  Thus ``tty[00-07]'' represents the eight terminals
+     ``tty00'' through ``tty07''.
+
+EXAMPLES
+     # root login on console at 1200 baud
+     console "/usr/libexec/getty std.1200"   vt100   on secure
+     # dialup at 1200 baud, no root logins
+     ttyd0   "/usr/libexec/getty d1200"      dialup  on      # 555-1234
+     # Mike's terminal: hp2621
+     ttyh0   "/usr/libexec/getty std.9600"   hp2621-nl       on      # 457 Evans
+     # John's terminal: vt100
+     ttyh1   "/usr/libexec/getty std.9600"   vt100   on              # 459 Evans
+     # terminal emulate/window system
+     ttyv0   "/usr/X11/bin/xterm -display :0"        xterm   on window="/usr/X11/bin/X :0"
+     # the sequence of eight terminals tty00 through tty07
+     tty[00-07]     "/usr/libexec/getty std.9600"  vt100      on
+     # Network pseudo ttys -- don't enable getty
+     ttyp0   none    network
+     ttyp1   none    network off
+     # All sixteen of a pseudo tty sequence
+     ttyq[0x0-0xf]  none                           network
+
+SEE ALSO
+     login(1), getttyent(3), ttyslot(3), gettytab(5), termcap(5), getty(8),
+     launchd(8)
+
+HISTORY
+     A ttys file appeared in Version 6 AT&T UNIX.
+

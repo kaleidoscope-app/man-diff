@@ -1,0 +1,32 @@
+SPRAY(8)                     System Manager's Manual                    SPRAY(8)
+
+NAME
+     spray – send many packets to host
+
+SYNOPSIS
+     spray [-c count] [-d delay] [-l length] host ...
+
+DESCRIPTION
+     Spray sends multiple RPC packets to host and records how many of them were
+     correctly received and how long it took.
+
+     The options are as follows:
+
+     -c count
+             Send count packets.
+
+     -d delay
+             Pause delay microseconds between sending each packet.
+
+     -l length
+             Set the length of the packet that holds the RPC call message to
+             length bytes.  Not all values of length are possible because RPC
+             data is encoded using XDR.  Spray rounds up to the nearest possible
+             value.
+
+     Spray is intended for use in network testing, measurement, and management.
+     This command can be very hard on a network and should be used with caution.
+
+SEE ALSO
+     netstat(1), ifconfig(8), ping(8)
+

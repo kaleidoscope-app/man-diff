@@ -1,0 +1,75 @@
+sharing(8)                   System Manager's Manual                  sharing(8)
+
+NAME
+     sharing – create share points for smb services.
+
+SYNOPSIS
+     sharing [-a <path> [options]] [-e <share point name> [options]]
+             [-r <share point name>] [-l]
+
+DESCRIPTION
+     A list of flags and their descriptions:
+
+     -a <path>
+              Add a new share point for the directory specified by <path>.
+
+     -e <share point name>
+              Edit the share point record specified by <share point name>.
+
+     -r <share point name>
+              Delete the share point record specified by <share point name>.
+
+     -l       List all existing share point records.
+
+     The following options modify share point record attributes:
+
+     -S <smb name>
+              Use customized name <smb name> when using share points with smb.
+
+     -s <flags>
+              Use this option to enable and disable sharing via smb.  By default
+              a share point is enabled for smb protocol.  To enable and disable
+              services, use the following flags as required: 001 (enable sharing
+              for smb).  Specify 000 to turn off sharing of a share point
+              altogether.
+
+     -g <guest flag>
+              Use this option to enable and disable guest access for smb.  By
+              default guest access is enabled for smb.  To enable and disable
+              guest access services, use the following flags as required: 001
+              (enable guest for smb).  Specify 000 to turn off guest access for
+              a share point altogether.
+
+     -n <customized record name>
+              Specify a <customized record name> to be used as the share point
+              record name.  By default the record name is the name of the
+              directory pointed to by the share point record.  This directory is
+              specified by the <path> when the record is created.
+
+     -R <0/1>
+              Make share read only for smb. Specify 1 to enable read only.
+              Specify 0 to disable read only.
+
+     -E <0/1>
+              Make share encrypted for smb v3 and later. Specify 1 to enable
+              encryption. Specify 0 to disable encryption.
+
+     -f <format>
+              Only used when listing share points and only json format is
+              supported.
+
+EXAMPLES
+           /usr/sbin/sharing -a /SomePath/ShareThisDirectory
+
+     This example shows how to create a share point for the directory
+     "/SomePath/ShareThisDirectory":
+
+           /usr/sbin/sharing -e ShareThisDirectory -S SP1 -g 001
+
+     This example shows how to edit the share point record created above, adding
+     a customized name "SP1" for smb services, and enabling guest access for
+     smb.
+
+FILES
+     /usr/sbin/sharing                             location of tool
+

@@ -1,0 +1,81 @@
+term::ansi::code::macros(n)     Terminal control     term::ansi::code::macros(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       term::ansi::code::macros - Macro sequences
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require textutil::repeat
+
+       package require textutil::tabify
+
+       package require term::ansi::code::macros  ?0.1?
+
+       ::term::ansi::code::macros::names
+
+       ::term::ansi::code::macros::import ?ns? ?arg...?
+
+       ::term::ansi::code::macros::menu menu
+
+       ::term::ansi::code::macros::frame string
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides higher level control sequences for more complex
+       shapes.
+
+API
+   INTROSPECTION
+       ::term::ansi::code::macros::names
+              This command is for introspection. It returns as its result a list
+              containing the names of all attribute commands.
+
+       ::term::ansi::code::macros::import ?ns? ?arg...?
+              This command imports some or all attribute commands into the
+              namespace ns. This is by default the namespace macros. Note that
+              this is relative namespace name, placing the imported command into
+              a child of the current namespace. By default all commands are
+              imported, this can howver be restricted by listing the names of
+              the wanted commands after the namespace argument.
+
+   SEQUENCES
+       ::term::ansi::code::macros::menu menu
+              The description of a menu is converted into a formatted
+              rectangular block of text, with the menu command characters
+              highlighted using bold red text.  The result is returned as the
+              result of the command.
+
+              The description, menu, is a dictionary mapping from menu label to
+              command character.
+
+       ::term::ansi::code::macros::frame string
+              The paragraph of text contained in the string is padded with
+              spaces at the right margin, after normalizing internal tabs, and
+              then put into a frame made of box-graphics. The result is returned
+              as the result of the command.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category term of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       ansi, control, frame, menu, terminal
+
+CATEGORY
+       Terminal control
+
+COPYRIGHT
+       Copyright (c) 2006 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

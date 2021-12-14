@@ -1,0 +1,198 @@
+iwidgets::spinner(1)             [incr Widgets]             iwidgets::spinner(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::spinner - Create and manipulate a spinner widget
+
+SYNOPSIS
+       iwidgets::spinner pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Spinner
+
+STANDARD OPTIONS
+
+       background         borderWidth     cursor              exportSelection
+       foreground         highlightColor  highlightThickness  insertBackground
+       insertBorderWidth  insertOffTime   insertOnTime        insertWidth
+       justify            relief          selectBackground    selectBorderWidth
+       selectForeground   textVariable
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       show            state
+
+       See the "entry" manual entry for details on the associated options.
+
+INHERITED OPTIONS
+       childSitePos    command        fixed           focusCommand
+       invalid         textBackground textFont        validate
+       width
+
+       See the "entryfield" widget manual entry for details on the above
+       inherited options.
+
+       disabledForeground             labelBitmap     labelFontlabelImage
+       labelMargin     labelPos       labelText       labelVariable
+       state sticky
+
+       See the "labeledwidget" widget manual entry for details on the above
+       inherited options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           arrowOrient
+       Class:          Orient
+       Command-Line Switch:           -arroworient
+
+              Specifies placement of arrow buttons: horizontal or vertical.  The
+              default is vertical.
+
+       Name:           decrement
+       Class:          Command
+       Command-Line Switch:           -decrement
+
+              Tcl command to be executed when down arrow is pressed.
+
+       Name:           increment
+       Class:          Command
+       Command-Line Switch:           -increment
+
+              Tcl command to be executed when up arrow is pressed.
+
+       Name:           repeatDelay
+       Class:          RepeatDelay
+       Command-Line Switch:           -repeatdelay
+
+              Specifies the initial delay in milliseconds before the spinner
+              repeat action on the arrow buttons engages.  The default is 300
+              milliseconds.
+
+       Name:           repeatInterval
+       Class:          RepeatInterval
+       Command-Line Switch:           -repeatinterval
+
+              Specifies the repeat delay in milliseconds between selections of
+              the arrow buttons.  A repeatinterval of 0 disables button repeat.
+              The default is 100 milliseconds.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::spinner command creates a spinner widget.  The spinner is
+       comprised of an entryfield plus up and down arrow buttons.  Arrows may be
+       drawn horizontally or vertically.
+
+
+
+METHODS
+       The iwidgets::spinner command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for spinner widgets:
+
+ASSOCIATED METHODS
+       delete          get            icursor         index
+       insert          scan           selection       xview
+
+       See the "entry" manual entry for details on the associated methods.
+
+INHERITED METHODS
+       childsite       clear          peek
+
+       See the "entryfield" manual entry for details on the associated methods.
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::spinner command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::spinner command.
+
+       pathName down
+              Derived classes may overload this method to specialize
+              functionality.
+
+       pathName up
+              Derived classes may overload this method to specialize
+              functionality.
+
+
+COMPONENTS
+       Name:           downarrow
+       Class:          Canvas
+
+              The downarrow component is the downward pointing button of the
+              spinner.  See the "canvas" widget manual entry for details on the
+              downarrow component item.
+
+       Name:           uparrow
+       Class:          Canvas
+
+              The uparrow component is the upward pointing button of the
+              spinner.  See the "canvas" widget manual entry for details on the
+              uparrow component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               set months {January February March April May June July \
+                               August September October November December}
+
+               proc blockInput {char} {
+                   return 0
+               }
+
+               proc spinMonth {step} {
+                   global months
+
+                   set index [expr [lsearch $months [.sm get]] + $step]
+
+                   if {$index < 0} {set index 11}
+                   if {$index > 11} {set index 0}
+
+                   .sm delete 0 end
+                   .sm insert 0 [lindex $months $index]
+               }
+
+               iwidgets::spinner .sm -labeltext "Month : " -width 10 -fixed 10 \
+                 -validate blockInput -decrement {spinMonth -1} -increment {spinMonth 1}
+               .sm insert 0 January
+
+               pack .sm -padx 10 -pady 10
+
+
+ACKNOWLEDGEMENTS:
+       Ken Copeland <ken@hilco.com>
+
+              10/18/95 - Added auto-repeat action to spinner arrow buttons.
+
+AUTHOR
+       Sue Yockey
+
+KEYWORDS
+       spinner, widget
+
+
+

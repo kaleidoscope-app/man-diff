@@ -1,0 +1,40 @@
+SNQBMD(8)                    System Manager's Manual                   SNQBMD(8)
+
+
+
+NAME
+       snqbmd - Xsan QBM Client Daemon
+
+SYNOPSIS
+       snqbmd
+
+DESCRIPTION
+       The snqbmd is the server daemon that collects I/O bandwidth statistics
+       and forwards the information to the MDC.  The daemon monitors stornext
+       mount points.  When a mount point is determined to have QoS bandwidth
+       management active on the MDC, this daemon will send updates to the fsm
+       via the <mountpt>/.__snfsqos directory.
+
+       snqbmd logs to /Library/Logs/Xsan/debug/snqbmd.log for debugging
+       purposes.
+
+       The file /Library/Logs/Xsan/debug/snqbmd.verbose can be used to increase
+       logging for snqbmd.  Place a numerical value between 0 and 4 in the file
+       to change the debug verbosity.  The default value is 1.  The snqbmd
+       daemon must be restarted to make the change effective.  This can be done
+       using the cvadmin restartd command.
+
+OPTIONS
+       This process runs in the background and is started at boot time as part
+       of the stornext startup process.
+
+FILES
+       /Library/Preferences/Xsan/*_qbm.conf
+       /Library/Logs/Xsan/debug/snqbmd.log
+       /Library/Logs/Xsan/debug/snqbmd.verbose
+
+SEE ALSO
+       snfs_config(5)
+
+
+

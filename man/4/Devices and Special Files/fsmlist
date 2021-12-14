@@ -1,0 +1,57 @@
+FSMLIST(4)                    Device Drivers Manual                   FSMLIST(4)
+
+
+
+NAME
+       fsmlist - Xsan File System FSM Auto-Start List
+
+SYNOPSIS
+       /Library/Preferences/Xsan/fsmlist
+
+DESCRIPTION
+       The Xsan File System fsmlist file defines for the fsmpm(8) daemon the
+       File System Manager (FSM) daemons to start.  When the file does not
+       exist, the fsmpm will not start any FSM daemons.
+
+SYNTAX
+       The format for the fsmlist is simple.  On each line is the name of one
+       local volume to start, and an optional priority number from zero (0) to
+       nine (9).  The name must not include cluster-naming information.
+
+       The optional priority number is used when there is a redundant metadata
+       controller (MDC).  A priority of zero makes the specified FSM top
+       priority and any number greater than zero means lower priority.  See
+       cvfs_failover(8) for details about setting up a failover-capable file
+       system service.
+
+       The format of an fsmlist line has the following format:
+
+              File_System_Name [priority]
+
+       File_System_Name is the public name of the volume used in the mount(8)
+       command, and as the prefix for the configuration file (see
+       snfs_config(5)).
+
+       The priority field is used to designate a priority when there are
+       redundant fsm daemons for a volume.  Only one may be active at a time and
+       the fsmpm daemon executes failover votes to determine the daemon to
+       activate.  The priority value helps the fsmpm determine, all other things
+       being equal, which service to activate.
+
+       The previous version of fsmlist(4) was documented as requiring a dot (.)
+       character as an argument before the priority argument, for compatibility
+       with even older versions of fsmlist(4).  In reality, it was optional.
+       The first argument will be ignored if it is just the dot (.) character.
+
+       Lines that contain white space only or that contain the comment token as
+       the first non-white space character are ignored.
+
+FILES
+       /Library/Preferences/Xsan/fsmlist
+
+SEE ALSO
+       cvfs(8), cvfs_failover(8), fsm(8), fsmpm(8), fsnameservers(4), mount(8),
+       snfs_config(5)
+
+
+

@@ -1,0 +1,99 @@
+MOUNT_WEBDAV(8)              System Manager's Manual             MOUNT_WEBDAV(8)
+
+NAME
+     mount_webdav – mount a WebDAV filesystem
+
+SYNOPSIS
+     mount_webdav [-s] [-S] [-i] [-v volume_name] [-o options]
+                  [scheme://]host[:port][/path] node
+
+DESCRIPTION
+     The mount_webdav command mounts the WebDAV-enabled server directory at
+     [scheme://]host[:port][/path] at the mount point indicated by node.
+
+     The user and group IDs for all files and directories are set to unknown,
+     and the permissions default to read, write and execute for user, group and
+     other.
+
+     The arguments and options are:
+
+     -s      Require that authentication credentials be sent securely to the
+             server.  Note: If this option is not set, sending authentication
+             credentials insecurely to the server will be allowed but will be
+             logged.
+
+     -S      Suppresses all user interface including the authentication dialogs
+             and the non-responsive ("disconnect") server dialogs. If the server
+             connection becomes non-responsive, the file system is immediately
+             unmounted when this option has been used.
+
+     -i      Interactive mode, you are prompted for the username and password.
+
+     -o      Options passed to mount(2) are specified with the -o option
+             followed by a comma-separated string of options. See the mount(8)
+             man page for possible options and their meanings. If connecting to
+             a Class 1 compliant WebDAV server, the rdonly option will be set
+             even if it was not specified because mount_webdav will not allow
+             files to be opened with write access on servers which do not
+             support the DAV LOCK method.
+
+     -v volume_name
+             Allows the volume_name attribute (ATTR_VOL_NAME) returned by
+             getattrlist(2) to be specified. If the volume_name is not
+             specified, the last path component name of the node path is used as
+             the volume_name.
+
+     [scheme://]host[:port][/path]
+             The WebDAV-enabled server directory (collection resource) to mount
+             as a volume.  The scheme, if specified, must be "http://" or
+             "https://". If the scheme is not specified, then "http://" is used.
+             If the port is not specified, then port 80 is used when the scheme
+             is "http://" or port 443 is used when the scheme is "https://".  If
+             the path is not specified, then the path "/" is used.
+
+     node    Path to mount point. Note: The mount point directory must be
+             created or exist before issuing the mount_webdav command.
+
+EXAMPLES
+     The following example illustrates how to mount the WebDAV-enabled server
+     directory http://idisk.mac.com/membername/ at the mount point
+     /Volumes/mntpnt/.  Note: The mountpoint directory /Volumes/mntpnt/ must be
+     created before issuing the mount_webdav command.
+
+           mount_webdav http://idisk.mac.com/membername/ /Volumes/mntpnt/
+
+DIAGNOSTICS
+     The mount_webdav utility exits 0 on success, and >0 if an error occurs.
+     Here is a list of common results (other error results not listed may be
+     returned):
+
+     0                  mount_webdav successfully mounted the server directory.
+
+     [ENOENT]           The server directory could not be mounted by
+                        mount_webdav because the node path is invalid.
+
+     [ENODEV]           The server directory could not be mounted by
+                        mount_webdav because it is not WebDAV-enabled or because
+                        it does not exist, or because node does not have proper
+                        access.
+
+     [ECANCELED]        The server directory could not be mounted by
+                        mount_webdav because the user did not provide proper
+                        authentication credentials.
+
+COMPATIBILITY
+     As noted above, the -afd option is considered deprecated in Mac OS X 10.4
+     and may not be supported in future releases. Use the
+     FSMountServerVolumeSync() and FSMountServerVolumeAsync() APIs in
+     CarbonCore/Files.h instead.
+
+SEE ALSO
+     mount(2), unmount(2), mount(8) getattrlist(2)
+
+HISTORY
+     The mount_webdav command first appeared Mac OS X Version 10.0. Support for
+     HTTP Digest Access authentication was added in Mac OS X Version 10.1.1.
+     Support for the https URL scheme, and for additional authentication methods
+     and proxies supported by the CFNetwork framework were added in Mac OS X
+     Version 10.4.
+

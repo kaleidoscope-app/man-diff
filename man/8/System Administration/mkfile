@@ -1,0 +1,34 @@
+MKFILE(8)                    System Manager's Manual                   MKFILE(8)
+
+
+
+NAME
+       mkfile - create a file
+
+SYNOPSIS
+       mkfile [ -nv ] size[b|k|m|g] filename ...
+
+DESCRIPTION
+       mkfile creates one or more files that are suitable for use as NFS-mounted
+       swap areas.  The sticky bit is set, and the file is padded with zeroes by
+       default.  Non-root users must set the sticky bit using chmod(1).  The
+       default size unit is bytes, but the following suffixes may be used to
+       multiply by the given factor: b (512), k (1024), m (1048576), and g
+       (1073741824).
+
+OPTIONS
+       -n     Create an empty filename.  The size is noted, but disk blocks
+              aren't allocated until data is written to them.
+
+       -v     Verbose.  Report the names and sizes of created files.
+
+WARNING
+       If a client's swap file is removed and recreated, it must be re-exported
+       before the client will be able to access it.  This action may only be
+       done when the client is not running.
+
+SEE ALSO
+       chmod(2), stat(2), sticky(7)
+
+
+

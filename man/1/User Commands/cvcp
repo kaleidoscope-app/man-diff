@@ -1,0 +1,195 @@
+CVCP(1)                      General Commands Manual                     CVCP(1)
+
+
+
+NAME
+       cvcp - Xsan Copy Utility
+
+SYNOPSIS
+       cvcp [options] Source Destination
+
+DESCRIPTION
+       cvcp provides a high speed, multi-threaded copy mechanism for copying
+       directories onto and off of an Xsan volume. The utility uses IO
+       strategies and multi-threading techniques that exploit the Xsan IO model.
+
+       cvcp can work in many modes;
+
+       Directory-to-directory copies of regular files.
+       Directory copy of regular files to a Vtape virtual sub-directory.
+       Single File-to-File copy.
+
+       In terms of functionality for regular files, cvcp is much like the tar(1)
+       utility. However, when copying a directory to a Vtape virtual directory,
+       cvcp can rename and renumber the source images as they are being
+       transferred. The files in the Source directory must have a decipherable
+       numeric sequence embedded in their names.
+
+       The cvcp utility was written to provide high performance data movement,
+       therefore, unlike utilities such as rsync, it does not write data to
+       temporary files or manipulate the target files' modification times to
+       allow recovery of partially-copied files when interrupted.  Because of
+       this, cvcp may leave partially-copied files if interrupted by signals
+       such as SIGINT, SIGTERM, or SIGHUP.  Partially-copied target files will
+       be of the same size as source files; however, the data will be only
+       partially copied into them.
+
+OPTIONS
+       The Source parameter determines whether to copy a single file  or use a
+       directory scan.  Source must be a directory or file name.
+
+       Using cvcp for directory copies is best accomplished by cd'ing to the
+       Source directory and using the dot (.) as the Source. This has been shown
+       to improve performance since fewer paths are searched in the directory
+       tree scan.
+
+       The Destination parameter determines the target file or directory.
+
+USAGE
+       -a     Archive mode. Preserve the original permissions, owner/group,
+              modification times and links. This is the same as options w, x, y
+              and z.
+
+       -A     If specified, will turn off the pre-allocation feature. This
+              feature looks at the size of the source file and then makes an
+              ALLOCSPACE call to the file system. This pre-allocation is a
+              performance advantage as the file will only contain a single
+              extent. It also promotes volume space savings since files that are
+              dynamically expanded do so in a  more coarse manner. Up to 30%
+              savings in physical disk space can be seen using the pre-
+              allocation feature. NOTE: Non-Xsan file systems that do not
+              support pre-allocation will turn pre-allocation off when writing.
+              The default is to have the pre-allocation feature on.
+
+       -b buffers
+              Set the number of IO buffers to buffers. The default is two times
+              the number of copy threads started(see the -t option).
+              Experimenting with other values between 1 and 2 times the number
+              of copy threads may yield performance improvements.
+
+       -B     When specified, this option disables the bulk create optimization.
+              By default, this optimization is used in certain cases to improve
+              performance.  In some circumstances, the use of bulk create can
+              cause cvcp to return errors if the destination file system is
+              StorNext and the FSM process exits ungracefully while a copy is in
+              progress.  The use of the -B option avoids this potentiality at
+              the cost of performance.  The effect on performance will depend on
+              whether bulk create is being disabled for other reasons as well as
+              the size of the files with the impact being more observable when
+              small files are copied.
+
+       -d     Changes directory-to-directory mode to work more like cp -R.
+              Without -d, cvcp copies the files and sub-directories under Source
+              to the Destination directory.  With -d, cvcp first creates a sub-
+              directory called Source in the Destination directory, then copies
+              the files and sub-directories under Source to that new sub-
+              directory.
+
+       -k buffer_size
+              Set the IO buffer size to buffer_size bytes.  The default buffer
+              size is 4MB.
+
+       -l     If set, when in directory to directory mode, follow symbolic links
+              instead of copying the symbolic link.
+
+       -n     If set, do not recurse into any sub-directories.
+
+       -p source_prefix
+              If set, only copy files whose beginning file name characters match
+              source_prefix. The matching test only checks starting at character
+              one.
+
+       -s     The -s option forces allocations to line up on the beginning block
+              modulus of the storage pool. This can help performance in
+              situations where the I/O size perfectly spans the width of the
+              storage pool's disks.
+
+       -t num_threads
+              Set the number of copy threads to num_threads. The default is 4
+              copy threads.  This option may have a significant impact on speed
+              and resource consumption.  The total copy buffer pool size is
+              calculated by multiplying the number of buffers(-b) by the buffer
+              size(-k). Experimenting with the -t option along with the -b and
+              -k options are encouraged.
+
+       -u     Update only. If set, copies only when the source file is newer
+              than the destination file or the destination file does not exist.
+              The file modification time check uses a granularity of one second
+              on Windows and microseconds on other platforms.  This makes it
+              possible for a slightly newer source file to not be copied over an
+              older destination file even though -u is used. -u cannot be used
+              with tar files.
+
+       -v     Be verbose about the files being copied. May be specified twice
+              for extreme verbosity.
+
+       -w     If set, when in file to file mode, copy a symbolic link instead of
+              following the link.
+
+       -x     If set, ignore umask(1) and retain original permissions from the
+              source file. If the super-user, set sticky and setuid/gid bits as
+              well.
+
+       -y     If set, preserve ownership and group information if possible.
+
+       -z     If set, retain original modification times.
+
+EXAMPLES
+       Copy directory abc and its sub-directories to directory /usr/clips/foo.
+       This copy will use the default number of copy threads and buffers. The
+       total buffer pool size will total 32MB (8 buffers @ 4MB each).
+
+       Retain all permissions and ownerships. Show all files being copied.
+
+          rock% cvcp -vxy abc /usr/clips/foo
+
+       Copy the same directory the same way, but only those files that start
+       with mumblypeg.
+
+          rock# cvcp -vxy -p mumblypeg abc /usr/clips/foo
+
+       Copy a single file def to the directory /usr/clips/foo/
+
+          rock# cvcp def /usr/clips/foo
+
+       Copy a file sequence in the current directory prefixed with secta.  Place
+       the files into the Vtape /usr/clips/n8 yuv sub-directory.  Use the
+       verbose option.
+
+          rock% cvcp -v -p secta . /usr/clips/n8/yuv
+
+
+CVCP TUNING
+       cvcp can be tuned to improve performance and resource utilization. By
+       adjusting the -t, -k and -b options cvcp can be optimized for any number
+       of different environments.
+
+       -t num_threads
+              Increasing the number of copy threads will increase the number of
+              concurrent copies. This option is useful when copying large
+              directory structures. Single file copies are not affected by the
+              number of copy threads.
+
+       -b buffers
+              The number of copy buffer should be set to a number between 1 and
+              3 times the number of copy threads. Increasing the number of copy
+              buffers increases the amount of work that is queued up waiting for
+              an available copy thread, but also increases resource consumption.
+
+       -k buffer_size
+              The size of the copy buffer may be tuned to fit the I/O
+              characteristics of a copy. If files smaller than 4MB are being
+              copied performance may be improved by reducing the size of copy
+              buffers to more closely match the source file sizes.
+
+       NOTE: It is important to ensure that the resource consumption of cvcp is
+       tuned to minimize the effects of system memory pressure. On systems with
+       limited available physical memory, performance may be increased by
+       reducing the resource consumption of cvcp.
+
+SEE ALSO
+       cvfs(8)
+
+
+
+

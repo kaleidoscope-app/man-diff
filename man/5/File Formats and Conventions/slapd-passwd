@@ -1,0 +1,47 @@
+SLAPD-PASSWD(5)                File Formats Manual               SLAPD-PASSWD(5)
+
+
+
+NAME
+       slapd-passwd - /etc/passwd backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The PASSWD backend to slapd(8) serves up the user account information
+       listed in the system passwd(5) file.  This backend is provided for
+       demonstration purposes only.  The DN of each entry is
+       "uid=<username>,<suffix>".  Note that non-base searches scan the the
+       entire passwd file, and are best suited for hosts with small passwd
+       files.
+
+CONFIGURATION
+       This slapd.conf option applies to the PASSWD backend database.  That is,
+       it must follow a "database passwd" line and come before any subsequent
+       "backend" or "database" lines.  Other database options are described in
+       the slapd.conf(5) manual page.
+
+       file <filename>
+              Specifies an alternate passwd file to use.  The default is
+              /etc/passwd.
+
+ACCESS CONTROL
+       The passwd backend does not honor any of the access control semantics
+       described in slapd.access(5).  Only read (=r) access to the entry pseudo-
+       attribute and to the other attribute values of the entries returned by
+       the search operation is honored, which is performed by the frontend.
+
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+       /etc/passwd
+              user account information
+
+SEE ALSO
+       slapd.conf(5), slapd(8), passwd(5).
+
+
+

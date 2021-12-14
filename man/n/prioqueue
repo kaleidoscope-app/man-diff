@@ -1,0 +1,125 @@
+struct::prioqueue(n)           Tcl Data Structures          struct::prioqueue(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       struct::prioqueue - Create and manipulate prioqueue objects
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require struct::prioqueue  ?1.4?
+
+       ::struct::prioqueue ?-ascii|-dictionary|-integer|-real? ?prioqueueName?
+
+       prioqueueName option ?arg arg ...?
+
+       prioqueueName clear
+
+       prioqueueName remove item
+
+       prioqueueName destroy
+
+       prioqueueName get ?count?
+
+       prioqueueName peek ?count?
+
+       prioqueueName peekpriority ?count?
+
+       prioqueueName put item prio ?item prio ...?
+
+       prioqueueName size
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package implements a simple priority queue using nested tcl lists.
+
+       The command ::struct::prioqueue creates a new priority queue with default
+       priority key type -integer. This means that keys given to the put
+       subcommand must have this type.
+
+       This also sets the priority ordering. For key types -ascii and
+       -dictionary the data is sorted in ascending order (as with lsort
+       -increasing), thereas for -integer and -real the data is sorted in
+       descending order (as with lsort -decreasing).
+
+       Prioqueue names are unrestricted, but may be recognized as options if no
+       priority type is given.
+
+       ::struct::prioqueue ?-ascii|-dictionary|-integer|-real? ?prioqueueName?
+              The ::struct::prioqueue command creates a new prioqueue object
+              with an associated global Tcl command whose name is prioqueueName.
+              This command may be used to invoke various operations on the
+              prioqueue.  It has the following general form:
+
+       prioqueueName option ?arg arg ...?
+              option and the args determine the exact behavior of the command.
+              The following commands are possible for prioqueue objects:
+
+       prioqueueName clear
+              Remove all items from the prioqueue.
+
+       prioqueueName remove item
+              Remove the selected item from this priority queue.
+
+       prioqueueName destroy
+              Destroy the prioqueue, including its storage space and associated
+              command.
+
+       prioqueueName get ?count?
+              Return the front count items of the prioqueue (but not their
+              priorities) and remove them from the prioqueue.  If count is not
+              specified, it defaults to 1.  If count is 1, the result is a
+              simple string; otherwise, it is a list.  If specified, count must
+              be greater than or equal to 1.  If there are no or too few items
+              in the prioqueue, this command will throw an error.
+
+       prioqueueName peek ?count?
+              Return the front count items of the prioqueue (but not their
+              priorities), without removing them from the prioqueue.  If count
+              is not specified, it defaults to 1.  If count is 1, the result is
+              a simple string; otherwise, it is a list.  If specified, count
+              must be greater than or equal to 1.  If there are no or too few
+              items in the queue, this command will throw an error.
+
+       prioqueueName peekpriority ?count?
+              Return the front count items priority keys, without removing them
+              from the prioqueue.  If count is not specified, it defaults to 1.
+              If count is 1, the result is a simple string; otherwise, it is a
+              list.  If specified, count must be greater than or equal to 1.  If
+              there are no or too few items in the queue, this command will
+              throw an error.
+
+       prioqueueName put item prio ?item prio ...?
+              Put the item or items specified into the prioqueue. prio must be a
+              valid priority key for this type of prioqueue, otherwise an error
+              is thrown and no item is added.  Items are inserted at their
+              priority ranking. Items with equal priority are added in the order
+              they were added.
+
+       prioqueueName size
+              Return the number of items in the prioqueue.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category struct ::
+       prioqueue of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       ordered list, prioqueue, priority queue
+
+CATEGORY
+       Data structures
+
+COPYRIGHT
+       Copyright (c) 2003 Michael Schlenker <mic42@users.sourceforge.net>
+
+
+
+

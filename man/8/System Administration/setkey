@@ -1,0 +1,528 @@
+SETKEY(8)                    System Manager's Manual                   SETKEY(8)
+
+NAME
+     setkey – manually manipulate the IPsec SA/SP database
+
+SYNOPSIS
+     setkey [-knrv] file ...
+     setkey [-knrv] -c
+     setkey [-krv] -f filename
+     setkey [-aklPrv] -D
+     setkey [-Pvp] -F
+     setkey [-H] -x
+     setkey [-?V]
+
+DESCRIPTION
+     setkey adds, updates, dumps, or flushes Security Association Database (SAD)
+     entries as well as Security Policy Database (SPD) entries in the kernel.
+
+     setkey takes a series of operations from standard input (if invoked with
+     -c) or the file named filename (if invoked with -f filename).
+
+     (no flag)
+             Dump the SAD entries or SPD entries contained in the specified
+             file.
+
+     -?      Print short help.
+
+     -a      setkey usually does not display dead SAD entries with -D.  If -a is
+             also specified, the dead SAD entries will be displayed as well.  A
+             dead SAD entry is one that has expired but remains in the system
+             because it is referenced by some SPD entries.
+
+     -D      Dump the SAD entries.  If -P is also specified, the SPD entries are
+             dumped.  If -p is specified, the ports are displayed.
+
+     -F      Flush the SAD entries.  If -P is also specified, the SPD entries
+             are flushed.
+
+     -H      Add hexadecimal dump in -x mode.
+
+     -h      On NetBSD, synonym for -H.  On other systems, synonym for -?.
+
+     -k      Use semantics used in kernel.  Available only in Linux.  See also
+             -r.
+
+     -l      Loop forever with short output on -D.
+
+     -n      No action.  The program will check validity of the input, but no
+             changes to the SPD will be made.
+
+     -r      Use semantics described in IPsec RFCs.  This mode is default.  For
+             details see section RFC vs Linux kernel semantics.  Available only
+             in Linux.  See also -k.
+
+     -x      Loop forever and dump all the messages transmitted to the PF_KEY
+             socket.  -xx prints the unformatted timestamps.
+
+     -V      Print version string.
+
+     -v      Be verbose.  The program will dump messages exchanged on the PF_KEY
+             socket, including messages sent from other processes to the kernel.
+
+   Configuration syntax
+     With -c or -f on the command line, setkey accepts the following
+     configuration syntax.  Lines starting with hash signs (‘#’) are treated as
+     comment lines.
+
+     add [-46n] src dst protocol spi [extensions] algorithm ... ;
+             Add an SAD entry.  add can fail for multiple reasons, including
+             when the key length does not match the specified algorithm.
+
+     get [-46n] src dst protocol spi ;
+             Show an SAD entry.
+
+     delete [-46n] src dst protocol spi ;
+             Remove an SAD entry.
+
+     deleteall [-46n] src dst protocol ;
+             Remove all SAD entries that match the specification.
+
+     flush [protocol] ;
+             Clear all SAD entries matched by the options.  -F on the command
+             line achieves the same functionality.
+
+     dump [protocol] ;
+             Dumps all SAD entries matched by the options.  -D on the command
+             line achieves the same functionality.
+
+     spdadd [-46n] src_range dst_range upperspec policy ;
+             Add an SPD entry.
+
+     spdadd tagged tag policy ;
+             Add an SPD entry based on a PF tag.  tag must be a string
+             surrounded by double quotes.
+
+     spddelete [-46n] src_range dst_range upperspec -P direction ;
+             Delete an SPD entry.
+
+     spdflush ;
+             Clear all SPD entries.  -FP on the command line achieves the same
+             functionality.
+
+     spddump ;
+             Dumps all SPD entries.  -DP on the command line achieves the same
+             functionality.
+
+     Meta-arguments are as follows:
+
+     src
+     dst     Source/destination of the secure communication is specified as an
+             IPv4/v6 address, and an optional port number between square
+             brackets.  setkey can resolve a FQDN into numeric addresses.  If
+             the FQDN resolves into multiple addresses, setkey will install
+             multiple SAD/SPD entries into the kernel by trying all possible
+             combinations.  -4, -6, and -n restrict the address resolution of
+             FQDN in certain ways.  -4 and -6 restrict results into IPv4/v6
+             addresses only, respectively.  -n avoids FQDN resolution and
+             requires addresses to be numeric addresses.
+
+     protocol
+             protocol is one of following:
+             esp         ESP based on rfc2406
+             esp-old     ESP based on rfc1827
+             ah          AH based on rfc2402
+             ah-old      AH based on rfc1826
+             ipcomp      IPComp
+             tcp         TCP-MD5 based on rfc2385
+
+     spi     Security Parameter Index (SPI) for the SAD and the SPD.  spi must
+             be a decimal number, or a hexadecimal number with a “0x” prefix.
+             SPI values between 0 and 255 are reserved for future use by IANA
+             and cannot be used.  TCP-MD5 associations must use 0x1000 and
+             therefore only have per-host granularity at this time.
+
+     extensions
+             take some of the following:
+             -m mode     Specify a security protocol mode for use.  mode is one
+                         of following: transport, tunnel, or any.  The default
+                         value is any.
+             -r size     Specify window size of bytes for replay prevention.
+                         size must be decimal number in 32-bit word.  If size is
+                         zero or not specified, replay checks don't take place.
+             -u id       Specify the identifier of the policy entry in the SPD.
+                         See policy.
+             -f pad_option
+                         defines the content of the ESP padding.  pad_option is
+                         one of following:
+                         zero-pad    All the paddings are zero.
+                         random-pad  A series of randomized values are used.
+                         seq-pad     A series of sequential increasing numbers
+                                     started from 1 are used.
+             -f nocyclic-seq
+                         Don't allow cyclic sequence numbers.
+             -lh time
+             -ls time    Specify hard/soft life time duration of the SA measured
+                         in seconds.
+             -bh bytes
+             -bs bytes   Specify hard/soft life time duration of the SA measured
+                         in bytes transported.
+
+     algorithm
+             -E ealgo key
+                         Specify an encryption algorithm ealgo for ESP.
+             -E ealgo key -A aalgo key
+                         Specify an encryption algorithm ealgo, as well as a
+                         payload authentication algorithm aalgo, for ESP.
+             -A aalgo key
+                         Specify an authentication algorithm for AH.
+             -C calgo [-R]
+                         Specify a compression algorithm for IPComp.  If -R is
+                         specified, the spi field value will be used as the
+                         IPComp CPI (compression parameter index) on wire as-is.
+                         If -R is not specified, the kernel will use well-known
+                         CPI on wire, and spi field will be used only as an
+                         index for kernel internal usage.
+
+             key must be a double-quoted character string, or a series of
+             hexadecimal digits preceded by “0x”.
+
+             Possible values for ealgo, aalgo, and calgo are specified in the
+             Algorithms sections.
+
+     src_range
+     dst_range
+             These select the communications that should be secured by IPsec.
+             They can be an IPv4/v6 address or an IPv4/v6 address range, and may
+             be accompanied by a TCP/UDP port specification.  This takes the
+             following form:
+
+             address
+             address/prefixlen
+             address[port]
+             address/prefixlen[port]
+
+             prefixlen and port must be decimal numbers.  The square brackets
+             around port are really necessary, they are not man page meta-
+             characters.  For FQDN resolution, the rules applicable to src and
+             dst apply here as well.
+
+     upperspec
+             Upper-layer protocol to be used.  You can use one of the words in
+             /etc/protocols as upperspec, or icmp6, ip4, or any.  any stands for
+             “any protocol”.  You can also use the protocol number.  You can
+             specify a type and/or a code of ICMPv6 when the upper-layer
+             protocol is ICMPv6.  The specification can be placed after icmp6.
+             A type is separated from a code by single comma.  A code must
+             always be specified.  When a zero is specified, the kernel deals
+             with it as a wildcard.  Note that the kernel can not distinguish a
+             wildcard from an ICPMv6 type of zero.  For example, the following
+             means that the policy doesn't require IPsec for any inbound
+             Neighbor Solicitation.
+                   spdadd ::/0 ::/0 icmp6 135,0 -P in none;
+
+             Note: upperspec does not work against forwarding case at this
+             moment, as it requires extra reassembly at the forwarding node (not
+             implemented at this moment).  There are many protocols in
+             /etc/protocols, but all protocols except of TCP, UDP, and ICMP may
+             not be suitable to use with IPsec.  You have to consider carefully
+             what to use.
+
+     policy  policy is in one of the following three formats:
+
+     -P direction [priority specification] discard
+     -P direction [priority specification] none
+     -P direction [priority specification] ipsec
+     protocol/mode/src-dst/level [...]
+
+             You must specify the direction of its policy as
+             direction.
+             Either
+             out,
+             in,
+             or
+             fwd
+             can be used.
+
+             priority specification
+             is used to control the placement of the policy within the SPD.
+             Policy position is determined by
+             a signed integer where higher priorities indicate the policy is placed
+             closer to the beginning of the list and lower priorities indicate the
+             policy is placed closer to the end of the list.
+             Policies with equal priorities are added at the end of groups
+             of such policies.
+
+             Priority can only
+             be specified when setkey has been compiled against kernel headers that
+             support policy priorities (Linux >= 2.6.6).
+             If the kernel does not support priorities, a warning message will
+             be printed the first time a priority specification is used.
+             Policy priority takes one of the following formats:
+
+             {priority,prio} offset
+                      offset
+                      is an integer in the range from -2147483647 to 214783648.
+
+             {priority,prio} base {+,-} offset
+                      base
+                      is either
+                      low (-1073741824),
+                      def (0),
+                      or
+                      high (1073741824)
+
+                      offset
+                      is an unsigned integer.
+                      It can be up to 1073741824 for
+                      positive offsets, and up to 1073741823 for negative offsets.
+
+             discard
+             means the packet matching indexes will be discarded.
+             none
+             means that IPsec operation will not take place onto the packet.
+             ipsec
+             means that IPsec operation will take place onto the packet.
+
+             The
+             protocol/mode/src-dst/level
+             part specifies the rule how to process the packet.
+             Either
+             ah,
+             esp,
+             or
+             ipcomp
+             must be used as
+             protocol.
+             mode
+             is either
+             transport
+             or
+             tunnel.
+             If
+             mode
+             is
+             tunnel,
+             you must specify the end-point addresses of the SA as
+             src
+             and
+             dst
+             with
+             ‘-’
+             between these addresses, which is used to specify the SA to use.
+             If
+             mode
+             is
+             transport,
+             both
+             src
+             and
+             dst
+             can be omitted.
+             level
+             is to be one of the following:
+             default, use, require,
+             or
+             unique.
+             If the SA is not available in every level, the kernel will
+             ask the key exchange daemon to establish a suitable SA.
+             default
+             means the kernel consults the system wide default for the protocol
+             you specified, e.g. the
+             esp_trans_deflev
+             sysctl variable, when the kernel processes the packet.
+             use
+             means that the kernel uses an SA if it's available,
+             otherwise the kernel keeps normal operation.
+             require
+             means SA is required whenever the kernel sends a packet matched
+             with the policy.
+             unique
+             is the same as
+             require;
+             in addition, it allows the policy to match the unique out-bound SA.
+             You just specify the policy level
+             unique,
+             racoon(8)
+             will configure the SA for the policy.
+             If you configure the SA by manual keying for that policy,
+             you can put a decimal number as the policy identifier after
+             unique
+             separated by a colon
+             ‘:’
+             like:
+             unique:number
+             in order to bind this policy to the SA.
+             number
+             must be between 1 and 32767.
+             It corresponds to
+             extensions -u
+             of the manual SA configuration.
+             When you want to use SA bundle, you can define multiple rules.
+             For example, if an IP header was followed by an AH header followed
+             by an ESP header followed by an upper layer protocol header, the
+             rule would be:
+                   esp/transport//require ah/transport//require;
+             The rule order is very important.
+
+             When NAT-T is enabled in the kernel, policy matching for ESP over
+             UDP packets may be done on endpoint addresses and port
+             (this depends on the system.
+             System that do not perform the port check cannot support
+             multiple endpoints behind the same NAT).
+             When using ESP over UDP, you can specify port numbers in the endpoint
+             addresses to get the correct matching.
+             Here is an example:
+
+             spdadd 10.0.11.0/24[any] 10.0.11.33/32[any] any -P out ipsec
+                 esp/tunnel/192.168.0.1[4500]-192.168.1.2[30000]/require ;
+
+             These ports must be left unspecified (which defaults to 0) for
+             anything other than ESP over UDP.
+             They can be displayed in SPD dump using
+             setkey
+             -DPp.
+
+             Note that
+             “discard”
+             and
+             “none”
+             are not in the syntax described in
+             ipsec_set_policy(3).
+             There are a few differences in the syntax.
+             See
+             ipsec_set_policy(3)
+             for detail.
+
+   Algorithms
+     The following list shows the supported algorithms.
+     protocol
+     and
+     algorithm
+     are almost orthogonal.
+     These authentication algorithms can be used as
+     aalgo
+     in
+     -A aalgo
+     of the
+     protocol
+     parameter:
+
+           algorithm       keylen (bits)
+           hmac-md5        128             ah: rfc2403
+                           128             ah-old: rfc2085
+           hmac-sha1       160             ah: rfc2404
+                           160             ah-old: 128bit ICV (no document)
+           keyed-md5       128             ah: 96bit ICV (no document)
+                           128             ah-old: rfc1828
+           keyed-sha1      160             ah: 96bit ICV (no document)
+                           160             ah-old: 128bit ICV (no document)
+           null            0 to 2048       for debugging
+           hmac-sha256     256             ah: 96bit ICV
+                                           (draft-ietf-ipsec-ciph-sha-256-00)
+                           256             ah-old: 128bit ICV (no document)
+           hmac-sha384     384             ah: 96bit ICV (no document)
+                           384             ah-old: 128bit ICV (no document)
+           hmac-sha512     512             ah: 96bit ICV (no document)
+                           512             ah-old: 128bit ICV (no document)
+           hmac-ripemd160  160             ah: 96bit ICV (RFC2857)
+                                           ah-old: 128bit ICV (no document)
+           aes-xcbc-mac    128             ah: 96bit ICV (RFC3566)
+                           128             ah-old: 128bit ICV (no document)
+           tcp-md5         8 to 640        tcp: rfc2385
+
+     These encryption algorithms can be used as
+     ealgo
+     in
+     -E ealgo
+     of the
+     protocol
+     parameter:
+
+           algorithm       keylen (bits)
+           des-cbc         64              esp-old: rfc1829, esp: rfc2405
+           3des-cbc        192             rfc2451
+           null            0 to 2048       rfc2410
+           blowfish-cbc    40 to 448       rfc2451
+           cast128-cbc     40 to 128       rfc2451
+           des-deriv       64              ipsec-ciph-des-derived-01
+           3des-deriv      192             no document
+           rijndael-cbc    128/192/256     rfc3602
+           twofish-cbc     0 to 256        draft-ietf-ipsec-ciph-aes-cbc-01
+           aes-ctr         160/224/288     draft-ietf-ipsec-ciph-aes-ctr-03
+
+     Note that the first 128 bits of a key for
+     aes-ctr
+     will be used as AES key, and the remaining 32 bits will be used as nonce.
+
+     These compression algorithms can be used as
+     calgo
+     in
+     -C calgo
+     of the
+     protocol
+     parameter:
+
+           algorithm
+           deflate         rfc2394
+
+   RFC vs Linux kernel semantics
+     The Linux kernel uses the
+     fwd
+     policy instead of the
+     in
+     policy for packets what are forwarded through that particular box.
+
+     In
+     kernel
+     mode,
+     setkey
+     manages and shows policies and SAs exactly as they are stored in the kernel.
+
+     In
+     RFC
+     mode,
+     setkey
+
+     creates
+     fwd
+     policies for every
+     in
+     policy inserted
+
+     (not implemented yet) filters out all
+     fwd
+     policies
+
+RETURN VALUES
+     The command exits with 0 on success, and non-zero on errors.
+
+EXAMPLES
+     add 3ffe:501:4819::1 3ffe:501:481d::1 esp 123457
+             -E des-cbc 0x3ffe05014819ffff ;
+
+     add -6 myhost.example.com yourhost.example.com ah 123456
+             -A hmac-sha1 "AH SA configuration!" ;
+
+     add 10.0.11.41 10.0.11.33 esp 0x10001
+             -E des-cbc 0x3ffe05014819ffff
+             -A hmac-md5 "authentication!!" ;
+
+     get 3ffe:501:4819::1 3ffe:501:481d::1 ah 123456 ;
+
+     flush ;
+
+     dump esp ;
+
+     spdadd 10.0.11.41/32[21] 10.0.11.33/32[any] any
+             -P out ipsec esp/tunnel/192.168.0.1-192.168.1.2/require ;
+
+     add 10.1.10.34 10.1.10.36 tcp 0x1000 -A tcp-md5 "TCP-MD5 BGP secret" ;
+
+SEE ALSO
+     ipsec_set_policy(3), racoon(8), sysctl(8)
+
+     Changed manual key configuration for IPsec, October 1999,
+     http://www.kame.net/newsletter/19991007/.
+
+HISTORY
+     The setkey command first appeared in the WIDE Hydrangea IPv6 protocol stack
+     kit.  The command was completely re-designed in June 1998.
+
+BUGS
+     setkey should report and handle syntax errors better.
+
+     For IPsec gateway configuration, src_range and dst_range with TCP/UDP port
+     numbers does not work, as the gateway does not reassemble packets (it
+     cannot inspect upper-layer headers).
+

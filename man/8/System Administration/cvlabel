@@ -1,0 +1,338 @@
+CVLABEL(8)                   System Manager's Manual                  CVLABEL(8)
+
+
+
+NAME
+       cvlabel - Label Xsan Disk Devices (LUNs)
+
+SYNOPSIS
+       cvlabel -l [-agsv] [-F filter]
+
+       cvlabel -L [-agv] [-F filter]
+
+       cvlabel -j [-av] [-F filter]
+
+       cvlabel -c [-T] [-F filter]
+
+       cvlabel -C_format [-F filter]
+
+       cvlabel -x
+
+       cvlabel [-frRvw] [-q tag_q_depth] label_list
+
+       cvlabel [-fw] -u_VolumeName
+
+       cvlabel [-fw] -U_DeviceName
+
+       cvlabel -D_VolumeName
+
+DESCRIPTION
+       cvlabel is used when configuring the Xsan File System disks. One host
+       that has visibility to all the storage area network disk devices must
+       create a list of disk labels, their associated device names and
+       optionally the sectors to use. The mount_acfs(8) process uses the volume
+       labels to determine which disk drive is to be used for Xsan storage pool
+       nodes. The label name that is written to a disk device must match the
+       [Disk ...] name in the File System Manager (FSM) configuration. See
+       snfs_config(5) for details of the FSM configuration file.
+
+       It is recommended to first use cvlabel with the -l or -L option. This
+       option will present all of the usable disk devices found on the system.
+       It will try to identify the volume label and display the results. This
+       will help determine what disk drives are visible to the client.
+
+       The next step is to create the label_list file.  Use
+       /System/Library/Filesystems/acfs.fs/Contents/examples/cvlabels.example as
+       a template for your file.  Or, use cvlabel with the -c option, in which
+       case cvlabel will write on stdout the list of all devices found in a
+       format compatible with a label_list file.
+
+       Once a label_list file has been generated it must be edited to match the
+       desired Xsan label updates. All LUNs included in the label_list file that
+       are not allocated to the Xsan File System should be removed from the
+       label_list file to prevent accidental overwriting of existing data. Once
+       all updates to the label_list are complete cvlabel should be run using
+       this file to apply label changes to the indicated LUNs.
+
+       A final option for creating a label file is to use the -C option with a
+       format string.  This behaves the same as the -c option, except the format
+       string is used to build template labels.  The format string uses a printf
+       like syntax where % followed by a letter is replaced by information
+       obtained from the storage.  The available format strings are %B size in
+       sectors, %L lun number, %C controller id and %S serial number.  Care
+       should be taken to use a format which generates unique names for devices
+       before using the output to label them.
+
+       Certain RAID devices require special handling.  Cvlabel uses the raid
+       strings inquiry table to determine which devices require special
+       handling.  The default table (displayed with the -R option), can be
+       overridden by a user supplied file
+       /Library/Preferences/Xsan/raid-strings.  Note: the -R option is not
+       intended for general use and may be deprecated in the future.  Only use
+       when recommended by Apple Support.
+
+OPTIONS
+       -l, -L Use the -l option (short format) or the -L option (long format) to
+              list usable disk devices on the system.
+
+       -j     Use the -j option (JSON format) to list usable disk devices on the
+              system in a machine and human readable format.
+
+       -u VolumeName
+              Use the -u VolumeName option to unlabel the specified volume.
+
+       -U DeviceName
+              The -U DeviceName option is similar to the -u option, except that
+              the path to the device special file is used instead of the label
+              name.
+
+       -s     When used in conjunction with the -l option, the -s option prints
+              the disk device serial #, which can be used to distinguish the
+              difference between duplicate labels and multiple paths.
+
+       -g     When used in conjunction with the -l or -L options, the -g option
+              also prints GUID information for EFI-labeled disks.  The GUID
+              includes a timestamp and the MAC address of the node that created
+              the label.
+
+       -a     When used in conjunction with the -l or -L options, the -a option
+              also prints unusable disk devices, along with a description of why
+              they are unusable. This is usually due to a lack of OS support for
+              large LUNs or an unsupported disk label format.
+
+       -F filter
+              When used in conjunction with the -c, -C, -l or -L options, the
+              -F filter option will only list devices whose inquiry string
+              contains the filter string.
+
+       -v     The -v option prints more information about the labeling process.
+              Multiple -v options accumulate, providing more information often
+              used for debugging the label process.
+
+       -q     The -q option can be used during labeling to set the Command Tag
+              Queue Depth.  By default, the Depth is set to 16.
+
+       -f     The -f option forces labeling and you will not be asked for
+              confirmation before labeling (or unlabeling) a disk device.
+              WARNING: errors in the Xsan label_list file can cause data loss.
+
+       -c     The -c option outputs a cvlabel format template file to stdout.
+              This template file will reflect all disk devices visible to the
+              local system.  Use this template to build a cvlabel file. WARNING:
+              Be sure to edit the template file to remove all devices which you
+              do not want labeled.
+
+       -T     The -T option can be used in conjunction with the -c option to
+              facilitate conversion of labels from the old VTOC format to the
+              new EFI format.  The output will be similar to the ordinary -c
+              output, but devices that do not need conversion or cannot be
+              safely converted will be output as comment lines, along with
+              explanatory text.  Only convertible devices are output normally.
+
+       -D VolumeName
+              The -D VolumeName option can be used to dump the label for
+              VolumeName in ascii to stdout.  Examining this output is useful
+              when debugging labels.
+
+       -r     The -r option can be used to force a disk to be relabeled, even if
+              there are no changes to the label information. Normally such disks
+              are skipped.
+
+       -R     The -R option can be used to display the default raid strings
+              inquiry table.  Note that EFI labels are not supported on IRIX
+              systems for older releases of the Xsan File System.
+
+       -i     The -i option is no longer supported.  Labels should be in EFI
+              format.
+
+       -w     The -w option tells cvlabel to wait for the completion of the disk
+              scan that is requested after a disk label has been written or a
+              volume has been unlabeled.  The disk scan requests that the file
+              system server update its internal device tables and the -w option
+              ensures that the operation has been completed.  Note that a disk
+              scan may take a number of seconds on a large SAN or a SAN that is
+              experiencing device errors.
+
+          *WARNING* Use this program with extreme caution! Modifying a system
+          disk's volume label may result in irreparable harm to your system. It
+          may render the system inoperable and force you to repair the volume
+          using the boot maintenance program. Only label disk devices which you
+          are sure are to be used for the Xsan File System's storage area
+          network.
+
+FILE FORMAT
+       You may use the
+       /System/Library/Filesystems/acfs.fs/Contents/examples/cvlabels.example
+       file as a template.
+
+       A label entry consists of two or three parameters on a single line. White
+       space and comment lines are allowed. Comment lines are designated by
+       using a pound sign (#) as the first non-white space character of the
+       line.
+
+       The label_list file format is as follows:
+
+          <Xsan_label_name> <operating_system_device_name> [<sectors> [<type>]]
+
+       Where:
+
+       <Xsan_label_name>
+
+          The <Xsan_label_name> parameter is the name of the disk as described
+          in the FSM configuration file. The parameter must match a [Disk
+          <Xsan_label_name>] entry.
+
+       <operating_system_device_name>
+
+          The <operating_system_device_name> is the device name of the complete
+          disk device.
+
+          NOTE: operating system device names may change after reboots and will
+          differ per system. Always configure Xsan label files, and label
+          devices in the same session.
+
+          On Windows systems, the devices start as PhysicalDrive0 and increment
+          up to the number of drives configured.
+
+       <sectors>
+
+          The <sectors> parameter is the number in 512-byte sectors that matches
+          the [DiskType ...] configuration in the FSM configuration file. This
+          is required for disks that must be configured smaller than their
+          actual size. For example, MPIRE video disks must be under-configured
+          to eliminate using the last zone of the disk. If <sectors> is not
+          specified or is specified as -, then the cvlabel(8) program will use
+          the entire available volume.
+
+        <type>
+        .sp
+        .in +0.3i
+        The <type> parameter is used to override the default label type,
+        or to change the label type for a disk that already has a label.
+        The value must be EFI for changing a VTOC label to an
+        EFI label.
+
+EXAMPLES
+       List all the disk devices in a system.
+
+          rock # cvlabel -L
+          /dev/sda   [ATA     ST500NM0011     PA08] MBR  Controller 'default', Serial '5000C5004FDC5C85', Sector Size 512, Sectors Max 976754703 (500.1GB)
+          /dev/mapper/mpathai [Quantum StorNext QX     H205] SNFS-EFI "dexter1d1"  Controller '208000C0FF193C0F', Serial '600C0FF00014658335219B5801000000', Sector Size 512, Sectors 39030873055 (20.0TB), Stripebreadth 0
+          [...]
+          /dev/mapper/mpathap [DotHill DH4730          H205] unknown  Controller '208000C0FF155519', Serial '600C0FF00019B6162739A65801000000', Sector Size 512, Sectors 18554669023 (9.5TB)
+          [...]
+          /dev/mapper/mpathan [Quantum QXS             G22x] SNFS-EFI "snfs_data_bh-5600-1_L5"  Controller '208000C0FF25E3DB', Serial '600C0FF0001BE2E0C9D94E5701000000', Sector Size 512, Sectors 140511467487 (71.9TB), Stripebreadth 3145728
+
+       Then create a template label file:
+
+          rock # cvlabel -c >label_list
+
+       The output file will include an entry for the 'unknown' disk:
+
+          CvfsDisk_UNKNOWN /dev/mapper/mpathao # host 0 lun 3 sectors 18554669023 sector_size 512 inquiry [DotHill DH4730          H205] serial 600C0FF00019B6165E39A65801000000
+
+       Edit the label_list file, changing CvfsDisk_UNKNOWN to the desired label
+       name:
+
+          CvfsDisk_39 /dev/mapper/mpathao
+
+       Now label the disk devices. Your label_list file must be specified on the
+       command line.
+
+          rock # cvlabel label_list
+
+          *WARNING* This program will over-write volume labels on the
+                    devices specified in the file label_list.
+
+                    After execution, the devices will only be usable by the
+                    Xsan File System. You will have to re-partition the
+                    devices to use them on a different file system.
+
+
+          Do you want to proceed? (Y / N) -> y
+
+          /dev/mapper/mpathap [DotHill DH4730          H205] unknown  Controller '208000C0FF155519', Serial '600C0FF00019B6162739A65801000000', Sector Size 512, Sectors 18554669023 (9.5TB)
+          Do you want to label it SNFS-EFI - Name: CvfsDisk_39 Sectors: 18554669023 (Y / N) -> y
+          New Volume Label -Device: /dev/mapper/mpathap  SNFS Label: CvfsDisk_39  Sectors: 18554669023.
+
+          Done.  1 source lines.  1 labels.
+
+       The labels are done. List the disk devices again.
+
+          rock # cvlabel -L
+          /dev/sda   [ATA     ST500NM0011     PA08] MBR  Controller 'default', Serial '5000C5004FDC5C85', Sector Size 512, Sectors Max 976754703 (500.1GB)
+          /dev/mapper/mpathai [Quantum StorNext QX     H205] SNFS-EFI "dexter1d1"  Controller '208000C0FF193C0F', Serial '600C0FF00014658335219B5801000000', Sector Size 512, Sectors 39030873055 (20.0TB), Stripebreadth 0
+          [...]
+          /dev/mapper/mpathap [DotHill DH4730          H205] SNFS-EFI "CvfsDisk_39"  Controller '208000C0FF155519', Serial '600C0FF00019B6162739A65801000000', Sector Size 512, Sectors 18554669023 (9.5TB)
+          [...]
+          /dev/mapper/mpathan [Quantum QXS             G22x] SNFS-EFI "snfs_data_bh-5600-1_L5"  Controller '208000C0FF25E3DB', Serial '600C0FF0001BE2E0C9D94E5701000000', Sector Size 512, Sectors 140511467487 (71.9TB), Stripebreadth 3145728
+
+       Generate a label file of all LSI storage which uses the controller serial
+       number and lun numbers as components of the labels.
+
+          rock # cvlabel -C CVFS_%S_%L -F LSI > label_list
+
+       Display to stdout the default raid strings inquiry table.
+
+          rock # cvlabel -R
+          # Raid inquiry string table
+          # Controls interpretation of raid mode pages based on inquiry strings
+          #
+          # Allowed types:
+          # LSI           LSI (Engenio) Raid in AVT mode
+          # Clariion      Clariion (EMC) Raid in Auto trespass mode
+          # Seagate       Dual port Seagate JBODs
+          # JBOD          No special handling (Real JBOD or RDAC driver)
+          # Quantum StorNext QX
+          # Quantum QXS
+
+          # String 1       String 2             Raid Type
+
+            "DGC"         ""                    Clariion
+            "ENGENIO"     ""                    LSI
+            "IBM"         "1722-600"            LSI
+            "IBM"         "1742-900"            LSI
+            "IBM"         "1814"                LSI
+            "IBM"         "Universal Xport"     LSI
+            "LSI"         "VirtualDisk"         JBOD
+            "LSI"         "MegaRAID"            JBOD
+            "LSI"         "ProFibre"            JBOD
+            "LSI"         "Universal Xport"     LSI
+            "NETAPP"      "Universal Xport"     LSI
+            "ENGENIO"     "Universal Xport"     LSI
+            "LSI"         ""                    LSI
+            "SGI"         "TP9300"              LSI
+            "SGI"         "TP9400"              LSI
+            "SGI"         "TP9500"              LSI
+            "SGI"         "TP9700"              LSI
+            "SGI"         "IS600"               LSI
+            "SGI"         "IS500"               LSI
+            "SGI"         "IS400"               LSI
+            "SGI"         "IS300"               LSI
+            "STK"         "FLEXLINE"            LSI
+            "STK"         "OPENstorage"         LSI
+            "STK"         "Universal Xport"     LSI
+            "STK"         "BladeCtlr"           LSI
+            "Quantum StorNext QX"    ""         QX
+            "Quantum QXS"    ""                 QX
+            "SEAGATE"     ""                    Seagate
+
+       Use the default raid strings inquiry table to seed a user-defined table.
+
+          rock # cvlabel -R > /Library/Preferences/Xsan/raid-strings
+
+NOTES
+       Some operating systems require a reboot after a disk is labeled or
+       relabeled. It is recommended that Xsan nodes are rebooted after new
+       labels are written or existing labels are updated.
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/examples/cvlabels.example
+       /System/Library/Filesystems/acfs.fs/Contents/examples/example.cfgx
+       /Library/Preferences/Xsan/raid-strings
+
+SEE ALSO
+       cvfs(8), snfs_config(5), mount_acfs(8)
+
+
+

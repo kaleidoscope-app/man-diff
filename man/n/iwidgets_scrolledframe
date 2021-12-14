@@ -1,0 +1,186 @@
+iwidgets::scrolledframe(1)       [incr Widgets]       iwidgets::scrolledframe(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::scrolledframe - Create and manipulate scrolled frame widgets
+
+SYNOPSIS
+       iwidgets::scrolledframe pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Scrolledwidget <-
+       iwidgets::Scrolledframe
+
+STANDARD OPTIONS
+
+       activeBackground  background        borderWidth        cursor
+       font              foreground        highlightColor     highlightThickness
+       relief            selectBackground  selectBorderWidth  selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" manual entry for details on the associated options.
+
+INHERITED OPTIONS
+       LabelBitmap     labelFont      labelImage      labelMargin
+       labelPos        labelText      labelVariable   sticky
+
+       See the "labeledwidget" class manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           height
+       Class:          Height
+       Command-Line Switch:           -height
+
+              Specifies the height of the scrolled frame widget in any of the
+              forms acceptable to Tk_GetPixels.  The default height is 100
+              pixels.
+
+       Name:           hscrollMode
+       Class:          ScrollMode
+       Command-Line Switch:           -hscrollmode
+
+              Specifies the the display mode to be used for the horizontal
+              scrollbar: static, dynamic, or none.  In static mode, the scroll
+              bar is displayed at all times.  Dynamic mode displays the scroll
+              bar as required, and none disables the scroll bar display.  The
+              default is static.
+
+       Name:           sbWidth
+       Class:          Width
+       Command-Line Switch:           -sbwidth
+
+              Specifies the width of the scrollbar in any of the forms
+              acceptable to Tk_GetPixels.  The default width is 15 pixels.
+
+       Name:           scrollMargin
+       Class:          Margin
+       Command-Line Switch:           -scrollmargin
+
+              Specifies the distance between the frame and scrollbar in any of
+              the forms acceptable to Tk_GetPixels.  The default is 3 pixels.
+
+       Name:           vscrollMode
+       Class:          ScrollMode
+       Command-Line Switch:           -vscrollmode
+
+              Specifies the the display mode to be used for the vertical
+              scrollbar: static, dynamic, or none.  In static mode, the scroll
+              bar is displayed at all times.  Dynamic mode displays the scroll
+              bar as required, and none disables the scroll bar display.  The
+              default is static.
+
+       Name:           width
+       Class:          Width
+       Command-Line Switch:           -width
+
+              Specifies the width of the scrolled frame widget in any of the
+              forms acceptable to Tk_GetPixels.  The default height is 100
+              pixels.
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The scrolledframe combines the functionallity of scrolling with that of a
+       typical frame widget to implement a clipable viewing area whose visible
+       region may be modified with the scroll bars. This enables the contruction
+       of visually larger areas than which could normally be displayed,
+       containing a heterogenous mix of other widgets. Options exist which allow
+       full control over which scrollbars are displayed and the method, i.e.
+       statically or dynamically. The frame itself may be accessed by the
+       childsite method and then filled with other widget combinations.
+
+
+METHODS
+       The iwidgets::scrolledframe command creates a new Tcl command whose name
+       is pathName.  This command may be used to invoke various operations on
+       the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for scrolledframe widgets:
+
+ASSOCIATED METHODS
+       xview           yview
+
+       See the "canvas" manual entry for details on the associated methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::scrolledframe command.
+
+       pathName childsite
+              Return the path name of the child site.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::scrolledframe command.
+
+       pathName justify direction
+              Justifies the frame contents via the scroll bars in one of four
+              directions: left, right, top, or bottom.
+
+
+COMPONENTS
+       Name:           horizsb
+       Class:          Scrollbar
+
+              The horizsb component is the horizontal scroll bar.  See the
+              "ScrollBar" widget manual entry for details on the horizsb
+              component item.
+
+       Name:           vertsb
+       Class:          Scrollbar
+
+              The vertsb component is the vertical scroll bar.  See the
+              "ScrollBar" widget manual entry for details on the vertsb
+              component item.
+
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              iwidgets::scrolledframe .sf -width 150 -height 180 \
+                -labelon yes -labeltext scrolledframe
+
+              set cs [.sf childsite]
+              pack [button $cs.b1 -text Hello] -pady 10
+              pack [button $cs.b2 -text World] -pady 10
+              pack [button $cs.b3 -text "This is a test"] -pady 10
+              pack [button $cs.b4 -text "This is a really big button"] -pady 10
+              pack [button $cs.b5 -text "This is another really big button"] -pady 10
+              pack [button $cs.b6 -text "This is the last really big button"] -pady 10
+
+              pack .sf -expand yes -fill both -padx 10 -pady 10
+
+
+AUTHOR
+       Mark L. Ulferts
+
+       Sue Yockey
+
+KEYWORDS
+       scrolledframe, frame, widget
+
+
+

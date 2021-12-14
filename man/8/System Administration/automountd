@@ -1,0 +1,49 @@
+AUTOMOUNTD(8)                System Manager's Manual               AUTOMOUNTD(8)
+
+NAME
+     automountd – automatic mount / unmount daemon for autofs
+
+SYNOPSIS
+     /usr/libexec/automountd [-v] [-n] [-T] [-o opts] [-D name=value]
+
+DESCRIPTION
+     automountd is a daemon that responds to requests from autofs to mount and
+     unmount network filesystems, and to supply the contents of directories,
+     based on the contents of automounter maps. The automountd is started on
+     demand by launchd(8).  As the daemon is launched by launchd, the options
+     below would be specified in the ProgramArguments key in the launchd plist
+     for automountd.  See FILES below.
+
+OPTIONS
+     -v      Log to syslogd(8) more detailed information about actions taken by
+             automountd.
+
+     -n      Disable browsing of all maps.
+
+     -T      Increase by 1 the logging level for messages printed to the
+             standard output information about requests received from autofs,
+             processing done for those requests, and replies sent to autofs.
+             The default level of 0 causes no information to be logged; each
+             higher value causes more information to be logged.
+
+     -o opts
+             Apply the options specified by opts to all mounts by default.  The
+             options for a particular mount can override these options.
+
+     -D name=value
+             Set the environment value specified by name to the specified value.
+             Environment variables can be referred to in map entries; the value
+             of the environment variable is substituted for the reference to the
+             variable.
+
+FILES
+     /etc/autofs.conf
+             configuration file used to manage automountd
+
+     /System/Library/LaunchDaemons/com.apple.automountd.plist
+             launchd plist
+
+SEE ALSO
+     auto_master(5), autofsd(8), automount(8), autofs.conf(5), mount(8),
+     mount_nfs(8), launchd(8), launchd.plist(5)
+

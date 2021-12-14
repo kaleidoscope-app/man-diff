@@ -1,0 +1,346 @@
+tsv(n)                                                                    tsv(n)
+
+
+
+
+________________________________________________________________________________
+
+NAME
+       tsv - Part of the Tcl threading extension allowing script level
+       manipulation of data shared between threads.
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require Thread  ?2.6?
+
+       tsv::names ?pattern?
+
+       tsv::object varname element
+
+       tsv::set varname element ?value?
+
+       tsv::get varname element ?namedvar?
+
+       tsv::unset varname ?element?
+
+       tsv::exists varname element
+
+       tsv::pop varname element
+
+       tsv::move varname oldname newname
+
+       tsv::incr varname element ?count?
+
+       tsv::append varname element value ?value ...?
+
+       tsv::lock varname arg ?arg ...?
+
+       tsv::lappend varname element value ?value ...?
+
+       tsv::linsert varname element index value ?value ...?
+
+       tsv::lreplace varname element first last ?value ...?
+
+       tsv::llength varname element
+
+       tsv::lindex varname element ?index?
+
+       tsv::lrange varname element from to
+
+       tsv::lsearch varname element ?options? pattern
+
+       tsv::lset varname element index ?index ...? value
+
+       tsv::lpop varname element ?index?
+
+       tsv::lpush varname element ?index?
+
+       tsv::array set varname list
+
+       tsv::array get varname ?pattern?
+
+       tsv::array names varname ?pattern?
+
+       tsv::array size varname
+
+       tsv::array reset varname list
+
+       tsv::array bind varname handle
+
+       tsv::array unbind varname
+
+       tsv::array isbound varname
+
+       tsv::keyldel varname keylist key
+
+       tsv::keylget varname keylist key ?retvar?
+
+       tsv::keylkeys varname keylist ?key?
+
+       tsv::keylset varname keylist key value ?key value..?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This section describes commands implementing thread shared variables.  A
+       thread shared variable is very similar to a Tcl array but in contrast to
+       a Tcl array it is created in shared memory and can be accessed from many
+       threads at the same time. Important feature of thread shared variable is
+       that each access to the variable is internaly protected by a mutex so
+       script programmer does not have to take care about locking the variable
+       himself.
+
+       Thread shared variables are not bound to any thread explicitly. That
+       means that when a thread which created any of thread shared variables
+       exits, the variable and associated memory is not unset/reclaimed.  User
+       has to explicitly unset the variable to reclaim the memory consumed by
+       the variable.
+
+ELEMENT COMMANDS
+       tsv::names ?pattern?
+              Returns names of shared variables matching optional ?pattern?  or
+              all known variables if pattern is ommited.
+
+       tsv::object varname element
+              Creates object accessor command for the element in the shared
+              variable varname. Using this command, one can apply most of the
+              other shared variable commands as method functions of the element
+              object command. The object command is automatically deleted when
+              the element which this command is pointing to is unset.
+                  % tsv::set foo bar "A shared string"
+                  % set string [tsv::object foo bar]
+                  % $string append " appended"
+                  => A shared string appended
+
+       tsv::set varname element ?value?
+              Sets the value of the element in the shared variable varname to
+              value and returns the value to caller. The value may be ommited,
+              in which case the command will return the current value of the
+              element. If the element cannot be found, error is triggered.
+
+       tsv::get varname element ?namedvar?
+              Retrieves the value of the element from the shared variable
+              varname.  If the optional argument namedvar is given, the value is
+              stored in the named variable. Return value of the command depends
+              of the existence of the optional argument namedvar.  If the
+              argument is ommited and the requested element cannot be found in
+              the shared array, the command triggers error. If, however, the
+              optional argument is given on the command line, the command
+              returns true (1) if the element is found or false (0) if the
+              element is not found.
+
+       tsv::unset varname ?element?
+              Unsets the element from the shared variable varname.  If the
+              optional element is not given, it deletes the variable.
+
+       tsv::exists varname element
+              Checks wether the element exists in the shared variable varname
+              and returns true (1) if it does or false (0) if it doesn't.
+
+       tsv::pop varname element
+              Returns value of the element in the shared variable varname and
+              unsets the element, all in one atomic operation.
+
+       tsv::move varname oldname newname
+              Renames the element oldname to the newname in the shared variable
+              varname. This effectively performs an get/unset/set sequence of
+              operations but all in one atomic step.
+
+       tsv::incr varname element ?count?
+              Similar to standard Tcl incr command but increments the value of
+              the element in shared variaboe varname instead of the Tcl
+              variable.
+
+       tsv::append varname element value ?value ...?
+              Similar to standard Tcl append command but appends one or more
+              values to the element in shared variable varname instead of the
+              Tcl variable.
+
+       tsv::lock varname arg ?arg ...?
+              This command concatenates passed arguments and evaluates the
+              resulting script under the internal mutex protection. During the
+              script evaluation, the entire shared variable is locked. For
+              shared variable commands within the script, internal locking is
+              disabled so no deadlock can occur. It is also allowed to unset the
+              shared variable from within the script. The shared variable is
+              automatically created if it did not exists at the time of the
+              first lock operation.
+                  % tsv::lock foo {
+                      tsv::lappend foo bar 1
+                      tsv::lappend foo bar 2
+                      puts stderr [tsv::set foo bar]
+                      tsv::unset foo
+                  }
+
+LIST COMMANDS
+       Those command are similar to the equivalently named Tcl command. The
+       difference is that they operate on elements of shared arrays.
+
+       tsv::lappend varname element value ?value ...?
+              Similar to standard Tcl lappend command but appends one or more
+              values to the element in shared variable varname instead of the
+              Tcl variable.
+
+       tsv::linsert varname element index value ?value ...?
+              Similar to standard Tcl linsert command but inserts one or more
+              values at the index list position in the element in the shared
+              variable varname instead of the Tcl variable.
+
+       tsv::lreplace varname element first last ?value ...?
+              Similar to standard Tcl lreplace command but replaces one or more
+              values between the first and last position in the element of the
+              shared variable varname instead of the Tcl variable.
+
+       tsv::llength varname element
+              Similar to standard Tcl llength command but returns length of the
+              element in the shared variable varname instead of the Tcl
+              variable.
+
+       tsv::lindex varname element ?index?
+              Similar to standard Tcl lindex command but returns the value at
+              the index list position of the element from the shared variable
+              varname instead of the Tcl variable.
+
+       tsv::lrange varname element from to
+              Similar to standard Tcl lrange command but returns values between
+              from and to list positions from the element in the shared variable
+              varname instead of the Tcl variable.
+
+       tsv::lsearch varname element ?options? pattern
+              Similar to standard Tcl lsearch command but searches the element
+              in the shared variable varname instead of the Tcl variable.
+
+       tsv::lset varname element index ?index ...? value
+              Similar to standard Tcl lset command but sets the element in the
+              shared variable varname instead of the Tcl variable.
+
+       tsv::lpop varname element ?index?
+              Similar to the standard Tcl lindex command but in addition to
+              returning, it also splices the value out of the element from the
+              shared variable varname in one atomic operation.  In contrast to
+              the Tcl lindex command, this command returns no value to the
+              caller.
+
+       tsv::lpush varname element ?index?
+              This command performes the opposite of the tsv::lpop command.  As
+              its counterpart, it returns no value to the caller.
+
+ARRAY COMMANDS
+       This command supports most of the options of the standard Tcl array
+       command. In addition to those, it allows binding a shared variable to
+       some persisten storage databases. Currently the only persistent option
+       supported is the famous GNU Gdbm database. This option has to be selected
+       during the package compilation time. The implementation provides hooks
+       for defining other persistency layers, if needed.
+
+       tsv::array set varname list
+              Does the same as standard Tcl array set.
+
+       tsv::array get varname ?pattern?
+              Does the same as standard Tcl array get.
+
+       tsv::array names varname ?pattern?
+              Does the same as standard Tcl array names.
+
+       tsv::array size varname
+              Does the same as standard Tcl array size.
+
+       tsv::array reset varname list
+              Does the same as standard Tcl array set but it clears the varname
+              and sets new values from the list atomically.
+
+       tsv::array bind varname handle
+              Binds the varname to the persistent storage handle.  The format of
+              the handle is <handler>:<address>. For the built-in GNU Gdbm
+              persistence layer, the format of the handle is "gdbm:<path>" where
+              <path> is the path to the Gdbm database file.
+
+       tsv::array unbind varname
+              Unbinds the shared array from its bound persistent storage.
+
+       tsv::array isbound varname
+              Returns true (1) if the shared varname is bound to some persistent
+              storage or zero (0) if not.
+
+KEYED LIST COMMANDS
+       Keyed list commands are borrowed from the TclX package. Keyed lists
+       provide a structured data type built upon standard Tcl lists. This is a
+       functionality similar to structs in the C programming language.
+
+       A keyed list is a list in which each element contains a key and value
+       pair. These element pairs are stored as lists themselves, where the key
+       is the first element of the list, and the value is the second. The key-
+       value pairs are referred to as fields.  This is an example of a keyed
+       list:
+           {{NAME  {Frank  Zappa}} {JOB {musician and composer}}}
+       Fields may contain subfields; `.' is the separator character. Subfields
+       are actually fields  where the value is another keyed list. Thus the
+       following list has the top level fields ID and NAME, and subfields
+       NAME.FIRST and NAME.LAST:
+           {ID 106} {NAME {{FIRST Frank} {LAST Zappa}}}
+       There is no limit to the recursive depth of subfields, allowing one to
+       build complex data structures. Keyed lists are constructed and accessed
+       via a number of commands. All  keyed  list management commands take the
+       name of the variable containing the keyed list as an argument (i.e.
+       passed by reference), rather than passing the list directly.
+
+       tsv::keyldel varname keylist key
+              Delete the field specified by key from the keyed list keylist in
+              the shared variable varname.  This removes both the key and the
+              value from the keyed list.
+
+       tsv::keylget varname keylist key ?retvar?
+              Return the value associated with key from the keyed list keylist
+              in the shared variable varname.  If the optional retvar is not
+              specified, then the value will be returned as the result of the
+              command. In this case, if key is not found in the list, an error
+              will result.
+
+              If retvar is specified and key is in the list, then the value is
+              returned in the variable retvar and the command returns 1 if the
+              key was present within the list. If key isn't in the list, the
+              command will return 0, and retvar will be left unchanged. If {} is
+              specified for retvar, the value is not returned, allowing the Tcl
+              programmer to determine if a key is present in a keyed list
+              without setting a variable as a side-effect.
+
+       tsv::keylkeys varname keylist ?key?
+              Return  the a list of the keys in the keyed list keylist in the
+              shared variable varname. If key is specified, then it is the name
+              of a key field who's subfield keys are to be retrieved.
+
+       tsv::keylset varname keylist key value ?key value..?
+              Set the value associated with key, in the keyed list keylist to
+              value. If the keylist does not exists, it is created.  If key is
+              not currently in the list, it will be added. If it already exists,
+              value replaces the existing value. Multiple keywords and values
+              may be specified, if desired.
+
+DISCUSSION
+       The current implementation of thread shared variables allows for easy and
+       convenient access to data shared between different threads.  Internally,
+       the data is stored in Tcl objects and all package commands operate on
+       internal data representation, thus minimizing shimmering and improving
+       performance. Special care has been taken to assure that all object data
+       is properly locked and deep-copied when moving objects between threads.
+
+       Due to the internal design of the Tcl core, there is no provision of full
+       integration of shared variables within the Tcl syntax, unfortunately. All
+       access to shared data must be performed with the supplied package
+       commands.  Also, variable traces are not supported. But even so, benefits
+       of easy, simple and safe shared data manipulation outweights imposed
+       limitations.
+
+CREDITS
+       Thread shared variables are inspired by the nsv interface found in
+       AOLserver, a highly scalable Web server from America Online.
+
+SEE ALSO
+       thread, tpool, ttrace
+
+KEYWORDS
+       locking, synchronization, thread shared data, threads
+
+
+

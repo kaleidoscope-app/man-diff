@@ -1,0 +1,77 @@
+code(n)                            [incr Tcl]                            code(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       code - capture the namespace context for a code fragment
+
+SYNOPSIS
+       itcl::code ?-namespace name? command ?arg arg ...?
+________________________________________________________________________________
+
+
+DESCRIPTION
+       Creates a scoped value for the specified command and its associated arg
+       arguments.  A scoped value is a list with three elements:  the "@scope"
+       keyword, a namespace context, and a value string.  For example, the
+       command
+              namespace foo {
+                  code puts "Hello World!"
+              }
+       produces the scoped value:
+              @scope ::foo {puts {Hello World!}}
+       Note that the code command captures the current namespace context.  If
+       the -namespace flag is specified, then the current context is ignored,
+       and the name string is used as the namespace context.
+
+       Extensions like Tk execute ordinary code fragments in the global
+       namespace.  A scoped value captures a code fragment together with its
+       namespace context in a way that allows it to be executed properly later.
+       It is needed, for example, to wrap up code fragments when a Tk widget is
+       used within a namespace:
+              namespace foo {
+                  private proc report {mesg} {
+                      puts "click: $mesg"
+                  }
+
+                  button .b1 -text "Push Me"         -command [code report "Hello World!"]
+                  pack .b1
+              }
+       The code fragment associated with button .b1 only makes sense in the
+       context of namespace "foo".  Furthermore, the "report" procedure is
+       private, and can only be accessed within that namespace.  The code
+       command wraps up the code fragment in a way that allows it to be executed
+       properly when the button is pressed.
+
+       Also, note that the code command preserves the integrity of arguments on
+       the command line.  This makes it a natural replacement for the list
+       command, which is often used to format Tcl code fragments.  In other
+       words, instead of using the list command like this:
+              after 1000 [list puts "Hello $name!"]
+       use the code command like this:
+              after 1000 [code puts "Hello $name!"]
+       This not only formats the command correctly, but also captures its
+       namespace context.
+
+       Scoped commands can be invoked like ordinary code fragments, with or
+       without the eval command.  For example, the following statements work
+       properly:
+              set cmd {@scope ::foo .b1}
+              $cmd configure -background red
+
+              set opts {-bg blue -fg white}
+              eval $cmd configure $opts
+       Note that scoped commands by-pass the usual protection mechanisms; the
+       command:
+              @scope ::foo {report {Hello World!}}
+       can be used to access the "foo::report" proc from any namespace context,
+       even though it is private.
+
+
+KEYWORDS
+       scope, callback, namespace, public, protected, private
+
+
+

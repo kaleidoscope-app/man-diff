@@ -1,0 +1,59 @@
+tk_chooseDirectory(n)         Tk Built-In Commands         tk_chooseDirectory(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       tk_chooseDirectory - pops up a dialog box for the user to select a
+       directory.
+
+SYNOPSIS
+       tk_chooseDirectory ?option value ...?
+________________________________________________________________________________
+
+DESCRIPTION
+       The procedure tk_chooseDirectory pops up a dialog box for the user to
+       select a directory. The following option-value pairs are possible as
+       command line arguments:
+
+       -initialdir dirname
+              Specifies that the directories in directory should be displayed
+              when the dialog pops up. If this parameter is not specified, then
+              the directories in the current working directory are displayed. If
+              the parameter specifies a relative path, the return value will
+              convert the relative path to an absolute path.
+
+       -mustexist boolean
+              Specifies whether the user may specify non-existent directories.
+              If this parameter is true, then the user may only select
+              directories that already exist.  The default value is false.
+
+       -parent window
+              Makes window the logical parent of the dialog. The dialog is
+              displayed on top of its parent window. On Mac OS X, this turns the
+              file dialog into a sheet attached to the parent window.
+
+       -title titleString
+              Specifies a string to display as the title of the dialog box. If
+              this option is not specified, then a default title will be
+              displayed.
+
+EXAMPLE
+              set dir [tk_chooseDirectory \
+                      -initialdir ~ -title "Choose a directory"]
+              if {$dir eq ""} {
+                 label .l -text "No directory selected"
+              } else {
+                 label .l -text "Selected $dir"
+              }
+
+
+SEE ALSO
+       tk_getOpenFile(n), tk_getSaveFile(n)
+
+KEYWORDS
+       directory, selection, dialog, platform-specific
+
+
+

@@ -1,0 +1,26 @@
+diagnosticd(8)               System Manager's Manual              diagnosticd(8)
+
+NAME
+     diagnosticd – unified logging system diagnostic daemon
+
+DESCRIPTION
+     diagnosticd is part of the unified logging system.  It helps serve live
+     debugging information.  For example, it manages and delivers data to
+     Console.app and the log(1) utility's stream command.
+
+           { process }
+                `--- os_log ---> ... { logd } ...
+                          \
+                           `---> { diagnosticd } ---> { Console.app }
+                                                 `---> { log stream }
+
+     Note that, when Console.app or log stream are actively displaying ongoing
+     system data, diagnosticd and os_log(3) calls require extra system resources
+     (e.g., CPU) to serve this data live.
+
+SEE ALSO
+     log(1), os_log(3), logd(8)
+
+     Logging | Apple Developer Documentation:
+     https://developer.apple.com/documentation/os/logging
+

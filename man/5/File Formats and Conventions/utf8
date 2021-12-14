@@ -1,0 +1,47 @@
+UTF8(5)                        File Formats Manual                       UTF8(5)
+
+NAME
+     utf8 – UTF-8, a transformation format of ISO 10646
+
+SYNOPSIS
+     ENCODING "UTF-8"
+
+DESCRIPTION
+     The UTF-8 encoding represents UCS-4 characters as a sequence of octets,
+     using between 1 and 6 for each character.  It is backwards compatible with
+     ASCII, so 0x00-0x7f refer to the ASCII character set.  The multibyte
+     encoding of non-ASCII characters consist entirely of bytes whose high order
+     bit is set.  The actual encoding is represented by the following table:
+
+     [0x00000000 - 0x0000007f] [00000000.0bbbbbbb] -> 0bbbbbbb
+     [0x00000080 - 0x000007ff] [00000bbb.bbbbbbbb] -> 110bbbbb, 10bbbbbb
+     [0x00000800 - 0x0000ffff] [bbbbbbbb.bbbbbbbb] ->
+             1110bbbb, 10bbbbbb, 10bbbbbb
+     [0x00010000 - 0x001fffff] [00000000.000bbbbb.bbbbbbbb.bbbbbbbb] ->
+             11110bbb, 10bbbbbb, 10bbbbbb, 10bbbbbb
+     [0x00200000 - 0x03ffffff] [000000bb.bbbbbbbb.bbbbbbbb.bbbbbbbb] ->
+             111110bb, 10bbbbbb, 10bbbbbb, 10bbbbbb, 10bbbbbb
+     [0x04000000 - 0x7fffffff] [0bbbbbbb.bbbbbbbb.bbbbbbbb.bbbbbbbb] ->
+             1111110b, 10bbbbbb, 10bbbbbb, 10bbbbbb, 10bbbbbb, 10bbbbbb
+
+     If more than a single representation of a value exists (for example, 0x00;
+     0xC0 0x80; 0xE0 0x80 0x80) the shortest representation is always used.
+     Longer ones are detected as an error as they pose a potential security
+     risk, and destroy the 1:1 character:octet sequence mapping.
+
+SEE ALSO
+     euc(5)
+
+     Rob Pike and Ken Thompson, “Hello World”, Proceedings of the Winter 1993
+     USENIX Technical Conference, USENIX Association, January 1993.
+
+     F. Yergeau, UTF-8, a transformation format of ISO 10646, January 1998, RFC
+     2279.
+
+     The Unicode Standard, Version 3.0, The Unicode Consortium, 2000, as amended
+     by the Unicode Standard Annex #27: Unicode 3.1 and by the Unicode Standard
+     Annex #28: Unicode 3.2.
+
+STANDARDS
+     The utf8 encoding is compatible with RFC 2279 and Unicode 3.2.
+

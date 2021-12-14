@@ -1,0 +1,329 @@
+Archetype(n)                        [incr Tk]                       Archetype(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       Archetype - base class for all [incr Tk] mega-widgets
+
+INHERITANCE
+       none
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           clientData
+       Class:          ClientData
+       Command-Line Switch:           -clientdata
+
+              This does not affect the widget operation in any way.  It is
+              simply a hook that clients can use to store a bit of data with
+              each widget.  This can come in handy when using widgets to build
+              applications.
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The Archetype class is the basis for all [incr Tk] mega-widgets.  It
+       keeps track of component widgets and provides methods like "configure"
+       and "cget" that are used to access the composite configuration options.
+       Each component widget must be registered with the Archetype base class
+       using the "itk_component add" method.  When the component is registered,
+       its configuration options are integrated into the composite option list.
+       Configuring a composite option like "-background" causes all of the
+       internal components to change their background color.
+
+       It is not used as a widget by itself, but is used as a base class for
+       more specialized widgets.  The Widget base class inherits from Archetype,
+       and adds a Tk frame which acts as the "hull" for the mega-widget.  The
+       Toplevel base class inherits from Archetype, but adds a Tk toplevel which
+       acts as the "hull".
+
+       Each derived class must invoke the itk_initialize method within its
+       constructor, so that all options are properly integrated and initialized
+       in the composite list.
+
+
+
+PUBLIC METHODS
+       The following methods are provided to support the public interface of the
+       mega-widget.
+
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.
+
+              In this case, option refers to a composite configuration option
+              for the mega-widget.  Individual components integrate their own
+              configuration options onto the composite list when they are
+              registered by the "itk_component add" method.
+
+       pathName component ?name? ?command arg arg ...?
+              Used to query or access component widgets within a mega-widget.
+              With no arguments, this returns a list of symbolic names for
+              component widgets that are accessible in the current scope.  The
+              symbolic name for a component is established when it is registered
+              by the "itk_component add" method.  Note that component widgets
+              obey any public/protected/private access restriction that is in
+              force when the component is created.
+
+              If a symbolic name is specified, this method returns the window
+              path name for that component.
+
+              Otherwise, the command and any remaining arg arguments are invoked
+              as a method on the component with the symbolic name name.  This
+              provides a well-defined way of accessing internal components
+              without relying on specific window path names, which are really
+              details of the implementation.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.
+
+              In this case, the options refer to composite configuration options
+              for the mega-widget.  Individual components integrate their own
+              configuration options onto the composite list when they are
+              registered by the "itk_component add" method.
+
+
+PROTECTED METHODS
+       The following methods are used in derived classes as part of the
+       implementation for a mega-widget.
+
+       itk_component add ?-protected? ?-private? ?--? name createCmds
+       ?optionCmds?
+              Creates a component widget by executing the createCmds argument
+              and registers the new component with the symbolic name name.  The
+              -protected and -private options can be used to keep the component
+              hidden from the outside world.  These options have a similar
+              effect on component visibility as they have on class members.
+
+              The createCmds code can contain any number of commands, but it
+              must return the window path name for the new component widget.
+
+              The optionCmds script contains commands that describe how the
+              configuration options for the new component should be integrated
+              into the composite list for the mega-widget.  It can contain any
+              of the following commands:
+
+              ignore option ?option option ...?
+                     Removes one or more configuration options from the
+                     composite list.  All options are ignored by default, so the
+                     ignore command is only used to negate the effect of a
+                     previous keep or rename command.  This is useful, for
+                     example, when the some of the options added by the usual
+                     command should not apply to a particular component, and
+                     need to be ignored.
+
+              keep option ?option option ...?
+                     Integrates one or more configuration options into the
+                     composite list, keeping the name the same.  Whenever the
+                     mega-widget option is configured, the new value is also
+                     applied to the current component.  Options like
+                     "-background" and "-cursor" are commonly found on the keep
+                     list.
+
+              rename option switchName resourceName resourceClass
+                     Integrates the configuration option into the composite list
+                     with a different name.  The option will be called
+                     switchName on the composite list.  It will also be modified
+                     by setting values for resourceName and resourceClass in the
+                     X11 resource database.  The "-highlightbackground" option
+                     is commonly renamed to "-background", so that when the
+                     mega-widget background changes, the background of the focus
+                     ring will change as well.
+
+              usual ?tag?
+                     Finds the usual option-handling commands for the specified
+                     tag name and executes them.  If the tag is not specified,
+                     then the widget class name is used as the tag name.  The
+                     "usual" option-handling commands are registered via the
+                     usual command.
+
+       If the optionCmds script is not specified, the usual option-handling
+       commands associated with the class of the component widget are used by
+       default.
+
+
+       itk_component delete name ?name name ...?
+              Removes the component widget with the symbolic name name from the
+              mega-widget.  The component widget will still exist, but it will
+              no longer be accessible as a component of the mega-widget.  Also,
+              any options associated with the component are removed from the
+              composite option list.
+
+              Note that you can destroy a component using the destroy command,
+              just as you would destroy any Tk widget.  Components automatically
+              detach themselves from their mega-widget parent when destroyed, so
+              "itk_component delete" is rarely used.
+
+
+       itk_initialize ?option value option value...?
+              This method must be invoked within the constructor for each class
+              in a mega-widget hierarchy.  It makes sure that all options are
+              properly integrated into the composite option list, and
+              synchronizes all components to the initial option values.  It is
+              usually invoked near the bottom of the constructor, after all
+              component widgets have been added.
+
+              If any option/value pairs are specified, they override settings
+              determined from the X11 resource database.  The arguments to the
+              constructor are usually passed along to this method as follows:
+              itcl::class MyWidget {
+                  inherit Widget
+
+                  constructor {args} {
+                      .
+                      .
+                      .
+                      eval itk_initialize $args
+                  }
+              }
+
+
+       itk_option add optName ?optName optName ...?
+              Adds one or more options to the composite option list for a mega-
+              widget.  Here, optName can have one of the following forms:
+
+              component.option
+                     Accesses an option belonging to a component with the
+                     symbolic name component.  The option name is specified
+                     without a leading "-" sign.
+
+              className::option
+                     Accesses an option defined by the "itk_option define"
+                     command in class className.  The option name is specified
+                     without a leading "-" sign.
+
+       Options are normally integrated into the composite option list when a
+       component widget is first created.  This method can be used to add
+       options at a later time.  For example, the Widget and Toplevel base
+       classes keep only the bare minimum options for their "hull" component:
+       -background and -cursor.  A derived class can override this decision, and
+       add options that control the border of the "hull" component as well:
+              itcl::class MyWidget {
+                  inherit Widget
+
+                  constructor {args} {
+                      itk_option add hull.borderwidth hull.relief
+
+                      itk_component add label {
+                          label $itk_interior.l1 -text "Hello World!"
+                      }
+                      pack $itk_component(label)
+
+                      eval itk_initialize $args
+                  }
+              }
+
+
+       itk_option define switchName resourceName resourceClass init ?config?
+              This command is used at the level of the class definition to
+              define a synthetic mega-widget option.  Within the configure and
+              cget methods, this option is referenced by switchName, which must
+              start with a "-" sign.  It can also be modified by setting values
+              for resourceName and resourceClass in the X11 resource database.
+              The init value string is used as a last resort to initialize the
+              option if no other value can be used from an existing option, or
+              queried from the X11 resource database.  If any config code is
+              specified, it is executed whenever the option is modified via the
+              configure method.  The config code can also be specified outside
+              of the class definition via the configbody command.
+
+              In the following example, a synthetic "-background" option is
+              added to the class, so that whenever the background changes, the
+              new value is reported to standard output.  Note that this
+              synthetic option is integrated with the rest of the "-background"
+              options that have been kept from component widgets:
+              itcl::class MyWidget {
+                  inherit Widget
+                  constructor {args} {
+                      itk_component add label {
+                          label $itk_interior.l1 -text "Hello World!"
+                      }
+                      pack $itk_component(label)
+
+                      eval itk_initialize $args
+                  }
+                  itk_option define -background background Background #d9d9d9 {
+                      puts "new background: $itk_option(-background)"
+                  }
+              }
+
+
+       itk_option remove optName ?optName optName ...?
+              Removes one or more options from the composite option list for a
+              mega-widget.  Here, optName can have one of the forms described
+              above for the "itk_option add" command.
+
+              Options are normally integrated into the composite option list
+              when a component widget is first created.  This method can be used
+              to remove options at a later time.  For example, a derived class
+              can override an option defined in a base class by removing and
+              redefining the option:
+              itcl::class Base {
+                  inherit itk::Widget
+                  constructor {args} {
+                      eval itk_initialize $args
+                  }
+
+                  itk_option define -foo foo Foo "" {
+                      puts "Base: $itk_option(-foo)"
+                  }
+              }
+
+              itcl::class Derived {
+                  inherit Base
+
+                  constructor {args} {
+                      itk_option remove Base::foo
+                      eval itk_initialize $args
+                  }
+                  itk_option define -foo foo Foo "" {
+                      puts "Derived: $itk_option(-foo)"
+                  }
+              }
+       Without the "itk_option remove" command, the code fragments for both of
+       the "-foo" options would be executed each time the composite "-foo"
+       option is configured.  In the example above, the Base::foo option is
+       suppressed in all Derived class widgets, so only the Derived::foo option
+       remains.
+
+
+PROTECTED VARIABLES
+       Derived classes can find useful information in the following protected
+       variables.
+
+       itk_component(name)
+              The "itk_component" array returns the real window path name for a
+              component widget with the symbolic name name.  The same
+              information can be queried using the component method, but
+              accessing this array is faster and more convenient.
+
+       itk_interior
+              This variable contains the name of the window that acts as a
+              parent for internal components.  It is initialized to the name of
+              the "hull" component provided by the Widget and Toplevel classes.
+              Derived classes can override the initial setting to point to
+              another interior window to be used for further-derived classes.
+
+       itk_option(option)
+              The "itk_option" array returns the current option value for the
+              composite widget option named option.  Here, the option name
+              should include a leading "-" sign.  The same information can be
+              queried using the cget method, but accessing this array is faster
+              and more convenient.
+
+
+KEYWORDS
+       itk, Widget, Toplevel, mega-widget
+
+
+

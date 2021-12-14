@@ -1,0 +1,136 @@
+iwidgets::extbutton(1)           [incr Widgets]           iwidgets::extbutton(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::extbutton - Extends the behavior of the Tk button by allowing a
+       bitmap or image to coexist with text.
+
+SYNOPSIS
+       iwidgets::extbutton pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Extbutton
+
+STANDARD OPTIONS
+
+       activebackground    activeforeground  bitmap
+       background          bd                cursor
+       disabledforeground  font              foreground
+       image               justify           relief      text
+
+       See the "options" manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           bitmapforeground
+       Class:          Foreground
+       Command-Line Switch:           -bitmapforeground
+
+              Configures the foreground color of the bitmap.
+
+       Name:           command
+       Class:          Command
+       Command-Line Switch:           -command
+
+              Associate a command with the extbutton. Simulates a Tk button's
+              -command option. Invoked by either <1> events or by explicitly
+              calling the public invoke() method.
+
+       Name:   defaultring
+       Class:  DefaultRing
+       Command-Line Switch:    -defaultring
+
+              Boolean describing whether the extbutton displays its default ring
+              given in any of the forms acceptable to Tcl_GetBoolean.  The
+              default is false.
+
+       Name:   defaultringpad
+       Class:  Pad
+       Command-Line Switch:    -defaultringpad
+
+              Specifies the amount of space to be allocated to the indentation
+              of the default ring ring given in any of the forms acceptable to
+              Tcl_GetPixels.  The option has no effect if the defaultring option
+              is set to false.  The default is 4 pixels.
+
+       Name:   imagePos
+       Class:  Position
+       Command-Line Switch:    -imagepos
+
+              Specifies the image position relative to the message text: n, ne,
+              nw, s, se, sw, w, wn, ws, e, en, or es. The default is w.
+
+       Name:           ringBackground
+       Class:          Background
+       Command-Line Switch:           -ringbackground
+
+              Configures the background color of the default ring frame (if
+              -defaultring is set to boolean true).
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The extbutton extends the behavior of the atomic Tk button by allowing
+       text and an image or bitmap to coexist. The user may use the -image or
+       -bitmap options to specify an image as well as the -imagepos option to
+       specify image position relative to the text.  Note that the extbutton is
+       not intended to be used without an image/bitmap. There will be an emtpy
+       space next to the text if no image/bitmap is specified.
+
+
+METHODS
+       The iwidgets::extbutton command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+
+
+INHERITED METHODS
+       Each of the following methods are inherited from itk::Archetype. See that
+       man page for details.
+
+              pathName cget
+              pathName component
+              pathName config
+              pathName configure
+
+
+
+WIDGET-SPECIFIC METHODS
+       pathName invoke
+              Evaluates the command fragment associated with the -command
+              option.
+
+       pathName flash
+              Simulates the Tk button's flash command.
+
+
+
+EXAMPLES
+
+              package require Iwidgets 4.0
+              iwidgets::extbutton .eb -text "Bitmap example" -bitmap info \
+                -background bisque -activeforeground red -bitmapforeground blue \
+                -defaultring 1 -command {puts "Bisque is beautiful"}
+              pack .eb -expand 1
+
+              iwidgets::extbutton .eb -text "Image example" -relief ridge -image \
+                [image create photo -file $itk::library/../iwidgets/demos/images/clear.gif] \
+                -font 9x15bold -background lightgreen -imagepos e \
+                -activebackground lightyellow
+              pack .eb -expand 1
+
+
+AUTHOR
+       Chad Smith
+
+KEYWORDS
+       button, pushbutton
+
+
+

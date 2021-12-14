@@ -1,0 +1,189 @@
+iwidgets::datefield(1)           [incr Widgets]           iwidgets::datefield(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::datefield - Create and manipulate a date field widget
+
+SYNOPSIS
+       iwidgets::datefield pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::LabeledWidget <- iwidgets::Datefield
+
+STANDARD OPTIONS
+
+       background  borderWidth     cursor              exportSelection
+       foreground  highlightColor  highlightThickness  insertBackground
+       justify     relief
+
+       See the "options" manual entry for details on the standard options.
+
+INHERITED OPTIONS
+       disabledForeground             labelBitmap     labelFontlabelImage
+       labelMargin     labelPos       labelText       labelVariable
+       state           sticky
+
+       See the "labeledwidget" class manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           childSitePos
+       Class:          Position
+       Command-Line Switch:           -childsitepos
+
+              Specifies the position of the child site in the date field: n, s,
+              e, or w.  The default is e.
+
+       Name:           command
+       Class:          Command
+       Command-Line Switch:           -command
+
+              Specifies a Tcl command to be executed upon detection of a Return
+              key press event.
+
+       Name:           gmt
+       Class:          GMT
+       Command-Line Switch:           -gmt
+
+              Determines whether the date is calculated relative to Greenwich
+              Mean Time. Accepts a boolean value. The default is no.
+
+       Name:           int
+       Class:          DateFormat
+       Command-Line Switch:           -int
+
+              Used to specify international date formats.  This option must be a
+              boolean value.  When set to true, the date is formatted as YYYY-
+              MM-DD.  When set to false, it is formatted as MM/DD/YYYY.  Note
+              that this format is driven by the 'clock scan' command and that
+              YYYY-MM-DD is supported in Tk 8.4 or later.  The default is no.
+
+       Name:           iq
+       Class:          Iq
+       Command-Line Switch:           -iq
+
+              Specifies the level of intelligence to be shown in the actions
+              taken by the datefield during the processing of keypress events.
+              Valid settings include high, average, and low.  With a high iq,the
+              date prevents the user from typing in an invalid date.  For
+              example, if the current date is 05/31/1997 and the user changes
+              the month to 04, then the day will be instantly modified for them
+              to be 30.  In addition, leap years are fully taken into account.
+              With average iq, the month is limited to the values of 01-12, but
+              it is possible to type in an invalid day.  A setting of low iq
+              instructs the widget to do no validity checking at all during date
+              entry.  With both average and low iq levels, it is assumed that
+              the validity will be determined at a later time using the date's
+              isvalid command.
+
+       Name:           state
+       Class:          State
+       Command-Line Switch:           -state
+
+              Specifies one of two states for the datefield: normal or disabled.
+              If the datefield is disabled then input is not accepted.  The
+              default is normal.
+
+       Name:           textBackground
+       Class:          Background
+       Command-Line Switch:           -textbackground
+
+              Background color for inside textual portion of the entry field.
+              The value may be given in any of the forms acceptable to
+              Tk_GetColor.
+
+       Name:           textFont
+       Class:          Font
+       Command-Line Switch:           -textfont
+
+              Name of font to use for display of text in datefield.  The value
+              may be given in any of the forms acceptable to Tk_GetFont.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::datefield command creates an enhanced text entry widget for
+       the purpose of date entry with various degrees of built-in intelligence.
+
+
+
+METHODS
+       The iwidgets::datefield command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for datefield widgets:
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::datefield command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::datefield command.
+
+       pathName get ?format?
+              Returns the current contents of the datefield in a format of
+              string or as an integer clock value using the -string and -clicks
+              format options respectively.  The default is by string.  Reference
+              the clock command for more information on obtaining dates and
+              their formats.
+
+       pathName isvalid
+              Returns a boolean indication of the validity of the currently
+              displayed date value.  For example, 03/03/1960 is valid whereas
+              02/29/1997 is invalid.
+
+       pathName show date
+              Changes the currently displayed date to be that of the date
+              argument.  The date may be specified either as a string, an
+              integer clock value or the keyword "now".  Reference the clock
+              command for more information on obtaining dates and their formats.
+
+
+COMPONENTS
+       Name:           date
+       Class:          Entry
+
+              The date component provides the entry field for date input and
+              display.  See the "entry" widget manual entry for details on the
+              date component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               proc returnCmd {} {
+                 puts [.df get]
+               }
+
+               iwidgets::datefield .df -command returnCmd
+               pack .df -fill x -expand yes -padx 10 -pady 10
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       datefield, widget
+
+
+

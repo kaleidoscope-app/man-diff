@@ -1,0 +1,42 @@
+SMBDIAGNOSE(8)               System Manager's Manual              SMBDIAGNOSE(8)
+
+
+
+NAME
+     smbdiagnose – gather information to aid in diagnosing SMB file sharing
+     issues
+
+SYNOPSIS
+     smbdiagnose -h
+     smbdiagnose [-f path] [-s]
+
+DESCRIPTION
+     The smbdiagnose tool gathers system information and network traffic in
+     order to assist Apple when investigating issues related to SMB file
+     sharing.  A great deal of information is harvested, spanning system state,
+     system configuration, and network traffic related to SMB file sharing.
+
+   What smbdiagnose Collects:
+           •   A network packet trace of SMB file sharing traffic that occurs
+               during the time the tool is run.  This packet trace may include
+               file names and file data.  It may also include the authentication
+               exchange used to log into the SMB server.
+           •   Enhanced debug logs for the SMB server process.
+           •   If the -s option is specified, the default set of information
+               collected by sysdiagnose(1).
+
+   What smbdiagnose Doesn't Collect:
+           •   No authentication credentials are harvested from the system
+
+OPTIONS
+     -h      Print full usage.
+     -f path Write the diagnostic to the specified path.  The default is
+             “~/Desktop”.
+     -s      Collect sysdiagnose(1) information.  The default is not to collect
+             sysdiagnose(1) information.
+
+EXIT STATUS
+     smbdiagnose exits with status 0 if there were no internal errors
+     encountered during the diagnostic, or >0 when an error unrelated to
+     external state occurs or unusable input is provided by the user.
+

@@ -1,0 +1,253 @@
+QUSTAT(8)                    System Manager's Manual                   QUSTAT(8)
+
+
+
+NAME
+       qustat - Xsan Statistics Utility
+
+SYNOPSIS
+       qustat command [Object_Identifiers] [Formatting]
+
+       Manage and View StorNext Statistics
+
+       Commands using a group or module name will require the group, module or
+       both names.
+
+       Print:            qustat [-g group_name] [-m module_name] [-h host] [-t tbl] [-F opt]
+       Print Hourly:     qustat -T [-g group_name] [-m module_name] [-h host] [-t tbl] [-F opt]
+       Print CSV File:   qustat -c csv_file
+       Print + Reset:    qustat -P -R [-g group_name] [-m module_name] [Print_Options]
+       Reset:            qustat -R [-g group_name] [-m module_name]
+       Reset Min/Max:    qustat -M [-g group_name] [-m module_name]
+       Interval:         qustat -I interval
+       Version:          qustat -V
+       Description:      qustat [-g group_name] [-m module_name] [-h host] [-t tbl] -D Search_String
+       Help:             qustat -H
+
+       Commands
+
+       -P, --print             Print tables (default command)
+       -T, --time_hourly       Print hourly time tables
+       -I, --interval          Set collection interval
+       -A, --archive           Forward stats to central archive
+       -R, --reset             Reset table or group if no table
+       -M, --reset min/max     Reset minimum and maximum for table or group if no table
+       -S, --selftest          Run Self Test
+       -V, --version           Print qustat version information
+       -H, --help              Print qustat help information
+       -D, --description str   Print table or stat description
+
+       Object Identifiers
+
+       -c, --csv file     Specify a .csv file to load
+       -h, --host opt     Host name or IP address
+       -m, --module opt   Module name
+       -g, --group opt    Group name
+       -t, --table opt    Table Number
+       -f, --fs opt       File system name (same as -g)
+
+       Statistics are identified by a group and module name.  Example
+       group,module identifiers are FS_name,FSM; kernel,client; FSMPM,FSMPM.
+       The default module name is FSM.  If the module name is unique, the group
+       name may be optional.
+
+       Formatting
+
+       -F, --format all        Show all records (including zeros)
+       -F, --format csv        Output in .csv format
+       -F, --format xml        Output in XML format (with -D only)
+       -F, --format graphite   Output graphite format data
+       -F, --format protobuf   Output protobuf format data (with -A only)
+
+COMMANDS
+       -P, --print
+              This is the default command if no other commands are specified.
+              To use the print command, you must also supply a group (file
+              system) name with the -g option.
+
+              The print command fetches the statistics table(s) from the
+              specified group (e.g. the FSM) and prints them to standard output.
+              The output is described below.
+
+       -T, --time_hourly
+              Hourly statistics are kept and written to CSV files.  This prints
+              the hourly statistics.  To use the print command, you must also
+              supply a group (file system) name with the -g option.
+
+       -I, --interval
+              The interval command controls the rate at which statistics are
+              forwarded from running processes to the snstatd process.  The
+              interval parameter is in seconds.  The value must be -1 (turn off)
+              or between 5 and 2147483 inclusive.
+
+       -A, --archive
+              The archive command specifies the location that the snstatd
+              process should periodically send statistics to.  The target is in
+              terms of a hostname and tcp port number. A TCP/IP connection is
+              opened ever interval seconds and any new statistics are send in
+              graphite format down the connection. The connection is then
+              closed.  Use -F with this command to switch between graphite and
+              protobuf output.
+
+       -R, --reset
+
+              WARNING! Resetting statistics affects hourly reports and anybody
+                       else using qustats, including connect.  Note:  Using the
+              -R and -P option together is not atomic.  First the current values
+              are collected and then the reset command is processed.  Any
+              statistics updated between the collection and reset are lost.
+
+              This command resets the internal statistics tables for the
+              specified Object Identifier.
+
+       -M, --minmax
+
+              WARNING! Resetting minimum and maximum affects the hourly report
+              for that time period.
+
+              This command resets the internal statistics tables for the
+              specified Object Identifier.
+
+
+       -S, --selftest
+              Runs self-test to verify that internal functions are working
+              properly.  If your system is busy, it may be normal for the timing
+              tests to fail.
+
+       -V, --version
+              Display version information for the qustat command.
+
+       -D, --description
+              Use the -D command to find the description for tables and stats.
+              The -D search string may contain the wildcard '*'.  Note that
+              strings with an asterisk should be quoted to avoid globbing.  You
+              must provide object identifiers for at least one table.
+
+              Search Examples:
+
+                  qustat -g myFileSys -D "*"
+                  qustat -g myFileSys -D "VOP Lookup"
+                  qustat -g myFileSys -t 1 -D "VOP Lookup"
+                  qustat -g myFileSys -t 1 -D "VOP *"
+                  qustat -g myFileSys -t 1 -D "*"
+
+
+       -H, --help
+              Displays help information.
+
+OBJECT IDENTIFIERS
+       -c csv_file, --csv csv_file
+              Specify a .csv file to load.
+
+       -h host, --host host
+              The host or IP address where the Module (e.g. FSM) is located.
+              This option is normally not needed when displaying FSM statistics
+              if your computer is joined to the cluster.
+
+       -m module, --module module
+              Specifies the module (process or service) from which to extract
+              statistics.  The module specifier all can be used to select all
+              types of modules.
+
+              The default module is FSM if not specified.
+
+       -g group, --group group
+              Identifies the group of tables.  For FSM modules, the group
+              specifies the file system name.
+
+              This is the same as the -f option.
+
+       -t table_number, --table table_number
+              Use -t to print a single table.  If you print all statistics, the
+              table numbers are displayed in the table header.  See TABLES
+              below.
+
+              If you do not specify a table, all tables for the group are
+              displayed.
+
+       -f file_system, --fs file_system
+              This is the same as the -g option.
+
+FORMATTING
+       -F option, --format option
+              You may specify the -F option multiple times. The all option will
+              print all statistics including those with all zero values.  The
+              csv option will display output in comma-separated-values format.
+              The xml option will display output in XML format.
+
+OUTPUT
+       The Group header includes revision, host, module, group and time
+       recorded.  The time_t value is the output of the time(2) function call.
+
+       Columns include:
+
+       NAME      The name of the statistic being gathered.
+       TYP       The type of statistic.
+       CNT       The number of times something occurred.
+       LVL       The current level of something (e.g. number of free buffers).
+       SUM       The accumulated sum such as the amount of data written.
+       TIM       The amount of time consumed (in microseconds).
+       COUNT     Number of times the operation was performed.
+       MIN/MAX   Minimum and maximum values.
+       TOT/LVL   Total or current level (depending on TYP)
+       AVG       The average (TOT divided by COUNT)
+
+TABLES
+       A Group is normally split into multiple tables. Each table is identified
+       by a unique table number.
+
+       Table numbers are guaranteed to identify a single unique object
+       throughout the lifespan of the given group, but not across
+       reboots/restarts for the group.
+
+       For the FSM, the main table numbers will remain consistent across
+       restarts, but the per-client statistics will vary depending on connection
+       order.
+
+ACCURACY
+       Statistics are not guaranteed to be 100% accurate.
+
+       For performance reasons, the implementation does not explicitly lock the
+       code when gathering statistics.  However most operations are already
+       protected by other multi-thread locking and therefore inaccuracies should
+       be minimal.
+
+       In addition, operations are not halted or locked when resetting or
+       gathering statistics.  It is possible to have a statistic dropped during
+       a reset or snap of statistics.
+
+CVLOG HOURLY STATISTICS DUMPS
+       In prior releases, the FSM dumped statistics on an hourly basis to the
+       cvlogs which were located under the data directory. These statistics
+       dumps have been moved to a separate directory called qustats.  The format
+       has also been changed to .csv files which can be opened in most
+       spreadsheets and databases. They can also be easily parsed by most
+       programming languages and utilities.
+
+EXAMPLES
+    Print the FSM statistics for file system snfs1.
+
+       rock # qustat -g xsan1
+
+    Print the kernel client statistics.
+
+       rock # qustat -g kernel -m client
+
+    Print the statistic for the client table 2 statistics.
+
+       rock # qustat -m client -t 2
+
+    Print the statistic descriptions for client definitions.
+
+       rock # qustat -g kernel -m client -D "*"
+
+    Print the statistic descriptions for client definitions.
+
+       rock # qustat -g FSMPM -m FSMPM -D "*"
+
+    Print the statistic descriptions for the fsm VOP statistics
+
+       rock # qustat -g xsan1 -D "VOP"
+
+
+

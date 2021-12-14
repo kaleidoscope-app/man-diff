@@ -1,0 +1,106 @@
+YP(8)                        System Manager's Manual                       YP(8)
+
+NAME
+     yp – description of the YP/NIS system
+
+SYNOPSIS
+     yp
+
+DESCRIPTION
+     The YP subsystem allows network access to directory information hosted by
+     NIS servers.  OS X support is provided through the functions getpwent(3),
+     getgrent(3), getfsent(3), getnetgrent(3), gethostent(3), getnetent(3),
+     getrpcent(3), getprotoent(3), getservent(3), ethers(3) and other related
+     functions.  Queries to NIS servers are sent by the opendirectoryd daemon.
+     The configuration of NIS clients is further described in the
+     opendirectoryd(8) manual page.
+
+     The YP subsystem is started automatically by launchd(8) if an NIS domain is
+     specified in the /etc/defaultdomain configuration file, and if the
+     directory /var/yp exists (which it does in the default distribution).
+
+     NIS is an RPC-based client/server system that allows a group of machines
+     within an NIS domain to share a common set of configuration files.  This
+     permits a system administrator to set up NIS client systems with only
+     minimal configuration data and add, remove or modify configuration data
+     from a single location.
+
+     The canonical copies of all NIS information are stored on a single machine
+     called the NIS master server.  The databases used to store the information
+     are called NIS maps.  A single NIS server can support several domains at
+     once, therefore it is possible to have several such directories, one for
+     each supported domain.  Each domain will have its own independent set of
+     maps.
+
+     Client NIS systems receive all NIS data in ASCII form.
+
+     There are three main types of NIS systems:
+
+     1.   NIS clients, which query NIS servers for information.
+
+     2.   NIS master servers, which maintain the canonical copies of all NIS
+          maps.
+
+     3.   NIS slave servers, which maintain backup copies of NIS maps that are
+          periodically updated by the master.
+
+     OS X systems may be configured as NIS clients, but not as master or slave
+     servers.
+
+     A NIS client establishes what is called a binding to a particular NIS
+     server using the ypbind(8) daemon.  The ypbind(8) utility checks the
+     system's default domain (as set by the domainname(1) command) and begins
+     broadcasting RPC requests on the local network.  These requests specify the
+     name of the domain for which ypbind(8) is attempting to establish a
+     binding.  If a server that has been configured to serve the requested
+     domain receives one of the broadcasts, it will respond to ypbind(8), which
+     will record the server's address.  If there are several servers available
+     (a master and several slaves, for example), ypbind(8) will use the address
+     of the first one to respond.  From that point on, the client system will
+     direct all of its NIS requests to that server.  The ypbind(8) utility will
+     occasionally “ping” the server to make sure it is still up and running.  If
+     it fails to receive a reply to one of its pings within a reasonable amount
+     of time, ypbind(8) will mark the domain as unbound and begin broadcasting
+     again in the hopes of locating another server.
+
+     NIS master and slave servers handle all NIS requests with the ypserv(8)
+     daemon.  The ypserv(8) utility is responsible for receiving incoming
+     requests from NIS clients, translating the requested domain and map name to
+     a path to the corresponding database file and transmitting data from the
+     database back to the client.  There is a specific set of requests that
+     ypserv(8) is designed to handle, most of which are implemented as functions
+     within the standard system libraries:
+
+     yp_order()     check the creation date of a particular map
+
+     yp_master()    obtain the name of the NIS master server for a given
+                    map/domain
+
+     yp_match()     lookup the data corresponding to a given in key in a
+                    particular map/domain
+
+     yp_first()     obtain the first key/data pair in a particular map/domain
+
+     yp_next()      pass ypserv(8) a key in a particular map/domain and have it
+                    return the key/data pair immediately following it (the
+                    functions yp_first() and yp_next() can be used to do a
+                    sequential search of an NIS map)
+
+     yp_all()       retrieve the entire contents of a map
+
+     There are a few other requests which ypserv(8) is capable of handling
+     (i.e., acknowledge whether or not you can handle a particular domain
+     (YPPROC_DOMAIN), or acknowledge only if you can handle the domain and be
+     silent otherwise (YPPROC_DOMAIN_NONACK)) but these requests are usually
+     generated only by ypbind(8) and are not meant to be used by standard
+     utilities.
+
+HISTORY
+     The YP subsystem was written from the ground up by Theo de Raadt to be
+     compatible to Sun's implementation.  Bug fixes, improvements and NIS server
+     support were later added by Bill Paul.  The server-side code was originally
+     written by Peter Eriksson and Tobias Reber and is subject to the GNU Public
+     License.  No Sun code was referenced.
+
+     OS X NIS client software is derived from FreeBSD.
+

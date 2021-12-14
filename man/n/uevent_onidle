@@ -1,0 +1,68 @@
+uevent::onidle(n)                  User events                 uevent::onidle(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       uevent::onidle - Request merging and deferal to idle time
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require uevent::onidle  ?0.1?
+
+       package require logger
+
+       ::uevent::onidle objectName commandprefix
+
+       objectName request
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides objects which can merge multiple requestes for an
+       action and execute the action the moment the system (event loop) becomes
+       idle. The action to be run is configured during object construction.
+
+API
+       The package exports a class, uevent::onidle, as specified below.
+
+       ::uevent::onidle objectName commandprefix
+              The command creates a new onidle object with an associated global
+              Tcl command whose name is objectName.  This command may be used to
+              invoke various operations on the object.
+
+              The commandprefix is the action to perform when the event loop is
+              idle and the user asked for it using the method request (See
+              below).
+
+       The object commands created by the class commands above have the form:
+
+       objectName request
+              This method requests the execution of the command prefix specified
+              during the construction of objectName the next time the event loop
+              is idle. Multiple requests are merged and cause only one execution
+              of the command prefix.
+
+EXAMPLES
+       Examples of this type of deferal are buried in the (C-level)
+       implementations all the Tk widgets, defering geometry calculations and
+       window redraw activity in this manner.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category uevent of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       callback, deferal, event, idle, merge, on-idle
+
+COPYRIGHT
+       Copyright (c) 2008 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

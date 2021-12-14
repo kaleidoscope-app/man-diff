@@ -1,0 +1,187 @@
+POD2HTML(1)             Perl Programmers Reference Guide             POD2HTML(1)
+
+
+
+
+NAME
+       pod2html - convert .pod files to .html files
+
+SYNOPSIS
+           pod2html --help --htmldir=<name> --htmlroot=<URL>
+                    --infile=<name> --outfile=<name>
+                    --podpath=<name>:...:<name> --podroot=<name>
+                    --cachedir=<name> --flush --recurse --norecurse
+                    --quiet --noquiet --verbose --noverbose
+                    --index --noindex --backlink --nobacklink
+                    --header --noheader --poderrors --nopoderrors
+                    --css=<URL> --title=<name>
+
+DESCRIPTION
+       Converts files from pod format (see perlpod) to HTML format.
+
+ARGUMENTS
+       pod2html takes the following arguments:
+
+       help
+             --help
+
+           Displays the usage message.
+
+       htmldir
+             --htmldir=name
+
+           Sets the directory to which all cross references in the resulting
+           HTML file will be relative. Not passing this causes all links to be
+           absolute since this is the value that tells Pod::Html the root of the
+           documentation tree.
+
+           Do not use this and --htmlroot in the same call to pod2html; they are
+           mutually exclusive.
+
+       htmlroot
+             --htmlroot=URL
+
+           Sets the base URL for the HTML files.  When cross-references are
+           made, the HTML root is prepended to the URL.
+
+           Do not use this if relative links are desired: use --htmldir instead.
+
+           Do not pass both this and --htmldir to pod2html; they are mutually
+           exclusive.
+
+       infile
+             --infile=name
+
+           Specify the pod file to convert.  Input is taken from STDIN if no
+           infile is specified.
+
+       outfile
+             --outfile=name
+
+           Specify the HTML file to create.  Output goes to STDOUT if no outfile
+           is specified.
+
+       podroot
+             --podroot=name
+
+           Specify the base directory for finding library pods.
+
+       podpath
+             --podpath=name:...:name
+
+           Specify which subdirectories of the podroot contain pod files whose
+           HTML converted forms can be linked-to in cross-references.
+
+       cachedir
+             --cachedir=name
+
+           Specify which directory is used for storing cache. Default directory
+           is the current working directory.
+
+       flush
+             --flush
+
+           Flush the cache.
+
+       backlink
+             --backlink
+
+           Turn =head1 directives into links pointing to the top of the HTML
+           file.
+
+       nobacklink
+             --nobacklink
+
+           Do not turn =head1 directives into links pointing to the top of the
+           HTML file (default behaviour).
+
+       header
+             --header
+
+           Create header and footer blocks containing the text of the "NAME"
+           section.
+
+       noheader
+             --noheader
+
+           Do not create header and footer blocks containing the text of the
+           "NAME" section (default behaviour).
+
+       poderrors
+             --poderrors
+
+           Include a "POD ERRORS" section in the outfile if there were any POD
+           errors in the infile (default behaviour).
+
+       nopoderrors
+             --nopoderrors
+
+           Do not include a "POD ERRORS" section in the outfile if there were
+           any POD errors in the infile.
+
+       index
+             --index
+
+           Generate an index at the top of the HTML file (default behaviour).
+
+       noindex
+             --noindex
+
+           Do not generate an index at the top of the HTML file.
+
+       recurse
+             --recurse
+
+           Recurse into subdirectories specified in podpath (default behaviour).
+
+       norecurse
+             --norecurse
+
+           Do not recurse into subdirectories specified in podpath.
+
+       css
+             --css=URL
+
+           Specify the URL of cascading style sheet to link from resulting HTML
+           file.  Default is none style sheet.
+
+       title
+             --title=title
+
+           Specify the title of the resulting HTML file.
+
+       quiet
+             --quiet
+
+           Don't display mostly harmless warning messages.
+
+       noquiet
+             --noquiet
+
+           Display mostly harmless warning messages (default behaviour). But
+           this is not the same as "verbose" mode.
+
+       verbose
+             --verbose
+
+           Display progress messages.
+
+       noverbose
+             --noverbose
+
+           Do not display progress messages (default behaviour).
+
+AUTHOR
+       Tom Christiansen, <tchrist@perl.com>.
+
+BUGS
+       See Pod::Html for a list of known bugs in the translator.
+
+SEE ALSO
+       perlpod, Pod::Html
+
+COPYRIGHT
+       This program is distributed under the Artistic License.
+
+
+

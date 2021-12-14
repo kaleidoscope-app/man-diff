@@ -1,0 +1,222 @@
+TCP(4)                        Device Drivers Manual                       TCP(4)
+
+NAME
+     tcp – Internet Transmission Control Protocol
+
+SYNOPSIS
+     #include <sys/types.h>
+     #include <sys/socket.h>
+     #include <netinet/in.h>
+
+     int
+     socket(AF_INET, SOCK_STREAM, 0);
+
+DESCRIPTION
+     The TCP protocol provides reliable, flow-controlled, two-way transmission
+     of data.  It is a byte-stream protocol used to support the SOCK_STREAM
+     abstraction.  TCP uses the standard Internet address format and, in
+     addition, provides a per-host collection of “port addresses”.  Thus, each
+     address is composed of an Internet address specifying the host and network,
+     with a specific TCP port on the host identifying the peer entity.
+
+     Sockets utilizing the TCP protocol are either “active” or “passive”.
+     Active sockets initiate connections to passive sockets.  By default, TCP
+     sockets are created active; to create a passive socket, the listen(2)
+     system call must be used after binding the socket with the bind(2) system
+     call.  Only passive sockets may use the accept(2) call to accept incoming
+     connections.  Only active sockets may use the connect(2) or connectx(2)
+     call to initiate connections.
+
+     Passive sockets may “underspecify” their location to match incoming
+     connection requests from multiple networks.  This technique, termed
+     “wildcard addressing”, allows a single server to provide service to clients
+     on multiple networks.  To create a socket which listens on all networks,
+     the Internet address INADDR_ANY must be bound.  The TCP port may still be
+     specified at this time; if the port is not specified, the system will
+     assign one.  Once a connection has been established, the socket's address
+     is fixed by the peer entity's location.  The address assigned to the socket
+     is the address associated with the network interface through which packets
+     are being transmitted and received.  Normally, this address corresponds to
+     the peer entity's network.
+
+     TCP supports a number of socket options which can be set with setsockopt(2)
+     and tested with getsockopt(2):
+
+     TCP_NODELAY                Under most circumstances, TCP sends data when it
+                                is presented; when outstanding data has not yet
+                                been acknowledged, it gathers small amounts of
+                                output to be sent in a single packet once an
+                                acknowledgement is received.  For a small number
+                                of clients, such as window systems that send a
+                                stream of mouse events which receive no replies,
+                                this packetization may cause significant delays.
+                                The boolean option TCP_NODELAY defeats this
+                                algorithm.
+
+     TCP_MAXSEG                 By default, a sender- and receiver-TCP will
+                                negotiate among themselves to determine the
+                                maximum segment size to be used for each
+                                connection.  The TCP_MAXSEG option allows the
+                                user to determine the result of this
+                                negotiation, and to reduce it if desired.
+
+     TCP_NOOPT                  TCP usually sends a number of options in each
+                                packet, corresponding to various TCP extensions
+                                which are provided in this implementation.  The
+                                boolean option TCP_NOOPT is provided to disable
+                                TCP option use on a per-connection basis.
+
+     TCP_NOPUSH                 By convention, the sender-TCP will set the
+                                “push” bit, and begin transmission immediately
+                                (if permitted) at the end of every user call to
+                                write(2) or writev(2).  When this option is set
+                                to a non-zero value, TCP will delay sending any
+                                data at all until either the socket is closed,
+                                or the internal send buffer is filled.
+
+     TCP_KEEPALIVE              The TCP_KEEPALIVE options enable to specify the
+                                amount of time, in seconds, that the connection
+                                must be idle before keepalive probes (if
+                                enabled) are sent.  The default value is
+                                specified by the MIB variable
+                                net.inet.tcp.keepidle.
+
+     TCP_CONNECTIONTIMEOUT      The TCP_CONNECTIONTIMEOUT option allows to
+                                specify the timeout, in seconds, for new, non
+                                established TCP connections. This option can be
+                                useful for both active and passive TCP
+                                connections. The default value is specified by
+                                the MIB variable net.inet.tcp.keepinit.
+
+     TCP_KEEPINTVL              When keepalive probes are enabled, this option
+                                will set the amount of time in seconds between
+                                successive keepalives sent to probe an
+                                unresponsive peer.
+
+     TCP_KEEPCNT                When keepalive probes are enabled, this option
+                                will set the number of times a keepalive probe
+                                should be repeated if the peer is not
+                                responding. After this many probes, the
+                                connection will be closed.
+
+     TCP_SENDMOREACKS           When a stream of TCP data packets are received,
+                                OS X uses an algorithm to reduce the number of
+                                acknowlegements by generating a TCP
+                                acknowlegement for 8 data packets instead of
+                                acknowledging every other data packet. When this
+                                socket option is enabled, the connection will
+                                always send a TCP acknowledgement for every
+                                other data packet.
+
+     TCP_ENABLE_ECN             Using Explicit Congestion Notification (ECN) on
+                                TCP allows bi-directional end-to-end
+                                notification of congestion without dropping
+                                packets. Conventionally TCP/IP networks signal
+                                congestion by dropping packets. When ECN is
+                                successfully negotiated, an ECN-aware router may
+                                set a mark in the IP header instead of dropping
+                                a packet in order to signal impending
+                                congestion. The TCP receiver of the packet
+                                echoes congestion indication to the TCP sender,
+                                which reduces it's transmission rate as if it
+                                detected a dropped packet. This will avoid
+                                unnecessary retransmissions and will improve
+                                latency by saving the time required for
+                                recovering a lost packet.
+
+     TCP_NOTSENT_LOWAT          The send socket buffer of a TCP sender has
+                                unsent and unacknowledged data. This option
+                                allows a TCP sender to control the amount of
+                                unsent data kept in the send socket buffer. The
+                                value of the option should be the maximum amount
+                                of unsent data in bytes. Kevent, poll and select
+                                will generate a write notification when the
+                                unsent data falls below the amount given by this
+                                option. This will allow an application to
+                                generate just-in-time fresh updates for
+                                real-time communication.
+
+     TCP_FASTOPEN               The TCP listener can set this option to use TCP
+                                Fast Open feature. After setting this option, an
+                                accept(2) may return a socket that is in
+                                SYN_RECEIVED state but is readable and writable.
+
+     TCP_CONNECTION_INFO        This socket option can be used to obtain TCP
+                                connection level statistics. The "struct
+                                tcp_connection_info" defined in
+                                <netinet/tcp_var.h> is copied to the user
+                                buffer.
+
+     The option level for the setsockopt(2) call is the protocol number for TCP,
+     available from getprotobyname(3), or IPPROTO_TCP.  All options are declared
+     in <netinet/tcp.h>.
+
+     Options at the IP transport level may be used with TCP; see ip(4).
+     Incoming connection requests that are source-routed are noted, and the
+     reverse source route is used in responding.
+
+   Non-blocking connect
+     When a TCP socket is set non-blocking, and the connection cannot be
+     established immediately, connect(2) or connectx(2) returns with the error
+     EINPROGRESS, and the connection is established asynchronously.
+
+     When the asynchronous connection completes successfully, select(2) or
+     poll(2) or kqueue(2) will indicate the file descriptor is ready for
+     writing.  If the connection encounters an error, the file descriptor is
+     marked ready for both reading and writing, and the pending error can be
+     retrieved via the socket option SO_ERROR.
+
+     Note that even if the socket is non-blocking, it is possible for the
+     connection to be established immediately. In that case connect(2) or
+     connectx(2) does not return with EINPROGRESS.
+
+DIAGNOSTICS
+     A socket operation may fail with one of the following errors returned:
+
+     [EISCONN]          when trying to establish a connection on a socket which
+                        already has one;
+
+     [ENOBUFS]          when the system runs out of memory for an internal data
+                        structure;
+
+     [ETIMEDOUT]        when a connection was dropped due to excessive
+                        retransmissions;
+
+     [ECONNRESET]       when the remote peer forces the connection to be closed;
+
+     [ECONNREFUSED]     when the remote peer actively refuses connection
+                        establishment (usually because no process is listening
+                        to the port);
+
+     [EADDRINUSE]       when an attempt is made to create a socket with a port
+                        which has already been allocated;
+
+     [EADDRNOTAVAIL]    when an attempt is made to create a socket with a
+                        network address for which no network interface exists;
+
+     [EAFNOSUPPORT]     when an attempt is made to bind or connect a socket to a
+                        multicast address;
+
+     [EINPROGRESS]      returned by connect(2) or connectx(2) when the socket is
+                        set nonblocking, and the connection cannot be
+                        immediately established;
+
+     [EALREADY]         returned by connect(2) or connectx(2) when connection
+                        request is already in progress for the specified socket.
+
+     [ENODATA]          returned by recv(2) or send(2) in case a connection is
+                        experiencing a data-stall (probably due to a middlebox
+                        issue).  It is advised that the current connection gets
+                        closed by the application and a new attempt is being
+                        made.
+
+SEE ALSO
+     connect(2), connectx(2), getsockopt(2), kqueue(2), poll(2), select(2),
+     socket(2), sysctl(3), inet(4), inet6(4), ip(4), ip6(4), netintro(4),
+     setkey(8)
+
+HISTORY
+     The TCP protocol appeared in 4.2BSD.
+
+     The socket option TCP_CONNECTIONTIMEOUT first appeared in Mac OS X 10.6.
+

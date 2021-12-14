@@ -1,0 +1,179 @@
+sha256(n)                SHA-x Message-Digest Algorithm                sha256(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       sha256 - SHA256 Message-Digest Algorithm
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require sha256  ?1.0.3?
+
+       ::sha2::sha256 ?-hex|-bin? [ -channel channel | -file filename | string ]
+
+       ::sha2::sha224 ?-hex|-bin? [ -channel channel | -file filename | string ]
+
+       ::sha2::hmac key string
+
+       ::sha2::hmac ?-hex|-bin? -key key [ -channel channel | -file filename |
+       string ]
+
+       ::sha2::SHA256Init
+
+       ::sha2::SHA224Init
+
+       ::sha2::SHA256Update token data
+
+       ::sha2::SHA256Final token
+
+       ::sha2::SHA224Final token
+
+       ::sha2::HMACInit key
+
+       ::sha2::HMACUpdate token data
+
+       ::sha2::HMACFinal token
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides an implementation in Tcl of the SHA256 and SHA224
+       message-digest algorithms as specified by FIPS PUB 180-1 (1). These
+       algorithms take a message and generates a 256-bit (224-bit) digest from
+       the input. The SHA2 algorithms are related to the SHA1 algorithm.
+
+       This package also includes support for creating keyed message-digests
+       using the HMAC algorithm from RFC 2104 (3) with SHA256 as the message-
+       digest.
+
+COMMANDS
+       ::sha2::sha256 ?-hex|-bin? [ -channel channel | -file filename | string ]
+              The command takes a message and returns the SHA256 digest of this
+              message as a hexadecimal string. You may request the result as
+              binary data by giving -bin.
+
+              The data to be hashed can be specified either as a string argument
+              to the sha256 command, or as a filename or a pre-opened channel.
+              If the -filename argument is given then the file is opened, the
+              data read and hashed and the file is closed. If the -channel
+              argument is given then data is read from the channel until the end
+              of file. The channel is not closed. NOTE use of the channel or
+              filename options results in the internal use of vwait. To avoid
+              nested event loops in Tk or tclhttpd applications you should use
+              the incremental programming API (see below).
+
+              Only one of -file, -channel or string should be given.
+
+       ::sha2::sha224 ?-hex|-bin? [ -channel channel | -file filename | string ]
+              Like ::sha2::sha256, except that the SHA224 digest is returned.
+
+       ::sha2::hmac key string
+
+       ::sha2::hmac ?-hex|-bin? -key key [ -channel channel | -file filename |
+       string ]
+              Calculate an Hashed Message Authentication digest (HMAC) using the
+              SHA256 digest algorithm. HMACs are described in RFC 2104 (3) and
+              provide an SHA256 digest that includes a key. All options other
+              than -key are as for the ::sha2::sha256 command.
+
+PROGRAMMING INTERFACE
+       For the programmer, the SHA256 hash can be viewed as a bucket into which
+       one pours data. When you have finished, you extract a value that is
+       derived from the data that was poured into the bucket. The programming
+       interface to the SHA256 hash operates on a token (equivalent to the
+       bucket). You call SHA256Init to obtain a token and then call SHA256Update
+       as many times as required to add data to the hash. To release any
+       resources and obtain the hash value, you then call SHA256Final. An
+       equivalent set of functions gives you a keyed digest (HMAC).
+
+       If you have critcl and have built the tcllibc package then the
+       implementation of the hashing function will be performed by compiled
+       code. Failing that there is a pure-tcl equivalent. The programming
+       interface remains the same in all cases.
+
+       ::sha2::SHA256Init
+
+       ::sha2::SHA224Init
+              Begins a new SHA256/SHA224 hash. Returns a token ID that must be
+              used for the remaining functions.
+
+       ::sha2::SHA256Update token data
+              Add data to the hash identified by token. Calling SHA256Update
+              $token "abcd" is equivalent to calling SHA256Update $token "ab"
+              followed by SHA256Update $token "cb". See EXAMPLES.  Note that
+              this command is used for both SHA256 and SHA224. Only the
+              initialization and finalization commands of both hashes differ.
+
+       ::sha2::SHA256Final token
+
+       ::sha2::SHA224Final token
+              Returns the hash value and releases any resources held by this
+              token. Once this command completes the token will be invalid. The
+              result is a binary string of 32/28 bytes representing the 256/224
+              bit SHA256 / SHA224 digest value.
+
+       ::sha2::HMACInit key
+              This is equivalent to the ::sha2::SHA256Init command except that
+              it requires the key that will be included in the HMAC.
+
+       ::sha2::HMACUpdate token data
+
+       ::sha2::HMACFinal token
+              These commands are identical to the SHA256 equivalent commands.
+
+EXAMPLES
+
+       % sha2::sha256 "Tcl does SHA256"
+       0b91043ee484abd83c3e4b08d6034d71b937026379f0f59bda6e625e6e214789
+
+
+       % sha2::hmac Sekret "Tcl does SHA256"
+       4f9352c64d655e8a36abe73e6163a9d7a54039877c1c92ec90b07d48d4e854e0
+
+
+       % set tok [sha2::SHA256Init]
+       ::sha2::1
+       % sha2::SHA256Update $tok "Tcl "
+       % sha2::SHA256Update $tok "does "
+       % sha2::SHA256Update $tok "SHA256"
+       % sha2::Hex [sha2::SHA256Final $tok]
+       0b91043ee484abd83c3e4b08d6034d71b937026379f0f59bda6e625e6e214789
+
+
+REFERENCES
+       [1]    "Secure Hash Standard", National Institute of Standards and
+              Technology, U.S. Department Of Commerce, April 1995.
+              (http://www.itl.nist.gov/fipspubs/fip180-1.htm)
+
+       [2]    Rivest, R., "The MD4 Message Digest Algorithm", RFC 1320, MIT,
+              April 1992. (http://www.rfc-editor.org/rfc/rfc1320.txt)
+
+       [3]    Krawczyk, H., Bellare, M. and Canetti, R. "HMAC: Keyed-Hashing for
+              Message Authentication", RFC 2104, February 1997.
+              (http://www.rfc-editor.org/rfc/rfc2104.txt)
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category sha1 of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       md4, md5, ripemd128, ripemd160, sha1
+
+KEYWORDS
+       FIPS 180-1, hashing, message-digest, rfc 2104, security, sha256
+
+CATEGORY
+       Hashes, checksums, and encryption
+
+COPYRIGHT
+       Copyright (c) 2008, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

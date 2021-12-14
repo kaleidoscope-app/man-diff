@@ -1,0 +1,64 @@
+MDDIAGNOSE(8)                System Manager's Manual               MDDIAGNOSE(8)
+
+
+
+NAME
+     mddiagnose – gather information to aid in diagnosing Spotlight issues
+
+SYNOPSIS
+     mddiagnose -h
+     mddiagnose [-f path] [-e path] [-p path] [-n]
+
+DESCRIPTION
+     The mddiagnose tool gathers system and Spotlight information in order to
+     assist Apple when investigating issues related to Spotlight. A great deal
+     of information is harvested, spanning system state, system and Spotlight
+     details.
+
+   What mddiagnose Collects:
+           •   A spindump of the system
+           •   Several seconds of top output
+           •   Individual samples of mds and mdworker
+           •   Paths for all files used by Spotlight to contain its database on
+               every volume
+           •   All system logs
+           •   All spin and crash reports for the following processes:
+                  mds
+                  mdworker
+
+           •   Recent spin and crash reports for the following processes, for
+               all local users:
+                  mds
+                  mdworker
+
+           •   The query text and result quality statistics for recent Spotlight
+               searches.  The actual results of the searches are not gathered
+           •   General information about disks and mounted network shares
+           •   The path of the last file indexed by each mdworker process on
+               behalf of Spotlight.  The path of the last file which resulted in
+               a crash of an mdworker process.  In each case, only the path is
+               gathered, not the contents of the file
+           •   Spotlight configuration for each volume currently mounted on your
+               system.  This includes the path and size of all files used
+               internally by Spotlight as well as a listing of paths that are
+               user excluded from indexing
+           •   Comprehensive information about internal state of Spotlight
+
+   What mddiagnose Doesn't Collect:
+           •   No user data is harvested from any volume
+           •   No paths or files found by any search are returned
+           •   No database storage or user files are returned
+           •   No authentication credentials are harvested from the system
+
+OPTIONS
+     -h      Print full usage.
+     -m      Gather a subset of the normal report.
+     -f path Write the diagnostic to the specified path.
+     -p path Gather Spotlight permissions and filter information.  Run as owner
+             of that file.
+
+EXIT STATUS
+     mddiagnose exits with status 0 if there were no internal errors encountered
+     during the diagnostic, or >0 when an error unrelated to external state
+     occurs or unusable input is provided by the user.
+

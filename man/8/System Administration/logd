@@ -1,0 +1,38 @@
+logd(8)                      System Manager's Manual                     logd(8)
+
+NAME
+     logd – unified logging system daemon
+
+DESCRIPTION
+     logd is the part of the unified logging system that is responsible for
+     handling and managing historical data and related metadata.  For example,
+     it handles entries generated via the os_log(3) family of facilities.
+
+           { process }
+                `--- os_log ---> [ page ]
+                                 [ page ]
+                                 [ page ]
+                                     `---> { logd }
+                                              | `---> [ buffer ]
+                                              |
+                                              `---> [ data store ]
+
+     All processes that use os_log(3) share pages of memory with logd and append
+     entries to them.  logd reads pages and combines and compresses this data.
+     Depending on configured policies, it keeps them in a local ring buffer or
+     writes them out to persistent storage.
+
+           { logd }
+              | `---> [ buffer ] ----.
+              |                      ,`---> { log show }
+              `---> [ data store ] -'
+
+     The log(1) utility can view these data by requesting logd for access to
+     both the ring buffer and the persistent storage.
+
+SEE ALSO
+     log(1), os_log(3), diagnosticd(8)
+
+     Logging | Apple Developer Documentation:
+     https://developer.apple.com/documentation/os/logging
+

@@ -1,0 +1,70 @@
+PERL(1)                      General Commands Manual                     PERL(1)
+
+NAME
+     perl, a2p – Practical Extraction and Report Language
+
+SYNOPSIS
+     perl ...
+     a2p ...
+
+DESCRIPTION
+     To support multiple versions, the program named perl now just selects the
+     real version of Perl to run, and the program named a2p now just selects the
+     real version of the awk-to-perl translator to run, depending on various
+     settings.  The current supported versions are and , with the default being
+     (older alternate versions are provided for backward-compatibility, while
+     newer alternate versions are provided before we are ready to make it the
+     default).  Use
+
+           % man perl
+           % man perl
+           % man a2p
+           % man a2p
+
+     to see the man page for a specific version.  When the version is
+     unspecified, as in:
+
+           % man perldoc
+
+     the man page for the (unmodified) default version of Perl () will be shown.
+
+CHANGING THE DEFAULT PERL VERSION
+     Using
+
+           % defaults write com.apple.versioner.perl Version
+
+     will make version the user default when running the both the perl and a2p
+     commands (versioner is the internal name of the version-selection software
+     used).
+
+     To set a system-wide default, replace ‘com.apple.versioner.perl’ with
+     ‘/Library/Preferences/com.apple.versioner.perl’ (admin privileges will be
+     required).
+
+     The environment variable VERSIONER_PERL_VERSION can also be used to set the
+     perl and a2p version:
+
+           % export VERSIONER_PERL_VERSION= # Bourne-like shells
+                or
+           % setenv VERSIONER_PERL_VERSION # C-like shells
+           % perl ...
+
+     This environment variable takes precedence over the setting in any
+     preference file.
+
+USING A SPECIFIC VERSION
+     Rather than using the perl command, one can use a specific version
+     directly.  For example, running perl from the command line will run the
+     version of Perl, independent of what the default version of Perl is.
+
+     One can use a specific version of Perl on the #! line of a script, but that
+     may have portability and future compatibility issues.
+
+     Note that the preference files and environment variable that apply to the
+     perl command, do not apply when running a specific version of Perl.  In
+     particular, running perl will always default to 64-bit execution (unless
+     one uses the arch(1) command to specifically select a 32-bit architecture).
+
+SEE ALSO
+     perl(1), perl(1), a2p(1), a2p(1), arch(1)
+

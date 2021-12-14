@@ -1,0 +1,74 @@
+assetutil(1)                 General Commands Manual                assetutil(1)
+
+NAME
+     assetutil process asset catalog .car files
+
+SYNOPSIS
+     assetutil [-ViotshMgpTZ] inputfile
+
+DESCRIPTION
+     assetutil processes a .car file generated from a image catalog removing
+     requested scale factors, device idioms, subtypes, performance and memory
+     classes. When thinning scale, idiom, subtype, performance, memory, and
+     graphicsclassfallbacks can be given multiple times, the resulting file will
+     contain all of the assets that match all of the parameters given. If scale,
+     idiom, subtype and graphics class are given in one set, the same parameters
+     must all be present in the subsequent set of parmeters. (IE the count must
+     match)
+
+     A list of flags and their descriptions:
+
+     -V       version information for assetutil
+
+     -I       Produce a JSON description of the asset catalog object with the
+              given name to --output directory if given or to stdout if no
+              output path given. If no name is provided, report on the contents
+              of the entire car file.
+
+     -i       Keep all assets that have idiom that is given on the command line.
+
+     -s       Keep all assets that have scale factor that is given on the
+              command line, present scale factors will not be removed if there
+              is no fallback available.
+
+     -p       Keep all assets that have the display gamut that is given on the
+              command line, present display gamuts  will not be removed if there
+              is no fall back available.
+
+     -M       Keep all assets that have memory class that is given on the
+              command line, present memory class will not be removed if there is
+              no fallback available.
+
+     -g       Keep all assets that have graphics class that is given on the
+              command line. The present graphics class will not be removed if
+              there is no fallback available.
+
+     -h       process the hosted idioms list, this is a list of the idioms that
+              must always be preserved in the car file. This list cannot contain
+              universal, and the different idioms should be given in a comma
+              separated list.
+
+     -i       Idiom to keep. Can be one of universal/phone/pad.
+
+     -t       Subtype to keep (integer)
+
+     -c       Main Assets.car file used to supply the names of the assets to the
+              -I (--info) and the dump options -d (--dump) and -D (--dump-
+              stack).
+
+     -o       Output file name, if no output file is given then input file is
+              overwritten.
+
+     -T       compare thinning attributes
+              ´scale=2:idiom=phone:memory=2:graphicsclass=MTL1,2/scale=2:idiom=phone:memory=1:graphicsclass=MTL2,2´
+              will print to stdout if the files was thinned with the above
+              thinning attributes, would the same Asset file result in both
+              cases.
+
+     -n       given a comma separated list of names, any assets in the car file
+              that match one of the given names are preserved. Names are
+              compared case insensitivly Name == name, uses the -o --output file
+              to save the resulting .car file.
+
+     -Z       do an integrity check of the input file.
+

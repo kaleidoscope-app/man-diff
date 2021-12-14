@@ -1,0 +1,158 @@
+iwidgets::selectiondialog(1)     [incr Widgets]     iwidgets::selectiondialog(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::selectiondialog - Create and manipulate a selection dialog
+       widget
+
+SYNOPSIS
+       iwidgets::selectiondialog pathName ?options?
+
+INHERITANCE
+       itk::Toplevel <- iwidgets::Shell <- iwidgets::Dialogshell <-
+       iwidgets::Dialog <- iwidgets::Selectiondialog
+
+STANDARD OPTIONS
+
+       activeBackground  background         borderWidth        cursor
+       exportSelection   foreground         highlightColor     highlightThickness
+       insertBackground  insertBorderWidth  insertOffTime      insertOnTime
+       insertWidth       selectBackground   selectBorderWidth  selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       textBackground  textFont
+
+       See the "entryfield" widget manual entry for details on the above
+       associated options.
+
+       labelFont
+
+       See the "labeledwidget" widget manual entry for details on the above
+       associated options.
+
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" widget class manual entry for details on the above
+       associated options.
+
+       textBackground  textFont
+
+       See the "scrolledlistbox" widget class manual entry for details on the
+       above associated options.  childsitepos        itemsCommanditemsLabel
+                       itemsOn selectionCommand       selectionLabelselectionOn
+
+       See the "selectionbox" widget manual entry for details on the above
+       associated options.
+
+INHERITED OPTIONS
+       buttonBoxPadX   buttonBoxPadY  buttonBoxPos    padX
+       padY            separator      thickness
+
+       See the "dialogshell" widget  manual entry for details on the above
+       inherited options.
+
+       height          master         modality        width
+
+       See the "shell" widget  manual entry for details on the above inherited
+       options.
+
+       title
+
+       See the "Toplevel" widget  manual entry for details on the above
+       inherited options.
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::selectiondialog command creates a selection box similar to
+       the OSF/Motif standard selection dialog composite widget.  The
+       selectiondialog is derived from the Dialog class and is composed of a
+       selectionbox with commands to manipulate the dialog buttons.
+
+
+METHODS
+       The iwidgets::selectiondialog command creates a new Tcl command whose
+       name is pathName.  This command may be used to invoke various operations
+       on the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for selectiondialog widgets:
+
+ASSOCIATED METHODS
+       childsite       clear          get             insert
+       selectitem
+
+       See the "selectionbox" widget manual entry for details on the above
+       associated methods.
+
+       curselection    delete         index           nearest
+       scan            selection      size
+
+       See the "listbox" widget manual entry for details on the above associated
+       methods.
+
+INHERITED METHODS
+       add             buttonconfigure                defaulthide
+       invoke          show
+
+       See the "buttonbox" widget manual entry for details on the above
+       inherited methods.
+
+       activate        center         deactivate
+
+       See the "shell" widget manual entry for details on the above inherited
+       methods.
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::selectiondialog command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::selectiondialog
+              command.
+
+
+COMPONENTS
+       Name:           selectionbox
+       Class:          Selectionbox
+
+              The selectionbox component is the selection box for the selection
+              dialog.  See the "selectionbox" widget manual entry for details on
+              the selectionbox component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::selectiondialog .sd
+               .sd activate
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       selectiondialog, selectionbox, dialog, dialogshell, shell, widget
+
+
+
+

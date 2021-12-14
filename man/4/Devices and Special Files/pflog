@@ -1,0 +1,27 @@
+PFLOG(4)                      Device Drivers Manual                     PFLOG(4)
+
+NAME
+     pflog – packet filter logging interface
+
+SYNOPSIS
+     pseudo-device pflog
+
+DESCRIPTION
+     The pflog interface is a pseudo-device which makes visible all packets
+     logged by the packet filter.  Logged packets can easily be monitored in
+     real time by invoking tcpdump(1) on the pflog interface.
+
+     Instances of the pflog interface can be created using ifconfig(8).
+
+EXAMPLES
+     Create a pflog interface and monitor all packets logged on it:
+
+           # ifconfig pflog1 create
+           # tcpdump -n -e -ttt -i pflog1
+
+SEE ALSO
+     inet(4), inet6(4), netintro(4), pf(4), ifconfig(8), tcpdump(1)
+
+HISTORY
+     The pflog device first appeared in OpenBSD 3.0.
+

@@ -1,0 +1,59 @@
+cupsd-helper(8)                    Apple Inc.                    cupsd-helper(8)
+
+
+
+NAME
+       cupsd-helper - cupsd helper programs (deprecated)
+
+SYNOPSIS
+       cups-deviced request-id limit user-id options
+       cups-driverd cat ppd-name
+       cups-driverd list request_id limit options
+       cups-exec sandbox-profile [ -g group-id ] [ -n nice-value ] [ -u user-id
+       ] /path/to/program argv0 ...  argvN
+
+DESCRIPTION
+       The cupsd-helper programs perform long-running operations on behalf of
+       the scheduler, cupsd(8).  The cups-deviced helper program runs each CUPS
+       backend(7) with no arguments in order to discover the available printers.
+
+       The cups-driverd helper program lists all available printer drivers, a
+       subset of "matching" printer drivers, or a copy of a specific driver PPD
+       file.
+
+       The cups-exec helper program runs backends, filters, and other programs.
+       On macOS these programs are run in a secure sandbox.
+
+FILES
+       The cups-driverd program looks for PPD and driver information files in
+       the following directories:
+
+           /Library/Printers
+           /opt/share/ppd
+           /System/Library/Printers
+           /usr/local/share/ppd
+           /usr/share/cups/drv
+           /usr/share/cups/model
+           /usr/share/ppd
+
+       PPD files can be compressed using the gzip(1) program or placed in
+       compressed tar(1) archives to further reduce their size.
+
+       Driver information files must conform to the format defined in
+       ppdcfile(5).
+
+NOTES
+       CUPS printer drivers, backends, and PPD files are deprecated and will no
+       longer be supported in a future feature release of CUPS.  Printers that
+       do not support IPP can be supported using applications such as
+       ippeveprinter(1).
+
+SEE ALSO
+       backend(7), cups(1), cupsd(8), cupsd.conf(5), filter(7), ppdcfile(5),
+       CUPS Online Help (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

@@ -1,0 +1,115 @@
+CVGATHER(8)                  System Manager's Manual                 CVGATHER(8)
+
+
+
+NAME
+       cvgather - Compile debugging information for a Xsan File System
+
+       (The Windows version of cvgather contains different features and options.
+       See the StorNext Windows "Gather Debugging Info (cvgather.exe)" help page
+       for more information.)
+
+SYNOPSIS
+       cvgather -f_VolName [-sukxr] [-o OutputFile] [-n NumberOfCvlogs]
+              [-U UserCore] [-K KernelCore] [-p SnfsPath]
+
+DESCRIPTION
+       The cvgather program is used to collect debug information from a volume.
+       This creates a tar file of the system's Xsan File System debug logs,
+       configuration, version information and disk devices.
+
+       The cvgather program will collect client debug information on client
+       machines and server information on server machines, as well as portmapper
+       information from all machines. System log files as well as Xsan log files
+       are included.  At the users option, cvgather also collects core files
+       from user space utilities, such as the fsm, and also from the operating
+       system kernel, when available.
+
+USAGE
+       When the operator encounters an error using Xsan and wishes to send
+       debugging information to Apple technical support, the cvgather utility
+       may be run.  The following command arguments and options affect the
+       behavior of cvgather.
+
+
+       -f VolName
+              Specify the name of the volume for which debugging information
+              should be collected. Some information is universal to all
+              installed volumes, while some is unique to each file system.
+
+       -k     Collect the core file from the operating system kernel. This
+              option is not supported on Linux. The -k option collects the
+              kernel core from the default location for the machine's operating
+              system. To collect the kernel core from another location use -K.
+
+       -K KernelCore
+              Collect the kernel core file from any file. You must specify the
+              full filename as well as the path.
+
+       -n NumberOfCvlogs
+              Specify the number of cvlog files to include in the tarball. If
+              this option is not selected, 4 will be used. This is the default
+              number of cvlogs used by the fsm.
+
+       -o OutputFile
+              Specify the name of the output file. This name is appended with a
+              _timestamp and the suffix '.tgz'. The timestamp is appended to the
+              filename to allow for the existence of multiple tar files. If this
+              option is not selected, the name of the volume will be used as a
+              default.
+
+       -p SnfsPath
+              Specify the file path to the Xsan install directory.  If this
+              option is not selected, the path
+              /System/Library/Filesystems/acfs.fs/Contents will be used as a
+              default.
+
+       -s     Gather symbol information without core files.
+
+       -u     Collect the core file from user executables, such as the fsm.  By
+              default, if they exist, cvgather will pick up a file named "core"
+              and the the most recently modified "core.*" file on systems that
+              support core file names with extensions.  The -u option collects
+              core files from the 'debug' directory in the Xsan directory.  To
+              collect user core files from another location or core files with
+              with non-standard names use -U.
+
+       -U UserCore
+              Collect the user core file from any file. You must specify the
+              full filename as well as the path.
+
+       -r     Show numerical addresses instead of trying to determine symbolic
+              host
+
+       -x     Exclude files that are collected by pse_snapshot. Note that this
+              option is intended to be used by pse_snapshot only and not for
+              general use. The behavior of this option may change without
+              warning.
+
+       When cvgather is run it will create a tar file, that can be simply e-
+       mailed to Apple technical support for evaluation. It is recommended that
+       the tar file be compressed into a standard compression format such as
+       compress, gzip, or bzip2.
+
+NOTES
+       IMPORTANT: cvgather creates a number of temporary files, thus must have
+       write privileges for the directory in which it is run. These files, as
+       well as the output tar file can be very large, especially when the kernel
+       core file is included, thus adequate disk space must be available.
+
+       Several important log files are only accessible by the root user, thus it
+       is important that cvgather be run with root privileges to gather the
+       entire range of useful information.
+
+FILES
+       /Library/Preferences/Xsan/*.cfg
+       /Library/Logs/Xsan/debug/cvfsd.out
+       /Library/Logs/Xsan/debug/nssdbg.out
+       /Library/Logs/Xsan/debug/fsmpm.out
+       /Library/Logs/Xsan/data/<volume_name>/log/cvlog*
+
+SEE ALSO
+       cvdb(8), cvversions(1), cvfsid(8) cvlabel(8)
+
+
+

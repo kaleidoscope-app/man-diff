@@ -1,0 +1,38 @@
+CVMKDIR(1)                   General Commands Manual                  CVMKDIR(1)
+
+
+
+NAME
+       cvmkdir - Create an Xsan Directory with an Affinity
+
+SYNOPSIS
+       cvmkdir [-k key] dirname
+
+DESCRIPTION
+       The cvmkdir command creates a Xsan File System directory and attaches an
+       affinity parameter (key) to it.  If no option is used and the directory
+       exists, the cvmkdir command displays the assigned affinity.  Once an
+       affinity is assigned to a directory, it cannot be altered.  If no key is
+       specified and the directory does not exist, the directory will not be
+       created.
+
+       An affinity may be dissociated from a directory by specifying an empty
+       key (e.g., "").
+
+       See snfs_config(5) for details about affinities to storage pools.
+
+OPTIONS
+       -k key Specify to the file system what affinity (key) to associate with
+              the directory.  All new sub-directories and files created beneath
+              this directory inherit its affinity.  If the affinity is changed
+              or removed only files or directories created after the change are
+              affected.
+
+       dirname
+              The path of the directory to be created.
+
+SEE ALSO
+       cvmkfile(1), cvaffinity(1), snfs_config(5)
+
+
+

@@ -1,0 +1,304 @@
+NSS_CCTL(4)                   Device Drivers Manual                  NSS_CCTL(4)
+
+
+
+NAME
+       nss_cctl - Xsan Cluster-Wide Central Control File
+
+SYNOPSIS
+       /Library/Preferences/Xsan/nss_cctl.xml
+
+DESCRIPTION
+       The Xsan File System supports cluster-wide central control to restrict
+       the behavior of Xsan cluster nodes (fsm server, volume client and
+       administrative commands such as cvadmin) from a central place. A central
+       control file nss_cctl.xml is used to specify the desired controls on the
+       cluster nodes. This file resides under /Library/Preferences/Xsan on an
+       nss coordinator server.  The filename of the nss_cctl file follows the
+       format:
+
+              nss_cctl.xml
+
+       NOTE: The recommended way to get started with the central control
+       facility is to first use the nss_cctl_template(8) commmand to generate a
+       file that can then be edited to form your nss_cctl.xml file.  The
+       addresses of hosts and names of filesystems will be those that are
+       currently in use and mounted in the cluster in which you are running the
+       template command.
+
+       This control file is in xml format and has hierarchical structure.  The
+       top level element is snfsControl. It contains control element
+       securityControl for certain volumes. If you have different controls for
+       different volumes, then each volume should have its own control
+       definition. A special virtual volume #SNFS_ALL# is used as the default
+       control for volumes not defined in this control file. It is also the
+       required file system name when configuring the snfsAdmin and
+       snfsAdminControl options.  NOTE: You cannot have a real volume named as
+       #SNFS_ALL#.
+
+       Each volume related control element (i.e. securityControl) has a list of
+       controlEntry. Each controlEntry defines the client and the intended
+       controls. The simplest and preferred way of defining a client within the
+       controlEntry is in the following manner:
+
+              <client>
+
+                  <address value="value"/>
+              </client>
+
+       where value can either be an IP address (or hostname) by itself, or
+       followed by a netmask length separated by a slash (e.g "192.0.2.0/24") if
+       one would like to specify a subnet. An IP address by itself is equivalent
+       to the same IP address followed by the maximum netmask length of the IP
+       version in use (e.g. "192.0.2.10" is equivalent to "192.0.2.10/32").
+       Both IPv4 and IPv6 are supported. There may be multiple address entries
+       within the client element if the specified addresses will be sharing the
+       same controls within the controlEntry.
+
+       A value which matches any client can be specified by using a zero length
+       netmask, for example "0.0.0.0/0".
+
+       Another way of defining a client is supported for backwards
+       compatibility, wherein its type is explicitly defined: host or netgrp.
+       For type host, the client is defined in the following format below, where
+       value may be either an IP address or hostname:
+
+              <client type="host">
+
+                  <hostname value="value"/>
+              </client>
+
+       For type netgrp, two sub-elements network, which defines the IP address
+       of the subnet, and maskbits, which defines the netmask length of the
+       subnet, need to be included as follows:
+
+              <client type="netgrp">
+
+                  <network value="value"/>
+                  <maskbits value="value"/>
+              </client>
+
+       NOTE: When there is overlap between client IP addresses, the controls
+       which correspond to the IP address with the longest netmask length will
+       take precedence.
+
+   Controls
+       Currently eight controls are supported. Each control has this format:
+
+              <control value="value"/>
+
+       The value can be either true or false. The control is one of the
+       following controls:
+
+       mountReadOnly
+              Controls whether the client should mount the given volume as
+              readonly. Value true(false) means the volume is mounted as
+              readonly (read/write). If this control is not specified, the
+              default is read/write.
+
+       mountDlanClient
+              Controls whether the client can mount the given volume via proxy
+              client. Value true(false) means the volume is (not) allowed to
+              mount via proxy client. The default is "mount via proxy client not
+              allowed".
+
+       takeOwnership
+              Controls whether users on a windows client are allowed to take
+              ownership of file or directory of a stornext volume.  Value
+              true(false) means that taking ownership is (not) allowed. The
+              default is that "take ownership is not allowed". Note: this
+              control only applies to the clients running on Windows platforms.
+
+       snfsAdmin
+              Controls whether cvadmin(8), sgmanage(8), and snquota(1) running
+              on a host are allowed to have super-admin privilege to run
+              privileged commands such as start/stop a volume, manipulate
+              storage pools or change quota settings.  Value true(false) means
+              users with superadmin privilege is (not) allowed to run privileged
+              commands. The default value is "false". This option can only be
+              defined under the #SNFS_ALL# file system name.
+
+       snfsAdminConnect
+              Controls whether cvadmin(8) running on a client is allowed to
+              connect to other fsm host via -H option.  Value true(false) means
+              cvadmin(8) is (not) allowed to connect to other fsm host via -H
+              option. The default value is false. This option can only be
+              defined under the #SNFS_ALL# file system name.
+
+       exec   Controls whether binary executable files on the volume are allowed
+              to be executed. Value true(false) means binary executable files
+              are (not) allowed to be executed. The default value is true, i.e.
+              the execution is allowed.
+
+       suid   Controls whether setuid bit is allowed to take effect.  Value
+              true(false) means setuid bit is (not) allowed to take effect. The
+              default value is true.
+
+       denyRetrieves
+              Controls whether a client is permitted to retrieve offline files
+              by reading them.  This only applies to managed file systems.  When
+              a file is offline, storage manager is responsible for retrieving
+              its contents, this can usually be triggered by a file read.  If
+              read based retrieve is disabled then an fsretrieve command must be
+              used, either directly, or via a web services call.  Value
+              true(false) means that the client cannot (can) initiate retrieves.
+              The default value is false.
+
+       globalSuperUser
+              Controls whether a client can override the file system
+              configuration for global super user. This nss_cctl variable only
+              has meaning when the file system configuration variable
+              globalSuperUser has been set to false, disabling global super user
+              for clients.  When this nss_cctl variable is set to true for a set
+              of clients, these clients behave as if the configuration variable
+              had been set to true. See the snfs_config(5) man page for a
+              complete description of this privilege.  The default value is
+              false.  Apple Xsan clients do not honor the setting of
+              globalSuperUser.
+
+       NOTE: If no match is found for a given client's IP address, then the
+       client has no privilege to access a Xsan cluster. If a volume has been
+       defined but the client is not defined in that volume's control
+       (securityControl), then the client has no access privilege to the
+       specified volume.
+
+   Non-voting and Voting client configuration
+       The element nonVotingCluster can be included (on the same level as the
+       securityControl element) to set the default client behavior (voting or
+       non-voting) within the cluster during the election that will choose the
+       host on which a specific file system manager will run. The cluster to
+       which this control is applied will be the one specified by the nss_cctl
+       filename.  NOTE: If no cluster is specified in the filename, please refer
+       to the beginning of this man page's DESCRIPTION section for more
+       information on which cluster this control will take effect.
+
+       The element nonVotingCluster has the following format:
+
+              <nonVotingCluster value="value"/>
+
+       where value can either be true or false. If value is true, the default
+       behavior of all clients within the cluster will be to abstain from voting
+       in the election. In effect, unnecessary NSS message traffic may be
+       greatly reduced. If the nonVotingCluster is not included in the xml file,
+       client behavior will be the same as if its value were set to false (i.e.
+       all clients within the cluster will be voting in the election).
+
+       Note that clients running versions of StorNext prior to StorNext 6.0 use
+       an older version of the NSS protocol (NSS1), which does not honor the
+       non-voting cluster configuration options specified in this file.
+
+       NOTE: There always needs to be voting clients within the cluster so that
+       a decision can be derived from the election. Therefore, when the
+       nonVotingCluster element is set to true, it should be used in conjunction
+       with the votingClients element (described in the following paragraphs)
+       which allows one to specify an explicit list of voting clients.
+
+       It is also possible to specify a group of non-voting clients within a
+       cluster by creating a list of client addresses with the nonVotingClients
+       element (also used on the same level as that of the securityControl
+       element). The nonVotingClients element has the following format:
+
+              <nonVotingClients>
+
+                  <address value="value"/>
+                  <address value="value"/>
+                   .
+                   .
+                   .
+                  <address value="value"/>
+              </nonVotingClients>
+
+       where each address element is the same element used when specifying a
+       client within a controlEntry, and there must be at least one address
+       element. To specify a group of voting clients, the same format is used
+       but replacing nonVotingClients with votingClients.
+
+       NOTE: For more information on the address element and its allowed values,
+       please refer to the beginning of this man page's DESCRIPTION section.
+
+       NOTE: All three elements (i.e. nonVotingCluster, nonVotingClients and
+       votingClients) may be in the nss_cctl.xml file at the same time. The
+       votingClients and nonVotingClients elements will take precedence over the
+       nonVotingCluster element. When a client IP address matches elements in
+       both nonVotingClients and votingClients, the element with the longest
+       netmask will take precedence; if there is a tie, the votingClients
+       element will be used.
+
+LIMITATIONS
+       Only the Linux platform is supported to be a nss coordinator server
+       capable of parsing this xml file.
+
+EXAMPLE
+       The following is an example of nss_cctl.xml file. It defines the control
+       of volume xsan1, and also the special virtual volume #SNFS_ALL#.
+
+       NOTE: As stated earlier, instead of using this example, you can generate
+       a starting point nss_cctl.xml file using the nss_cctl_template(8)
+       command.
+
+          <snfsControl xmlns="http://www.quantum.com/snfs/cctl/v1.0">
+              <nonVotingCluster value="true"/>
+              <votingClients>
+                  <address value="192.0.2.108/24"/>
+                  <address value="198.51.100.215"/>
+              </votingClients>
+              <securityControl fileSystem="xsan1">
+                 <controlEntry>
+                      <client>
+                          <address value="192.0.2.108"/>
+                          <address value="198.51.100.215"/>
+                      </client>
+                      <controls>
+                          <mountReadOnly value="false"/>
+                          <mountDlanClient value="false"/>
+                          <takeOwnership value="false"/>
+                          <exec value="true"/>
+                          <suid value="false"/>
+                      </controls>
+                  </controlEntry>
+               <controlEntry>
+                   <client type="host">
+                    <hostName value="192.0.2.132"/>
+                   </client>
+                   <controls>
+                    <mountReadOnly value="true"/>
+                    <mountDlanClient value="true"/>
+                    <takeOwnership value="false"/>
+                    <exec value="true"/>
+                    <suid value="false"/>
+                   </controls>
+               </controlEntry>
+               <controlEntry>
+                   <client type="netgrp">
+                    <network value="192.0.2.0"/>
+                    <maskbits value="24"/>
+                   </client>
+                   <controls>
+                    <takeOwnership value="true"/>
+                    <mountReadOnly value="true"/>
+                   </controls>
+               </controlEntry>
+              </securityControl>
+              <securityControl fileSystem="#SNFS_ALL#">
+               <controlEntry>
+                   <client type="host">
+                    <hostName value="linux_ludev"/>
+                   </client>
+                   <controls>
+                    <snfsAdmin value="true"/>
+                    <snfsAdminConnect value="true"/>
+                   </controls>
+               </controlEntry>
+              </securityControl>
+          </snfsControl>
+
+FILES
+       /Library/Preferences/Xsan/nss_cctl.xml
+       /System/Library/Filesystems/acfs.fs/Contents/examples/nss_cctl.example
+
+SEE ALSO
+       cvadmin(8), fsnameservers(4), nss_cctl_template(8), sgmanage(8),
+       snfs_config(5), snquota(1)
+
+
+

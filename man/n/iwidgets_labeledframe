@@ -1,0 +1,169 @@
+iwidgets::labeledframe(1)        [incr Widgets]        iwidgets::labeledframe(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::labeledframe - Create and manipulate a labeled frame widget
+
+SYNOPSIS
+       iwidgets::labeledframe pathName ?options?
+
+INHERITANCE
+       itk::Archetype <- iwidgets::Labeledframe
+
+STANDARD OPTIONS
+       background      borderwidth    cursor
+       foreground      relief
+
+       See the "options" manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           iPadX
+       Class:          IPad
+       Command-Line Switch:           -ipadx
+
+              Specifies horizontal padding space between the border and the
+              childsite.  The value may have any of the forms acceptable to
+              Tk_GetPixels.  The default is 0.
+
+       Name:           iPadY
+       Class:          IPad
+       Command-Line Switch:           -ipady
+
+              Specifies vertical padding space between the border and the
+              childsite.  The value may have any of the forms acceptable to
+              Tk_GetPixels.  The default is 0.
+
+       Name:           labelBitmap
+       Class:          Bitmap
+       Command-Line Switch:           -labelbitmap
+
+              Specifies a bitmap to display in the label, in any of the forms
+              acceptable to Tk_GetBitmap.  This option overrides the labeltext
+              option.
+
+       Name:           labelImage
+       Class:          Image
+       Command-Line Switch:           -labelimage
+
+              Specifies a image to be used as the label. The image may be any of
+              the values created by the image create command.  This option
+              overrides both the labelbitmap and labeletext options.
+
+       Name:           labelMargin
+       Class:          Margin
+       Command-Line Switch:           -labelmargin
+
+              Specifies the distance between the inner ede of the hull frames
+              relief, and the label in any of the forms acceptable to
+              Tk_GetPixels.  The default is 10 pixels.
+
+       Name:           labelText
+       Class:          Text
+       Command-Line Switch:           -labeltext
+
+              Specifies the text of the label around the childsite.
+
+       Name:           labelVariable
+       Class:          Variable
+       Command-Line Switch:           -labelvariable
+
+              Specifies the text variable of the label around the childsite.
+
+       Name:           labelFont
+       Class:          Font
+       Command-Line Switch:           -labelfont
+
+              Specifies the font of the label around the childsite.
+
+       Name:           labelPos
+       Class:          Position
+       Command-Line Switch:           -labelpos
+
+              Specifies the position of the label within the grooved relief of
+              the hull widget.   ne, n, nw, se, s, sw, en, e, es, wn, w, ws
+              Default is n.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::labeledframe command creates a hull frame with a grooved
+       relief, a label positioned within the grooved relief of the hull frame,
+       and a frame childsite.  The frame childsite can filled with any widget
+       via a derived class or though the use of the childsite method.  This
+       class was designed to be a general purpose base class for supporting the
+       combination of labeled frame and a childsite.  The options include the
+       ability to position the label at configurable locations within the
+       grooved relief of the hull frame, and control the display of the label.
+
+METHODS
+       The iwidgets::labeledframe command creates a new Tcl command whose name
+       is pathName.  This command may be used to invoke various operations on
+       the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for labeledframe widgets:
+
+WIDGET-SPECIFIC METHODS
+       pathName childsite
+              Return the path name of the child site.
+
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::labeledframe command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::labeledframe command.
+
+
+COMPONENTS
+       Name:           label
+       Class:          label
+
+              The label component provides the label for the labeled widget.
+              See the "label" widget manual entry for details on the label
+              component item.
+
+EXAMPLE
+              The labeledframe was primarily meant to be a base class.  The
+              Radiobox is a good example of a derived classe of the labeledframe
+              class.  In order to provide equal support for composite classes,
+              the 'childsite' methods also exists.  The following is an example
+              of 'childsite' method usage.
+
+
+               package require Iwidgets 4.0
+               iwidgets::labeledframe .lw -labeltext "Entry Frame" -labelpos n
+               pack .lw -fill both -expand yes -padx 10 -pady 10
+               set cs [.lw childsite]
+
+               pack [iwidgets::entryfield $cs.entry1 -labeltext "Name:"] -side top -fill x
+               pack [iwidgets::spinint $cs.entry2 -labeltext "Number:"] -side top -fill x
+               pack [iwidgets::pushbutton $cs.entry3 -text "Details:"] -side top -fill x
+
+
+
+AUTHOR
+       John A. Tucker
+
+KEYWORDS
+       labeledframe, widget
+
+
+

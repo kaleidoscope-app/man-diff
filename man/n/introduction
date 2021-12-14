@@ -1,0 +1,150 @@
+doctools2toc_introduction(n)   Documentation tools  doctools2toc_introduction(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       doctools2toc_introduction - DocTools - Tables of Contents
+
+DESCRIPTION
+       doctoc (short for documentation tables of contents) stands for a set of
+       related, yet different, entities which are working together for the easy
+       creation and transformation of tables and contents for documentation.
+
+       These are
+
+       [1]    A tcl based language for the semantic markup of a table of
+              contents.  Markup is represented by Tcl commands.  Beginners
+              should start with the doctoc language introduction.  The formal
+              specification is split over two documents, one dealing with the
+              doctoc language syntax, the other a doctoc language command
+              reference.
+
+       [2]    A set of packages for the programmatic manipulation of tables of
+              contents in memory, and their conversion between various formats,
+              reading and writing. The aforementioned markup language is one of
+              the formats which can be both read from and written to.
+
+       [3]    The system for the conversion of tables of contents is based on a
+              plugin mechanism, for this we have two APIs describing the
+              interface between the packages above and the import/export
+              plugins.
+
+       Which of the more detailed documents are relevant to the reader of this
+       introduction depends on their role in the documentation process.
+
+       [1]    A writer of documentation has to understand the markup language
+              itself. A beginner to doctoc should read the more informally
+              written doctoc language introduction first. Having digested this
+              the formal doctoc language syntax specification should become
+              understandable. A writer experienced with doctoc may only need the
+              doctoc language command reference from time to time to refresh her
+              memory.
+
+              While a document is written the dtp application can be used to
+              validate it, and after completion it also performs the conversion
+              into the chosen system of visual markup, be it *roff, HTML, plain
+              text, wiki, etc. The simpler dtplite application makes internal
+              use of doctoc when handling directories of documentation,
+              automatically generating a proper table of contents for them.
+
+       [2]    A processor of documentation written in the doctoc markup language
+              has to know which tools are available for use.
+
+              The main tool is the aforementioned dtp application provided by
+              Tcllib. The simpler dtplite does not expose doctoc to the user. At
+              the bottom level, common to both applications, however we find the
+              three packages providing the basic facilities to handle tables of
+              contents, i.e. import from textual formats, programmatic
+              manipulation in memory, and export to textual formats. These are
+
+              doctoools::toc
+                     Programmatic manipulation of tables of contents in memory.
+
+              doctoools::toc::import
+                     Import of tables of contents from various textual formats.
+                     The set of supported formats is extensible through plugin
+                     packages.
+
+              doctoools::toc::export
+                     Export of tables of contents to various textual formats.
+                     The set of supported formats is extensible through plugin
+                     packages.
+       See also section Package Overview for an overview of the dependencies
+       between these and other, supporting packages.
+
+       [3]    At last, but not least, plugin writers have to understand the
+              interaction between the import and export packages and their
+              plugins.  These APIs are described in the documentation for the
+              two relevant packages, i.e.
+
+              •      doctoools::toc::import
+
+              •      doctoools::toc::export
+
+RELATED FORMATS
+       The doctoc format does not stand alone, it has two companion formats.
+       These are called docidx and doctools, and they are intended for the
+       markup of keyword indices, and of general documentation, respectively.
+       They are described in their own sets of documents, starting at the
+       DocTools - Keyword Indices and the DocTools - General, respectively.
+
+PACKAGE OVERVIEW
+
+                                           ~~~~~~~~~~~ doctools::toc ~~~~~~~~~~~
+                                          ~~                   |               ~~
+                       doctools::toc::export ~~~~~~~~~~~~~~~~~ | ~~~~~~~~~~~~~ doctools::toc::import
+                               |                               |                       |
+               +---------------+-------------------------+     |    +------------------+---------------+-----------------------+---------------+
+               |               |                         |     |    |                  |               |                       |               |
+       doctools::config        =                         |     |    |                  =       doctools::include       doctools::config doctools::paths
+                               |                         |     |    |                  |
+                       doctools::toc::export::<*>        |     |    |          doctools::toc::import::<*>
+                               doctoc                    |     |    |                  doctoc, json
+                               json                      |     |    |                  |           \\
+                               html                      |     |    |          doctools::toc::parse \\
+                               nroff                     |     |    |                  |             \\
+                               wiki                      |     |    |  +---------------+              json
+                               text                      |     |    |  |               |
+                                                       doctools::toc::structure        |
+                                                                                       |
+                                                                               +-------+---------------+
+                                                                               |                       |
+                 doctools::html  doctools::html::cssdefaults           doctools::tcl::parse    doctools::msgcat
+                       |                                                                               |
+                 doctools::text  doctools::nroff::man_macros                                           =
+                                                                                                       |
+                                                                                               doctools::msgcat::toc::<*>
+                                                                                                       c, en, de, fr
+                                                                                                       (fr == en for now)
+               ~~      Interoperable objects, without actual package dependencies
+               --      Package dependency, higher requires lower package
+               =       Dynamic dependency through plugin system
+               <*>     Multiple packages following the given form of naming.
+
+
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category doctools of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       doctools2doc_introduction, doctools2idx_introduction
+
+KEYWORDS
+       contents, conversion, formatting, markup, parsing, plugin, semantic
+       markup, table of contents
+
+CATEGORY
+       Documentation tools
+
+COPYRIGHT
+       Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

@@ -1,0 +1,67 @@
+launchd(8)                   System Manager's Manual                  launchd(8)
+
+NAME
+     launchd – System wide and per-user daemon/agent manager
+
+DESCRIPTION
+     launchd manages processes, both for the system as a whole and for
+     individual users.
+
+     The primary and preferred interface to launchd is via the launchctl(1) tool
+     which (among other options) allows the user or administrator to load and
+     unload jobs. Where possible, it is preferable for jobs to launch on demand
+     based on criteria specified in their respective configuration files.
+
+     launchd also manages XPC services that are bundled within applications and
+     frameworks on the system.
+
+     During boot launchd is invoked by the kernel to run as the first process on
+     the system and to further bootstrap the rest of the system.
+
+     You cannot invoke launchd directly.
+
+NOTES
+     On Darwin operating systems, the canonical way to launch a daemon is
+     through launchd as opposed to traditional POSIX and POSIX-like mechanisms
+     or mechanisms provided in earlier versions of OS X. These alternate methods
+     should be considered deprecated and not suitable for new projects.
+
+     In the launchd lexicon, a daemon is, by definition, a system-wide service
+     of which there is one instance for all clients. An agent is a service that
+     runs on a per-user basis.  Daemons should not attempt to display UI or
+     interact directly with a user's login session. Any and all work that
+     involves interacting with a user should be done through agents.
+
+     XPC services which are marked with a ServiceType of System are functionally
+     equivalent to daemons and run in the same environment, sharing the same
+     Mach bootstrap namespace. XPC services which are marked with a ServiceType
+     of User are equivalent to agents with the LimitLoadToSessionType key
+     specifying the Background session and run in the same environment, sharing
+     the same Mach bootstrap namespace. See launchd.plist(5) for more
+     information about user sessions.
+
+     On Darwin platforms, a user environment includes a specific Mach bootstrap
+     subset, audit session and other characteristics not recognized by POSIX.
+     Therefore, making the appropriate setuid(2) and setgid(2) system calls is
+     not sufficient to completely assume the identity for a given user. Running
+     a service as a launchd agent or a per-user XPC service is the only way to
+     run a process with a complete identity of that user.
+
+FILES
+     ~/Library/LaunchAgents         Per-user agents provided by the user.
+     /Library/LaunchAgents          Per-user agents provided by the
+                                    administrator.
+     /Library/LaunchDaemons         System-wide daemons provided by the
+                                    administrator.
+     /System/Library/LaunchAgents   Per-user agents provided by Apple.
+     /System/Library/LaunchDaemons  System-wide daemons provided by Apple.
+
+SEE ALSO
+     launchctl(1), launchd.plist(5),
+
+DEVELOPER DOCUMENTATION
+     The Daemons and Services Programming Guide can be found at the following
+     URL:
+
+     https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/Introduction.html
+

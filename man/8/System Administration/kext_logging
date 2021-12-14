@@ -1,0 +1,180 @@
+KEXT_LOGGING(8)              System Manager's Manual             KEXT_LOGGING(8)
+
+NAME
+     kext logging – verbose/logging flags for kernel extensions (kexts) in the
+     kernel and command-line utilities
+
+DESCRIPTION
+     The kext management facilities of macOS allow for logging of kext activity
+     at all system levels, from the kernel to the user-space kext daemon and
+     most command-line kext tools.  The -verbose (-v) flag of the tools provides
+     a simple system of levels that apply a set of lower level binary logging
+     flags appropriate to each tool, for maximally useful verbose output.  The
+     binary log specification is used for kernel logging and is also available
+     for use with the -verbose option when you need precise control over
+     logging.
+
+ENABLING LOGGING
+     For command-line tools the -verbose (-v) and -quiet (-q) flags control
+     verbose output.  The -verbose flag accepts a decimal level from 0-6 or a
+     hexadecimal log specification, both described below.  The -verbose flag
+     temporarily sets the log spec within the kernel, and captures any log
+     messages from the kernel to print along with the tool's own log messages.
+
+     To enable kernel kext logging (in /var/log/kernel.log) on a long-term
+     basis, use the kextlog boot arg or sysctl(8) parameter.  You can set it as
+     root using nvram(8) like so:
+
+           nvram boot-args="kextlog=0xlogspec other_boot_args"
+
+     where logspec is a hexadecimal log specification, as described below under
+     “BINARY LOG SPECIFICATION”.
+
+     Caution: Enabling logging at a high level via boot arg can greatly slow
+     down system startup time.
+
+     To change the kextlog setting at any time use sysctl(8):
+
+           sysctl -w debug.kextlog=0xlogspec
+
+VERBOSE LEVELS
+     As mentioned, for the command-line kext tools you use the -verbose (-v)
+     flag, which takes an optional argument that is either a decimal level from
+     0-6, or a hexadecimal log specification (described under “BINARY LOG
+     SPECIFICATION”). The details of each level vary by tool, but in general
+     they are:
+
+     0            Errors only (that is, suppress warnings).  Tools with a
+                  -verbose flag also support a -quiet flag to suppress all
+                  output.
+
+     1 (or none)  Basic information about program operation.
+
+     2            Basic information about program progress, including files
+                  created.
+
+     3            Information about individual kexts, link/load operation, and
+                  processing of I/O Kit personalities.
+
+     4            Detailed information about kext operations, including C++
+                  class construction/destruction, and for archives, about
+                  compression and architectures processed.
+
+     5            Debug-level information about internal operations.
+
+     6            Identical to level 5 but with bit 0x8 turned on (see the
+                  hexadecimal log specification for details).
+
+BINARY LOG SPECIFICATION
+     The binary log specification is a 32-bit value comprising a log level with
+     a bitmask divided into several regions from the least-significant nibble
+     (corresponding to digits from right to left in a hexadecimal
+     representation).  This table describes the regions and bits used; unlisted
+     regions and bits are reserved for future use:
+
+     Nibble 0     The log level, from 0-7.  Each level includes all levels below
+                  it.  This is generally two higher than the decimal level
+                  specified with -verbose.
+
+                  Log level 0 - Silent.
+
+                  Log level 1 - Errors.
+
+                  Log level 2 - Warnings.
+
+                  Log level 3 - Basic outcome/result.
+
+                  Log level 4 - Operation progress.
+
+                  Log level 5 - Steps in a given operation.
+
+                  Log level 6 - Detailed logging.
+
+                  Log level 7 - Debug level logging.
+
+                  In addition, bit 0x8 of this nibble controls whether kext-
+                  specific log messages are always printed.  kextcache(8) and
+                  kextunload(8) turn this bit on with their -verbose flag.  See
+                  “PER-KEXT LOGGING” for more information.
+
+     Nibbles 1-2  Activity flags relevant to general tool use, as in development
+                  scenarios.  The -verbose flag always includes these.  8 bits
+                  total.
+
+                  Nibble 1, Bit 0 (0x10) - General activity.
+
+                  Nibble 1, Bit 1 (0x20) - Load activity.
+
+                  Nibble 1, Bit 2 (0x40) - IPC and load settings.
+
+                  Nibble 1, Bit 3 (0x80) - Archive processing.
+
+                  Nibble 2 - Reserved.
+
+     Nibbles 3-7  Activity flags for internal operations, for debugging the kext
+                  management system itself.  These are available only when using
+                  a hexadecimal log specification; the -verbose flag never
+                  includes these.  20 bits total.
+
+                  Nibble 3, Bit 0 (0x1000) - Kext validation.
+
+                  Nibble 3, Bit 1 (0x2000) - Kext authentication.
+
+                  Nibble 3, Bit 2 (0x4000) - Kext dependency resolution.
+
+                  Nibble 4, Bit 0 (0x10000) - Directory scan (booter data scan
+                  in the kernel).
+
+                  Nibble 4, Bit 1 (0x20000) - File I/O.
+
+                  Nibble 4, Bit 2 (0x40000) - Kext bookkeeping.
+
+                  Nibble 5, Bit 0 (0x100000) - Link activity.
+
+                  Nibble 5, Bit 1 (0x200000) - C++ patching activity.
+
+                  Nibbles 6-7 - Reserved.
+
+PER-KEXT LOGGING
+     Many log messages apply to the kext being processed.  The kernel and most
+     of the command-line kext tools do not log these messages by default.  You
+     can enable these messages for an individual kext by specifying an
+     OSBundleEnableKextLogging property in its Info.plist file with a boolean
+     value of true.  For convenience, kextutil(8) automatically sets this
+     property for the kexts it is loading.
+
+     You can activate all per-kext log messages using level 6 with the -verbose
+     flag or by turning on bit 0x8 in a hexadecimal log specification.  For
+     convenience, kextcache(8) and kextunload(8) do this for all verbose levels
+     of their -verbose flag.
+
+MAPPING VERBOSE LEVELS TO LOG SPECIFICATIONS
+     Here is a list of the exact hexadecimal log specifications applied by each
+     of the -verbose levels:
+
+     0            equivalent to 0x0 for all tools.
+
+     (default level)
+                  equivalent to 0xff2, 0xff9 for kextcache(8) and kextunload(8),
+
+     1 (or none)  equivalent to 0xff3, or 0xffa for kextcache(8) and
+                  kextunload(8).
+
+     2            equivalent to 0xff4, or 0xffb for kextcache(8) and
+                  kextunload(8).
+
+     3            equivalent to 0xff5, or 0xffc for kextcache(8) and
+                  kextunload(8).
+
+     4            equivalent to 0xff6, or 0xffd for kextcache(8) and
+                  kextunload(8).
+
+     5            equivalent to 0xff7, or 0xffe for kextcache(8) and
+                  kextunload(8).
+
+     6            equivalent to 0xfff for all tools.
+
+SEE ALSO
+     kmutil(8), kernelmanagerd(8), syslog(1), kextcache(8), kextlibs(8),
+     kextload(8), kextunload(8), kextutil(8)
+

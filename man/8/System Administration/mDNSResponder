@@ -1,0 +1,102 @@
+mDNSResponder(8)             System Manager's Manual            mDNSResponder(8)
+
+NAME
+     mDNSResponder – Multicast and Unicast DNS daemon
+
+SYNOPSIS
+     mDNSResponder
+
+DESCRIPTION
+     mDNSResponder (also known as mdnsd on some systems) is a daemon invoked at
+     boot time to implement Multicast DNS and DNS Service Discovery. On Mac OS X
+     10.6 (Snow Leopard), mDNSResponder is also the system-wide Unicast DNS
+     Resolver.
+
+     mDNSResponder listens on UDP port 5353 for Multicast DNS Query packets.
+     When it receives a query for which it knows an answer, mDNSResponder issues
+     the appropriate Multicast DNS Reply packet.
+
+     mDNSResponder also performs Unicast and Multicast DNS Queries on behalf of
+     client processes, and maintains a cache of the replies.
+
+     mDNSResponder has no user-specifiable command-line argument, and users
+     should not run mDNSResponder manually.
+
+LOGGING
+     There are several methods with which to examine mDNSResponder's internal
+     state for debugging and diagnostic purposes. The syslog(1) logging levels
+     map as follows:
+
+           Error - Error messages
+           Warning - Client-initiated operations
+           Notice - Sleep proxy operations
+           Info - Informational messages
+
+     By default, only log level Error is logged.
+
+     A SIGUSR1 signal toggles additional logging, with Warning and Notice
+     enabled by default:
+
+           % sudo killall -USR1 mDNSResponder
+
+     Once this logging is enabled, users can additionally use syslog(1) to
+     change the log filter for the process. For example, to enable log levels
+     Emergency - Debug:
+
+           % sudo syslog -c mDNSResponder -d
+
+     A SIGUSR2 signal toggles packet logging:
+
+           % sudo killall -USR2 mDNSResponder
+
+     A SIGINFO signal will dump a snapshot summary of the internal state to
+     /var/log/system.log:
+
+           % sudo killall -INFO mDNSResponder
+
+OPTIONAL ARGUMENTS
+     mDNSResponder accepts the following optional arguments:
+
+     -AlwaysAppendSearchDomains
+                                Append search domains for multi-labeled
+                                Partially Qualified Domain Name as well as
+                                single-labeled Partially Qualified Domain Name.
+                                This argument is not recommended because of the
+                                extra DNS traffic it generates and its adverse
+                                effect on battery life.
+
+     -NoMulticastAdvertisements
+                                Prevent the system from advertising Bonjour
+                                services via Multicast DNS.
+
+     To cause mDNSResponder to run with these optional arguments when it
+     launches on OS X 10.11 (El Capitan) and later, set the
+     AlwaysAppendSearchDomains or NoMulticastAdvertisements boolean keys to true
+     in /Library/Preferences/com.apple.mDNSResponder.plist and reboot.
+
+FILES
+     /usr/sbin/mDNSResponder /Library/Preferences/com.apple.mDNSResponder.plist
+
+INFO
+     For information on Multicast DNS, see http://www.multicastdns.org/
+
+     For information on DNS Service Discovery, see http://www.dns-sd.org/
+
+     For information on how to use the Multicast DNS and the DNS Service
+     Discovery APIs on Mac OS X and other platforms, see
+     http://developer.apple.com/bonjour/
+
+     For the source code to mDNSResponder, see
+     http://developer.apple.com/darwin/projects/bonjour/
+
+BUGS
+     mDNSResponder bugs are tracked in Apple Radar component "mDNSResponder".
+
+HISTORY
+     The mDNSResponder daemon first appeared in Mac OS X 10.2 (Jaguar).
+
+     Also available from the Darwin open source repository (though not
+     officially supported by Apple) are mDNSResponder daemons for other
+     platforms, including Microsoft Windows, Linux, FreeBSD, NetBSD, Solaris,
+     and other POSIX systems.
+

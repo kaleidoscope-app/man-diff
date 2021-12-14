@@ -1,0 +1,86 @@
+itclvars(n)                        [incr Tcl]                        itclvars(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       itclvars - variables used by [incr Tcl]
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The following global variables are created and managed automatically by
+       the [incr Tcl] library.  Except where noted below, these variables should
+       normally be treated as read-only by application-specific code and by
+       users.
+
+       itcl::library
+              When an interpreter is created, [incr Tcl] initializes this
+              variable to hold the name of a directory containing the system
+              library of [incr Tcl] scripts.  The initial value of itcl::library
+              is set from the ITCL_LIBRARY environment variable if it exists, or
+              from a compiled-in value otherwise.
+
+       itcl::patchLevel
+              When an interpreter is created, [incr Tcl] initializes this
+              variable to hold the current patch level for [incr Tcl].  For
+              example, the value "2.0p1" indicates [incr Tcl] version 2.0 with
+              the first set of patches applied.
+
+       itcl::purist
+              When an interpreter is created containing Tcl/Tk and the
+              [incr Tcl] namespace facility, this variable controls a "backward-
+              compatibility" mode for widget access.
+
+              In vanilla Tcl/Tk, there is a single pool of commands, so the
+              access command for a widget is the same as the window name.  When
+              a widget is created within a namespace, however, its access
+              command is installed in that namespace, and should be accessed
+              outside of the namespace using a qualified name.  For example,
+              namespace foo {
+                  namespace bar {
+                      button .b -text "Testing"
+                  }
+              }
+              foo::bar::.b configure -background red
+              pack .b
+       Note that the window name ".b" is still used in conjunction with commands
+       like pack and destroy.  However, the access command for the widget (i.e.,
+       name that appears as the first argument on a command line) must be more
+       specific.
+
+       The "winfo command" command can be used to query the fully-qualified
+       access command for any widget, so one can write:
+              [winfo command .b] configure -background red
+       and this is good practice when writing library procedures.  Also, in
+       conjunction with the bind command, the "%q" field can be used in place of
+       "%W" as the access command:
+              bind Button <Key-Return> {%q flash; %q invoke}
+       While this behavior makes sense from the standpoint of encapsulation, it
+       causes problems with existing Tcl/Tk applications.  Many existing
+       applications are written with bindings that use "%W".  Many library
+       procedures assume that the window name is the access command.
+
+       The itcl::purist variable controls a backward-compatibility mode.  By
+       default, this variable is "0", and the window name can be used as an
+       access command in any context.  Whenever the unknown procedure stumbles
+       across a widget name, it simply uses "winfo command" to determine the
+       appropriate command name.  If this variable is set to "1", this backward-
+       compatibility mode is disabled.  This gives better encapsulation, but
+       using the window name as the access command may lead to "invalid command"
+       errors.
+
+       itcl::version
+              When an interpreter is created, [incr Tcl] initializes this
+              variable to hold the version number of the form x.y.  Changes to x
+              represent major changes with probable incompatibilities and
+              changes to y represent small enhancements and bug fixes that
+              retain backward compatibility.
+
+
+KEYWORDS
+       itcl, variables
+
+
+

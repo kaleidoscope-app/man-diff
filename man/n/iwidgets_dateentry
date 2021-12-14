@@ -1,0 +1,151 @@
+iwidgets::dateentry(1)           [incr Widgets]           iwidgets::dateentry(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::dateentry - Create and manipulate a dateentry widget
+
+SYNOPSIS
+       iwidgets::dateentry pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::LabeledWidget <- iwidgets::Datefield <-
+       iwidgets::Dateentry
+
+STANDARD OPTIONS
+
+       background   borderWidth      cursor              exportSelection
+       foreground   highlightColor   highlightThickness  insertBackground
+       justify      relief
+
+       See the "options" manual entry for details on the standard options.
+
+INHERITED OPTIONS
+       disabledForeground  int          labelBitmap   labelFont
+       labelImage          labelMargin  labelPos      labelText
+       labelVariable       state        sticky
+
+       See the "labeledwidget" class manual entry for details on these inherited
+       options.
+
+       command         iq             state           textBackground
+       textFont
+
+       See the "datefield" class manual entry for details on these inherited
+       options.
+
+ASSOCIATED OPTIONS
+       backwardImage   buttonForeground               commandcurrentDateFont
+       dateFont        dayFont        days            forwardImage
+       outline         selectColor    selectThickness startDay
+       titleFont       weekdayBackground              weekendBackground
+
+       See the "calendar" manual entry for details on the associated options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           grab
+       Class:          Grab
+       Command-Line Switch:           -grab
+
+              Specifies the grab level, local or global, to be obtained before
+              bringing up the popup calendar.  The default is global.  For more
+              information concerning grab levels, consult the documentation for
+              Tk's grab command.
+
+       Name:           icon
+       Class:          Icon
+       Command-Line Switch:           -icon
+
+              Specifies the calendar icon image to be used in the dateentry.
+              This image must have been created previously with the image create
+              command.  Should one not be provided, then one will be generated,
+              pixmap if possible, bitmap otherwise.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::dateentry command creates a quicken style date entry field
+       with a popup calendar by combining the datefield and calendar widgets
+       together.  This allows a user to enter the date via the keyboard or by
+       using the mouse and selecting the calendar icon which brings up a popup
+       calendar.
+
+
+
+METHODS
+       The iwidgets::dateentry command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for dateentry widgets:
+
+INHERITED METHODS
+       get             isvalid        show
+
+       See the "datefield" manual entry for details on the associated methods.
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::dateentry command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::dateentry command.
+
+
+COMPONENTS
+       Name:           label
+       Class:          Label
+
+              The label component provides a label component to used to identify
+              the date.  See the "label" widget manual entry for details on the
+              label component item.
+
+       Name:           iconbutton
+       Class:          Label
+
+              The iconbutton component provides a labelbutton component to act
+              as a lightweight button displaying the calendar icon.  Upon
+              pressing the labelbutton, the calendar appears.  See the "label"
+              widget manual entry for details on the labelbutton component item.
+
+       Name:           date
+       Class:          Entry
+
+              The date component provides the entry field for date input and
+              display.  See the "entry" widget manual entry for details on the
+              date component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::dateentry .de
+               pack .de
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       dateentry, widget
+
+
+

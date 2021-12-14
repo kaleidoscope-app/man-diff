@@ -1,0 +1,69 @@
+mdimport(1)                  General Commands Manual                 mdimport(1)
+
+NAME
+     mdimport – import file hierarchies into the metadata datastore.
+
+SYNOPSIS
+     mdimport [-itpAXLr] [-d level] [-o -outputfile] [ file | directory ... ]
+
+DESCRIPTION
+     mdimport is used to test Spotlight plug-ins, list the installed plug-ins
+     and schema, and re-index files handled by a plug-in when a new plug-in is
+     installed.
+
+     The following options are available:
+
+     -i          Request Spotlight to import file or recursively import
+                 directory.  The files will be imported using the normal
+                 mechanisms and attributes will be stored in the Spotlight
+                 index. This is the implied switch if none are specified.
+
+     -t          Request Spotlight to test import file, sending the result back
+                 to mdimport for possible further processing. The attributes
+                 will not be stored in the Spotlight index. This is useful to
+                 test Spotlight import plug-ins.
+
+     -d level    Print debugging information.  This requires -t.
+
+
+     -d1
+                 print summary of test import
+
+     -d2
+                 print summary of import and all attributes, except kMDItemTextContent
+
+     -d3
+                 print summary of import and all attributes
+
+     -o outfile
+                 Store attribute into
+                 outfile.
+                 This requires
+                 -t.
+
+     -p
+                 Print out performance information gathered during the run.  This requires
+                 -t.
+
+     -A
+                 Print out the list of all of the attributes and their
+                 localizations in the current language and exit.
+
+     -X
+                 Print the schema file and exit.
+
+     -L
+                 Print the list of installed importers and exit.
+
+     -r
+                 Ask the server to reimport files for UTIs claimed by the listed plugin.
+                 For example, the following would cause all of the chat files on the system to be reimported:
+
+                       mdimport -r /System/Library/Spotlight/Chat.mdimporter
+
+NOTES
+     -f is obsolete in Leopard and beyond.
+
+SEE ALSO
+     mdfind(1), mdutil(1), mdls(1)
+

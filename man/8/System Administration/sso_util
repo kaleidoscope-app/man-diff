@@ -1,0 +1,128 @@
+sso_util(8)                  System Manager's Manual                 sso_util(8)
+
+NAME
+     sso_util – Kerberos – Open Directory Single Sign On
+
+SYNOPSIS
+     sso_util command [-args]
+
+DESCRIPTION
+     sso_util is a tool for setting up, interrogating and removing Kerberos
+     configurations within the Apple Single Sign On environment. This tool can
+     configure services, create and consume encrypted config records and tear
+     down Kerberos installations
+
+     Commands for sso_util :
+
+     info [-p] [-g | -l | -L | -r dir_node_path [dir_node_path]]
+              Returns information about the current Single Sign On environment
+
+              info command arguments:
+
+              -p       Returns the data in XML format
+
+              -g       Returns the default Kerberos realm name
+
+              -l       Returns a list of the services sso_util knows how to
+                       Kerberize
+
+              -L       Returns the default Kerberos log file paths
+
+              -r dir_node_path
+                       Returns whether or not the given node has a Kerberos
+                       record associated with it. If it does, it returns the
+                       default realm name.  If dir_node_path is '.' (default) it
+                       also returns all the realm names available on the search
+                       path
+
+              dir_node_path
+                       specifies the directory node in which to search for the
+                       computer record
+
+     configure -r REALM -a admin_name [-p password] service
+              Configures Kerberized services on the local machine for the given
+              realm
+
+              configure command arguments:
+
+              -r REALM
+                       Kerberos realm for the service principals
+
+              -a admin_name
+                       Account name of an administrator authorized to make
+                       changes in the Kerberos database
+
+              -p password
+                       Password for the above administrator. The password can
+                       also be stored in a file and the path to the file can be
+                       passed as an environment variable - SSO_PASSWD_PATH.
+
+              service  Service can be any number of afp, ftp, imap, pop, smtp,
+                       ssh, fcsvr, DNS, or all
+
+     useconfig [-u] [-R record_name] [-f dir_node_path] -a admin_name [-p
+              password]
+              Uses a secure config record to configure a server for Kerberos
+
+              configure command arguments:
+
+              -u       Forces the update, ignoring that the update may already
+                       have been installed
+
+              -R record_name
+                       Name of the Computer record containing the secure config
+                       record
+
+              -f dir_node_path
+                       Specifies the directory node in which to find the given
+                       computer record
+
+              -a admin_name
+                       Account name of an user authorized to use the secure
+                       config record (see generateconfig)
+
+              -p password
+                       Password for the above user. The password can also be
+                       stored in a file and the path to the file can be passed
+                       as an environment variable - SSO_PASSWD_PATH.
+
+EXAMPLES
+     To configure a server in realm FOO.COM when you have the Kerberos
+     administrator's password. Store the password in a file and set env var
+     SSO_PASSWD_PATH to the file path
+
+     sso_util configure -r FOO.COM -a kerberos_admin all
+
+     To create a secure config record to allow the delegated administrators,
+     Fred and Barney, to configure a server named fred.foo.com in realm FOO.COM
+     (using an existing computer record). The Open Directory Master for foo.com
+     is odmaster.foo.com. This can be run on any server and neither Fred nor
+     Barney need to have the Kerberos administrator's password. Store the
+     password in a file and set env var SSO_PASSWD_PATH to the file path.
+
+     sso_util generateconfig -r FOO.COM -R fred.foo.com -f
+     /LDAPv3/odmaster.foo.com  -U Fred,Barney -a kerberos_admin all
+
+     To use the secure config record to allow Barney to configure the server
+     named fred.foo.com. Store the password in a file and set env var
+     SSO_PASSWD_PATH to the file path.
+
+     sso_util useconfig -R fred.foo.com -f /LDAPv3/odmaster.foo.com -a Barney
+
+FILES
+     /etc/krb5.keytab  The configure and useconfig commands create or modify the
+                       krb5.keytab file.
+
+DIAGNOSTICS
+     You can add -v debug_level to any of the sso_util commands. Debug level 1
+     provides status information, higher levels add progressively more levels of
+     detail. The maximum is level 7.
+
+NOTES
+     The sso_util tool is used by the Apple Single Sign On system to set up
+     Kerberized services integrated with the rest of the Single Sign On
+     components.
+
+SEE ALSO
+     kdc(8), kdcsetup(8), kerberos(8), krbservicesetup(8)
+

@@ -1,0 +1,540 @@
+pt::param(n)                      Parser Tools                      pt::param(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       pt::param - PackRat Machine Specification
+
+SYNOPSIS
+       package require Tcl  8.5
+
+________________________________________________________________________________
+
+DESCRIPTION
+       Are you lost ?  Do you have trouble understanding this document ?  In
+       that case please read the overview provided by the Introduction to Parser
+       Tools. This document is the entrypoint to the whole system the current
+       package is a part of.
+
+       Welcome to the PackRat Machine (short: PARAM), a virtual machine geared
+       towards the support of recursive descent parsers, especially packrat
+       parsers. Towards this end it has features like the caching and reuse of
+       partial results, the caching of the encountered input, and the ability to
+       backtrack in both input and AST creation.
+
+       This document specifies the machine in terms of its architectural state
+       and instruction set.
+
+ARCHITECTURAL STATE
+       Any PARAM implementation has to manage at least the following state:
+
+       Input (IN)
+              This is the channel the characters to process are read from.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the section Input Handling.
+
+       Current Character (CC)
+              The character from the input currently tested against its possible
+              alternatives.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the section Character Processing.
+
+       Current Location (CL)
+              The location of the current character in the input, as offset
+              relative to the beginning of the input. Character offsets are
+              counted from 0.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Character Processing,
+              Location Handling, and Nonterminal Execution.
+
+       Location Stack (LS)
+              A stack of locations in the input, saved for possible
+              backtracking.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Character Processing,
+              Location Handling, and Nonterminal Execution.
+
+       Status (ST)
+              The status of the last attempt of testing the input, indicating
+              either success or failure.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Status Control, Character
+              Processing, and Nonterminal Execution.
+
+       Semantic Value (SV)
+              The current semantic value, either empty, or a node for AST
+              constructed from the input.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Value Construction, and AST
+              Construction.
+
+       AST Reduction Stack (ARS)
+              The stack of partial ASTs constructed during the processing of
+              nonterminal symbols.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Value Construction, and AST
+              Construction.
+
+       AST Stack (AS)
+              The stack of reduction stacks, saved for possible backtracking.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Value Construction, and AST
+              Construction.
+
+       Error Status (ER)
+              The machine's current knowledge of errors. This is either empty,
+              or set to a pair of location in the input and the set of messages
+              for that location.
+
+              Note that this part of the machine's state can be set even if the
+              last test of the current character was successful. For example,
+              the *-operator (matching a sub-expression zero or more times) in a
+              PEG is always successful, even if it encounters a problem further
+              in the input and has to backtrack. Such problems must not be
+              forgotten when continuing the parsing.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Error Handling, Character
+              Processing, and Nonterminal Execution.
+
+       Error Stack (ES)
+              The stack of error stati, saved for backtracking. This enables the
+              machine to merge current and older error stati when performing
+              backtracking in choices after an failed match.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the sections Error Handling, Character
+              Processing, and Nonterminal Execution.
+
+       Nonterminal Cache (NC)
+              A cache of machine states keyed by pairs name of nonterminal
+              symbol and location in the input. Each pair (N, L) is associated
+              with a 4-tuple holding the values to use for CL, ST, SV, and ER
+              after the nonterminal N was parsed starting from the location L.
+              It is a performance aid for backtracking parsers, allowing them to
+              avoid an expensive reparsing of complex nonterminal symbols if
+              they have been encountered before at a given location.
+
+              The key location is where machine started the attempt to match the
+              named nonterminal symbol, and the location in the saved 4-tuple is
+              where machine ended up after the attempt completed, independent of
+              the success of the attempt.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the section Nonterminal Execution.
+
+       Terminal Cache (TC)
+              A cache of characters read from IN, with their location in IN as
+              pair of line and column, keyed by the location in IN, this time as
+              character offset from the beginning of IN.  It is a performance
+              aid for backtracking parsers, allowing them to avoid a possibly
+              expensive rereading of characters from IN, or even enabling
+              backtracking at, i.e. in the case of IN not randomly seekable.
+
+              This part of the machine's state is used and modified by the
+              instructions defined in the section Input Handling.
+
+INSTRUCTION SET
+       With the machine's architectural state specified it is now possible to
+       specify the instruction set operating on that state and to be implemented
+       by any realization of the PARAM. The 37 instructions are grouped roughly
+       by the state they influence and/or query during their execution.
+
+   INPUT HANDLING
+       The instructions in this section mainly access IN, pulling the characters
+       to process into the machine.
+
+       input_next msg
+              This method reads the next character, i.e. the character after CL,
+              from IN. If successful this character becomes CC, CL is advanced
+              by one, ES is cleared, and the operation is recorded as a success
+              in ST.
+
+              The operation may read the character from IN if the next character
+              is not yet known to TC. If successful the new character is stored
+              in TC, with its location (line, column), and the operation
+              otherwise behaves as specified above. Future reads from the same
+              location, possible due to backtracking, will then be satisfied
+              from TC instead of IN.
+
+              If, on the other hand, the end of IN was reached, the operation is
+              recorded as failed in ST, CL is left unchanged, and the pair of CL
+              and msg becomes the new ES.
+
+   CHARACTER PROCESSING
+       The instructions in this section mainly access CC, testing it against
+       character classes, ranges, and individual characters.
+
+       test_alnum
+              This instruction implements the special PE operator "alnum", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_alpha
+              This instruction implements the special PE operator "alpha", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_ascii
+              This instruction implements the special PE operator "ascii", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_char char
+              This instruction implements the character matching operator, i.e.
+              it checks if CC is char.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_ddigit
+              This instruction implements the special PE operator "ddigit",
+              which checks if CC falls into the character class of the same
+              name, or not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_digit
+              This instruction implements the special PE operator "digit", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_graph
+              This instruction implements the special PE operator "graph", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_lower
+              This instruction implements the special PE operator "lower", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_print
+              This instruction implements the special PE operator "print", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_punct
+              This instruction implements the special PE operator "punct", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_range chars chare
+              This instruction implements the range matching operator, i.e. it
+              checks if CC falls into the interval of characters spanned up by
+              the two characters from chars to chare, both inclusive.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_space
+              This instruction implements the special PE operator "space", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_upper
+              This instruction implements the special PE operator "upper", which
+              checks if CC falls into the character class of the same name, or
+              not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_wordchar
+              This instruction implements the special PE operator "wordchar",
+              which checks if CC falls into the character class of the same
+              name, or not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+       test_xdigit
+              This instruction implements the special PE operator "xdigit",
+              which checks if CC falls into the character class of the same
+              name, or not.
+
+              Success and failure of the test are both recorded directly in ST.
+              Success further clears ES, wheras failure sets the pair of CL and
+              expected input (encoded as a leaf parsing expression) as the new
+              ES and then rewinds CL by one character, preparing the machine for
+              another parse attempt by a possible alternative.
+
+   ERROR HANDLING
+       The instructions in this section mainly access ER and ES.
+
+       error_clear
+              This instruction clears ER.
+
+       error_push
+              This instruction makes a copy of ER and pushes it on ES.
+
+       error_pop_merge
+              This instruction takes the topmost entry of ES and merges the
+              error status it contains with ES, making the result the new ES.
+
+              The merge is governed by four rules, with the merge result
+
+              [1]    Empty if both states are empty.
+
+              [2]    The non-empty state if only one of the two states is non-
+                     empty.
+
+              [3]    The state with the larger location, if the two states
+                     specify different locations.
+
+              [4]    The pair of the location shared by the two states, and the
+                     set-union of their messages for states at the same
+                     location.
+
+       error_nonterminal symbol
+              This is a guarded instruction. It does nothing if either ES is
+              empty, or if the location in ES is not just past the last location
+              saved in LS. Otherwise it sets the pair of that location and the
+              nonterminal symbol as the new ES.
+
+              Note: In the above "just past" means "that location plus one", or
+              also "the location of the next character after that location".
+
+   STATUS CONTROL
+       The instructions in this section directly manipulate ST.
+
+       status_ok
+              This instruction sets ST to true, recording a success.
+
+       status_fail
+              This instruction sets ST to false, recording a failure.
+
+       status_negate
+              This instruction negates ST, turning a failure into a success and
+              vice versa.
+
+   LOCATION HANDLING
+       The instructions in this section access CL and LS.
+
+       loc_push
+              This instruction makes a copy of CL and pushes it on LS.
+
+       loc_pop_discard
+              This instructions pops the last saved location from LS.
+
+       loc_pop_rewind
+              This instruction pops the last saved location from LS and restores
+              it as CL.
+
+   NONTERMINAL EXECUTION
+       The instructions in this section access and manipulate NC.
+
+       symbol_restore symbol
+              This instruction checks if NC contains data for the nonterminal
+              symbol at CL, or not. The result of the instruction is a boolean
+              flag, with True indicating that data was found in the cache. In
+              that case the instruction has further updated the architectural
+              state of the machine with the cached information, namely CL, ST,
+              ER, and SV.
+
+              The method with which the instruction's result is transformed into
+              control flow is left undefined and the responsibility of the
+              implementation.
+
+       symbol_save symbol
+              This instructions saves the current settings of CL, ST, ER, and SV
+              in NC, using the pair of nonterminal symbol and the last location
+              saved in LS as key.
+
+   VALUE CONSTRUCTION
+       The instructions in this section manipulate SV.
+
+       value_clear
+              This instruction clears SV.
+
+       value_leaf symbol
+              This instruction constructs an AST node for symbol covering the
+              range of IN from one character after the last location saved on LS
+              to CL and stores it in SV. ...
+
+       value_reduce symbol
+              This instruction generally behaves like value_nonterminal_leaf,
+              except that it takes all AST nodes on ARS, if any, and makes them
+              the children of the new node, with the last node saved on ARS
+              becoming the right-most / last child. Note that ARS is not modfied
+              by this operation.
+
+   AST CONSTRUCTION
+       The instructions in this section manipulate ARS and AS.
+
+       ast_value_push
+              This instruction makes a copy of SV and pushes it on ARS.
+
+       ast_push
+              This instruction pushes the current state of ARS on AS and then
+              clears ARS.
+
+       ast_pop_rewind
+              This instruction pops the last entry saved on AS and restores it
+              as the new state of ARS.
+
+       ast_pop_discard
+              This instruction pops the last entry saved on AS.
+
+   CONTROL FLOW
+       Normally this section would contain the specifications of the control
+       flow instructions of the PARAM, i.e. (un)conditional jumps and the like.
+       However, this part of the PARAM is intentionally left unspecified. This
+       allows the implementations to freely choose how to implement control
+       flow.
+
+       The implementation of this machine in Parser Tools, i.e the package
+       pt::rde, is not only coded in Tcl, but also relies on Tcl commands to
+       provide it with control flow (instructions).
+
+INTERACTION OF THE INSTRUCTIONS WITH THE ARCHITECTURAL STATE
+
+       Instruction         Inputs                   Outputs
+       ======================= =======================        ====================
+       ast_pop_discard          AS             ->   AS
+       ast_pop_rewind      AS             ->   AS, ARS
+       ast_push       ARS, AS             ->   AS
+       ast_value_push      SV, ARS             ->   ARS
+       ======================= =======================        ====================
+       error_clear         -              ->   ER
+       error_nonterminal sym    ER, LS              ->   ER
+       error_pop_merge     ES, ER              ->   ER
+       error_push          ES, ER              ->   ES
+       ======================= =======================        ====================
+       input_next msg      IN             ->   TC, CL, CC, ST, ER
+       ======================= =======================        ====================
+       loc_pop_discard          LS             ->   LS
+       loc_pop_rewind      LS             ->   LS, CL
+       loc_push       CL, LS              ->   LS
+       ======================= =======================        ====================
+       status_fail         -              ->   ST
+       status_negate       ST             ->   ST
+       status_ok      -              ->   ST
+       ======================= =======================        ====================
+       symbol_restore sym  NC             ->   CL, ST, ER, SV
+       symbol_save    sym  CL, ST, ER, SV LS   ->   NC
+       ======================= =======================        ====================
+       test_alnum          CC             ->   ST, ER
+       test_alpha          CC             ->   ST, ER
+       test_ascii          CC             ->   ST, ER
+       test_char char      CC             ->   ST, ER
+       test_ddigit         CC             ->   ST, ER
+       test_digit          CC             ->   ST, ER
+       test_graph          CC             ->   ST, ER
+       test_lower          CC             ->   ST, ER
+       test_print          CC             ->   ST, ER
+       test_punct          CC             ->   ST, ER
+       test_range chars chare   CC             ->   ST, ER
+       test_space          CC             ->   ST, ER
+       test_upper          CC             ->   ST, ER
+       test_wordchar       CC             ->   ST, ER
+       test_xdigit         CC             ->   ST, ER
+       ======================= =======================        ====================
+       value_clear         -              ->   SV
+       value_leaf symbol   LS, CL              ->   SV
+       value_reduce symbol ARS, LS, CL         ->   SV
+       ======================= =======================        ====================
+
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category pt of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       EBNF, LL(k), PEG, TDPL, context-free languages, expression, grammar,
+       matching, parser, parsing expression, parsing expression grammar, push
+       down automaton, recursive descent, state, top-down parsing languages,
+       transducer, virtual machine
+
+CATEGORY
+       Parsing and Grammars
+
+COPYRIGHT
+       Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

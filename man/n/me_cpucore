@@ -1,0 +1,408 @@
+grammar::me::cpu::core(n)                           Grammar operations and usage
+
+
+
+________________________________________________________________________________
+
+NAME
+       grammar::me::cpu::core - ME virtual machine state manipulation
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require grammar::me::cpu::core  ?0.2?
+
+       ::grammar::me::cpu::core disasm asm
+
+       ::grammar::me::cpu::core asm asm
+
+       ::grammar::me::cpu::core new asm
+
+       ::grammar::me::cpu::core lc state location
+
+       ::grammar::me::cpu::core tok state ?from ?to??
+
+       ::grammar::me::cpu::core pc state
+
+       ::grammar::me::cpu::core iseof state
+
+       ::grammar::me::cpu::core at state
+
+       ::grammar::me::cpu::core cc state
+
+       ::grammar::me::cpu::core sv state
+
+       ::grammar::me::cpu::core ok state
+
+       ::grammar::me::cpu::core error state
+
+       ::grammar::me::cpu::core lstk state
+
+       ::grammar::me::cpu::core astk state
+
+       ::grammar::me::cpu::core mstk state
+
+       ::grammar::me::cpu::core estk state
+
+       ::grammar::me::cpu::core rstk state
+
+       ::grammar::me::cpu::core nc state
+
+       ::grammar::me::cpu::core ast state
+
+       ::grammar::me::cpu::core halted state
+
+       ::grammar::me::cpu::core code state
+
+       ::grammar::me::cpu::core eof statevar
+
+       ::grammar::me::cpu::core put statevar tok lex line col
+
+       ::grammar::me::cpu::core run statevar ?n?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides an implementation of the ME virtual machine.
+       Please go and read the document grammar::me_intro first if you do not
+       know what a ME virtual machine is.
+
+       This implementation represents each ME virtual machine as a Tcl value and
+       provides commands to manipulate and query such values to show the effects
+       of executing instructions, adding tokens, retrieving state, etc.
+
+       The values fully follow the paradigm of Tcl that every value is a string
+       and while also allowing C implementations for a proper Tcl_ObjType to
+       keep all the important data in native data structures.  Because of the
+       latter it is recommended to access the state values only through the
+       commands of this package to ensure that internal representation is not
+       shimmered away.
+
+       The actual structure used by all state values is described in section CPU
+       STATE.
+
+API
+       The package directly provides only a single command, and all the
+       functionality is made available through its methods.
+
+       ::grammar::me::cpu::core disasm asm
+              This method returns a list containing a disassembly of the match
+              instructions in asm. The format of asm is specified in the section
+              MATCH PROGRAM REPRESENTATION.
+
+              Each element of the result contains instruction label, instruction
+              name, and the instruction arguments, in this order. The label can
+              be the empty string. Jump destinations are shown as labels,
+              strings and tokens unencoded. Token names are prefixed with their
+              numeric id, if, and only if a tokmap is defined. The two
+              components are separated by a colon.
+
+       ::grammar::me::cpu::core asm asm
+              This method returns code in the format as specified in section
+              MATCH PROGRAM REPRESENTATION generated from ME assembly code asm,
+              which is in the format as returned by the method disasm.
+
+       ::grammar::me::cpu::core new asm
+              This method creates state value for a ME virtual machine in its
+              initial state and returns it as its result.
+
+              The argument matchcode contains a Tcl representation of the match
+              instructions the machine has to execute while parsing the input
+              stream. Its format is specified in the section MATCH PROGRAM
+              REPRESENTATION.
+
+              The tokmap argument taken by the implementation provided by the
+              package grammar::me::tcl is here hidden inside of the match
+              instructions and therefore not needed.
+
+       ::grammar::me::cpu::core lc state location
+              This method takes the state value of a ME virtual machine and uses
+              it to convert a location in the input stream (as offset) into a
+              line number and column index. The result of the method is a
+              2-element list containing the two pieces in the order mentioned in
+              the previous sentence.
+
+              Note that the method cannot convert locations which the machine
+              has not yet read from the input stream. In other words, if the
+              machine has read 7 characters so far it is possible to convert the
+              offsets 0 to 6, but nothing beyond that. This also shows that it
+              is not possible to convert offsets which refer to locations before
+              the beginning of the stream.
+
+              This utility allows higher levels to convert the location offsets
+              found in the error status and the AST into more human readable
+              data.
+
+       ::grammar::me::cpu::core tok state ?from ?to??
+              This method takes the state value of a ME virtual machine and
+              returns a Tcl list containing the part of the input stream between
+              the locations from and to (both inclusive). If to is not specified
+              it will default to the value of from. If from is not specified
+              either the whole input stream is returned.
+
+              This method places the same restrictions on its location arguments
+              as the method lc.
+
+       ::grammar::me::cpu::core pc state
+              This method takes the state value of a ME virtual machine and
+              returns the current value of the stored program counter.
+
+       ::grammar::me::cpu::core iseof state
+              This method takes the state value of a ME virtual machine and
+              returns the current value of the stored eof flag.
+
+       ::grammar::me::cpu::core at state
+              This method takes the state value of a ME virtual machine and
+              returns the current location in the input stream.
+
+       ::grammar::me::cpu::core cc state
+              This method takes the state value of a ME virtual machine and
+              returns the current token.
+
+       ::grammar::me::cpu::core sv state
+              This method takes the state value of a ME virtual machine and
+              returns the current semantic value stored in it.  This is an
+              abstract syntax tree as specified in the document grammar::me_ast,
+              section AST VALUES.
+
+       ::grammar::me::cpu::core ok state
+              This method takes the state value of a ME virtual machine and
+              returns the match status stored in it.
+
+       ::grammar::me::cpu::core error state
+              This method takes the state value of a ME virtual machine and
+              returns the current error status stored in it.
+
+       ::grammar::me::cpu::core lstk state
+              This method takes the state value of a ME virtual machine and
+              returns the location stack.
+
+       ::grammar::me::cpu::core astk state
+              This method takes the state value of a ME virtual machine and
+              returns the AST stack.
+
+       ::grammar::me::cpu::core mstk state
+              This method takes the state value of a ME virtual machine and
+              returns the AST marker stack.
+
+       ::grammar::me::cpu::core estk state
+              This method takes the state value of a ME virtual machine and
+              returns the error stack.
+
+       ::grammar::me::cpu::core rstk state
+              This method takes the state value of a ME virtual machine and
+              returns the subroutine return stack.
+
+       ::grammar::me::cpu::core nc state
+              This method takes the state value of a ME virtual machine and
+              returns the nonterminal match cache as a dictionary.
+
+       ::grammar::me::cpu::core ast state
+              This method takes the state value of a ME virtual machine and
+              returns the abstract syntax tree currently at the top of the AST
+              stack stored in it.  This is an abstract syntax tree as specified
+              in the document grammar::me_ast, section AST VALUES.
+
+       ::grammar::me::cpu::core halted state
+              This method takes the state value of a ME virtual machine and
+              returns the current halt status stored in it, i.e. if the machine
+              has stopped or not.
+
+       ::grammar::me::cpu::core code state
+              This method takes the state value of a ME virtual machine and
+              returns the code stored in it, i.e. the instructions executed by
+              the machine.
+
+       ::grammar::me::cpu::core eof statevar
+              This method takes the state value of a ME virtual machine as
+              stored in the variable named by statevar and modifies it so that
+              the eof flag inside is set. This signals to the machine that
+              whatever token are in the input queue are the last to be
+              processed. There will be no more.
+
+       ::grammar::me::cpu::core put statevar tok lex line col
+              This method takes the state value of a ME virtual machine as
+              stored in the variable named by statevar and modifies it so that
+              the token tok is added to the end of the input queue, with
+              associated lexeme data lex and line/column information.
+
+              The operation will fail with an error if the eof flag of the
+              machine has been set through the method eof.
+
+       ::grammar::me::cpu::core run statevar ?n?
+              This method takes the state value of a ME virtual machine as
+              stored in the variable named by statevar, executes a number of
+              instructions and stores the state resulting from their
+              modifications back into the variable.
+
+              The execution loop will run until either
+
+              •      n instructions have been executed, or
+
+              •      a halt instruction was executed, or
+
+              •      the input queue is empty and the code is asking for more
+                     tokens to process.
+
+       If no limit n was set only the last two conditions are checked for.
+
+   MATCH PROGRAM REPRESENTATION
+       A match program is represented by nested Tcl list. The first element,
+       asm, is a list of integer numbers, the instructions to execute, and their
+       arguments. The second element, pool, is a list of strings, referenced by
+       the instructions, for error messages, token names, etc. The third
+       element, tokmap, provides ordering information for the tokens, mapping
+       their names to their numerical rank. This element can be empty, forcing
+       lexicographic comparison when matching ranges.
+
+       All ME instructions are encoded as integer numbers, with the mapping
+       given below. A number of the instructions, those which handle error
+       messages, have been given an additional argument to supply that message
+       explicitly instead of having it constructed from token names, etc. This
+       allows the machine state to store only the message ids instead of the
+       full strings.
+
+       Jump destination arguments are absolute indices into the asm element,
+       refering to the instruction to jump to. Any string arguments are absolute
+       indices into the pool element. Tokens, characters, messages, and token
+       (actually character) classes to match are coded as references into the
+       pool as well.
+
+       [1]    "ict_advance message"
+
+       [2]    "ict_match_token tok message"
+
+       [3]    "ict_match_tokrange tokbegin tokend message"
+
+       [4]    "ict_match_tokclass code message"
+
+       [5]    "inc_restore branchlabel nt"
+
+       [6]    "inc_save nt"
+
+       [7]    "icf_ntcall branchlabel"
+
+       [8]    "icf_ntreturn"
+
+       [9]    "iok_ok"
+
+       [10]   "iok_fail"
+
+       [11]   "iok_negate"
+
+       [12]   "icf_jalways branchlabel"
+
+       [13]   "icf_jok branchlabel"
+
+       [14]   "icf_jfail branchlabel"
+
+       [15]   "icf_halt"
+
+       [16]   "icl_push"
+
+       [17]   "icl_rewind"
+
+       [18]   "icl_pop"
+
+       [19]   "ier_push"
+
+       [20]   "ier_clear"
+
+       [21]   "ier_nonterminal message"
+
+       [22]   "ier_merge"
+
+       [23]   "isv_clear"
+
+       [24]   "isv_terminal"
+
+       [25]   "isv_nonterminal_leaf nt"
+
+       [26]   "isv_nonterminal_range nt"
+
+       [27]   "isv_nonterminal_reduce nt"
+
+       [28]   "ias_push"
+
+       [29]   "ias_mark"
+
+       [30]   "ias_mrewind"
+
+       [31]   "ias_mpop"
+
+CPU STATE
+       A state value is a list containing the following elements, in the order
+       listed below:
+
+       [1]    code: Match instructions, see MATCH PROGRAM REPRESENTATION.
+
+       [2]    pc:   Program counter, int.
+
+       [3]    halt: Halt flag, boolean.
+
+       [4]    eof:  Eof flag, boolean
+
+       [5]    tc:   Terminal cache, and input queue. Structure see below.
+
+       [6]    cl:   Current location, int.
+
+       [7]    ct:   Current token, string.
+
+       [8]    ok:   Match status, boolean.
+
+       [9]    sv:   Semantic value, list.
+
+       [10]   er:   Error status, list.
+
+       [11]   ls:   Location stack, list.
+
+       [12]   as:   AST stack, list.
+
+       [13]   ms:   AST marker stack, list.
+
+       [14]   es:   Error stack, list.
+
+       [15]   rs:   Return stack, list.
+
+       [16]   nc:   Nonterminal cache, dictionary.
+
+       tc, the input queue of tokens waiting for processing and the terminal
+       cache containing the tokens already processing are one unified data
+       structure simply holding all tokens and their information, with the
+       current location separating that which has been processed from that which
+       is waiting.  Each element of the queue/cache is a list containing the
+       token, its lexeme information, line number, and column index, in this
+       order.
+
+       All stacks have their top element aat the end, i.e. pushing an item is
+       equivalent to appending to the list representing the stack, and popping
+       it removes the last element.
+
+       er, the error status is either empty or a list of two elements, a
+       location in the input, and a list of messages, encoded as references into
+       the pool element of the code.
+
+       nc, the nonterminal cache is keyed by nonterminal name and location, each
+       value a four-element list containing current location, match status,
+       semantic value, and error status, in this order.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category grammar_me
+       of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       grammar, parsing, virtual machine
+
+CATEGORY
+       Grammars and finite automata
+
+COPYRIGHT
+       Copyright (c) 2005-2006 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

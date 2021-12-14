@@ -1,0 +1,64 @@
+CVFS(8)                      System Manager's Manual                     CVFS(8)
+
+
+
+NAME
+       /etc/init.d/cvfs - Initialization script for Xsan File System components
+
+SYNOPSIS
+       service cvfs {start|stop|restart|fullstop}
+
+
+DESCRIPTION
+       The Xsan File System can be controlled by the system init(8) mechanism.
+       For more information on the init.d services reference the init(8) and
+       chkconfig(8) man pages.
+
+       This initialization script responds to the normal start, stop and restart
+       commands.  This allows the Xsan File System to be started and stopped at
+       any time, and the fullstop option unloads CVFS kernel modules.
+
+       Note: Take care not to trigger an HA reset action on a server when it has
+       been configured for High Availability (HA).  For more information about
+       HA reference the snhamgr(8) man page.
+
+       See the init(8) or chkconfig(8) man pages for additional startup and
+       shutdown options.
+
+       On Solaris clients, StorNext File System Services have been integrated
+       into the Solaris service management facility, smf.  The cvfs script is
+       located in /System/Library/Filesystems/acfs.fs/Contents/bin.
+
+Starting Xsan Services
+       The service cvfs start command should be executed only after local file
+       systems are mounted and the network is initialized.  The following steps
+       are executed:
+          — CVFS kernel modules are loaded.
+          — Base Xsan services are started.  This includes the Xsan portmapper
+            service and any needed HBA drivers.
+          — Any Xsan metadata servers included in the fsmlist(4) file are
+            started automatically.
+          — Xsan volumes included in the systems fstab(5) or vfstab(4) file are
+            mounted.
+          — Xsan Storage Manager (SNSM) components are started if they are
+            installed.
+
+Stopping Xsan Services
+       The service cvfs stop command should be executed before the network is
+       brought down and before the local filesystems are unmounted.  The
+       following steps are executed:
+          — SNSM components are stopped.
+          — All Xsan volumes are unmounted.
+          — All Xsan server components are shut down.
+
+       The kernel modules are not unloaded unless the fullstop option is used.
+
+FILES
+       /etc/init.d/cvfs
+
+SEE ALSO
+       mount(8), snhamgr(8), fsmlist(4), vfstab(4), fstab(5), init.d(7),
+       chkconfig(8)
+
+
+

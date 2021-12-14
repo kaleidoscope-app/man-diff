@@ -1,0 +1,1399 @@
+math::statistics(n)             Tcl Math Library             math::statistics(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       math::statistics - Basic statistical functions and procedures
+
+SYNOPSIS
+       package require Tcl  8
+
+       package require math::statistics  0.5
+
+       ::math::statistics::mean data
+
+       ::math::statistics::min data
+
+       ::math::statistics::max data
+
+       ::math::statistics::number data
+
+       ::math::statistics::stdev data
+
+       ::math::statistics::var data
+
+       ::math::statistics::pstdev data
+
+       ::math::statistics::pvar data
+
+       ::math::statistics::median data
+
+       ::math::statistics::basic-stats data
+
+       ::math::statistics::histogram limits values
+
+       ::math::statistics::corr data1 data2
+
+       ::math::statistics::interval-mean-stdev data confidence
+
+       ::math::statistics::t-test-mean data est_mean est_stdev confidence
+
+       ::math::statistics::test-normal data confidence
+
+       ::math::statistics::lillieforsFit data
+
+       ::math::statistics::quantiles data confidence
+
+       ::math::statistics::quantiles limits counts confidence
+
+       ::math::statistics::autocorr data
+
+       ::math::statistics::crosscorr data1 data2
+
+       ::math::statistics::mean-histogram-limits mean stdev number
+
+       ::math::statistics::minmax-histogram-limits min max number
+
+       ::math::statistics::linear-model xdata ydata intercept
+
+       ::math::statistics::linear-residuals xdata ydata intercept
+
+       ::math::statistics::test-2x2 n11 n21 n12 n22
+
+       ::math::statistics::print-2x2 n11 n21 n12 n22
+
+       ::math::statistics::control-xbar data ?nsamples?
+
+       ::math::statistics::control-Rchart data ?nsamples?
+
+       ::math::statistics::test-xbar control data
+
+       ::math::statistics::test-Rchart control data
+
+       ::math::statistics::tstat dof ?alpha?
+
+       ::math::statistics::mv-wls wt1 weights_and_values
+
+       ::math::statistics::mv-ols values
+
+       ::math::statistics::pdf-normal mean stdev value
+
+       ::math::statistics::pdf-exponential mean value
+
+       ::math::statistics::pdf-uniform xmin xmax value
+
+       ::math::statistics::pdf-gamma alpha beta value
+
+       ::math::statistics::pdf-poisson mu k
+
+       ::math::statistics::pdf-chisquare df value
+
+       ::math::statistics::pdf-student-t df value
+
+       ::math::statistics::pdf-beta a b value
+
+       ::math::statistics::cdf-normal mean stdev value
+
+       ::math::statistics::cdf-exponential mean value
+
+       ::math::statistics::cdf-uniform xmin xmax value
+
+       ::math::statistics::cdf-students-t degrees value
+
+       ::math::statistics::cdf-gamma alpha beta value
+
+       ::math::statistics::cdf-poisson mu k
+
+       ::math::statistics::cdf-beta a b value
+
+       ::math::statistics::random-normal mean stdev number
+
+       ::math::statistics::random-exponential mean number
+
+       ::math::statistics::random-uniform xmin xmax number
+
+       ::math::statistics::random-gamma alpha beta number
+
+       ::math::statistics::random-chisquare df number
+
+       ::math::statistics::random-student-t df number
+
+       ::math::statistics::random-beta a b number
+
+       ::math::statistics::histogram-uniform xmin xmax limits number
+
+       ::math::statistics::incompleteGamma x p ?tol?
+
+       ::math::statistics::incompleteBeta a b x ?tol?
+
+       ::math::statistics::filter varname data expression
+
+       ::math::statistics::map varname data expression
+
+       ::math::statistics::samplescount varname list expression
+
+       ::math::statistics::subdivide
+
+       ::math::statistics::plot-scale canvas xmin xmax ymin ymax
+
+       ::math::statistics::plot-xydata canvas xdata ydata tag
+
+       ::math::statistics::plot-xyline canvas xdata ydata tag
+
+       ::math::statistics::plot-tdata canvas tdata tag
+
+       ::math::statistics::plot-tline canvas tdata tag
+
+       ::math::statistics::plot-histogram canvas counts limits tag
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The math::statistics package contains functions and procedures for basic
+       statistical data analysis, such as:
+
+       •      Descriptive statistical parameters (mean, minimum, maximum,
+              standard deviation)
+
+       •      Estimates of the distribution in the form of histograms and
+              quantiles
+
+       •      Basic testing of hypotheses
+
+       •      Probability and cumulative density functions
+
+       It is meant to help in developing data analysis applications or doing ad
+       hoc data analysis, it is not in itself a full application, nor is it
+       intended to rival with full (non-)commercial statistical packages.
+
+       The purpose of this document is to describe the implemented procedures
+       and provide some examples of their usage. As there is ample literature on
+       the algorithms involved, we refer to relevant text books for more
+       explanations.  The package contains a fairly large number of public
+       procedures. They can be distinguished in three sets: general procedures,
+       procedures that deal with specific statistical distributions, list
+       procedures to select or transform data and simple plotting procedures
+       (these require Tk).  Note: The data that need to be analyzed are always
+       contained in a simple list. Missing values are represented as empty list
+       elements.
+
+GENERAL PROCEDURES
+       The general statistical procedures are:
+
+       ::math::statistics::mean data
+              Determine the mean value of the given list of data.
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::min data
+              Determine the minimum value of the given list of data.
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::max data
+              Determine the maximum value of the given list of data.
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::number data
+              Determine the number of non-missing data in the given list
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::stdev data
+              Determine the sample standard deviation of the data in the given
+              list
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::var data
+              Determine the sample variance of the data in the given list
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::pstdev data
+              Determine the population standard deviation of the data in the
+              given list
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::pvar data
+              Determine the population variance of the data in the given list
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::median data
+              Determine the median of the data in the given list (Note that this
+              requires sorting the data, which may be a costly operation)
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::basic-stats data
+              Determine a list of all the descriptive parameters: mean, minimum,
+              maximum, number of data, sample standard deviation, sample
+              variance, population standard deviation and population variance.
+
+              (This routine is called whenever either or all of the basic
+              statistical parameters are required. Hence all calculations are
+              done and the relevant values are returned.)
+
+              list data
+                     - List of data
+
+
+       ::math::statistics::histogram limits values
+              Determine histogram information for the given list of data.
+              Returns a list consisting of the number of values that fall into
+              each interval.  (The first interval consists of all values lower
+              than the first limit, the last interval consists of all values
+              greater than the last limit.  There is one more interval than
+              there are limits.)
+
+              list limits
+                     - List of upper limits (in ascending order) for the
+                     intervals of the histogram.
+
+              list values
+                     - List of data
+
+
+       ::math::statistics::corr data1 data2
+              Determine the correlation coefficient between two sets of data.
+
+              list data1
+                     - First list of data
+
+              list data2
+                     - Second list of data
+
+
+       ::math::statistics::interval-mean-stdev data confidence
+              Return the interval containing the mean value and one containing
+              the standard deviation with a certain level of confidence
+              (assuming a normal distribution)
+
+              list data
+                     - List of raw data values (small sample)
+
+              float confidence
+                     - Confidence level (0.95 or 0.99 for instance)
+
+
+       ::math::statistics::t-test-mean data est_mean est_stdev confidence
+              Test whether the mean value of a sample is in accordance with the
+              estimated normal distribution with a certain level of confidence.
+              Returns 1 if the test succeeds or 0 if the mean is unlikely to fit
+              the given distribution.
+
+              list data
+                     - List of raw data values (small sample)
+
+              float est_mean
+                     - Estimated mean of the distribution
+
+              float est_stdev
+                     - Estimated stdev of the distribution
+
+              float confidence
+                     - Confidence level (0.95 or 0.99 for instance)
+
+
+       ::math::statistics::test-normal data confidence
+              Test whether the given data follow a normal distribution with a
+              certain level of confidence.  Returns 1 if the data are normally
+              distributed within the level of confidence, returns 0 if not. The
+              underlying test is the Lilliefors test.
+
+              list data
+                     - List of raw data values
+
+              float confidence
+                     - Confidence level (one of 0.80, 0.90, 0.95 or 0.99)
+
+
+       ::math::statistics::lillieforsFit data
+              Returns the goodness of fit to a normal distribution according to
+              Lilliefors. The higher the number, the more likely the data are
+              indeed normally distributed. The test requires at least five data
+              points.
+
+              list data
+                     - List of raw data values
+
+
+       ::math::statistics::quantiles data confidence
+              Return the quantiles for a given set of data
+
+
+              list data
+                     - List of raw data values
+
+
+              float confidence
+                     - Confidence level (0.95 or 0.99 for instance)
+
+
+
+       ::math::statistics::quantiles limits counts confidence
+              Return the quantiles based on histogram information (alternative
+              to the call with two arguments)
+
+              list limits
+                     - List of upper limits from histogram
+
+              list counts
+                     - List of counts for for each interval in histogram
+
+              float confidence
+                     -  Confidence level (0.95 or 0.99 for instance)
+
+
+       ::math::statistics::autocorr data
+              Return the autocorrelation function as a list of values (assuming
+              equidistance between samples, about 1/2 of the number of raw data)
+
+              The correlation is determined in such a way that the first value
+              is always 1 and all others are equal to or smaller than 1. The
+              number of values involved will diminish as the "time" (the index
+              in the list of returned values) increases
+
+              list data
+                     - Raw data for which the autocorrelation must be determined
+
+
+       ::math::statistics::crosscorr data1 data2
+              Return the cross-correlation function as a list of values
+              (assuming equidistance between samples, about 1/2 of the number of
+              raw data)
+
+              The correlation is determined in such a way that the values can
+              never exceed 1 in magnitude. The number of values involved will
+              diminish as the "time" (the index in the list of returned values)
+              increases.
+
+              list data1
+                     - First list of data
+
+              list data2
+                     - Second list of data
+
+
+       ::math::statistics::mean-histogram-limits mean stdev number
+              Determine reasonable limits based on mean and standard deviation
+              for a histogram Convenience function - the result is suitable for
+              the histogram function.
+
+              float mean
+                     - Mean of the data
+
+              float stdev
+                     - Standard deviation
+
+              int number
+                     - Number of limits to generate (defaults to 8)
+
+
+       ::math::statistics::minmax-histogram-limits min max number
+              Determine reasonable limits based on a minimum and maximum for a
+              histogram
+
+              Convenience function - the result is suitable for the histogram
+              function.
+
+              float min
+                     - Expected minimum
+
+              float max
+                     - Expected maximum
+
+              int number
+                     - Number of limits to generate (defaults to 8)
+
+
+       ::math::statistics::linear-model xdata ydata intercept
+              Determine the coefficients for a linear regression between two
+              series of data (the model: Y = A + B*X). Returns a list of
+              parameters describing the fit
+
+              list xdata
+                     - List of independent data
+
+              list ydata
+                     - List of dependent data to be fitted
+
+              boolean intercept
+                     - (Optional) compute the intercept (1, default) or fit to a
+                     line through the origin (0)
+
+                     The result consists of the following list:
+
+                     •      (Estimate of) Intercept A
+
+                     •      (Estimate of) Slope B
+
+                     •      Standard deviation of Y relative to fit
+
+                     •      Correlation coefficient R2
+
+                     •      Number of degrees of freedom df
+
+                     •      Standard error of the intercept A
+
+                     •      Significance level of A
+
+                     •      Standard error of the slope B
+
+                     •      Significance level of B
+
+
+       ::math::statistics::linear-residuals xdata ydata intercept
+              Determine the difference between actual data and predicted from
+              the linear model.
+
+              Returns a list of the differences between the actual data and the
+              predicted values.
+
+              list xdata
+                     - List of independent data
+
+              list ydata
+                     - List of dependent data to be fitted
+
+              boolean intercept
+                     - (Optional) compute the intercept (1, default) or fit to a
+                     line through the origin (0)
+
+
+       ::math::statistics::test-2x2 n11 n21 n12 n22
+              Determine if two set of samples, each from a binomial
+              distribution, differ significantly or not (implying a different
+              parameter).
+
+              Returns the "chi-square" value, which can be used to the determine
+              the significance.
+
+              int n11
+                     - Number of outcomes with the first value from the first
+                     sample.
+
+              int n21
+                     - Number of outcomes with the first value from the second
+                     sample.
+
+              int n12
+                     - Number of outcomes with the second value from the first
+                     sample.
+
+              int n22
+                     - Number of outcomes with the second value from the second
+                     sample.
+
+
+       ::math::statistics::print-2x2 n11 n21 n12 n22
+              Determine if two set of samples, each from a binomial
+              distribution, differ significantly or not (implying a different
+              parameter).
+
+              Returns a short report, useful in an interactive session.
+
+              int n11
+                     - Number of outcomes with the first value from the first
+                     sample.
+
+              int n21
+                     - Number of outcomes with the first value from the second
+                     sample.
+
+              int n12
+                     - Number of outcomes with the second value from the first
+                     sample.
+
+              int n22
+                     - Number of outcomes with the second value from the second
+                     sample.
+
+
+       ::math::statistics::control-xbar data ?nsamples?
+              Determine the control limits for an xbar chart. The number of data
+              in each subsample defaults to 4. At least 20 subsamples are
+              required.
+
+              Returns the mean, the lower limit, the upper limit and the number
+              of data per subsample.
+
+              list data
+                     - List of observed data
+
+              int nsamples
+                     - Number of data per subsample
+
+
+       ::math::statistics::control-Rchart data ?nsamples?
+              Determine the control limits for an R chart. The number of data in
+              each subsample (nsamples) defaults to 4. At least 20 subsamples
+              are required.
+
+              Returns the mean range, the lower limit, the upper limit and the
+              number of data per subsample.
+
+              list data
+                     - List of observed data
+
+              int nsamples
+                     - Number of data per subsample
+
+
+       ::math::statistics::test-xbar control data
+              Determine if the data exceed the control limits for the xbar
+              chart.
+
+              Returns a list of subsamples (their indices) that indeed violate
+              the limits.
+
+              list control
+                     - Control limits as returned by the "control-xbar"
+                     procedure
+
+              list data
+                     - List of observed data
+
+
+       ::math::statistics::test-Rchart control data
+              Determine if the data exceed the control limits for the R chart.
+
+              Returns a list of subsamples (their indices) that indeed violate
+              the limits.
+
+              list control
+                     - Control limits as returned by the "control-Rchart"
+                     procedure
+
+              list data
+                     - List of observed data
+
+
+MULTIVARIATE LINEAR REGRESSION
+       Besides the linear regression with a single independent variable, the
+       statistics package provides two procedures for doing ordinary least
+       squares (OLS) and weighted least squares (WLS) linear regression with
+       several variables. They were written by Eric Kemp-Benedict.
+
+       In addition to these two, it provides a procedure (tstat) for calculating
+       the value of the t-statistic for the specified number of degrees of
+       freedom that is required to demonstrate a given level of significance.
+
+       Note: These procedures depend on the math::linearalgebra package.
+
+       Description of the procedures
+
+       ::math::statistics::tstat dof ?alpha?
+              Returns the value of the t-distribution t* satisfying
+
+                  P(t*)  =  1 - alpha/2
+                  P(-t*) =  alpha/2
+
+              for the number of degrees of freedom dof.
+
+              Given a sample of normally-distributed data x, with an estimate
+              xbar for the mean and sbar for the standard deviation, the alpha
+              confidence interval for the estimate of the mean can be calculated
+              as
+
+                    ( xbar - t* sbar , xbar + t* sbar)
+
+              The return values from this procedure can be compared to an
+              estimated t-statistic to determine whether the estimated value of
+              a parameter is significantly different from zero at the given
+              confidence level.
+
+              int dof
+                     Number of degrees of freedom
+
+              float alpha
+                     Confidence level of the t-distribution. Defaults to 0.05.
+
+
+       ::math::statistics::mv-wls wt1 weights_and_values
+              Carries out a weighted least squares linear regression for the
+              data points provided, with weights assigned to each point.
+
+              The linear model is of the form
+
+                  y = b0 + b1 * x1 + b2 * x2 ... + bN * xN + error
+
+              and each point satisfies
+
+                  yi = b0 + b1 * xi1 + b2 * xi2 + ... + bN * xiN + Residual_i
+
+
+              The procedure returns a list with the following elements:
+
+              •      The r-squared statistic
+
+              •      The adjusted r-squared statistic
+
+              •      A list containing the estimated coefficients b1, ... bN, b0
+                     (The constant b0 comes last in the list.)
+
+              •      A list containing the standard errors of the coefficients
+
+              •      A list containing the 95% confidence bounds of the
+                     coefficients, with each set of bounds returned as a list
+                     with two values
+       Arguments:
+
+              list weights_and_values
+                     A list consisting of: the weight for the first observation,
+                     the data for the first observation (as a sublist), the
+                     weight for the second observation (as a sublist) and so on.
+                     The sublists of data are organised as lists of the value of
+                     the dependent variable y and the independent variables x1,
+                     x2 to xN.
+
+
+       ::math::statistics::mv-ols values
+              Carries out an ordinary least squares linear regression for the
+              data points provided.
+
+              This procedure simply calls ::mvlinreg::wls with the weights set
+              to 1.0, and returns the same information.
+
+       Example of the use:
+
+       # Store the value of the unicode value for the "+/-" character
+       set pm "\u00B1"
+
+       # Provide some data
+       set data {{  -.67  14.18  60.03 -7.5  }
+                 { 36.97  15.52  34.24 14.61 }
+                 {-29.57  21.85  83.36 -7.   }
+                 {-16.9   11.79  51.67 -6.56 }
+                 { 14.09  16.24  36.97 -12.84}
+                 { 31.52  20.93  45.99 -25.4 }
+                 { 24.05  20.69  50.27  17.27}
+                 { 22.23  16.91  45.07  -4.3 }
+                 { 40.79  20.49  38.92  -.73 }
+                 {-10.35  17.24  58.77  18.78}}
+
+       # Call the ols routine
+       set results [::math::statistics::mv-ols $data]
+
+       # Pretty-print the results
+       puts "R-squared: [lindex $results 0]"
+       puts "Adj R-squared: [lindex $results 1]"
+       puts "Coefficients $pm s.e. -- \[95% confidence interval\]:"
+       foreach val [lindex $results 2] se [lindex $results 3] bounds [lindex $results 4] {
+           set lb [lindex $bounds 0]
+           set ub [lindex $bounds 1]
+           puts "   $val $pm $se -- \[$lb to $ub\]"
+       }
+
+
+STATISTICAL DISTRIBUTIONS
+       In the literature a large number of probability distributions can be
+       found. The statistics package supports:
+
+       •      The normal or Gaussian distribution
+
+       •      The uniform distribution - equal probability for all data within a
+              given interval
+
+       •      The exponential distribution - useful as a model for certain
+              extreme-value distributions.
+
+       •      The gamma distribution - based on the incomplete Gamma integral
+
+       •      The chi-square distribution
+
+       •      The student's T distribution
+
+       •      The Poisson distribution
+
+       •      PM - binomial,F.
+
+       In principle for each distribution one has procedures for:
+
+       •      The probability density (pdf-*)
+
+       •      The cumulative density (cdf-*)
+
+       •      Quantiles for the given distribution (quantiles-*)
+
+       •      Histograms for the given distribution (histogram-*)
+
+       •      List of random values with the given distribution (random-*)
+
+       The following procedures have been implemented:
+
+       ::math::statistics::pdf-normal mean stdev value
+              Return the probability of a given value for a normal distribution
+              with given mean and standard deviation.
+
+              float mean
+                     - Mean value of the distribution
+
+              float stdev
+                     - Standard deviation of the distribution
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::pdf-exponential mean value
+              Return the probability of a given value for an exponential
+              distribution with given mean.
+
+              float mean
+                     - Mean value of the distribution
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::pdf-uniform xmin xmax value
+              Return the probability of a given value for a uniform distribution
+              with given extremes.
+
+              float xmin
+                     - Minimum value of the distribution
+
+              float xmin
+                     - Maximum value of the distribution
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::pdf-gamma alpha beta value
+              Return the probability of a given value for a Gamma distribution
+              with given shape and rate parameters
+
+              float alpha
+                     - Shape parameter
+
+              float beta
+                     - Rate parameter
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::pdf-poisson mu k
+              Return the probability of a given number of occurrences in the
+              same interval (k) for a Poisson distribution with given mean (mu)
+
+              float mu
+                     - Mean number of occurrences
+
+              int k  - Number of occurences
+
+
+       ::math::statistics::pdf-chisquare df value
+              Return the probability of a given value for a chi square
+              distribution with given degrees of freedom
+
+              float df
+                     - Degrees of freedom
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::pdf-student-t df value
+              Return the probability of a given value for a Student's t
+              distribution with given degrees of freedom
+
+              float df
+                     - Degrees of freedom
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::pdf-beta a b value
+              Return the probability of a given value for a Beta distribution
+              with given shape parameters
+
+              float a
+                     - First shape parameter
+
+              float b
+                     - First shape parameter
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::cdf-normal mean stdev value
+              Return the cumulative probability of a given value for a normal
+              distribution with given mean and standard deviation, that is the
+              probability for values up to the given one.
+
+              float mean
+                     - Mean value of the distribution
+
+              float stdev
+                     - Standard deviation of the distribution
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::cdf-exponential mean value
+              Return the cumulative probability of a given value for an
+              exponential distribution with given mean.
+
+              float mean
+                     - Mean value of the distribution
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::cdf-uniform xmin xmax value
+              Return the cumulative probability of a given value for a uniform
+              distribution with given extremes.
+
+              float xmin
+                     - Minimum value of the distribution
+
+              float xmin
+                     - Maximum value of the distribution
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::cdf-students-t degrees value
+              Return the cumulative probability of a given value for a Student's
+              t distribution with given number of degrees.
+
+              int degrees
+                     - Number of degrees of freedom
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::cdf-gamma alpha beta value
+              Return the cumulative probability of a given value for a Gamma
+              distribution with given shape and rate parameters
+
+              float alpha
+                     - Shape parameter
+
+              float beta
+                     - Rate parameter
+
+              float value
+                     - Value for which the cumulative probability is required
+
+
+       ::math::statistics::cdf-poisson mu k
+              Return the cumulative probability of a given number of occurrences
+              in the same interval (k) for a Poisson distribution with given
+              mean (mu)
+
+              float mu
+                     - Mean number of occurrences
+
+              int k  - Number of occurences
+
+
+       ::math::statistics::cdf-beta a b value
+              Return the cumulative probability of a given value for a Beta
+              distribution with given shape parameters
+
+              float a
+                     - First shape parameter
+
+              float b
+                     - First shape parameter
+
+              float value
+                     - Value for which the probability is required
+
+
+       ::math::statistics::random-normal mean stdev number
+              Return a list of "number" random values satisfying a normal
+              distribution with given mean and standard deviation.
+
+              float mean
+                     - Mean value of the distribution
+
+              float stdev
+                     - Standard deviation of the distribution
+
+              int number
+                     - Number of values to be returned
+
+
+       ::math::statistics::random-exponential mean number
+              Return a list of "number" random values satisfying an exponential
+              distribution with given mean.
+
+              float mean
+                     - Mean value of the distribution
+
+              int number
+                     - Number of values to be returned
+
+
+       ::math::statistics::random-uniform xmin xmax number
+              Return a list of "number" random values satisfying a uniform
+              distribution with given extremes.
+
+              float xmin
+                     - Minimum value of the distribution
+
+              float xmax
+                     - Maximum value of the distribution
+
+              int number
+                     - Number of values to be returned
+
+
+       ::math::statistics::random-gamma alpha beta number
+              Return a list of "number" random values satisfying a Gamma
+              distribution with given shape and rate parameters
+
+              float alpha
+                     - Shape parameter
+
+              float beta
+                     - Rate parameter
+
+              int number
+                     - Number of values to be returned
+
+
+       ::math::statistics::random-chisquare df number
+              Return a list of "number" random values satisfying a chi square
+              distribution with given degrees of freedom
+
+              float df
+                     - Degrees of freedom
+
+              int number
+                     - Number of values to be returned
+
+
+       ::math::statistics::random-student-t df number
+              Return a list of "number" random values satisfying a Student's t
+              distribution with given degrees of freedom
+
+              float df
+                     - Degrees of freedom
+
+              int number
+                     - Number of values to be returned
+
+
+       ::math::statistics::random-beta a b number
+              Return a list of "number" random values satisfying a Beta
+              distribution with given shape parameters
+
+              float a
+                     - First shape parameter
+
+              float b
+                     - Second shape parameter
+
+              int number
+                     - Number of values to be returned
+
+
+       ::math::statistics::histogram-uniform xmin xmax limits number
+              Return the expected histogram for a uniform distribution.
+
+              float xmin
+                     - Minimum value of the distribution
+
+              float xmax
+                     - Maximum value of the distribution
+
+              list limits
+                     - Upper limits for the buckets in the histogram
+
+              int number
+                     - Total number of "observations" in the histogram
+
+
+       ::math::statistics::incompleteGamma x p ?tol?
+              Evaluate the incomplete Gamma integral
+
+                                  1       / x               p-1
+                    P(p,x) =  --------   |   dt exp(-t) * t
+                              Gamma(p)  / 0
+
+
+              float x
+                     - Value of x (limit of the integral)
+
+              float p
+                     - Value of p in the integrand
+
+              float tol
+                     - Required tolerance (default: 1.0e-9)
+
+
+       ::math::statistics::incompleteBeta a b x ?tol?
+              Evaluate the incomplete Beta integral
+
+              float a
+                     - First shape parameter
+
+              float b
+                     - Second shape parameter
+
+              float x
+                     - Value of x (limit of the integral)
+
+              float tol
+                     - Required tolerance (default: 1.0e-9)
+
+
+       TO DO: more function descriptions to be added
+
+DATA MANIPULATION
+       The data manipulation procedures act on lists or lists of lists:
+
+       ::math::statistics::filter varname data expression
+              Return a list consisting of the data for which the logical
+              expression is true (this command works analogously to the command
+              foreach).
+
+              string varname
+                     - Name of the variable used in the expression
+
+              list data
+                     - List of data
+
+              string expression
+                     - Logical expression using the variable name
+
+
+       ::math::statistics::map varname data expression
+              Return a list consisting of the data that are transformed via the
+              expression.
+
+              string varname
+                     - Name of the variable used in the expression
+
+              list data
+                     - List of data
+
+              string expression
+                     - Expression to be used to transform (map) the data
+
+
+       ::math::statistics::samplescount varname list expression
+              Return a list consisting of the counts of all data in the sublists
+              of the "list" argument for which the expression is true.
+
+              string varname
+                     - Name of the variable used in the expression
+
+              list data
+                     - List of sublists, each containing the data
+
+              string expression
+                     - Logical expression to test the data (defaults to "true").
+
+
+       ::math::statistics::subdivide
+              Routine PM - not implemented yet
+
+PLOT PROCEDURES
+       The following simple plotting procedures are available:
+
+       ::math::statistics::plot-scale canvas xmin xmax ymin ymax
+              Set the scale for a plot in the given canvas. All plot routines
+              expect this function to be called first. There is no automatic
+              scaling provided.
+
+              widget canvas
+                     - Canvas widget to use
+
+              float xmin
+                     - Minimum x value
+
+              float xmax
+                     - Maximum x value
+
+              float ymin
+                     - Minimum y value
+
+              float ymax
+                     - Maximum y value
+
+
+       ::math::statistics::plot-xydata canvas xdata ydata tag
+              Create a simple XY plot in the given canvas - the data are shown
+              as a collection of dots. The tag can be used to manipulate the
+              appearance.
+
+              widget canvas
+                     - Canvas widget to use
+
+              float xdata
+                     - Series of independent data
+
+              float ydata
+                     - Series of dependent data
+
+              string tag
+                     - Tag to give to the plotted data (defaults to xyplot)
+
+
+       ::math::statistics::plot-xyline canvas xdata ydata tag
+              Create a simple XY plot in the given canvas - the data are shown
+              as a line through the data points. The tag can be used to
+              manipulate the appearance.
+
+              widget canvas
+                     - Canvas widget to use
+
+              list xdata
+                     - Series of independent data
+
+              list ydata
+                     - Series of dependent data
+
+              string tag
+                     - Tag to give to the plotted data (defaults to xyplot)
+
+
+       ::math::statistics::plot-tdata canvas tdata tag
+              Create a simple XY plot in the given canvas - the data are shown
+              as a collection of dots. The horizontal coordinate is equal to the
+              index. The tag can be used to manipulate the appearance.  This
+              type of presentation is suitable for autocorrelation functions for
+              instance or for inspecting the time-dependent behaviour.
+
+              widget canvas
+                     - Canvas widget to use
+
+              list tdata
+                     - Series of dependent data
+
+              string tag
+                     - Tag to give to the plotted data (defaults to xyplot)
+
+
+       ::math::statistics::plot-tline canvas tdata tag
+              Create a simple XY plot in the given canvas - the data are shown
+              as a line. See plot-tdata for an explanation.
+
+              widget canvas
+                     - Canvas widget to use
+
+              list tdata
+                     - Series of dependent data
+
+              string tag
+                     - Tag to give to the plotted data (defaults to xyplot)
+
+
+       ::math::statistics::plot-histogram canvas counts limits tag
+              Create a simple histogram in the given canvas
+
+              widget canvas
+                     - Canvas widget to use
+
+              list counts
+                     - Series of bucket counts
+
+              list limits
+                     - Series of upper limits for the buckets
+
+              string tag
+                     - Tag to give to the plotted data (defaults to xyplot)
+
+
+THINGS TO DO
+       The following procedures are yet to be implemented:
+
+       •      F-test-stdev
+
+       •      interval-mean-stdev
+
+       •      histogram-normal
+
+       •      histogram-exponential
+
+       •      test-histogram
+
+       •      test-corr
+
+       •      quantiles-*
+
+       •      fourier-coeffs
+
+       •      fourier-residuals
+
+       •      onepar-function-fit
+
+       •      onepar-function-residuals
+
+       •      plot-linear-model
+
+       •      subdivide
+
+EXAMPLES
+       The code below is a small example of how you can examine a set of data:
+
+
+
+       # Simple example:
+       # - Generate data (as a cheap way of getting some)
+       # - Perform statistical analysis to describe the data
+       #
+       package require math::statistics
+
+       #
+       # Two auxiliary procs
+       #
+       proc pause {time} {
+          set wait 0
+          after [expr {$time*1000}] {set ::wait 1}
+          vwait wait
+       }
+
+       proc print-histogram {counts limits} {
+          foreach count $counts limit $limits {
+             if { $limit != {} } {
+                puts [format "<%12.4g\t%d" $limit $count]
+                set prev_limit $limit
+             } else {
+                puts [format ">%12.4g\t%d" $prev_limit $count]
+             }
+          }
+       }
+
+       #
+       # Our source of arbitrary data
+       #
+       proc generateData { data1 data2 } {
+          upvar 1 $data1 _data1
+          upvar 1 $data2 _data2
+
+          set d1 0.0
+          set d2 0.0
+          for { set i 0 } { $i < 100 } { incr i } {
+             set d1 [expr {10.0-2.0*cos(2.0*3.1415926*$i/24.0)+3.5*rand()}]
+             set d2 [expr {0.7*$d2+0.3*$d1+0.7*rand()}]
+             lappend _data1 $d1
+             lappend _data2 $d2
+          }
+          return {}
+       }
+
+       #
+       # The analysis session
+       #
+       package require Tk
+       console show
+       canvas .plot1
+       canvas .plot2
+       pack   .plot1 .plot2 -fill both -side top
+
+       generateData data1 data2
+
+       puts "Basic statistics:"
+       set b1 [::math::statistics::basic-stats $data1]
+       set b2 [::math::statistics::basic-stats $data2]
+       foreach label {mean min max number stdev var} v1 $b1 v2 $b2 {
+          puts "$label\t$v1\t$v2"
+       }
+       puts "Plot the data as function of \"time\" and against each other"
+       ::math::statistics::plot-scale .plot1  0 100  0 20
+       ::math::statistics::plot-scale .plot2  0 20   0 20
+       ::math::statistics::plot-tline .plot1 $data1
+       ::math::statistics::plot-tline .plot1 $data2
+       ::math::statistics::plot-xydata .plot2 $data1 $data2
+
+       puts "Correlation coefficient:"
+       puts [::math::statistics::corr $data1 $data2]
+
+       pause 2
+       puts "Plot histograms"
+       ::math::statistics::plot-scale .plot2  0 20 0 100
+       set limits         [::math::statistics::minmax-histogram-limits 7 16]
+       set histogram_data [::math::statistics::histogram $limits $data1]
+       ::math::statistics::plot-histogram .plot2 $histogram_data $limits
+
+       puts "First series:"
+       print-histogram $histogram_data $limits
+
+       pause 2
+       set limits         [::math::statistics::minmax-histogram-limits 0 15 10]
+       set histogram_data [::math::statistics::histogram $limits $data2]
+       ::math::statistics::plot-histogram .plot2 $histogram_data $limits d2
+
+       puts "Second series:"
+       print-histogram $histogram_data $limits
+
+       puts "Autocorrelation function:"
+       set  autoc [::math::statistics::autocorr $data1]
+       puts [::math::statistics::map $autoc {[format "%.2f" $x]}]
+       puts "Cross-correlation function:"
+       set  crossc [::math::statistics::crosscorr $data1 $data2]
+       puts [::math::statistics::map $crossc {[format "%.2f" $x]}]
+
+       ::math::statistics::plot-scale .plot1  0 100 -1  4
+       ::math::statistics::plot-tline .plot1  $autoc "autoc"
+       ::math::statistics::plot-tline .plot1  $crossc "crossc"
+
+       puts "Quantiles: 0.1, 0.2, 0.5, 0.8, 0.9"
+       puts "First:  [::math::statistics::quantiles $data1 {0.1 0.2 0.5 0.8 0.9}]"
+       puts "Second: [::math::statistics::quantiles $data2 {0.1 0.2 0.5 0.8 0.9}]"
+
+
+       If you run this example, then the following should be clear:
+
+       •      There is a strong correlation between two time series, as
+              displayed by the raw data and especially by the correlation
+              functions.
+
+       •      Both time series show a significant periodic component
+
+       •      The histograms are not very useful in identifying the nature of
+              the time series - they do not show the periodic nature.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category math ::
+       statistics of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       data analysis, mathematics, statistics
+
+CATEGORY
+       Mathematics
+
+
+

@@ -1,0 +1,250 @@
+iwidgets::disjointlistbox(1)     [incr Widgets]     iwidgets::disjointlistbox(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::disjointlistbox - Create and manipulate a disjointlistbox
+       widget
+
+SYNOPSIS
+       iwidgets::disjointlistbox pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Disjointlistbox
+
+STANDARD OPTIONS
+
+       activeBackground    selectBorderWidth   selectForeground
+       activeForeground    activeRelief        background
+       borderWidth         buttonPlacement     clientData
+       cursor              foreground          highlightColor
+       highlightThickness  disabledForeground  elementBorderWidth
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       lhsButtonLabel rhsButtonLabel
+
+       See the "button" widget manual entry for details on the above associated
+       options.
+
+       labelFont lhsLabelText rhsLabelText
+
+       See the "label" widget manual entry for details on the above associated
+       options.
+
+       jump troughColor
+
+       See the "scrollbar" widget class manual entry for details on the above
+       associated options.
+
+       textBackground textFont
+       lhsItems rhsItems
+
+       See the "scrolledlistbox" widget manual entry for details on the above
+       associated options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           buttonPlacement
+       Class:          ButtonPlacement
+       Command-Line Switch:           -buttonplacement
+
+              Specifies the placement of the insertion and removal buttons
+              relative to the scrolledlistbox widgetsn, bottom, or center.  The
+              default is bottom.
+
+       Name:           lhsLabelText
+       Class:          LabelText
+       Command-Line Switch:           -lhslabeltext
+
+              Specifies the text for the label of the lhs scrolledlistbox.  The
+              default is "Available".
+
+       Name:           rhsLabelText
+       Class:          LabelText
+       Command-Line Switch:           -rhslabeltext
+
+              Specifies the text for the label of the rhs scrolledlistbox.  The
+              default is "Available".
+
+       Name:           lhsButtonLabel
+       Class:          LabelText
+       Command-Line Switch:           -lhsbuttonlabel
+
+              Specifies the text for the button of the lhs scrolledlistbox.  The
+              default is "Insert >>".
+
+       Name:           rhsButtonLabel
+       Class:          LabelText
+       Command-Line Switch:           -rhsbuttonlabel
+
+              Specifies the text for the button of the rhs scrolledlistbox.  The
+              default is "<< Remove".
+
+       Name:           lhsSortOption
+       Class:          LhsSortOption
+       Command-Line Switch:           -lhssortoption
+
+              Specifies the sort function to be applied to the lhs
+              scrolledlistbox after items are inserted. Accepts the same sort
+              options as the scrolledlistbox sort method (Tcl's lsort command).
+              If "none" is specified, the inserted items are appended to the end
+              of the list, and no sorting is performed.  The default is
+              "increasing".
+
+       Name:           rhsSortOption
+       Class:          RhsSortOption
+       Command-Line Switch:           -rhssortoption
+
+              Specifies the sort function to be applied to the rhs
+              scrolledlistbox after items are inserted. Accepts the same sort
+              options as the scrolledlistbox sort method (Tcl's lsort command).
+              If "none" is specified, the inserted items are appended to the end
+              of the list, and no sorting is performed.  The default is
+              "increasing".
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The iwidgets::disjointlistbox command creates a disjoint pair of listboxs
+       similar to the OSF/Motif "Book" printing dialog of the "FrameMaker"
+       program.  It is implementation constists of a two Scrolledlistboxs, 2
+       buttons, and 2 labels.
+
+       The disjoint behavior of this widget exists between the interaction of
+       the two Scrolledlistboxes with one another.  That is, a given instance of
+       a Disjointlistbox will never exist, without the aid of a hack magician,
+       which has Scrolledlistbox widgets with items in common.  That means the
+       relationship between the two is maintained similar to that of disjoint
+       sets.
+
+       Users may transfer items between the two Listbox widgets using the the
+       two buttons.
+
+       Options exists which include the ability to configure the "items"
+       displayed by the 2 Scrolledlistboxes and to control the placement of the
+       insertion and removal buttons.
+
+METHODS
+       The iwidgets::disjointlistbox command creates a new Tcl command whose
+       name is pathName.  This command may be used to invoke various operations
+       on the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for disjointlistbox widgets:
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::disjointlistbox command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::disjointlistbox
+              command.
+
+       pathName setlhs
+              Set the current contents of the left-most Scrolledlistbox with the
+              input list of items.  Removes all (if any) items from the right-
+              most Scrolledlistbox which exist in the input list option to
+              maintain the disjoint property between the two
+
+       pathName setrhs
+              Set the current contents of the right-most Scrolledlistbox with
+              the input list of items.  Removes all (if any) items from the
+              left-most Scrolledlistbox which exist in the input list option to
+              maintain the disjoint property between the two
+
+       pathName getlhs
+              Returns the current contents of the left-most Scrolledlistbox
+
+       pathName getrhs
+              Returns the current contents of the right-most Scrolledlistbox
+
+       pathName insertlhs
+              Add the input list of items to the current contents of the left-
+              most Scrolledlistbox.  Removes all (if any) items from the right-
+              most Scrolledlistbox which exist in the input list option to
+              maintain the disjoint property between the two
+
+       pathName insertrhs
+              Add the input list of items to the current contents of the right-
+              most Scrolledlistbox.  Removes all (if any) items from the left-
+              most Scrolledlistbox which exist in the input list option to
+              maintain the disjoint property between the two.
+
+COMPONENTS
+       Name:           lhs
+       Class:          Scrolledlistbox
+
+              The lhs component is the scrolledlistbox for the rhs button.  See
+              the "scrolledlistbox" widget manual entry for details on the lhs
+              component item.
+
+       Name:           rhs
+       Class:          Scrolledlistbox
+
+              The rhs component is the scrolledlistbox for the rhs button.  See
+              the "scrolledlistbox" widget manual entry for details on the rhs
+              component item.
+
+       Name:           lhsbutton
+       Class:          utton
+
+              The lhsbutton component is the button for users to remove selected
+              items from the lhs Scrolledlistbox.  See the "button" widget
+              manual entry for details  on the lhs button component.
+
+       Name:           rhsbutton
+       Class:          Button
+
+              The rhsbutton component is the button for users to remove selected
+              items from the rhs Scrolledlistbox.  See the "button" widget
+              manual entry for details  on the rhs button component.
+
+       Name:           lhsCount
+       Class:          Label
+
+              The lhsCount component is the label for displaying a count of the
+              current items in the Scrolledlistbox.  See the "Label" widget
+              manual entry for details  on the lhsCount label component.
+
+       Name:           rhsCount
+       Class:          Label
+
+              The rhsCount component is the label for displaying a count of the
+              current items in the Scrolledlistbox.  See the "Label" widget
+              manual entry for details  on the rhsCount label component.
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              iwidgets::disjointlistbox .dlb
+              pack .dlb -padx 10 -pady 10 -fill both -expand yes
+
+
+AUTHOR(S)
+       John A. Tucker
+
+       Anthony Parent
+
+KEYWORDS
+       disjointlistbox, widget
+
+
+

@@ -1,0 +1,234 @@
+symbols(1)                   General Commands Manual                  symbols(1)
+
+NAME
+     symbols – display symbol information about a file or process
+
+SYNOPSIS
+     symbols [-help] [-w] [-uuid] [-arch arch_name] [-saveSignature path]
+             [-symbolsPackageDir path] [-lookup (0x1234 | symbol) ...] file...
+             pid...  process-name...  signature...
+
+DESCRIPTION
+     The symbols command may be used to examine library, symbol, and source line
+     information in files and running processes.
+
+     You may need root privileges to examine running processes.
+
+     The symbols command can be used to determine symbol availability to tools
+     such as Instruments, dtrace, and sample.
+
+COMMON OPTIONS
+     -help            Print a more extensive list of options
+
+     -v               Print version information
+
+     -w               Print wide output, do not clip to terminal width
+
+     -uuid            Print UUID info only.
+
+     -arch arch_name  Specify the target architecture. The default value is
+                      current , which matches the current system architecture.
+                      If the current architecture is not available in the
+                      targeted file or process, the symbols command will attempt
+                      to use any64bit , which matches the first available 64-bit
+                      architecture. If there is no 64-bit architecture
+                      available, the symbols command will finally fall back to
+                      any , which matches the first available architecture. The
+                      value all may be used to iterate over all architectures in
+                      a target. The arch name may also be any of the commonly
+                      used architecture mnemonics, for example i386, x86_64, or
+                      arm
+
+     -cpuType #       Specify the target architecture cpu type as a numeric
+                      value
+
+     -cpuSubtype #    Specify the target architecture cpu subtype as a numeric
+                      value
+
+     -noHeaders       Do not print library level information. This also
+                      supresses printing of any lower level information, which
+                      implies -noRegions, -noSymbols, and -noSources
+
+     -noRegions       Do not print segment/section level information. This also
+                      supresses printing of any lower level information, which
+                      implies -noSymbols and -noSources
+
+     -noSymbols       Do not print symbol level information. This also supresses
+                      printing of any lower level information, which implies
+                      -noSources
+
+     -noSources       Do not print source level information
+
+     -noDemangling    Do not print the human readable form of symbol names,
+                      instead print the name used by the linker
+
+     -printSignature  Print a "signature" for each target, which can later be
+                      used as input to the symbols command. This is a way to
+                      archive target data for later use. See also the
+                      -saveSignature flag
+
+     -deepSignature   Causes all signatures to be "deep copies", containing
+                      complete copies of all available information
+
+     -fullSourcePath  Print the entire source path for each source info
+
+     -printDsymPaths  Print the path of the dSYM file (if found) used when
+                      creating symbol information
+
+     -lookup (0x1234 | symbol)
+                      Find one or more addresses or symbols in the targets.
+                      Symbols may contain simple shell globbing style patterns.
+
+OUTPUT
+     Output from symbols has the following format:
+
+     target [arch_name, elapsed-time]:
+       UUID symbol-owner-path [FLAGS]
+         address (size) region-name
+           address (size) symbol-name [FLAGS]
+             address (size) sourcefile : line #
+
+     Symbol owner flags have the following meanings:
+
+     PROT             A load command has the SG_PROTECTED_VERSION_1 flag set
+     AOUT             This symbol owner is an executable
+     DYLIB            This symbol owner is a dylib or framework
+     DYLIB-STUB       This symbol owner is used only by the linker
+     DYLD             This symbol owner is the runtime dynamic linker
+     BUNDLE           This symbol owner is a loadable bundle
+     OBJECT           This symbol owner is an unlinked object file
+     KEXT-BUNDLE      This symbol owner is a kext
+     dSYM_v#          This symbol owner is a dSYM, of version '#'
+     DYLDSHAREDCACHE  This symbol owner was found in the dyld shared cache
+     ObjC-RR          This symbol owner supports manual retain-release
+     ObjC-GC          This symbol owner supports old-style garbage collection
+     SLID             This symbol owner was relocated from its base address
+     PIE              This symbol owner is compiled position independent
+     RESTRICTED       This symbol owner has a restrict segment/section
+     STATIC-LIB       This symbol-owner is from a static library (.a)
+     FaultedFromDisk  The data for this symbol owner was found on disk
+     FaultedFromTask  The data for this symbol owner was retrieved from a
+                      running task
+     FaultedFromSelfDyldSharedCache
+                      The data for this symbol owner was found in the current
+                      processes dyld shared cache
+     Found-dSYM       A dSYM was found for this symbol owner
+     Found-Binary-via-dSYM-colocation
+                      The binary for this symbol owner was found by looking up
+                      the dSYM, and then looking next to the dSYM
+     Found-Binary-via-dSYM-plist
+                      The binary for this symbol owner was found by looking up
+                      the dSYM, and then reading its plist
+     MMap32           The symbol owner is using a mmap'd file cache for symbol
+                      information
+     MMap64           The symbol owner is using a mmap'd file cache for symbol
+                      information
+     Empty            No data was found for this symbol owner
+
+     Symbol flags have the following meanings:
+
+     FUNC                   This symbol has executable code
+     DYLD-STUB              This symbol is a stub used by the dynamic linker
+     OBJC                   This symbol is an Objective C method
+     THUMB                  This symbol uses thumb instruction encoding
+     OMIT-FP                This symbol does not create a frame pointer.
+     EXT                    This symbol has external visibility
+     PEXT                   This symbol has private-external visibility
+     LENGTH                 The length of this symbol is known, not guessed
+     NameNList              The name of this symbol comes from NList data
+     NameDwarf              The name of this symbol comes from Dwarf data
+     NameDwarfMIPSLinkage   The name of this symbol is from specialized Dwarf
+     MangledNameNList       The mangled name of this symbol is from NList data
+     MangledNameDwarf       The mangled name of this symbol is from Dwarf data
+     MangledNameDwarfMIPSLinkage
+                            The mangled name of this symbol is from specialized
+                            Dwarf
+     Merged                 This symbol has multiple data sources
+     NList                  This symbol was found in NList data
+     Dwarf                  This symbol was found in Dwarf data
+     DebugMap               This symbol was found in DebugMap data
+     FunctionStarts         This symbol was found in function starts data
+
+SOURCES OF SYMBOL INFORMATION
+     symbols uses multiple sources of symbol information. All sources are
+     queried, and the resulting data is merged.
+
+     NLIST symbol information is found in the LINKEDIT segment. It is imprecise,
+     and only contains a starting address, not a length or ending address. Nlist
+     data is not required to (and typically does not) reference all symbols.
+     Usually only external symbol information is available. Even that may be
+     removed by use of strip(1)
+
+     DEBUG MAP symbol information is multi-part. A per-symbol reference in the
+     original file points to an external file containing additional debug
+     information, usually DWARF.
+
+     FUNCTION STARTS symbol information is found in the LC_FUNCTION_STARTS load
+     command of the target. It is imprecise, and only contains a starting
+     address, not a length or ending address. Furthermore, it contains no name
+     or mangled name information. The LC_FUNCTION_STARTS load command is
+     optional, it may not be found in all targets.
+
+     DWARF symbol information is true debug info. It is usually precise (but it
+     is not required to be). When available, dwarf information is treated as
+     more reliable than any other information source, and conflicts are resolved
+     in favor of dwarf data.
+
+     DSYM. A dSYM is an external file containing DWARF and NLIST symbol
+     information.
+
+KERNEL SYMBOLS
+     Kernel symbols are available by using the special pid "-1". This includes
+     loaded kexts.
+
+SIGNATURES
+     A signature is the information needed to reconstruct symbol information at
+     a later date. For example, a signature contains a list of libraries, and
+     for each library a UUID and the addresses the segments were loaded at. You
+     can also ask for a "deep" signature, which contains complete information
+     about every piece of information symbols could find. This can be very
+     useful for later diagnosis and exploration.
+
+SYMBOLS PACKAGE
+     A symbols package is a directory with "deep" signatures for one or more
+     binary images.  When a directory is specified with -symbolsPackageDir,
+     symbols will output a deep signature for each binary image slice it reads.
+     These files contain enough information to symbolicate application stack
+     traces (such as those generated by crash reports) with function names and
+     file names/line numbers.
+
+EXAMPLES
+     symbols /System/Library/Frameworks/AppKit.framework/AppKit
+             Print out all symbol and source line information in the default
+             architecture of AppKit.
+
+     symbols -uuid /System/Library/Frameworks/AppKit.framework/AppKit
+             Print out summarized UUID information for each arch in AppKit.
+
+     symbols -arch i386 /System/Library/Frameworks/AppKit.framework/AppKit
+             Print out all symbol and source line information in the i386
+             architecture of AppKit.
+
+     symbols 7085
+             Print out all symbol and source line information in pid 7085.
+
+     symbols 7085 -lookup 0x7fff5bf0008
+             Print the symbol and source line information in pid 7085 at address
+             0x7fff5bf0008.
+
+     symbols Safari
+             Attempt to find a process named Safari, and print its symbol and
+             source line information.
+
+     symbols -deepSignature -saveSignature /tmp/Safari.signature Safari
+             Attempt to find a process named Safari, and save a copy of all
+             discoverable information to a file in /tmp.
+
+     symbols /tmp/Safari.signature -lookup "*alloc*"
+             Using the cached information in /tmp/Safari.signature, find every
+             method/function matching the wildcard name *alloc*
+
+     symbols -w -1
+             Print out in wide format all available information on kernel
+             symbols"
+

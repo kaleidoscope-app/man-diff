@@ -1,0 +1,215 @@
+RPCINFO(8)                   System Manager's Manual                  RPCINFO(8)
+
+NAME
+     rpcinfo – report RPC information
+
+SYNOPSIS
+     rpcinfo [version] [-m | -s] [host]
+     rpcinfo [version] -T netid host program [version]
+     rpcinfo [version] -a server address -T netid program [version]
+     rpcinfo [version] -b [-T netid] program version
+     rpcinfo [version] -d [-T netid] program version
+     rpcinfo -l [-T netid] [host] program version
+     rpcinfo [version]
+
+             [-T netid] [host] program version
+     rpcinfo
+
+             [-T netid] [host] program version
+     rpcinfo
+
+             [-T netid] [host] program version
+     rpcinfo [version]
+
+             [-T netid] [host]
+     rpcinfo {| -h}
+     rpcinfo -p [host]
+     rpcinfo [-n portnum] -u host program [version]
+     rpcinfo [-n portnum] -t host program [version]
+
+DESCRIPTION
+     rpcinfo makes an RPC call to an RPC server and reports what it finds.
+     Unless otherwise specified or noted below the default rpcbind protocol
+     version is 3.  With no or only generic options, call the rpcbind dump
+     procedure on the specified host or “localhost” if host is not specified and
+     display the results.  For versions 3 and 4 display the program number, the
+     version, the “netid”, the universal address that the services is listening
+     on, symbolic name of the program if known, and then the owner that
+     registered the ⟨program, version, netid, address⟩ tuple.  For version 2 of
+     the protocol list the program, version, protocol, port, and symbolic
+     program name.  See the option below for a typically more useful output.
+     rpcbind defaults the netid to “tcp” for the dump procedure.
+
+     The program argument can be either a name or a number.
+
+     If a version is specified, rpcinfo attempts to call that version of the
+     specified program.  Otherwise, if the version is optional rpcinfo attempts
+     to find all the registered version numbers for the specified program by
+     calling version 0 (which is presumed not to exist; if it does exist,
+     rpcinfo attempts to obtain this information by calling an extremely high
+     version number instead) and attempts to call each registered version.
+
+     A required transport option is needed for the second and third lines of the
+     synopsis which is used to ping, i.e., call the null procedure of the
+     specified program and version. The results will be displayed on stdout. If
+     version is not specified each valid version found as described above will
+     be called.  The third synopsis will use the supplied universal address over
+     the transport specified by netid to call the null procedure of the
+     specified program in the same manner as above. In addition the last two
+     lines of the synopsis can “ping” the server as described in the Legacy
+     Options section below.
+
+GENERIC OPTIONS
+     version
+             Attempt to use the supplied rpcbind version. Note some options
+             below are version specific and this option may be ignored. If
+             specifying version 2 (portmapper), netid below must be one of “udp”
+             or “tcp”.
+
+     -T netid
+             Specify the netid to use. Supported netids are “udp”, “tcp”,
+             “udp6”, and “tcp6”.
+
+     seconds
+             Timeout used in creating client handles and the client calls to
+             rpcbind. Current default is 12 seconds.
+
+     Generic options may be supplied with any of the rpcinfo options below,
+     though some options will override their values.
+
+LEGACY OPTIONS
+     The options below imply version 2 (portmapper) rpcbind calls. They are
+     compatible with older versions of rpcinfo.
+
+     {-p |} [-T netid] [host]
+             Probe the portmapper on host, and print a list of all registered
+             RPC programs.  If host is not specified, it defaults to the value
+             “localhost”.
+
+     {-u |} host program [version]
+             Make an RPC call to the NULL procedure of program on the specified
+             host using UDP, and report whether a response was received.
+
+     {-t |} host program [version]
+             Make an RPC call to the NULL procedure of program on the specified
+             host using TCP, and report whether a response was received.
+
+     {-n |} portnum
+             Use portnum as the port number for the -t and -u options instead of
+             the port number given by the portmapper.
+
+OPTIONS
+     {-b |} program version
+             Make an RPC multicast over INET6 to the RPCB_MULTICAST_ADDR,
+             “FF02::202”, and broadcast over INET using UDP to procedure 0 of
+             the specified program and version and report all hosts that
+             respond.  rpcifno will first use RPCBIND version 3 and then call
+             the broadcast procedure of the portmapper protocol to collect older
+             hosts. There is a reply cache kept so duplicates will not be
+             returned unless the cache fills.
+
+             Note that the -b option by its self is compatible with the older
+             portmapper.  However, specifying
+              2 will short circuit the rpcbind version 3 calls and only call the
+             portmapper.
+
+     {-d |} [-T netid] program version
+             Delete registration for the RPC service of the specified program
+             and version.  If the netid is specified, only unregister the
+             program and version over that transport.  This option can be
+             exercised only by the super-user or the user who registered the the
+             RPC service.
+
+     [-T netid] [host] program version
+             Get the universal address that the client can use to contact the
+             program and version from host over netid.  If host is not specified
+             localhost is assumed. If netid is not specified “udp” is assumed.
+             If the specified version is not available but some other version
+             is, return the universal address for one of those versions of the
+             program.
+
+     [-T netid] [host] program version
+             Get the universal address that the client can use to contact the
+             program and version from host over netid.  If host is not specified
+             localhost is assumed. If netid is not specified “udp” is assumed.
+             If the version is not available then that will be indicated. This
+             requires the remote rpcbind support version 4.
+
+     -h      Print out the synopsis of this program.
+
+             Print out the synopsis and an explanation of the options.
+
+     [-T netid] [host] program version
+             Send a indirect call to the null procedure of program and version
+             on the specified host or localhost.  This requires the remote
+             rpcbind to support version 4.
+
+     {-l |} [-T netid] [host] program version
+             List the transports available over the transport family specified
+             by the netid for the given program and version on the optional host
+             or localhost if not specified.  Requires the remote rpcbind to
+             support version 4.  The default transport family is INET.
+
+     {-m |}  Print the metrics of rpcbind daemon for the specified host or
+             localhost if not specified.  Requires support for rpcbind version 4
+             on the remote.
+
+     {-s |}  Print a summary of programs registered on host or “localhost” if
+             host is not specified.  For each program registered list any
+             versions followed by any transports supported by that program. Try
+             to list the symbolic name of the transport and the owner that
+             registered the program.
+
+     [host]  Return rpcbind's version of time on the specified host.
+
+EXAMPLES
+     To show all of the RPC services registered on the local machine use:
+
+           example% rpcinfo
+
+     To show all of the RPC services registered on the machine named klaxon use:
+
+           example% rpcinfo klaxon
+
+     More usefully to show the services registered on klaxon use:
+
+           example% rpcinfo -s klaxon
+
+     To show all of the RPC services from an older host only running version 2
+     of rpcbind on a host named horn use:
+
+           example% rpcinfo -p horn
+
+     To show all machines on the local net that are running the NFS File service
+     use:
+
+           example% rpcinfo -b nfs 'version'
+
+     where 'version' is one of the current nfs versions of interest.
+
+     To delete the registration for version 1 of the rquotad service use:
+
+           example% rpcinfo -d rquotad 1
+
+SEE ALSO
+     rpc(5), rpcbind(8)
+
+     RPC Programming Guide.
+
+     RFC 1833 Binding Protocols for ONC RPC Version 2.
+
+     RFC 5665 IANA Considerations for Remote Procedure Call (RPC) Network
+     Identifiers and Universal Address Formats.
+
+BUGS
+     In summary mode the maximum number of versions and transports is 16. The
+     first 16 versions and the first 16 transports received from the server are
+     displayed and the rest is silently ignored.
+
+     In the second synopsis line, for a host that is specified as a link-local
+     INET6 address will always return “no route to host”.
+
+     In releases prior to SunOS 3.0, the Network File System (NFS) did not
+     register itself with the portmapper; rpcinfo cannot be used to make RPC
+     calls to the NFS server on hosts running such releases.
+

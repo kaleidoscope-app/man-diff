@@ -1,0 +1,485 @@
+asn(n)                          ASN.1 processing                          asn(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       asn - ASN.1 BER encoder/decoder
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require asn  ?0.8.3?
+
+       ::asn::asnSequence evalue...
+
+       ::asn::asnSequenceFromList elist
+
+       ::asn::asnSet evalue...
+
+       ::asn::asnSetFromList elist
+
+       ::asn::asnApplicationConstr appNumber evalue...
+
+       ::asn::asnApplication appNumber data
+
+       ::asn::asnChoice appNumber evalue...
+
+       ::asn::asnChoiceConstr appNumber evalue...
+
+       ::asn::asnInteger number
+
+       ::asn::asnEnumeration number
+
+       ::asn::asnBoolean bool
+
+       ::asn::asnContext context data
+
+       ::asn::asnContextConstr context evalue...
+
+       ::asn::asnObjectIdentifier idlist
+
+       ::asn::asnUTCTime utcstring
+
+       ::asn::asnNull
+
+       ::asn::asnBitString string
+
+       ::asn::asnOctetString string
+
+       ::asn::asnNumericString string
+
+       ::asn::asnPrintableString string
+
+       ::asn::asnIA5String string
+
+       ::asn::asnBMPString string
+
+       ::asn::asnUTF8String string
+
+       ::asn::asnString string
+
+       ::asn::defaultStringType ?type?
+
+       ::asn::asnPeekByte data_var byte_var
+
+       ::asn::asnGetLength data_var length_var
+
+       ::asn::asnGetResponse chan data_var
+
+       ::asn::asnGetInteger data_var int_var
+
+       ::asn::asnGetEnumeration data_var enum_var
+
+       ::asn::asnGetOctetString data_var string_var
+
+       ::asn::asnGetString data_var string_var ?type_var?
+
+       ::asn::asnGetNumericString data_var string_var
+
+       ::asn::asnGetPrintableString data_var string_var
+
+       ::asn::asnGetIA5String data_var string_var
+
+       ::asn::asnGetBMPString data_var string_var
+
+       ::asn::asnGetUTF8String data_var string_var
+
+       ::asn::asnGetUTCTime data_var utc_var
+
+       ::asn::asnGetBitString data_var bits_var
+
+       ::asn::asnGetObjectIdentifier data_var oid_var
+
+       ::asn::asnGetBoolean data_var bool_var
+
+       ::asn::asnGetNull data_var
+
+       ::asn::asnGetSequence data_var sequence_var
+
+       ::asn::asnGetSet data_var set_var
+
+       ::asn::asnGetApplication data_var appNumber_var ?content_var?
+       ?encodingType_var?
+
+       ::asn::asnGetContext data_var contextNumber_var ?content_var?
+       ?encodingType_var?
+
+       ::asn::asnPeekTag data_var tag_var tagtype_var constr_var
+
+       ::asn::asnTag tagnumber ?class? ?tagstyle?
+
+       ::asn::asnRetag data_var newTag
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The asn package provides partial de- and encoder commands for BER encoded
+       ASN.1 data. It can also be used for decoding DER, which is a restricted
+       subset of BER.
+
+       ASN.1 is a standard Abstract Syntax Notation, and BER are its Basic
+       Encoding Rules.
+
+       See http://asn1.elibel.tm.fr/en/standards/index.htm for more information
+       about the standard.
+
+       Also see http://luca.ntop.org/Teaching/Appunti/asn1.html for A Layman's
+       Guide to a Subset of ASN.1, BER, and DER, an RSA Laboratories Technical
+       Note by Burton S. Kaliski Jr. (Revised November 1, 1993). A text version
+       of this note is part of the module sources and should be read by any
+       implementor.
+
+PUBLIC API
+   ENCODER
+       ::asn::asnSequence evalue...
+              Takes zero or more encoded values, packs them into an ASN sequence
+              and returns its encoded binary form.
+
+       ::asn::asnSequenceFromList elist
+              Takes a list of encoded values, packs them into an ASN sequence
+              and returns its encoded binary form.
+
+       ::asn::asnSet evalue...
+              Takes zero or more encoded values, packs them into an ASN set and
+              returns its encoded binary form.
+
+       ::asn::asnSetFromList elist
+              Takes a list of encoded values, packs them into an ASN set and
+              returns its encoded binary form.
+
+       ::asn::asnApplicationConstr appNumber evalue...
+              Takes zero or more encoded values, packs them into an ASN
+              application construct and returns its encoded binary form.
+
+       ::asn::asnApplication appNumber data
+              Takes a single encoded value data, packs it into an ASN
+              application construct and returns its encoded binary form.
+
+       ::asn::asnChoice appNumber evalue...
+              Takes zero or more encoded values, packs them into an ASN choice
+              construct and returns its encoded binary form.
+
+       ::asn::asnChoiceConstr appNumber evalue...
+              Takes zero or more encoded values, packs them into an ASN choice
+              construct and returns its encoded binary form.
+
+       ::asn::asnInteger number
+              Returns the encoded form of the specified integer number.
+
+       ::asn::asnEnumeration number
+              Returns the encoded form of the specified enumeration id number.
+
+       ::asn::asnBoolean bool
+              Returns the encoded form of the specified boolean value bool.
+
+       ::asn::asnContext context data
+              Takes an encoded value and packs it into a constructed value with
+              application tag, the context number.
+
+       ::asn::asnContextConstr context evalue...
+              Takes zero or more encoded values and packs them into a
+              constructed value with application tag, the context number.
+
+       ::asn::asnObjectIdentifier idlist
+              Takes a list of at least 2 integers describing an object
+              identifier (OID) value, and returns the encoded value.
+
+       ::asn::asnUTCTime utcstring
+              Returns the encoded form of the specified UTC time string.
+
+       ::asn::asnNull
+              Returns the NULL encoding.
+
+       ::asn::asnBitString string
+              Returns the encoded form of the specified string.
+
+       ::asn::asnOctetString string
+              Returns the encoded form of the specified string.
+
+       ::asn::asnNumericString string
+              Returns the string encoded as ASN.1 NumericString. Raises an error
+              if the string contains characters other than decimal numbers and
+              space.
+
+       ::asn::asnPrintableString string
+              Returns the string encoding as ASN.1 PrintableString. Raises an
+              error if the string contains characters which are not allowed by
+              the Printable String datatype. The allowed characters are A-Z, a-
+              z, 0-9, space, apostrophe, colon, parentheses, plus, minus, comma,
+              period, forward slash, question mark, and the equals sign.
+
+       ::asn::asnIA5String string
+              Returns the string encoded as ASN.1 IA5String. Raises an error if
+              the string contains any characters outside of the US-ASCII range.
+
+       ::asn::asnBMPString string
+              Returns the string encoded as ASN.1 Basic Multilingual Plane
+              string (Which is essentialy big-endian UCS2).
+
+       ::asn::asnUTF8String string
+              Returns the string encoded as UTF8 String. Note that some legacy
+              applications such as Windows CryptoAPI do not like UTF8 strings.
+              Use BMPStrings if you are not sure.
+
+       ::asn::asnString string
+              Returns an encoded form of string, choosing the most restricted
+              ASN.1 string type possible. If the string contains non-ASCII
+              characters, then there is more than one string type which can be
+              used. See ::asn::defaultStringType.
+
+       ::asn::defaultStringType ?type?
+              Selects the string type to use for the encoding of non-ASCII
+              strings. Returns current default when called without argument. If
+              the argument type is supplied, it should be either UTF8 or BMP to
+              choose UTF8String or BMPString respectively.
+
+   DECODER
+       General notes:
+
+       [1]    Nearly all decoder commands take two arguments. These arguments
+              are variable names, except for ::asn::asnGetResponse. The first
+              variable contains the encoded ASN value to decode at the
+              beginning, and more, and the second variable is where the value is
+              stored to. The remainder of the input after the decoded value is
+              stored back into the datavariable.
+
+       [2]    After extraction the data variable is always modified first,
+              before by writing the extracted value to its variable. This means
+              that if both arguments refer to the same variable, it will always
+              contain the extracted value after the call, and not the remainder
+              of the input.
+
+       ::asn::asnPeekByte data_var byte_var
+              Retrieve the first byte of the data, without modifing data_var.
+              This can be used to check for implicit tags.
+
+       ::asn::asnGetLength data_var length_var
+              Decode the length information for a block of BER data. The tag has
+              already to be removed from the data.
+
+       ::asn::asnGetResponse chan data_var
+              Reads an encoded ASN sequence from the channel chan and stores it
+              into the variable named by data_var.
+
+       ::asn::asnGetInteger data_var int_var
+              Assumes that an encoded integer value is at the front of the data
+              stored in the variable named data_var, extracts and stores it into
+              the variable named by int_var. Additionally removes all bytes
+              associated with the value from the data for further processing by
+              the following decoder commands.
+
+       ::asn::asnGetEnumeration data_var enum_var
+              Assumes that an enumeration id is at the front of the data stored
+              in the variable named data_var, and stores it into the variable
+              named by enum_var. Additionally removes all bytes associated with
+              the value from the data for further processing by the following
+              decoder commands.
+
+       ::asn::asnGetOctetString data_var string_var
+              Assumes that a string is at the front of the data stored in the
+              variable named data_var, and stores it into the variable named by
+              string_var. Additionally removes all bytes associated with the
+              value from the data for further processing by the following
+              decoder commands.
+
+       ::asn::asnGetString data_var string_var ?type_var?
+              Decodes a user-readable string. This is a convenience function
+              which is able to automatically distinguish all supported ASN.1
+              string types and convert the input value appropriately.  See
+              ::asn::asnGetPrintableString, ::asnGetIA5String, etc.  below for
+              the type-specific conversion commands.
+
+              If the optional third argument type_var is supplied, then the type
+              of the incoming string is stored in the variable named by it.
+
+              The function throws the error "Invalid command name
+              asnGetSomeUnsupportedString" if the unsupported string type
+              Unsupported is encountered. You can create the appropriate
+              function "asn::asnGetSomeUnsupportedString" in your application if
+              neccessary.
+
+       ::asn::asnGetNumericString data_var string_var
+              Assumes that a numeric string value is at the front of the data
+              stored in the variable named data_var, and stores it into the
+              variable named by string_var. Additionally removes all bytes
+              associated with the value from the data for further processing by
+              the following decoder commands.
+
+       ::asn::asnGetPrintableString data_var string_var
+              Assumes that a printable string value is at the front of the data
+              stored in the variable named data_var, and stores it into the
+              variable named by string_var. Additionally removes all bytes
+              associated with the value from the data for further processing by
+              the following decoder commands.
+
+       ::asn::asnGetIA5String data_var string_var
+              Assumes that a IA5 (ASCII) string value is at the front of the
+              data stored in the variable named data_var, and stores it into the
+              variable named by string_var. Additionally removes all bytes
+              associated with the value from the data for further processing by
+              the following decoder commands.
+
+       ::asn::asnGetBMPString data_var string_var
+              Assumes that a BMP (two-byte unicode) string value is at the front
+              of the data stored in the variable named data_var, and stores it
+              into the variable named by string_var, converting it into a proper
+              Tcl string. Additionally removes all bytes associated with the
+              value from the data for further processing by the following
+              decoder commands.
+
+       ::asn::asnGetUTF8String data_var string_var
+              Assumes that a UTF8 string value is at the front of the data
+              stored in the variable named data_var, and stores it into the
+              variable named by string_var, converting it into a proper Tcl
+              string.  Additionally removes all bytes associated with the value
+              from the data for further processing by the following decoder
+              commands.
+
+       ::asn::asnGetUTCTime data_var utc_var
+              Assumes that a UTC time value is at the front of the data stored
+              in the variable named data_var, and stores it into the variable
+              named by utc_var. The UTC time value is stored as a string, which
+              has to be decoded with the usual clock scan commands.
+              Additionally removes all bytes associated with the value from the
+              data for further processing by the following decoder commands.
+
+       ::asn::asnGetBitString data_var bits_var
+              Assumes that a bit string value is at the front of the data stored
+              in the variable named data_var, and stores it into the variable
+              named by bits_var as a string containing only 0 and 1.
+              Additionally removes all bytes associated with the value from the
+              data for further processing by the following decoder commands.
+
+       ::asn::asnGetObjectIdentifier data_var oid_var
+              Assumes that a object identifier (OID) value is at the front of
+              the data stored in the variable named data_var, and stores it into
+              the variable named by oid_var as a list of integers.  Additionally
+              removes all bytes associated with the value from the data for
+              further processing by the following decoder commands.
+
+       ::asn::asnGetBoolean data_var bool_var
+              Assumes that a boolean value is at the front of the data stored in
+              the variable named data_var, and stores it into the variable named
+              by bool_var. Additionally removes all bytes associated with the
+              value from the data for further processing by the following
+              decoder commands.
+
+       ::asn::asnGetNull data_var
+              Assumes that a NULL value is at the front of the data stored in
+              the variable named data_var and removes the bytes used to encode
+              it from the data.
+
+       ::asn::asnGetSequence data_var sequence_var
+              Assumes that an ASN sequence is at the front of the data stored in
+              the variable named data_var, and stores it into the variable named
+              by sequence_var. Additionally removes all bytes associated with
+              the value from the data for further processing by the following
+              decoder commands.
+
+              The data in sequence_var is encoded binary and has to be further
+              decoded according to the definition of the sequence, using the
+              decoder commands here.
+
+       ::asn::asnGetSet data_var set_var
+              Assumes that an ASN set is at the front of the data stored in the
+              variable named data_var, and stores it into the variable named by
+              set_var. Additionally removes all bytes associated with the value
+              from the data for further processing by the following decoder
+              commands.
+
+              The data in set_var is encoded binary and has to be further
+              decoded according to the definition of the set, using the decoder
+              commands here.
+
+       ::asn::asnGetApplication data_var appNumber_var ?content_var?
+       ?encodingType_var?
+              Assumes that an ASN application construct is at the front of the
+              data stored in the variable named data_var, and stores its id into
+              the variable named by appNumber_var. Additionally removes all
+              bytes associated with the value from the data for further
+              processing by the following decoder commands.  If a content_var is
+              specified, then the command places all data associated with it
+              into the named variable, in the binary form which can be processed
+              using the decoder commands of this package.  If a encodingType_var
+              is specified, then that var is set to 1 if the encoding is
+              constructed and 0 if it is primitive.
+
+              Otherwise it is the responsibility of the caller to decode the
+              remainder of the application construct based on the id retrieved
+              by this command, using the decoder commands of this package.
+
+       ::asn::asnGetContext data_var contextNumber_var ?content_var?
+       ?encodingType_var?
+              Assumes that an ASN context tag construct is at the front of the
+              data stored in the variable named data_var, and stores its id into
+              the variable named by contextNumber_var. Additionally removes all
+              bytes associated with the value from the data for further
+              processing by the following decoder commands.  If a content_var is
+              specified, then the command places all data associated with it
+              into the named variable, in the binary form which can be processed
+              using the decoder commands of this package.  If a encodingType_var
+              is specified, then that var is set to 1 if the encoding is
+              constructed and 0 if it is primitive.
+
+              Otherwise it is the responsibility of the caller to decode the
+              remainder of the construct based on the id retrieved by this
+              command, using the decoder commands of this package.
+
+   HANDLING TAGS
+       Working with ASN.1 you often need to decode tagged values, which use a
+       tag thats different from the universal tag for a type. In those cases you
+       have to replace the tag with the universal tag used for the type, to
+       decode the value.  To decode a tagged value use the ::asn::asnRetag to
+       change the tag to the appropriate type to use one of the decoders for
+       primitive values.  To help with this the module contains three functions:
+
+       ::asn::asnPeekTag data_var tag_var tagtype_var constr_var
+              The ::asn::asnPeekTag command can be used to take a peek at the
+              data and decode the tag value, without removing it from the data.
+              The tag_var gets set to the tag number, while the tagtype_var gets
+              set to the class of the tag. (Either UNIVERSAL, CONTEXT,
+              APPLICATION or PRIVATE). The constr_var is set to 1 if the tag is
+              for a constructed value, and to 0 for not constructed. It returns
+              the length of the tag.
+
+       ::asn::asnTag tagnumber ?class? ?tagstyle?
+              The ::asn::asnTag can be used to create a tag value. The tagnumber
+              gives the number of the tag, while the class gives one of the
+              classes (UNIVERSAL,CONTEXT,APPLICATION or PRIVATE). The class may
+              be abbreviated to just the first letter (U,C,A,P), default is
+              UNIVERSAL.  The tagstyle is either C for Constructed encoding, or
+              P for primitve encoding. It defaults to P. You can also use 1
+              instead of C and 0 instead of P for direct use of the values
+              returned by ::asn::asnPeekTag.
+
+       ::asn::asnRetag data_var newTag
+              Replaces the tag in front of the data in data_var with newTag. The
+              new Tag can be created using the ::asn::asnTag command.
+
+EXAMPLES
+       Examples for the usage of this package can be found in the implementation
+       of package ldap.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category asn of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       asn, ber, cer, der, internet, protocol, x.208, x.209
+
+CATEGORY
+       Networking
+
+COPYRIGHT
+       Copyright (c) 2004 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+       Copyright (c) 2004 Jochen Loewer <loewerj@web.de>
+       Copyright (c) 2004-2008 Michael Schlenker <mic42@users.sourceforge.net>
+
+
+
+

@@ -1,0 +1,119 @@
+configbody(n)                      [incr Tcl]                      configbody(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       configbody - change the "config" code for a public variable
+
+SYNOPSIS
+       itcl::configbody className::varName body
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The configbody command is used outside of an [incr Tcl] class definition
+       to define or redefine the configuration code associated with a public
+       variable.  Public variables act like configuration options for an object.
+       They can be modified outside the class scope using the built-in configure
+       method.  Each variable can have a bit of "config" code associate with it
+       that is automatically executed when the variable is configured.  The
+       configbody command can be used to define or redefine this body of code.
+
+       Like the body command, this facility allows a class definition to have
+       separate "interface" and "implementation" parts.  The "interface" part is
+       a class command with declarations for methods, procs, instance variables
+       and common variables.  The "implementation" part is a series of body and
+       configbody commands.  If the "implementation" part is kept in a separate
+       file, it can be sourced again and again as bugs are fixed, to support
+       interactive development.  When using the "tcl" mode in the emacs editor,
+       the "interface" and "implementation" parts can be kept in the same file;
+       as bugs are fixed, individual bodies can be highlighted and sent to the
+       test application.
+
+       The name "className::varName" identifies the public variable being
+       updated.  If the body string starts with "@", it is treated as the
+       symbolic name for a C procedure.  Otherwise, it is treated as a Tcl
+       command script.
+
+       Symbolic names for C procedures are established by registering procedures
+       via Itcl_RegisterC().  This is usually done in the Tcl_AppInit()
+       procedure, which is automatically called when the interpreter starts up.
+       In the following example, the procedure My_FooCmd() is registered with
+       the symbolic name "foo".  This procedure can be referenced in the
+       configbody command as "@foo".
+              int
+              Tcl_AppInit(interp)
+                  Tcl_Interp *interp;     /* Interpreter for application. */
+              {
+                  if (Itcl_Init(interp) == TCL_ERROR) {
+                      return TCL_ERROR;
+                  }
+
+                  if (Itcl_RegisterC(interp, "foo", My_FooCmd) != TCL_OK) {
+                      return TCL_ERROR;
+                  }
+              }
+
+
+EXAMPLE
+       In the following example, a "File" class is defined to represent open
+       files.  Whenever the "-name" option is configured, the existing file is
+       closed, and a new file is opened.  Note that the "config" code for a
+       public variable is optional.  The "-access" option, for example, does not
+       have it.
+              itcl::class File {
+                  private variable fid ""
+
+                  public variable name ""
+                  public variable access "r"
+
+                  constructor {args} {
+                      eval configure $args
+                  }
+                  destructor {
+                      if {$fid != ""} {
+                          close $fid
+                      }
+                  }
+
+                  method get {}
+                  method put {line}
+                  method eof {}
+              }
+
+              itcl::body File::get {} {
+                  return [gets $fid]
+              }
+              itcl::body File::put {line} {
+                  puts $fid $line
+              }
+              itcl::body File::eof {} {
+                  return [::eof $fid]
+              }
+
+              itcl::configbody File::name {
+                  if {$fid != ""} {
+                      close $fid
+                  }
+                  set fid [open $name $access]
+              }
+
+              #
+              # See the File class in action:
+              #
+              File x
+
+              x configure -name /etc/passwd
+              while {![x eof]} {
+                  puts "=> [x get]"
+              }
+              itcl::delete object x
+
+
+KEYWORDS
+       class, object, variable, configure
+
+
+

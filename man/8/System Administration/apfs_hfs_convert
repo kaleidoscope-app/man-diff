@@ -1,0 +1,90 @@
+APFS_HFS_CONVERT(8)          System Manager's Manual         APFS_HFS_CONVERT(8)
+
+NAME
+     apfs_hfs_convert – convert an existing HFS file system to APFS file system
+
+SYNOPSIS
+     apfs_hfs_convert [-D] [-g] [-e] [-v] [-i] [-S path] [-n] [-f] [-F index]
+                      [-M mount_path] [-o nx-apfs-format] <device-path>
+
+DESCRIPTION
+     The apfs_hfs_convert command converts an existing HFS file system to a new
+     APFS file system.
+
+     It is recommended not to run the apfs_hfs_convert directly, but to run
+     `diskutil apfs convert`.
+
+     The device-path parameter should be the path to a disk device node, such as
+     /dev/disk1s2, with an existing HFS file system, which needs to be
+     converted.  The device-path may be a path to a whole disk, such as
+     /dev/disk0, which contains Lightweight Volume Manager (LwVM) structures;
+     all HFS slices will be converted and LwVM replaced by a GPT partition map
+     with a single partition containing the APFS container.
+
+     The options are as follows:
+
+     -e | --estimate       Estimate the APFS metadata size after conversion.
+
+     -v | --verbose        Increase verbosity of the output.
+
+     -s | --force-case-sensitive
+                           Force the converted volume to be case-sensitive.  By
+                           default, the converted volume will have the same
+                           case-sensitivity as the original HFS volume.
+
+     -S path | --stats path
+                           Print statistics about the conversion to the supplied
+                           path.  If the path is - then the statistics are
+                           printed to standard output.
+
+     -n | --dry-run        Do not finalize the conversion to APFS.  Volume
+                           remains HFS.
+
+     -f | --force          Force conversion if volume is dirty (journal is non-
+                           empty, volume had inconsistencies, or volume is not
+                           journaled and not unmounted cleanly).
+
+     -F index | --fixed index
+                           Volume number index (0-based) should be formatted as
+                           fixed-size.  Usually used when converting LwVM.
+
+     -M mount_path | --mount-path mount_path
+                           When converting LwVM systems, which require a special
+                           "conversion mount" of the underlying device, use the
+                           given mount_path as the mount point.  If this option
+                           is not used, a temporary directory will be created
+                           and used.
+
+     -o nx-apfs-format     NX or APFS format options.
+
+     -g                    If conversion succeeds, modify the GPT UUID.
+
+     -D | --skip-single-dirlinks
+                           Convert all former and current directory hardlinks to
+                           files/aliases.
+
+     --feature-format      Allow for one-off specific formatting features to be
+                           toggled on or off during the conversion to APFS.
+                           Values must be specified in a CSV string.  For
+                           example "feature=value,feature2=value2,..."
+
+                           dirents=unhashed is a feature format flag that will
+                           specify to the converter that it should produce a
+                           volume with legacy (non-standard) directory entries.
+                           That is, the resulting volume will have file names
+                           that are both normalization-sensitive and case-
+                           sensitive.  This is not recommended in most cases.
+
+EXIT STATUS
+     The apfs_hfs_convert utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     The following converts the HFS file system on the /dev/disk1s2 device:
+           apfs_hfs_convert -v /dev/disk1s2
+
+SEE ALSO
+     mount_apfs(8) , newfs_apfs(8)
+
+HISTORY
+     The apfs_hfs_convert utility first appeared in OS X 10.12.
+

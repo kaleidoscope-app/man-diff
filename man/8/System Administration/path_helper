@@ -1,0 +1,31 @@
+path_helper(8)               System Manager's Manual              path_helper(8)
+
+NAME
+     path_helper – helper for constructing PATH environment variable
+
+SYNOPSIS
+     path_helper [-c | -s]
+
+DESCRIPTION
+     The path_helper utility reads the contents of the files in the directories
+     /etc/paths.d and /etc/manpaths.d and appends their contents to the PATH and
+     MANPATH environment variables respectively.  (The MANPATH environment
+     variable will not be modified unless it is already set in the environment.)
+
+     Files in these directories should contain one path element per line.
+
+     Prior to reading these directories, default PATH and MANPATH values are
+     obtained from the files /etc/paths and /etc/manpaths respectively.
+
+     Options:
+
+     -c      Generate C-shell commands on stdout.  This is the default if SHELL
+             ends with "csh".
+
+     -s      Generate Bourne shell commands on stdout.  This is the default if
+             SHELL does not end with "csh".
+
+NOTE
+     The path_helper utility should not be invoked directly.  It is intended
+     only for use by the shell profile.
+

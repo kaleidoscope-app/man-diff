@@ -1,0 +1,235 @@
+tkconrc(5)                     File Formats Manual                    tkconrc(5)
+
+
+
+________________________________________________________________________________
+
+NAME
+       tkconrc - TkCon resource file
+
+DESCRIPTION
+       TkCon will search for a resource file in "~/.tkconrc".  TkCon never
+       sources the "~/.wishrc" file.  The resource file is sourced by each new
+       instance of the console.  An example resource file is provided below.
+
+       The file itself is a Tcl script, so it is required that the file conforms
+       to Tcl script conventions.
+
+VARIABLES
+       Certain variables in TkCon can be modified to suit your needs.  It's
+       easiest to do this in the resource file, but you can do it when time the
+       program is running (and some can be changed via the Prefs menu).  All
+       these are part of the master interpreter's ::tkcon namespace.  The
+       modifiable array variables are ::tkcon::COLOR and ::tkcon::OPT.  You can
+       call
+
+       tkcon set ::tkcon::COLOR
+
+       when the program is running to check its state.  Here is an explanation
+       of certain variables you might change or use:
+
+       ::tkcon::COLOR(bg)
+              The background color for tkcon text widgets.  Defaults to the
+              operating system default (determined at startup).
+
+       ::tkcon::COLOR(blink)
+              The background color of the electric brace highlighting, if on.
+              Defaults to yellow.
+
+       ::tkcon::COLOR(cursor)
+              The background color for the insertion cursor in tkcon.  Defaults
+              to black.
+
+       ::tkcon::COLOR(disabled)
+              The foreground color for disabled menu items.  Defaults to dark
+              grey.
+
+       ::tkcon::COLOR(proc)
+              The foreground color of a recognized proc, if command highlighting
+              is on.  Defaults to dark green.
+
+       ::tkcon::COLOR(var)
+              The background color of a recognized var, if command highlighting
+              is on.  Defaults to pink.
+
+       ::tkcon::COLOR(prompt)
+              The foreground color of the prompt as output in the console.
+              Defaults to brown.
+
+       ::tkcon::COLOR(stdin)
+              The foreground color of the stdin for the console.  Defaults to
+              black.
+
+       ::tkcon::COLOR(stdout)
+              The foreground color of the stdout as output in the console.
+              Defaults to blue.
+
+       ::tkcon::COLOR(stderr)
+              The foreground color of stderr as output in the console.  Defaults
+              to red.
+
+       ::tkcon::OPT(autoload)
+              Packages to automatically load into the slave interpreter (i.e.
+              'Tk').  This is a list.  Defaults to {} (none).
+
+       ::tkcon::OPT(blinktime)
+              The amount of time (in millisecs) that braced sections should
+              blink for.  Defaults to 500 (0.5 secs), must be at least 100.
+
+       ::tkcon::OPT(blinkrange)
+              Whether to blink the entire range for electric brace matching or
+              to just blink the actual matching braces (respectively 1 or 0,
+              defaults to 1).
+
+       ::tkcon::OPT(buffer)
+              The size of the console scroll buffer (in lines).  Defaults to
+              512.
+
+       ::tkcon::OPT(calcmode)
+              Whether to allow expr commands to be run at the command line
+              without prefixing them with expr (just a convenience).
+
+       ::tkcon::OPT(cols)
+              Number of columns for the console to start out with.  Defaults to
+              80.
+
+       ::tkcon::OPT(dead)
+              What to do with dead connected interpreters.  If dead is leave,
+              TkCon automatically exits the dead interpreter.  If dead is ignore
+              then it remains attached waiting for the interpreter to reappear.
+              Otherwise TkCon will prompt you.
+
+       ::tkcon::OPT(exec)
+              This corresponds to the -exec tkcon option (see tkcon(1)).
+
+       ::tkcon::OPT(font)
+              Font to use for tkcon text widgets (also specified with -font
+              option).  Defaults to the system default, or a fixed width
+              equivalent.
+
+       ::tkcon::OPT(gets)
+              Controls whether tkcon will overload the gets command to work with
+              tkcon.  The valid values are: congets (the default), which will
+              redirect stdin requests to the tkcon window; gets, which will pop
+              up a dialog to get input; and {} (empty string) which tells tkcon
+              not to overload gets.  This value must be set at startup to alter
+              tkcon's behavior.
+
+       ::tkcon::OPT(history)
+              The size of the history list to keep.  Defaults to 48.
+
+       ::tkcon::OPT(hoterrors)
+              Whether hot errors are enabled or not.  When enabled, errors that
+              are returned to the console are marked with a link to the error
+              info that will pop up in an minimal editor.  This requires more
+              memory because each error that occurs will maintain bindings for
+              this feature, as long as the error is in the text widget.
+              Defaults to on.
+
+       ::tkcon::OPT(library)
+              The path to any tcl library directories (these are appended to the
+              auto_path when the after the resource file is loaded in).
+
+       ::tkcon::OPT(lightbrace)
+              Whether to use the brace highlighting feature or not (respectively
+              1 or 0, defaults to 1).
+
+       ::tkcon::OPT(lightcmd)
+              Whether to use the command highlighting feature or not
+              (respectively 1 or 0, defaults to 1).
+
+       ::tkcon::OPT(maineval)
+              A tcl script to execute in the main interpreter after the slave
+              interpreter is created and the user interface is initialized.
+
+       ::tkcon::OPT(maxlinelen)
+              A number that specifies the limit of long result lines.  True
+              result is still captured in $_ (and 'puts $_' works).  Defaults to
+              0 (unlimited).
+
+       ::tkcon::OPT(maxmenu)
+              A number that specifies the maximum number of packages to show
+              vertically in the Interp->Packages menu before breaking into
+              another column.  Defaults to 15.
+
+       ::tkcon::OPT(nontcl)
+              For those who might be using non-Tcl based Tk attachments, set
+              this to 1.  It prevents TkCon from trying to evaluate its own Tcl
+              code in an attached interpreter.  Also see my notes for non-Tcl
+              based Tk interpreters.
+
+       ::tkcon::OPT(prompt1)
+              Like tcl_prompt1, except it doesn't require you use puts.  No
+              equivalent for tcl_prompt2 is available (it's unnecessary IMHO).
+              Defaults to {([file tail [pwd]]) [history nextid] % }.
+
+       ::tkcon::OPT(rows)
+              Number of rows for the console to start out with.  Defaults to 20.
+
+       ::tkcon::OPT(scollypos)
+              Y scrollbar position.  Valid values are left or right.  Defaults
+              to right.
+
+       ::tkcon::OPT(showmenu)
+              Show the menubar on startup (1 or 0, defaults to 1).
+
+       ::tkcon::OPT(showmultiple)
+              Show multiple matches for path/proc/var name expansion (1 or 0,
+              defaults to 1).
+
+       ::tkcon::OPT(slaveeval)
+              A tcl script to execute in each slave interpreter right after it's
+              created.  This allows the user to have user defined info always
+              available in a slave.
+
+              Example:
+
+              set ::tkcon::OPT(slaveeval) {
+                  proc foo args { puts $args }
+                  lappend auto_path .
+              }
+
+
+       ::tkcon::OPT(slaveexit)
+              Allows the prevention of exit in slaves from exitting the entire
+              application.  If it is equal to exit, exit will exit as usual,
+              otherwise it will just close down that interpreter (and any
+              children).  Defaults to close.
+
+       ::tkcon::OPT(subhistory)
+              Allow history substitution to occur (0 or 1, defaults to 1).  The
+              history list is maintained in a single interpreter per TkCon
+              console instance.  Thus you have history which can range over a
+              series of attached interpreters.
+
+EXAMPLES
+       An example TkCon resource file might look like:
+
+       ######################################################
+       ## My TkCon Resource File
+
+       # Use a fixed default font
+       #tkcon font fixed; # valid on unix
+       #tkcon font systemfixed; # valid on win
+       tkcon font Courier 12; # valid everywhere
+
+       # Keep 50 commands in history
+       set ::tkcon::OPT(history) 50
+
+       # Use a pink prompt
+       set ::tkcon::COLOR(prompt) pink
+       ######################################################
+
+
+SEE ALSO
+       dump(n), idebug(n), observe(n), tkcon(1), tkcon(n)
+
+KEYWORDS
+       Tk, console
+
+COPYRIGHT
+       Copyright (c) Jeffrey Hobbs <jeff at hobbs.org>
+
+
+
+

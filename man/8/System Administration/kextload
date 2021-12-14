@@ -1,0 +1,124 @@
+KEXTLOAD(8)                  System Manager's Manual                 KEXTLOAD(8)
+
+NAME
+     kextload – load kernel extensions (kexts) into the kernel
+
+SYNOPSIS
+     kextload [options] [--] [kext ...]
+
+DEPRECATED
+     The kextload utility has been deprecated.  Please use the kmutil(8)
+     equivalent: kmutil load.
+
+DESCRIPTION
+     The kextload program is used to explicitly load kernel extensions (kexts).
+     For most kexts, kextload must run as the superuser (root).  Kexts installed
+     under /System/ with an OSBundleAllowUserLoad property set to true may be
+     loaded via kextload by non-root users.
+
+     Notice: On Mac OS X 10.6 (Snow Leopard), the developer functionality of
+     kextload has moved to the new program kextutil(8); all developer-related
+     options have been removed from kextload and are no longer recognized.  On
+     Mac OS X 10.6 (Snow Leopard), kextload simply forwards a load request to
+     kextd(8), which performs all communication with the kernel.
+
+     kextload is a formal interface for kext loading in all versions of Darwin
+     OS and macOS.  Software and installers can rely on its presence and invoke
+     it in order to load kexts.  Note that long options are present as of Mac OS
+     X 10.6 (Snow Leopard).
+
+     Mac OS X 10.6 (Snow Leopard) introduces C functions for loading kexts:
+     KextManagerLoadKextWithIdentifier() and KextManagerLoadKextWithURL(), which
+     are described in Apple's developer documentation.
+
+ARGUMENTS AND OPTIONS
+     kext     The pathname of a kext bundle to load.  The kext's plugins are
+              available for dependency resolution.  Kexts can also be specified
+              by CFBundleIdentifier with the -bundle-id option.
+
+     -b identifier, -bundle-id identifier
+              Look up the kext whose CFBundleIdentifier is identifier within the
+              set of known kexts and load it.  The kext of the highest
+              CFBundleVersion with the given identifier is used; in the case of
+              version ties, the last such kext specified on the command line is
+              used.  See the -dependency and -repository options for more
+              information.
+
+     -d kext, -dependency kext
+              Add kext and its plugins to the set of known kexts for resolving
+              dependencies.  This is useful for adding a single kext from a
+              directory while excluding the others.  See the -repository option
+              for more information.
+
+     -h, -help
+              Print a help message describing each option flag and exit with a
+              success result, regardless of any other options on the command
+              line.
+
+     -q, -quiet
+              Quiet mode; print no informational or error messages.
+
+     -r directory, -repository directory
+              Use directory as a repository of kexts.  This adds to the set of
+              known kexts for resolving dependencies or looking up by
+              CFBundleIdentifier when using the -bundle-id option.  This is not
+              recursive; only kexts directly within the directory, and their
+              plugins, are scanned.  See also the -dependency option.
+
+     -v [0-6 | 0x####], -verbose [0-6 | 0x####]
+              Verbose mode; print information about program operation.  Higher
+              levels of verbosity include all lower levels.  You can specify a
+              level from 0-6, or a bitmask of flags as a hexadecimal number
+              prefixed with 0x (as described in kext_logging(8)). Because
+              kextload messages kextd(8), to perform the actual work of loading,
+              the decimal levels 1-6 generally have little effect.  You may wish
+              to use kextutil(8) if you want verbose output about the kext
+              loading operation.
+
+     --       End of all options. Only kext names follow.
+
+EXAMPLES
+     To load a kext, run kextload and supply a kext bundle name; no options are
+     required:
+
+        kextload TabletDriver.kext
+
+     Alternatively, you can use the -bundle-id (-b) option to specify a kext by
+     its CFBundleIdentifier:
+
+        kextload -bundle-id com.mycompany.driver.TabletDriver
+
+     With no additional options kextload looks in the extensions directories
+     (/System/Library/Extensions/ and /Library/Extensions/) for a kext with the
+     given CFBundleIdentifier.  Adding repository directories with the
+     -repository option or individual kexts with the -dependency option expands
+     the set of kexts that kextload looks among for dependency resolution and
+     for loading by bundle identifier:
+
+        kextload -repository /Applications/MyApp.app/Contents/Resources \
+            TabletDriver.kext
+
+FILES
+     /System/Library/Extensions/  The standard system repository of kernel
+                                  extensions
+     /Library/Extensions/         The standard repository of non Apple kernel
+                                  extensions
+
+DIAGNOSTICS
+     kextload exits with a zero status if all kexts specified load successfully
+     (or are already loaded).  If any kext fails to load, kextload prints an
+     error message for that kext, continues trying to load any remaining kexts,
+     then exits with a nonzero status.
+
+     For a kext to be loadable, it must be valid, authenticated, and all
+     dependencies of the kext must be available and loadable.  A valid kext has
+     a well formed bundle, info dictionary, and an executable built for the
+     running kernel's architecture.  An authentic kext's component files, not
+     including plugins, are owned by root:wheel, with permissions nonwritable by
+     group and other.  If your kext fails to load, try using kextutil(8) to
+     examine the kext for problems.
+
+SEE ALSO
+     kmutil(8), kernelmanagerd(8), kextcache(8), kextd(8), kextstat(8),
+     kextunload(8), kextutil(8), kext_logging(8)
+

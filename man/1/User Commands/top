@@ -1,0 +1,342 @@
+TOP(1)                       General Commands Manual                      TOP(1)
+
+NAME
+     top – display sorted information about processes
+
+SYNOPSIS
+     top [-a | -d | -e | -c mode]
+         [-F | -f]
+         [-h]
+         [-i interval]
+         [-l samples]
+         [-ncols columns]
+         [-o key | -O skey]
+         [-R | -r]
+         [-S]
+         [-s delay-secs]
+         [-n nprocs]
+         [-stats keys]
+         [-pid processid]
+         [-user username]
+         [-U username]
+         [-u]
+
+DESCRIPTION
+     The top program periodically displays a sorted list of system processes.
+     The default sorting key is pid, but other keys can be used instead.
+     Various output options are available.
+
+OPTIONS
+     Command line option specifications are processed from left to right.
+     Options can be specified more than once.  If conflicting options are
+     specified, later specifications override earlier ones.  This makes it
+     viable to create a shell alias for top with preferred defaults specified,
+     then override those preferred defaults as desired on the command line.
+
+     -a      Equivalent to -c a.
+
+     -c mode
+             Set event counting mode to mode.  The supported modes are
+
+             a       Accumulative mode.  Count events cumulatively, starting at
+                     the launch of top.  Calculate CPU usage and CPU time since
+                     the launch of top.
+
+             d       Delta mode.  Count events relative to the previous sample.
+                     Calculate CPU usage since the previous sample.  This mode
+                     by default disables the memory object map reporting.  The
+                     memory object map reporting may be re-enabled with the -r
+                     option or the interactive r command.
+
+             e       Absolute mode.  Count events using absolute counters.
+
+             n       Non-event mode (default).  Calculate CPU usage since the
+                     previous sample.
+
+     -d      Equivalent to -c d.
+
+     -e      Equivalent to -c e.
+
+     -F      Do not calculate statistics on shared libraries, also known as
+             frameworks.
+
+     -f      Calculate statistics on shared libraries, also known as frameworks
+             (default).
+
+     -h      Print command line usage information and exit.
+
+     -i interval
+             Update framework (-f) info every interval samples; see the
+             PERFORMANCE/ACCURACY TRADEOFF section for more details.
+
+     -l samples
+             Use logging mode and display samples samples, even if standard
+             output is a terminal.  0 is treated as infinity.  Rather than
+             redisplaying, output is periodically printed in raw form.  Note
+             that the first sample displayed will have an invalid %CPU displayed
+             for each process, as it is calculated using the delta between
+             samples.
+
+     -ncols columns
+             Display columns when using logging mode.  The default is infinite.
+             The number must be > 0 or an error will occur.
+
+     -n nprocs
+             Only display up to nprocs processes.
+
+     -O skey
+             Use skey as a secondary key when ordering the process display.  See
+             -o for key names (pid is the default).
+
+     -o key  Order the process display by sorting on key in descending order.  A
+             + or - can be prefixed to the key name to specify ascending or
+             descending order, respectively.  The supported keys are:
+
+             pid     Process ID
+
+             command
+                     Command name.
+
+             cpu     CPU usage.  (default).
+
+             cpu_me  CPU time charged to me by other processes.
+
+             cpu_others
+                     CPU time charged to other processes by me.
+
+             csw     The number of context switches.
+
+             time    Execution time.
+
+             threads
+                     alias: th
+                     Number of threads (total/running).
+
+             ports   alias: prt
+                     Number of Mach ports.
+
+             mregion
+                     alias: mreg, reg
+                     Number of memory regions.
+
+             mem     Physical memory footprint of the process.
+
+             rprvt   Resident private address space size.
+
+             purg    Purgeable memory size.
+
+             vsize   Total memory size.
+
+             vprvt   Private address space size.
+
+             kprvt   Private kernel memory size.
+
+             kshrd   Shared kernel memory size.
+
+             pgrp    Process group ID.
+
+             ppid    Parent process ID.
+
+             state   alias: pstate
+                     Process state.
+                     One of "zombie", "running", "stuck" (i.e. uninterruptible
+                     sleep),  "sleeping", "idle", "stopped", "halted", or
+                     "unknown".
+
+             uid     User ID.
+
+             wq      alias: #wq, workqueue
+                     The workqueue total/running.
+
+             faults  alias: fault
+                     The number of page faults.
+
+             cow     alias: cow_faults
+                     The copy-on-write faults.
+
+             user    alias: username
+                     Username.
+
+             msgsent
+                     Total number of Mach messages sent.
+
+             msgrecv
+                     Total number of Mach messages received.
+
+             sysbsd  Total BSD syscalls.
+
+             sysmach
+                     Total Mach syscalls.
+
+             pageins
+                     Total pageins.
+
+             boosts  The number of boosts held by the process.  This is followed
+                     by the number of times the process has transitioned from
+                     unboosted to boosted in brackets.  An asterisk before the
+                     value indicates that the process was able to send boosts at
+                     some point since the previous update.  For more information
+                     about boosts, see xpc_transaction_begin(3).
+
+             instrs  The number of instructions retired by the process in both
+                     user space and the kernel.
+
+             cycles  The number of cycles spent executing instructions in the
+                     process in both user space and the kernel.
+
+     -R      Do not traverse and report the memory object map for each process
+             (default).
+
+     -r      Traverse and report the memory object map for each process.
+
+     -S      Display the global statistics for swap and purgeable memory.
+
+     -s delay-secs
+             Set the delay between updates to delay-secs seconds.  The default
+             delay between updates is 1 second.
+
+     -stats keys
+             Only display the comma separated statistics.  See the -o flag for
+             the valid keys.
+
+     -pid processid
+             Only display processid in top.  This option may be specified
+             multiple times.
+
+     -user user
+             Only display processes owned by user
+
+     -U user
+             This is an alias for -user.
+
+     -u      This is an alias equivalent to: -o cpu -O time
+
+DISPLAY
+     The first several lines of the top display show various global state.  All
+     of the information is labeled.  Following is an alphabetical list of global
+     state fields and their descriptions.
+
+     CPU         Percentage of processor usage, broken into user, system, and
+                 idle components.  The time period for which these percentages
+                 are calculated depends on the event counting mode.
+
+     Disks       Number and total size of disk reads and writes.
+
+     LoadAvg     Load average over 1, 5, and 15 minutes.  The load average is
+                 the average number of jobs in the run queue.
+
+     MemRegions  Number and total size of memory regions, and total size of
+                 memory regions broken into private (broken into non-library and
+                 library) and shared components.
+
+     Networks    Number and total size of input and output network packets.
+
+     PhysMem     Physical memory usage, broken into wired, active, inactive,
+                 used, and free components.
+
+     Procs       Total number of processes and number of processes in each
+                 process state.
+
+     SharedLibs  Resident sizes of code and data segments, and link editor
+                 memory usage.
+
+     Threads     Number of threads.
+
+     Time        Time, in H:MM:SS format.  When running in logging mode, Time is
+                 in YYYY/MM/DD HH:MM:SS format by default, but may be overridden
+                 with accumulative mode.  When running in accumulative event
+                 counting mode, the Time is in HH:MM:SS since the beginning of
+                 the top process.
+
+     VirtMem     Total virtual memory, virtual memory consumed by shared
+                 libraries, and number of pageins and pageouts.
+
+     Swap        Swap usage: total size of swap areas, amount of swap space in
+                 use and amount of swap space available.
+
+     Purgeable   Number of pages purged and number of pages currently purgeable.
+
+     Below the global state fields, a list of processes is displayed.  The
+     fields that are displayed depend on the options that are set.  The pid
+     field displays the following for the architecture:
+
+     + for 64-bit native architecture, or - for 32-bit native architecture, or *
+     for a non-native architecture.
+
+INTERACTION
+     When top is run in interactive (non-logging) mode, it is possible to
+     control the output of top, as well as interactively send signals to
+     processes.  The interactive command syntax is terse.  Each command is one
+     character, followed by 0 to 2 arguments.  Commands that take arguments
+     prompt interactively for the arguments, and where applicable, the default
+     value is shown in square brackets.  The default value can be selected by
+     leaving the input field blank and pressing enter.  ^G escapes the
+     interactive argument prompt, and has the same effect as leaving the input
+     field blank and pressing enter.
+
+     The following commands are supported:
+
+     ?       Display the help screen.  Any character exits help screen mode.
+             This command always works, even in the middle of a command.
+
+     ^L      Redraw the screen.
+
+     cmode   Set output mode to mode.  See the -c option for descriptions of the
+             allowed modes.
+
+     Oskey   Use skey as a secondary key when ordering the process display.  See
+             the -o option for key names.
+
+     okey    Order the process display by sorting on key in descending order.  A
+             + or - can be prefixed to the key name to specify ascending or
+             descending order, respectively.  The supported keys and alises are
+             listed with the -o option above.
+
+     q       Quit.
+
+     r       Toggle traversal and reporting of the memory object map for each
+             process.
+
+     Ssignalpid
+             Send signal signal to pid.  signal can be specified either as a
+             number or as a name (for example, HUP).  The default signal starts
+             out as TERM.  Each time a signal is successfully sent, the default
+             signal is updated to be that signal.  pid is a process id.
+
+     s delay-secs
+             Set the delay between updates to delay-secs seconds.
+
+     U user  Only display processes owned by user. Either the username or uid
+             number can be specified.  To display all processes, press enter
+             without entering a username or uid number.
+
+PERFORMANCE/ACCURACY TRADEOFF
+     Calculating detailed memory statistics is fundamentally resource-intensive.
+     To reduce the CPU usage in top, the -i option has been introduced to allow
+     the user to tune this tradeoff.  With the default value of 10, framework
+     stats will be updated once every 10 samples.  Specifying -i 1 will result
+     in the most accurate display, at the expense of system resources.
+
+NOT AVAILABLE
+     When N/A occurs in a stat, it's caused by the memory object map reporting
+     being disabled.  Memory object map reporting is disabled by default in
+     delta mode, but may be optionally enabled via -r or the interactive r
+     command.  To enable the -r option, use it after any -c mode options.
+
+EXAMPLES
+     top -o cpu -O +rsize -s 5 -n 20
+             Sort the processes according to CPU usage (descending) and resident
+             memory size (ascending), sample and update the display at 5 second
+             intervals, and limit the display to 20 processes.
+
+     top -c d
+             Run top in delta mode.
+
+     top -stats pid,command,cpu,th,pstate,time
+             Display only the specified statistics, regardless of any growth of
+             the terminal.  If the terminal is too small, only the statistics
+             that fit will be displayed.
+
+SEE ALSO
+     taskinfo(1), vm_stat(1), vmmap(1), kill(2), signal(3)
+

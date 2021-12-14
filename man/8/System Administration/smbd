@@ -1,0 +1,61 @@
+smbd(8)                      System Manager's Manual                     smbd(8)
+
+NAME
+     smbd – SMB server daemon
+
+SYNOPSIS
+     smbd [options]
+
+DESCRIPTION
+     smbd runs on a server machine to service SMB protocol requests from SMB
+     client machines.
+
+OPTIONS
+     -debug   The service will log extensive debug information and may perform
+              extra diagnostic checks. In debug mode, smbd will not exit when
+              idle.
+
+     -help    Prints a usage message and exits.
+
+     -ports list
+              The service will listen on each of the TCP ports specified in the
+              comma-separated list. This option is typically only used for
+              debugging, since smbd is normally launched by launchd(8) on port
+              445.
+
+     -stdout  Causes smbd to print log messages to standard output instead of
+              the system log.
+
+     -no-symlinks
+              In normal operation, smbd will respond to client symlink requests
+              but will never follow symlinks itself. This flag causes smbd to
+              restrict client access to symlink operations and to always follow
+              symlinks. In this case, clients will not be aware that symlinks
+              are in use because they will always be directed to the symlink
+              target.
+
+FILES
+     /Library/Preferences/SystemConfiguration/com.apple.smb.server.plist
+              The primary configuration for the SMB stack. This file is updated
+              by various system services and should not be edited by hand.
+
+     /System/Library/LaunchDaemons/com.apple.smbd.plist
+              The smbd service's property list file for launchd(8).
+
+SIGNALS
+     SIGHUP   This signal causes smbd to re-read its configuration settings.
+
+SEE ALSO
+     launchd(8)
+
+STANDARDS
+     The SMB protocol is documented as part of the Microsoft Work Group Server
+     Protocol Program (WSPP) technical documentation set, specifically
+
+     MS-CIFS  Common Internet File System Specification
+
+     MS-SMB   Server Message Block (SMB) Protocol Specification
+
+HISTORY
+     The smbd utility first appeared in Mac OS 10.7.
+

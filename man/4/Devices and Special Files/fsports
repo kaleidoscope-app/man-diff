@@ -1,0 +1,222 @@
+FSPORTS(4)                    Device Drivers Manual                   FSPORTS(4)
+
+
+
+NAME
+       fsports - Xsan File System Port Restrictions
+
+SYNOPSIS
+       /Library/Preferences/Xsan/fsports
+
+DESCRIPTION
+       The Xsan File System fsports file provides a way to constrain the TCP and
+       UDP ports used by core Xsan server processes consisting of the FSMs, the
+       FSMPM, and any Distributed LAN servers.  This file can also be used to
+       redefine the port used by the Xsan Alternate Portmapper service.  The
+       fsports file is usually only necessary when the Xsan control-network
+       configuration must pass through a firewall.  Use of the fsports file
+       permits firewall pinholing for improved security.  If no fsports file is
+       used then port assignment is operating-system dependent.
+
+SYNTAX
+       When an fsports file exists in the Xsan 'config' directory, it restricts
+       the TCP and UDP port bindings to the user-specified range.  The format of
+       the fsports file has two required lines, one optional line, and comments
+       starting with pound-sign (#) in column one as follows:
+          MinPort value
+          MaxPort value
+          AltPmap value
+
+       The value fields are port numbers that define an inclusive range of ports
+       that the Xsan server processes can use.  Be careful to choose port range
+       values that are appropriate for your operating system. Note that the
+       Internet Assigned Numbers Authority (IANA) suggests a dynamic client port
+       range for outgoing connections of 49152 through 65535. With that in mind,
+       most Linux kernels use a port range of 32768 through 61000, Microsoft
+       Windows operating systems through XP use the range 1025 to 5000 by
+       default, Windows Vista, Windows 7, and Server 2008 use the IANA range by
+       default, and Windows Server 2003 uses the range 1025 to 5000 by default,
+       until Microsoft security update MS08-037 from 2008 is installed, after
+       which it uses the IANA range by default.
+
+       The optional AltPmap value changes the TCP port used for the Xsan
+       Alternate Portmapper service, which defaults to port 5164.  When Xsan is
+       used with a firewall, you can either configure the firewall to allow port
+       5164 or change the SNFS port number via the AltPmap keyword to a port
+       that is allowed to pass through the firewall.
+
+       The AltPmap value must be defined the same way on all Xsan server and
+       client nodes in order for Xsan to function properly.  When using AltPmap
+       to change the Xsan Alternate Portmapper service port number, you must
+       include an fsports file on every Xsan client and server with the same
+       AltPmap value.  When the AltPmap keyword is not used, the fsports file is
+       not necessary on Xsan clients.
+
+       The minimum number of ports needed on a given node can be computed as
+       follows: one port for the FsmPm process, plus one port for each FSM
+       process, plus one port for each file system served by this node as a
+       Distributed LAN server.
+
+EXAMPLE
+       To restrict Xsan Server processes to using ports 52,000 through 52,100
+       the fsports file would contain the following lines:
+          MinPort 52000
+          MaxPort 52100
+
+       This fsports file is only needed on Xsan servers.
+
+       To restrict Xsan Alternate Portmapper service to a specific port, select
+       a port number outside the range of the MinPort and MaxPort values.   For
+       example if MinPort is 52000 and MaxPort is 52100 then select a value
+       outside that range.
+          MinPort 52000
+          MaxPort 52100
+          AltPmap 52101
+
+       This fsports file is required on all Xsan clients and servers.
+
+COMMON FSPORTS COOKBOOK
+       The primary use case for fsports is allowing StorNext SAN and LAN clients
+       outside of a firewall to access the services provided by StorNext servers
+       inside of a firewall.  While other use cases exist, and more complex and
+       restrictive configurations are possible, the following "cookbook" steps
+       describe how to produce a common fsports file for all servers inside of a
+       firewall.  The resultant file provides security without sacrificing ease
+       of deployment.
+
+       Step 1.
+       Determine the set of servers inside of the firewall that need to be
+       accessed.  This may include primary and standby MDCs and Distributed LAN
+       servers.
+
+       Step 2.
+       For the list of servers from Step 1, determine the maximum number of
+       StorNext ports used by any one server.  The following equation can be
+       used for this calculation:
+
+         # ports required for a given server = (
+             Number of file systems in the "fsmlist" file +
+             Number of file systems for which this server is acting as a
+             Distributed LAN server +
+             1 port for the NSS protocol ) * Multiplier
+
+       where Multiplier is 2 for Windows servers and 1 for non-Windows servers.
+
+       For example, consider the following configuration of servers inside of a
+       firewall that need to be accessed by clients outside of the firewall:
+
+         A Linux MDC hosting 4 file systems
+             ports: (4 + 0 + 1) * 1  =  5
+
+         A second Linux MDC hosting 6 file systems
+             ports: (6 + 0 + 1) * 1  =  7
+
+         A Windows MDC hosting 1 file system and acting as a Distributed LAN
+         server for just that file system:
+             ports: (1 + 1 + 1) * 2  =  6
+
+         A dedicated Linux Distributed LAN server that serves 9 file systems
+         from the various MDC pairs:
+             ports: (0 + 9 + 1) * 1  = 10
+
+         The maximum number of StorNext ports needed by any one server is:
+             MAX(5, 7, 6, 10) = 10 ports
+
+       Step 3.
+       Based on the maximum port count determined in step 2, pick a range of
+       unused ports on the firewall and open them up.  For example, for a
+       maximum port count of 10, ports 52000 through 52009 could be chosen if
+       they are available.  The firewall should be configured to allow outside
+       UDP and TCP connections using any source port to connect to StorNext
+       servers inside the firewall having the restricted range of ports.  Port
+       5164 should also be opened up for TCP for the AltPortMap service.  (See
+       NOTES below if this is not possible.)
+
+       Step 4.
+       Configure the common fsports file.  Using the example from step 3 of
+       where 10 ports are needed starting at 52000.  The configuration is as
+       follows:
+          MinPort 52000
+          MaxPort 52009
+
+       Step 5.
+       Install the resulting file on all servers from Step 1.  Also install the
+       file on all clients if the AltPmap directive was used.  Then restart
+       StorNext.
+
+NOTES
+       Servers having common fsports files will use the same range of network
+       ports for core StorNext file system services.  This does not result in
+       conflicts since each network address is comprised of an IP address and a
+       port number and is therefore unique even when using the same port number
+       as another network address.
+
+       As mentioned under EXAMPLES, when port 5164 cannot be opened on the
+       firewall for the AltPortMap service, it is possible to use the AltPmap
+       directive in the fsports file so that a different port is used.  This
+       also requires that clients outside of the firewall use an fsports file.
+
+       The fsports file does not constrain the ports used by the client end of
+       connections.  Ephemeral ports are used instead.  Therefore, the fsports
+       file is only useful on clients when the AltPmap directive is used.
+
+       When using fsports files, if services fail to start or clients fail to
+       connect, to debug the problem, try slightly increasing the range of open
+       StorNext ports on the firewall and, correspondingly, in the fsports
+       files.  Running netstat on the servers may reveal that unexpected
+       processes are binding to ports within the range specified in the fsports
+       file.  Also, if services are restarted on Windows servers, in some cases
+       ports may not be reusable for several minutes.  Using an expanded port
+       range will work around this.
+
+       The information above covers the ports used by the core StorNext file
+       system services.  If firewall pinholing is needed for other StorNext
+       services (for example, replication), additional hard-wired ports may need
+       to be opened on the firewall outside of the domain of the fsports file.
+       Refer to the "Port Used by StorNext" section in the StorNext File System
+       Tuning Guide.
+
+UPDATING FSPORTS CONFIGURATION ON AN HA PAIR
+       When changing the fsports configuration on an HA pair and the AltPmap
+       directive is used, special care must be taken to avoid having the HA
+       mechanism reboot one or both of the HA nodes. Here is the sequence to
+       follow:
+
+       Step 1.
+       Use the StorNext GUI to enter HA config mode. This locks the secondary
+       node and allows configuration changes to be made on the primary node.
+
+       Step 2.
+       Stop the cvfs service on the primary node.
+
+       Step 3.
+       Stop the cvfs service on the coordinator (name service) nodes.
+
+       Step 4.
+       Update, remove or create the fsports file on the coordinator nodes.
+
+       Step 5.
+       Start the cvfs service on the coordinator nodes.
+
+       Step 6.
+       Update, remove or create the fsports file on both the HA primary and HA
+       secondary nodes.
+
+       Step 7.
+       Start the cvfs service on the primary node.
+
+       Step 8.
+       Use the StorNext GUI to exit HA config mode.
+
+       If not using external coordinators, that is, the HA MDC pair are the
+       coordinators for the cluster, eliminate steps 3, 4 and 5.
+
+FILES
+       /Library/Preferences/Xsan/fsports
+       /System/Library/Filesystems/acfs.fs/Contents/examples/fsports.example
+
+SEE ALSO
+       cvfs(8), snfs_config(5), fsm(8), fsmpm(8)
+
+
+

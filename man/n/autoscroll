@@ -1,0 +1,70 @@
+autoscroll(n)            Automatic mapping of scrollbars           autoscroll(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       autoscroll - Provides for a scrollbar to automatically mapped and
+       unmapped as needed
+
+SYNOPSIS
+       package require Tcl
+
+       package require autoscroll  ?1.1?
+
+       ::autoscroll::autoscroll scrollbar
+
+       ::autoscroll::unautoscroll scrollbar
+
+       ::autoscroll::wrap
+
+       ::autoscroll::unwrap
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package allows scrollbars to be mapped and unmapped as needed
+       depending on the size and content of the scrollbars scrolled widget. The
+       scrollbar must be managed by either pack or grid, other geometry managers
+       are not supported.
+
+       When managed by pack, any geometry changes made in the scrollbars parent
+       between the time a scrollbar is unmapped, and when it is mapped will be
+       lost. It is an error to destroy any of the scrollbars siblings while the
+       scrollbar is unmapped. When managed by grid, if anything becomes gridded
+       in the same row and column the scrollbar occupied it will be replaced by
+       the scrollbar when remapped.
+
+       This package may be used on any scrollbar-like widget as long as it
+       supports the set subcommand in the same style as scrollbar. If the set
+       subcommand is not used then this package will have no effect.
+
+       ::autoscroll::autoscroll scrollbar
+              Arranges for the already existing scrollbar scrollbar to be mapped
+              and unmapped as needed.
+
+       ::autoscroll::unautoscroll scrollbar
+              Returns the named scrollbar to its original static state.
+
+       ::autoscroll::wrap
+              Arranges for all scrollbars created after this command is run to
+              be automatically mapped and unmapped as needed.
+
+       ::autoscroll::unwrap
+              Turns off the automatic autoscrolling of all new scrollbars.  Does
+              not effect existing scrollbars
+
+
+       text .t -yscrollcommand ".scrolly set"
+       scrollbar .scrolly -orient v -command ".t yview"
+       pack .scrolly -side right -fill y
+       pack .t -side left -fill both -expand 1
+       ::autoscroll::autoscroll .scrolly
+
+
+KEYWORDS
+       scroll, scrollbar
+
+
+

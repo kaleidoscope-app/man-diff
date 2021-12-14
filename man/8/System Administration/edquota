@@ -1,0 +1,79 @@
+EDQUOTA(8)                   System Manager's Manual                  EDQUOTA(8)
+
+NAME
+     edquota – edit user quotas
+
+SYNOPSIS
+     edquota [-u] [-p proto-username] username ...
+     edquota -g [-p proto-groupname] groupname ...
+     edquota -t [-u]
+     edquota -t -g
+
+DESCRIPTION
+     Edquota is a quota editor.  By default, or if the -u flag is specified, one
+     or more users may be specified on the command line.  For each user a
+     temporary file is created with an ASCII representation of the current disk
+     quotas for that user.  The list of filesystems with user quotas is
+     determined by scanning the mounted filesystems for a .quota.ops.user file
+     located at its root.  An editor is invoked on the ASCII file.  The editor
+     invoked is vi(1) unless the environment variable EDITOR specifies
+     otherwise.
+
+     The quotas may then be modified, new quotas added, etc.  Setting a quota to
+     zero indicates that no quota should be imposed.  Setting a hard limit to
+     one indicates that no allocations should be permitted.  Setting a soft
+     limit to one with a hard limit of zero indicates that allocations should be
+     permitted on only a temporary basis (see -t below).  The current usage
+     information in the file is for informational purposes; only the hard and
+     soft limits can be changed.
+
+     On leaving the editor, edquota reads the temporary file and modifies the
+     binary quota files to reflect the changes made.  The binary quota file,
+     .quota.user is stored at the root of the filesystem.  The default filename
+     and root location for the user quotas cannot be overridden.
+
+     If the -p flag is specified, edquota will duplicate the quotas of the
+     prototypical user specified for each user specified.  This is the normal
+     mechanism used to initialize quotas for groups of users.
+
+     If the -g flag is specified, edquota is invoked to edit the quotas of one
+     or more groups specified on the command line.  The list of filesystems with
+     group quotas is determined by scanning the mounted filesystems for a
+     .quota.ops.group file located at its root.  Similarly, the binary quota
+     file, .quota.group is stored at the root of the filesystem.  The default
+     filename and root location for group quotas cannot be overridden.  The -p
+     flag can be specified in conjunction with the -g flag to specify a
+     prototypical group to be duplicated among the listed set of groups.
+
+     Users are permitted to exceed their soft limits for a grace period that may
+     be specified per filesystem.  Once the grace period has expired, the soft
+     limit is enforced as a hard limit.  The default grace period for a
+     filesystem is specified in /usr/include/sys/quota.h.  The -t flag can be
+     used to change the grace period.  By default, or when invoked with the -u
+     flag, the grace period is set for each filesystem with a .quota.ops.user
+     file located at its root.  When invoked with the -g flag, the grace period
+     is set for each filesystem with a .quota.ops.group file located at its
+     root.  The grace period may be specified in days, hours, minutes, or
+     seconds.  Setting a grace period to zero indicates that the default grace
+     period should be imposed.  Setting a grace period to one second indicates
+     that no grace period should be granted.
+
+     Only the super-user may edit quotas.
+
+FILES
+     Each of the following quota files is located at the root of the mounted
+     filesystem.  The mount option files are empty files whose existence
+     indicates that quotas are to be enabled for that filesystem.  The binary
+     data files will be created by edquota, if they don't already exist.
+
+     .quota.user       data file containing user quotas
+     .quota.group      data file containing group quotas
+     .quota.ops.user   mount option file used to enable user quotas
+     .quota.ops.group  mount option file used to enable group quotas
+
+SEE ALSO
+     quota(1), quotactl(2), quotacheck(8), quotaon(8), repquota(8)
+
+DIAGNOSTICS
+     Various messages about inaccessible files; self-explanatory.
+

@@ -1,0 +1,28 @@
+DEV_MKDB(8)                  System Manager's Manual                 DEV_MKDB(8)
+
+NAME
+     dev_mkdb – create /dev database
+
+SYNOPSIS
+     dev_mkdb
+
+DESCRIPTION
+     The dev_mkdb command creates a db(3) hash access method database in
+     “/var/run/dev.db” which contains the names of all of the character and
+     block special files in the “/dev” directory, using the file type and the
+     st_rdev field as the key.
+
+     Keys are a structure containing a mode_t followed by a dev_t, with any
+     padding zero'd out.  The former is the type of the file (st_mode & S_IFMT),
+     the latter is the st_rdev field.
+
+FILES
+     /dev             Device directory.
+     /var/run/dev.db  Database file.
+
+SEE ALSO
+     ps(1), stat(2), db(3), devname(3), kvm_nlist(3), ttyname(3), kvm_mkdb(8)
+
+HISTORY
+     The dev_mkdb command appeared in 4.4BSD.
+

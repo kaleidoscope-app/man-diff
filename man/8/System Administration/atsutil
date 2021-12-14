@@ -1,0 +1,57 @@
+atsutil(8)                   System Manager's Manual                  atsutil(8)
+
+NAME
+     atsutil – font registration system utility
+
+SYNOPSIS
+     atsutil fonts [-list | -verify]
+
+     atsutil databases [-remove | -removeUser]
+
+     atsutil server [-ping | -shutdown]
+
+     atsutil help
+
+DESCRIPTION
+     atsutil tool controls some aspects of the font registration system.  It may
+     be used to modify font auto activation settings, font protection settings,
+     remove font registration databases and caches, or restart the font
+     registration daemon.
+
+     fonts enumerates all fonts available to processes in the OS. It also
+     performs a consistency check of the fonts available via font management
+     APIs.
+
+     databases will remove fontd System or User databases along with any cache
+     files. Removing databases may cause the loss of font registration state:
+     fonts activated outside the standard font directories, font faces disabled,
+     and font libraries. New databases will be regenerated from fonts installed
+     the standard font directories after the user logs out, restarts, or the
+     fontd server is restarted.
+
+     server queries the status of fontd or shutdowns the fontd.  Shutting down
+     the fontd will spawn a new fontd.  Shutting down the server is NOT
+     recommended and will likely lead to misrendered text or application
+     crashes.
+
+OPTIONS
+     fonts [-list | -verify]
+     -list lists and performs a consistency check on registered fonts.
+     -verify performs consistency a check on registered fonts.
+
+     databases [-remove | -removeUser]
+     -remove remove fontd databases for active user and system (used when no one
+     is logged in and some background processes).
+     -removeUser remove fontd databases for the active user only.
+
+     server [-ping | -shutdown]
+     -ping query running fontd.
+     -shutdown shutdown fontd and spawn a new fontd. NOTE: this action is not
+     recommended. See above.
+
+SEE ALSO
+     fontd(8)
+
+HISTORY
+     atsutil first appeared in MacOS X 10.5.
+

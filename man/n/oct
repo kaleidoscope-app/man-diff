@@ -1,0 +1,120 @@
+oct(n)                                                                    oct(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       oct - Encoding "oct"
+
+SYNOPSIS
+       package require Tcl  ?8.2?
+
+       package require Trf  ?2.1.4?
+
+       oct ?options...? ?data?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The command oct is one of several data encodings provided by the package
+       trf. See trf-intro for an overview of the whole package.
+
+       This encoding transforms every byte in the input into a sequence of 3
+       characters containing the octal representation of the byte.  For example
+
+
+            % oct -mode encode Z
+            132
+
+
+       oct ?options...? ?data?
+
+              -mode encode|decode
+                     This option has to be present and is always understood by
+                     the encoding.
+
+                     For immediate mode the argument value specifies the
+                     operation to use.  For an attached encoding it specifies
+                     the operation to use for writing. Reading will
+                     automatically use the reverse operation.  See section
+                     IMMEDIATE versus ATTACHED for explanations of these two
+                     terms.
+
+                     Beyond the argument values listed above all unique
+                     abbreviations are recognized too.
+
+                     Encode converts from arbitrary (most likely binary) data
+                     into the described representation, decode does the reverse
+                     .
+
+              -attach channel
+                     The presence/absence of this option determines the main
+                     operation mode of the transformation.
+
+                     If present the transformation will be stacked onto the
+                     channel whose handle was given to the option and run in
+                     attached mode. More about this in section IMMEDIATE versus
+                     ATTACHED.
+
+                     If the option is absent the transformation is used in
+                     immediate mode and the options listed below are recognized.
+                     More about this in section IMMEDIATE versus ATTACHED.
+
+              -in channel
+                     This options is legal if and only if the transformation is
+                     used in immediate mode. It provides the handle of the
+                     channel the data to transform has to be read from.
+
+                     If the transformation is in immediate mode and this option
+                     is absent the data to transform is expected as the last
+                     argument to the transformation.
+
+              -out channel
+                     This options is legal if and only if the transformation is
+                     used in immediate mode. It provides the handle of the
+                     channel the generated transformation result is written to.
+
+                     If the transformation is in immediate mode and this option
+                     is absent the generated data is returned as the result of
+                     the command itself.
+
+IMMEDIATE VERSUS ATTACHED
+       The transformation distinguishes between two main ways of using it. These
+       are the immediate and attached operation modes.
+
+       For the attached mode the option -attach is used to associate the
+       transformation with an existing channel. During the execution of the
+       command no transformation is performed, instead the channel is changed in
+       such a way, that from then on all data written to or read from it passes
+       through the transformation and is modified by it according to the
+       definition above.  This attachment can be revoked by executing the
+       command unstack for the chosen channel. This is the only way to do this
+       at the Tcl level.
+
+       In the second mode, which can be detected by the absence of option
+       -attach, the transformation immediately takes data from either its
+       commandline or a channel, transforms it, and returns the result either as
+       result of the command, or writes it into a channel.  The mode is named
+       after the immediate nature of its execution.
+
+       Where the data is taken from, and delivered to, is governed by the
+       presence and absence of the options -in and -out.  It should be noted
+       that this ability to immediately read from and/or write to a channel is
+       an historic artifact which was introduced at the beginning of Trf's life
+       when Tcl version 7.6 was current as this and earlier versions have
+       trouble to deal with \0 characters embedded into either input or output.
+
+SEE ALSO
+       ascii85, base64, bin, hex, oct, otp_words, quoted-printable, trf-intro,
+       uuencode
+
+KEYWORDS
+       bin, encoding, hex, oct
+
+COPYRIGHT
+       Copyright (c) 1996-2003, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

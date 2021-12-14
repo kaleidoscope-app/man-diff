@@ -1,0 +1,53 @@
+nlcontrol(8)                 System Manager's Manual                nlcontrol(8)
+
+NAME
+     nlcontrol – NETLOGON secure channel utility
+
+SYNOPSIS
+     nlcontrol [reconfigure] status [options] status
+     nlcontrol [options] verify
+     nlcontrol [options] change-password
+
+DESCRIPTION
+     The NETLOGON channel is a secure connection to a Windows Domain Controller
+     that is used for non-Kerberos user authentication.  nlcontrol can be used
+     to manipulate and test the status of the NETLOGON channel.
+
+OPTIONS
+     -domain  The service will log extensive debug information and may perform
+              extra diagnostic checks. This option is typically only useful for
+              debugging.
+
+     -help    Prints a usage message and exits.
+
+     -server list
+              The service will listen on each of the TCP ports specified in the
+              comma-separated list. This option is typically only used for
+              debugging.
+
+     nlcontrol supports the following commands:
+
+     reconfigure      Force the NETLOGON service to re-read its configuration
+                      information. This is not necessary in normal operation,
+                      since the NETLOGON service will detect relevant
+                      configuration changes and re-establish the secure channel
+                      automatically.
+
+     status           Print the current status of the NETLOGON channel without
+                      altering its state.
+
+     verify           Attempt to verify that the NETLOGON channel is available
+                      and working correctly.
+
+     change-password  Bring up the NETLOGON channel and change the password of
+                      the machine account.  The machine account is used to
+                      authenticate to the Domain Controller in order to secure
+                      the channel.
+
+DIAGNOSTICS
+     nlcontrol will exit with a non-zero error code if the command fails. It may
+     also display a Windows error code, which is typically self-explanatory.
+
+HISTORY
+     The nlcontrol utility first appeared in Mac OS 10.7.
+

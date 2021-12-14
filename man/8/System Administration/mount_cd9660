@@ -1,0 +1,56 @@
+MOUNT_CD9660(8)              System Manager's Manual             MOUNT_CD9660(8)
+
+NAME
+     mount_cd9660 – mount an ISO-9660 filesystem
+
+SYNOPSIS
+     mount_cd9660 [-egjr] [-o options] [-s startsector] special node
+
+DESCRIPTION
+     The mount_cd9660 command attaches the ISO-9660 filesystem residing on the
+     device special to the global filesystem namespace at the location indicated
+     by node.  This command is normally executed by mount(8) at boot time.
+
+     The options are as follows:
+
+     -e      Enable the use of extended attributes.
+
+     -g      Do not strip version numbers on files.  (By default, if there are
+             files with different version numbers on the disk, only the last one
+             will be listed.)  In either case, files may be opened without
+             explicitly stating a version number.
+
+     -j      Do not use any Joliet extensions included in the filesystem.
+
+     -o      Options are specified with a -o flag followed by a comma separated
+             string of options.  See the mount(8) man page for possible options
+             and their meanings.
+
+     -r      Do not use any Rockridge extensions included in the filesystem.
+
+     -s startsector
+             Start the filesystem at startsector.  Normally, if the underlying
+             device is a CD-ROM drive, mount_cd9660 will try to figure out the
+             last track from the CD-ROM containing data, and start the
+             filesystem there.  If the device is not a CD-ROM, or the table of
+             contents cannot be examined, the filesystem will be started at
+             sector 0.  This option can be used to override the behaviour.  Note
+             that startsector is measured in CD-ROM blocks, with 2048 bytes
+             each.
+
+SEE ALSO
+     mount(2), unmount(2), fstab(5), mount(8)
+
+BUGS
+     POSIX device node mapping is currently not supported.
+
+     Version numbers are not stripped if Rockridge extensions are in use.  In
+     this case, accessing files that don't have Rockridge names without version
+     numbers gets the one with the lowest version number and not the one with
+     the highest.
+
+     There is no ECMA support.
+
+HISTORY
+     The mount_cd9660 utility first appeared 4.4BSD.
+

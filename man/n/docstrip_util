@@ -1,0 +1,158 @@
+docstrip_util(n)            Literate programming tool           docstrip_util(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       docstrip_util - Docstrip-related utilities
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require docstrip::util  ?1.2?
+
+       docstrip::util::ddt2man text
+
+       docstrip::util::guards subcmd text
+
+       docstrip::util::thefile filename ?option value ...?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The docstrip::util package is meant for collecting various utility
+       procedures that may be useful for developers who make use of the docstrip
+       package in some projects. It is separate from the main package to avoid
+       overhead for end-users.
+
+COMMANDS
+       docstrip::util::ddt2man text
+              The ddt2man command reformats text from the general docstrip
+              format to doctools ".man" format (Tcl Markup Language for
+              Manpages). The different line types are treated as follows:
+
+              comment and metacomment lines
+                     The '%' and '%%' prefixes are removed, the rest of the text
+                     is kept as it is.
+
+              empty lines
+                     These are kept as they are. (Effectively this means that
+                     they will count as comment lines after a comment line and
+                     as code lines after a code line.)
+
+              code lines
+                     example_begin and example_end commands are placed at the
+                     beginning and end of every block of consecutive code lines.
+                     Brackets in a code line are converted to lb and rb
+                     commands.
+
+              verbatim guards
+                     These are processed as usual, so they do not show up in the
+                     result but every line in a verbatim block is treated as a
+                     code line.
+
+              other guards
+                     These are treated as code lines, except that the actual
+                     guard is emphasised.
+       At the time of writing, no project has employed doctools markup in master
+       source files, so experience of what works well is not available. A source
+       file could however look as follows
+
+          % [manpage_begin gcd n 1.0]
+          % [moddesc {Greatest Common Divisor}]
+          % [require gcd [opt 1.0]]
+          % [description]
+          %
+          % [list_begin definitions]
+          % [call [cmd gcd] [arg a] [arg b]]
+          %   The [cmd gcd] procedure takes two arguments [arg a] and [arg b] which
+          %   must be integers and returns their greatest common divisor.
+          proc gcd {a b} {
+          %   The first step is to take the absolute values of the arguments.
+          %   This relieves us of having to worry about how signs will be treated
+          %   by the remainder operation.
+             set a [expr {abs($a)}]
+             set b [expr {abs($b)}]
+          %   The next line does all of Euclid's algorithm! We can make do
+          %   without a temporary variable, since $a is substituted before the
+          %   [lb]set a $b[rb] and thus continues to hold a reference to the
+          %   "old" value of [var a].
+             while {$b>0} { set b [expr { $a % [set a $b] }] }
+          %   In Tcl 8.3 we might want to use [cmd set] instead of [cmd return]
+          %   to get the slight advantage of byte-compilation.
+          %<tcl83>  set a
+          %<!tcl83>   return $a
+          }
+          % [list_end]
+          %
+          % [manpage_end]
+
+       If the above text is (suitably unindented and) fed through
+       docstrip::util::ddt2man then the result will be a syntactically correct
+       doctools manpage, even though its purpose is a bit different.
+
+       It is suggested that master source code files with doctools markup are
+       given the suffix ".ddt", hence the "ddt" in ddt2man.
+
+       docstrip::util::guards subcmd text
+              The guards command returns information (mostly of a statistical
+              nature) about the ordinary docstrip guards that occur in the text.
+              The subcmd selects what is returned.
+
+              counts List the guard expression terminals with counts. The format
+                     of the return value is a dictionary which maps the terminal
+                     name to the number of occurencies of it in the file.
+
+              exprcount
+                     List the guard expressions with counts. The format of the
+                     return value is a dictionary which maps the expression to
+                     the number of occurencies of it in the file.
+
+              exprerr
+                     List the syntactically incorrect guard expressions (e.g.
+                     parentheses do not match, or a terminal is missing). The
+                     return value is a list, with the elements in no particular
+                     order.
+
+              expressions
+                     List the guard expressions. The return value is a list,
+                     with the elements in no particular order.
+
+              exprmods
+                     List the guard expressions with modifiers. The format of
+                     the return value is a dictionary where each index is a
+                     guard expression and each entry is a string with one
+                     character for every guard line that has this expression.
+                     The characters in the entry specify what modifier was used
+                     in that line: +, -, *, /, or (for guard without modifier:)
+                     space. This is the most primitive form of the information
+                     gathered by guards.
+
+              names  List the guard expression terminals. The return value is a
+                     list, with the elements in no particular order.
+
+              rotten List the malformed guard lines (this does not include lines
+                     where only the expression is malformed, though). The format
+                     of the return value is a dictionary which maps line numbers
+                     to their contents.
+
+       docstrip::util::thefile filename ?option value ...?
+              The thefile command opens the file filename, reads it to end,
+              closes it, and returns the contents. The option-value pairs are
+              passed on to fconfigure to configure the open file channel before
+              anything is read from it.
+
+SEE ALSO
+       docstrip, doctools, doctools_fmt
+
+KEYWORDS
+CATEGORY
+       Documentation tools
+
+COPYRIGHT
+       Copyright (c) 2003-2005 Lars Hellström <Lars dot Hellstrom at residenset dot net>
+
+
+
+

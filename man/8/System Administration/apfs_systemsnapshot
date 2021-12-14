@@ -1,0 +1,43 @@
+APFS_SYSTEMSNAPSHOT(8)       System Manager's Manual      APFS_SYSTEMSNAPSHOT(8)
+
+NAME
+     apfs_systemsnapshot – create and tag APFS system snapshots
+
+SYNOPSIS
+     apfs_systemsnapshot -r snapshot_name -v mount_point
+     apfs_systemsnapshot -s snapshot_name -v mount_point
+     apfs_systemsnapshot -h
+
+DESCRIPTION
+     The apfs_systemsnapshot utility can create or tag a new snapshot of a
+     Signed System Volume.
+
+     apfs_systemsnapshot requires disabling the authenticated-root System
+     Integrity Protection configuration from recoveryOS.  Once disabled, non-
+     sealed snapshots can be created and tagged as the snapshot to be rooted
+     from.
+
+     apfs_systemsnapshot should not be used when working on kernel extension
+     development, bless(8) should be used instead.
+
+     The mount_point parameter should be the mount point of a Signed System
+     Volume.
+
+     The options are as follows:
+
+     -r snapshot_name      Tag snapshot_name as the root snapshot to boot from
+                           upon next boot.
+
+     -s snapshot_name      Create a new system snapshot named snapshot_name.
+
+     -h                    Print a usage message.
+
+EXIT STATUS
+     apfs_systemsnapshot exits with 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     bless(8), csrutil(8), diskutil(8)
+
+HISTORY
+     The apfs_systemsnapshot utility was introduced in macOS 11.
+

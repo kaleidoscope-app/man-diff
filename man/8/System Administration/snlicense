@@ -1,0 +1,202 @@
+SNLICENSE(8)                 System Manager's Manual                SNLICENSE(8)
+
+
+
+
+NAME
+       snlicense - Report Xsan license status
+
+SYNOPSIS
+       snlicense [-v|-m|-n|-h|-p] [-f license-file] [-i file] [-r json|ascii]
+              [-s system-id] license_type [nocap]
+
+
+DESCRIPTION
+       snlicense imports new licenses and reports on the current license status.
+
+       Reports include information such as license status, capacities and
+       expirations.  The currently supported license types can be displayed by
+       typing snlicense -h.
+
+       The optional nocap argument is for internal use only to prevent a hang
+       when certain components are not fully initialized.
+
+
+OPTIONS
+       -f license-file
+              Will use an alternative license file.  The default license file is
+              /Library/Preferences/Xsan/license.dat.
+
+       -h     Display help
+
+       -i file
+              Import licenses from the specified file
+
+       -m     Will cause the output to be printed in a machine readable format
+
+       -n     No RAS messages for license warnings and errors
+
+       -p     Shows whether a product key is needed and if so, whether it exists
+              and is valid
+
+       -s system-id
+              Check the license entry for the specified system-identifier
+
+       -r json|ascii
+              Report on license service usage.
+
+       -v     Will cause more license info to be reported
+
+
+USAGE
+       Use this command with the -i option to import licenses from the command
+       line or without the -i option to check the current status of a particular
+       license.  To check the status, execute the program with the desired
+       license type. See examples below for more info.
+
+
+IMPORTING LICENSES
+       The -i file_to_import option can be used to import licenses from the
+       downloaded license file into the local license file.
+
+       NOTE:  The licenses are only imported to the local computer.  For High
+       Availability (HA) systems, the license file must be imported on both
+       computers.
+
+
+LICENSE EXPIRATION
+       Some licenses are cross-checked for expiration such that if one license
+       expires, all cross-checked licenses are considered expired.
+
+       The -v option can be used to determine the expiration date of the feature
+       and the expiration date of the feature with cross-checking.
+
+
+       • The "Actual expiration" is when the feature itself expires.
+
+       • "License expiration" is when the feature will become unusable due to
+         one or more cross-checked licenses expiring.
+
+
+       Note: In some cases it is invalid to mix expiring licenses with non-
+       expiring licenses.  One notable exception is the maintenance license
+       (which typically has an expiration).
+
+       The -v option will display a warning if there is mixed-expiration error
+       on the specified license.
+
+
+LICENSE SERVICE REPORT
+       The -r option reports on the license service usage.  The license service
+       is only used with 'san_client' and 'file_system' licenses.
+
+
+EXAMPLES FOR CHECKING LICENSE STATUS
+       When the command is run, the license info for the indicated Xsan feature
+       is reported. Note that if license status cannot be determined for a
+       feature it is treated as NOT licensed. Also note some features have an
+       associated capacity and some do not.
+
+
+       Examples:
+
+       Properly licensed with capacity available:
+
+            % snlicense proxy
+            - The proxy license status is: Good
+
+            % snlicense -v proxy
+            - Found existing license: proxy
+            - License expiration:     None
+            - Actual expiration:      None
+            - Licensed capacity:      65535 connections
+            - Current used capacity:  NA
+            - The proxy license status is: Good
+
+
+       Properly licensed (non-capacity license):
+
+            % snlicense maintenance
+            - The maintenance license status is: Good
+
+            % snlicense -v maintenance
+            - Found existing license: maintenance
+            - License expiration:     None
+            - Actual expiration:      None
+            - The maintenance license status is: Good
+
+
+       Unlicensed feature:
+
+            % snlicense failover
+            - The failover license status is: License Missing
+
+            % snlicense -v failover
+            - The failover license status is: License Missing
+
+
+       A valid temporary license:
+
+            % snlicense -v failover
+            - Found existing license: failover
+            - License expiration:     Thu Nov  1 23:59:59 2012
+            - Actual expiration:      Thu Nov  1 23:59:59 2012
+            - The failover license status is: Good
+
+
+       Expired license:
+
+            % snlicense failover
+            - The failover license status is: Expired
+
+            % snlicense -v failover
+            - Found existing license: failover
+            - License expiration:     Thu Jan  1 23:59:59 2009
+            - Actual expiration:      Thu Jan  1 23:59:59 2009
+            - The failover license status is: Expired
+
+       Mixed permanent and expiring licenses:
+
+            % snlicense server
+            - Having both permanent and temporary licenses is not allowed
+              (except for 'maintenance' and DLAN 'proxy' licenses).
+
+            % snlicense -v server
+            - Found existing license: server
+            - License expiration:     Jan  1 23:59:59 2009
+            - Actual expiration:      None
+            - Licensed capacity:      10 connections
+            - Current used capacity:  NA
+            - Having both permanent and temporary licenses is not allowed
+              (except for 'maintenance' and DLAN 'proxy' licenses).
+
+            % snlicense failover
+            - Having both permanent and temporary licenses is not allowed
+              (except for 'maintenance' and DLAN 'proxy' licenses).
+
+            % snlicense -v failover
+            - Found existing license: failover
+            - License expiration:     Jan  1 23:59:59 2009
+            - Actual expiration:      Jan  1 23:59:59 2009
+            - Having both permanent and temporary licenses is not allowed
+              (except for 'maintenance' and DLAN 'proxy' licenses).
+
+
+EXIT VALUES
+       snlicense will return one of the following upon exit.
+
+          0 - No error, feature licensed and usable
+          1 - Feature not licensed but not in use
+          2 - Current feature capacity undetermined but feature not in use
+          3 - Feature has no license string in the license file
+          4 - Feature has a license but the expiration date has been reached
+          5 - Feature has a license but the capacity has been reached
+          6 - Feature has a license but the current capacity could not be determined
+          7 - Feature license status could not be determined
+          8 - Invalid mixture of temporary and permanent licenses detected
+
+
+
+
+
+

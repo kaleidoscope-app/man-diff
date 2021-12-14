@@ -1,0 +1,62 @@
+layerutil(1)                 General Commands Manual                layerutil(1)
+
+NAME
+     layerutil create compiled layered image stack
+
+SYNOPSIS
+     layerutil [-Vlhogspf] inputfile
+
+DESCRIPTION
+     Creates a compiled layered image stack (lcr) file from a layered input file
+     source, such as an lsr or suitably structured Photoshop (psd) file. If the
+     psd file's basename ends with @Yx Y will be treated as the scale factor of
+     the psd file. If gpu compression is not specified then lossy compression is
+     used.
+
+OPTIONS
+     The following options are available:
+
+     -c                Convert to lcr format.
+
+     -f s, --flattened-image
+                       Saves the flattened image as a jpeg to the output path
+                       given by the -o flag.  if the output filename doesn't end
+                       with .jpeg or .jpg then the file extension that was given
+                       will be removed and jpeg will get added. If the file that
+                       gets written out is a JPEG image, the resulting image
+                       will be compressed with the default compression options.
+
+     -g s, --gpu-compression=s
+                       Sets program to use gpu optimized compression. You can
+                       choose either best or smallest. GPU Compression is only
+                       supported on iOS 10.0/AppleTV 10.0 or greater.
+
+     -l n, --lossy-compression=n
+                       Set the lossy compression factor used for image content
+                       to a value between 0 and 1.0, default is 0.75. The
+                       smaller the value, the smaller the compressed file size.
+                       A value of 1.0 creates a lossless image.
+
+     -s n, --scale=v   Used to specify the scale factor used in the generated
+                       lcr file. When used with a PSD file it indicates the
+                       scale factor of the PSD file. When used with an LSR file
+                       indicates which scale factor of images should be kept. If
+                       scale is not specified 1 is assumed.
+
+     -p n, --display-gamut=v
+                       v can be one of srgb/p3. Selecting p3 processes the image
+                       and if it contains wide gamut data will be treated as
+                       such.
+
+     -g s, --palette-image
+                       Turn on palette image compression (Defaults to off).
+
+     -o, --output      Output file name. If you are converting an input lsr/psd
+                       file then if no output file is given, the basename of the
+                       input file is used as the output file name with an
+                       appended .lcr extension. unless you are
+
+     -h, --help        Prints out usage information.
+
+     -V, --version     Prints out version information.
+

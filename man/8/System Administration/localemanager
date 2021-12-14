@@ -1,0 +1,103 @@
+localemanager(8)             System Manager's Manual            localemanager(8)
+
+NAME
+     localemanager – Configure OpenDirectory Server Locales
+
+SYNOPSIS
+     localemanager operation [-l localename] [-subnet 1.2.3.4/5]
+                   [-server servername] [-i IP address]
+
+DESCRIPTION
+     localemanager creates, destroys, and edits OpenDirectory Server Locale
+     information.  Locales are collections of OpenDirectory servers to assist
+     clients in locating the nearest OpenDirectory Server.
+
+     To use OpenDirectory Server Locales, simply create a locale on an OD server
+     with the createLocale operation.  Then add servers and subnets to the
+     locale.  All localemanager operations are performed on the local
+     OpenDirectory node.
+
+     The first time a locale is created, a DefaultLocale will automatically be
+     created as well.  The DefaultLocale will be used for any clients that don't
+     match a subnet in any other locale.
+
+     Before a locale can be configured, the server must already be an
+     OpenDirectory server.
+
+     Locales can be defined on each of the OD servers or on a single OD server
+     in the group of OD master/replicas.  For the latter, the locale information
+     will get replicated to all of the other servers but locales will need to be
+     "enabled" on the other servers by running the command localemanager
+     enableLocales.
+
+     Commands:
+
+     help    Displays the commands and options.
+
+     createLocale
+             Creates a new locale on the local OD server.  This command requires
+             the -l option.
+
+     deleteLocale
+             Deletes a locale from the local OD server.  This command requires
+             the -l option.
+
+     showLocale
+             Displays the current locale(s).  The -l option can be used to
+             display a specific locale.  If -l is not specified, all locales are
+             displayed.
+
+     enableLocales
+             Enables the use of locales on an OD server.  This command is
+             automatically run the first time any localemanager command is run
+             on an OD server.  Therefore this command only needs to be run if no
+             other localemanager commands have been (or will be) run on this
+             server.
+
+     addSubnet
+             Adds a new subnet to the specified locale.  This command requires
+             the -l -subnet options.
+
+     removeSubnet
+             Removes a subnet from the specified locale.  This command requires
+             -l -subnet options.
+
+     addServer
+             Adds a server to the specified locale. This command requires the -l
+             -server options.  If the -i option is specified, that IP address
+             will be used by locale clients.  This may be useful for multi-homed
+             servers to restrict locale clients to a specific network interface.
+             If the -i option is not specified the IP address(es) will be looked
+             up.
+
+     removeServer
+             Removes a server from the specified locale.  This command requires
+             -l -server options.  If the -i option is specified, only that IP
+             address will be removed from the locale.  If the -i option is no
+             specified, all of the server's IP addresses will be removed from
+             the locale.
+
+     Options:
+
+     -l locale
+             Locale name.
+
+     -subnet 192.168.0.0/16
+             Subnet specified in CIDR notation.
+
+     -server server.example.com
+             Server fully-qualified domain name.
+
+     -i 192.168.1.1
+             Use this IP address for the server.  Typically used to limit locale
+             clients to a specific interface on a multi-homed server.
+
+FILES
+     /var/log/localemanager.log                    localemanager log file.
+
+SEE ALSO
+     slapconfig(8)
+
+HISTORY
+     First introduced in Mac OS X 10.7
+

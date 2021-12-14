@@ -1,0 +1,231 @@
+SYSTEMSETUP(8)               System Manager's Manual              SYSTEMSETUP(8)
+
+NAME
+     systemsetup – configuration tool for certain machine settings in System
+     Preferences.
+
+SYNOPSIS
+     systemsetup [-getdate] [-setdate mm:dd:yy] [-gettime] [-settime hh:mm:ss]
+                 [-gettimezone] [-listtimezones] [-settimezone timezone]
+                 [-getusingnetworktime] [-setusingnetworktime on | off]
+                 [-getnetworktimeserver] [-setnetworktimeserver timeserver]
+                 [-getsleep] [-setsleep minutes] [-getcomputersleep]
+                 [-setcomputersleep minutes] [-getdisplaysleep]
+                 [-setdisplaysleep minutes] [-getharddisksleep]
+                 [-setharddisksleep minutes] [-getwakeonmodem]
+                 [-setwakeonmodem on | off] [-getwakeonnetworkaccess]
+                 [-setwakeonnetworkaccess on | off] [-getrestartpowerfailure]
+                 [-setrestartpowerfailure on | off] [-getrestartfreeze]
+                 [-setrestartfreeze on | off]
+                 [-getallowpowerbuttontosleepcomputer]
+                 [-setallowpowerbuttontosleepcomputer on | off]
+                 [-getremotelogin] [-setremotelogin on | off]
+                 [-getremoteappleevents] [-setremoteappleevents on | off]
+                 [-getcomputername] [-setcomputername computername]
+                 [-getstartupdisk] [-liststartupdisks] [-setstartupdisk path]
+                 [-getwaitforstartupafterpowerfailure]
+                 [-setwaitforstartupafterpowerfailure value]
+                 [-getdisablekeyboardwhenenclosurelockisengaged]
+                 [-setdisablekeyboardwhenenclosurelockisengaged yes | no]
+                 [-getkernelbootarchitecturesetting]
+                 [-setkernelbootarchitecture i386 | x86_64 | default] [-version]
+                 [-help] [-printCommands]
+
+DESCRIPTION
+     The systemsetup command is used to configure certain per-machine settings
+     typically configured in the System Preferences application.  The
+     systemsetup command requires at least "admin" privileges to run.
+
+     A list of flags and their descriptions:
+
+     -getdate
+             Displays the current date.
+
+     -setdate mm:dd:yy
+             Use this command to set the current month, day, and year.
+
+     -gettime
+             Displays the current time in 24-hour format.
+
+     -settime hh:mm:ss
+             Sets the current time.  The provided time argument should be in
+             24-hour format.
+
+     -gettimezone
+             Displays current time zone.
+
+     -listtimezones
+             Lists all time zones supported by this machine.
+
+     -settimezone timezone
+             Use this command to set the local time zone.  Use "-listtimezones"
+             to list valid timezone arguments.
+
+     -getusingnetworktime
+             Displays whether network time is on or off.
+
+     -setusingnetworktime on | off
+             Sets whether using network time is on or off.
+
+     -getnetworktimeserver
+             Displays the currently set network time server.
+
+     -setnetworktimeserver timeserver
+             Use this command to designate a network time server.  Enter the IP
+             address or DNS name for the network time server.
+
+     -getsleep
+             Displays amount of idle time until machine sleeps.
+
+     -setsleep minutes
+             Sets amount of idle time until computer sleeps.  Specify "Never" or
+             "Off" for computers that should never sleep.  Important: if you set
+             the system to sleep, you will not be able to administer the server
+             remotely while it is sleeping.
+
+     -getcomputersleep
+             Display amount of idle time until computer sleeps.
+
+     -setcomputersleep minutes
+             Set amount of idle time until computer sleeps.  Specify "Never" or
+             "Off" for never.
+
+     -getdisplaysleep
+             Display amount of idle time until display sleeps.
+
+     -setdisplaysleep minutes
+             Set amount of idle time until display sleeps.  Specify "Never" or
+             "Off" for never.
+
+     -getharddisksleep
+             Display amount of idle time until hard disk sleeps.  Specify
+             "Never" or "Off" for never.
+
+     -setharddisksleep minutes
+             Set amount of idle time until hard disk sleeps.  Specify "Never" or
+             "Off" for never.
+
+     -getwakeonmodem
+             Displays whether wake on modem is on or off.
+
+     -setwakeonmodem on | off
+             Use this command to specify whether or not the server will wake
+             from sleep when modem activity is detected.
+
+     -getwakeonnetworkaccess
+             Displays whether wake on network access is on or off.
+
+     -setwakeonnetworkaccess on | off
+             Use this command to specify whether the server wakes from sleep
+             when a network admin packet is sent to it.
+
+     -getrestartpowerfailure
+             Displays whether restart on power failure is on or off.
+
+     -setrestartpowerfailure on | off
+             Use this command to specify whether the server automatically
+             restarts after a power failure.
+
+     -getrestartfreeze
+             Displays whether restart on freeze is on or off.
+
+     -setrestartfreeze on | off
+             Use this command to specify whether the server restarts
+             automatically after the system freezes.
+
+     -getallowpowerbuttontosleepcomputer
+             Enable or disable whether the power button can sleep the computer.
+
+     -setallowpowerbuttontosleepcomputer on | off
+             Enable or disable whether the power button can sleep the computer.
+
+     -getremotelogin
+             Displays whether remote login (SSH) is on or off.
+
+     -setremotelogin [-f] on | off
+             Sets remote login (SSH) to either on or off.  Requires Full Disk
+             Access privileges.  Important: If you turn off remote login, you
+             won't be able to administer the server using remote command line
+             tools and SSH.  To turn remote login back on, you'll need to
+             connect a monitor and keyboard to the server to administer it
+             locally.  Use "setremotelogin -f off" to suppress prompting when
+             turning remote login off.
+
+     -getremoteappleevents
+             Displays whether remote apple events are on or off.
+
+     -setremoteappleevents on | off
+             Use this command to set whether the server responds to events sent
+             by other computers (such as AppleScripts). Requires Full Disk
+             Access privileges.
+
+     -getcomputername
+             Displays computer name.
+
+     -setcomputername computername
+             Sets computer name to <computername>. This name is used by AFP.
+
+     -getlocalsubnetname
+             Display local subnet name.
+
+     -setlocalsubnetname name
+             Set local subnet name to <name>.
+
+     -getstartupdisk
+             Displays current startup disk.
+
+     -liststartupdisks
+             Lists all valid startup disks on this computer.
+
+     -setstartupdisk path
+             Sets current startup disk to the indicated path.  Valid arguments
+             can be listed using "-liststartupdisks."
+
+     -getwaitforstartupafterpowerfailure
+             Get the number of seconds after which the computer will start up
+             after a power failure.
+
+     -setwaitforstartupafterpowerfailure seconds
+             Set the number of seconds after which the computer will start up
+             after a power failure.  The <seconds> value must be a multiple of
+             30 seconds.
+
+     -getdisablekeyboardwhenenclosurelockisengaged
+             Get whether or not the keyboard should be disabled when the X Serve
+             enclosure lock is engaged.
+
+     -setdisablekeyboardwhenenclosurelockisengaged yes | no
+             Set whether or not the keyboard should be disabled when the X Serve
+             enclosure lock is engaged.
+
+     -getkernelbootarchitecturesetting
+             Gets the Kernel Architecture setting from the com.apple.Boot.plist.
+
+     -setkernelbootarchitecture i386 | x86_64 | default
+             Set the kernel to boot in 32 or 64 bit mode on next boot. default
+             removes the setting.
+
+     -version
+             Displays version of systemsetup tool.
+
+     -help   Displays a list of all the commands available in the System Setup
+             Tool, with explanatory information.
+
+     -printCommands
+             Displays a list of commands with no detail.
+
+FILES
+     /usr/sbin/systemsetup
+
+EXAMPLES
+     systemsetup -setdate 04:15:02
+
+     systemsetup -settime 16:20:00
+
+     systemsetup -settimezone US/Pacific
+
+     systemsetup -setnetworktimeserver time.apple.com
+
+SEE ALSO
+     networksetup(8)
+

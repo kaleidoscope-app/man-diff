@@ -1,0 +1,56 @@
+MKNOD(8)                     System Manager's Manual                    MKNOD(8)
+
+NAME
+     mknod – make device special file
+
+SYNOPSIS
+     mknod [-F format] name [c | b] major minor
+     mknod [-F format] name [c | b] major unit subunit
+     mknod name [c | b] number
+     mknod name w
+
+DESCRIPTION
+     The mknod command creates device special files.
+
+     To make nodes manually, the required arguments are:
+
+     name    Device name, for example “sd” for a SCSI disk on an HP300 or a
+             “pty” for pseudo-devices.
+
+     b | c | w
+             Type of device. If the device is a block type device such as a tape
+             or disk drive which needs both cooked and raw special files, the
+             type is b.  Whiteout nodes are type w.  All other devices are
+             character type devices, such as terminal and pseudo devices, and
+             are type c.
+
+     major   The major device number is an integer number which tells the kernel
+             which device driver entry point to use.
+
+     minor   The minor device number tells the kernel which one of several
+             similar devices the node corresponds to; for example, it may be a
+             specific serial port or pty.
+
+     unit and subunit
+             The unit and subunit numbers select a subset of a device; for
+             example, the unit may specify a particular SCSI disk, and the
+             subunit a partition on that disk.  (Currently this form of
+             specification is only supported by the bsdos format, for
+             compatibility with the BSD/OS mknod(8).)
+
+     Device numbers for different operating systems may be packed in a different
+     format.  To create device nodes that may be used by such an operating
+     system (e.g. in an exported file system used for netbooting), the -F option
+     is used.  The following formats are recognized: native, 386bsd, 4bsd,
+     bsdos, freebsd, hpux, isc, linux, netbsd, osf1, sco, solaris, sunos, svr3,
+     svr4 and ultrix.
+
+     Alternatively, a single opaque device number may be specified.
+
+SEE ALSO
+     mkfifo(1), mkfifo(2), mknod(2)
+
+HISTORY
+     A mknod command appeared in Version 6 AT&T UNIX.  The -F option appeared in
+     NetBSD 1.4.
+

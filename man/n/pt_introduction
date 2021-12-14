@@ -1,0 +1,172 @@
+pt_introduction(n)                Parser Tools                pt_introduction(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       pt_introduction - Introduction to Parser Tools
+
+SYNOPSIS
+       package require Tcl  8.5
+
+________________________________________________________________________________
+
+DESCRIPTION
+       Welcome to the Parser Tools, a system for the creation and manipulation
+       of parsers and the grammars driving them.
+
+       What are your goals which drove you here ?
+
+       [1]    Do you simply wish to create a parser for some language ?
+
+              In that case have a look at our parser generator application, pt,
+              or, for a slightly deeper access, the package underneath it,
+              pt::pgen.
+
+       [2]    Do you wish to know more about the architecture of the system ?
+
+              This is described in the section Parser Tools Architecture, below
+
+       [3]    Is your interest in the theoretical background upon which the
+              packages and tools are build ?
+
+              See the Introduction to Parsing Expression Grammars.
+
+PARSER TOOLS ARCHITECTURE
+       The system can be split into roughly three layers, as seen in the figure
+       below
+
+       IMAGE: architecture
+
+       These layers are, from high to low:
+
+       [1]    At the top we have the application and the packages using the
+              packages of the layer below to implement common usecases. One
+              example is the aforementioned pt::pgen which provides a parser
+              generator.
+
+              The list of packages belonging to this layer can be found in
+              section User Packages
+
+       [2]    In this layer we have the packages which provide the core of the
+              functionality for the whole system. They are, in essence, a set of
+              blocks which can be combined in myriad ways, like Lego (tm). The
+              packages in the previous level are 'just' pre-fabricated
+              combinations to cover the most important use cases.
+
+              The list of packages belonging to this layer can be found in
+              section Core Packages
+
+       [3]    Last, but not least is the layer containing support packages
+              providing generic functionality which not necessarily belong into
+              the module.
+
+              The list of packages belonging to this layer can be found in
+              section Support Packages
+
+   USER PACKAGES
+       pt::pgen
+
+   CORE PACKAGES
+       This layer is further split into six sections handling the storage,
+       import, export, transformation, and execution of grammars, plus grammar
+       specific support packages.
+
+       Storage
+
+              pt::peg::container
+
+       Export
+
+              pt::peg::export
+
+              pt::peg::export::container
+
+              pt::peg::export::json
+
+              pt::peg::export::peg
+
+              pt::peg::to::container
+
+              pt::peg::to::json
+
+              pt::peg::to::peg
+
+              pt::peg::to::param
+
+              pt::peg::to::tclparam
+
+              pt::peg::to::cparam
+
+       Import
+
+              pt::peg::import
+
+              pt::peg::import::container
+
+              pt::peg::import::json
+
+              pt::peg::import::peg
+
+              pt::peg::from::container
+
+              pt::peg::from::json
+
+              pt::peg::from::peg
+
+       Transformation
+
+       Execution
+
+              pt::peg::interp
+
+              pt::rde
+
+       Support
+
+              pt::tclparam::configuration::snit
+
+              pt::tclparam::configuration::tcloo
+
+              pt::cparam::configuration::critcl
+
+              pt::ast
+
+              pt::pe
+
+              pt::peg
+
+   SUPPORT PACKAGES
+       pt::peg::container::peg
+
+       text::write
+
+       configuration
+
+       paths
+
+       char
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category pt of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       EBNF, LL(k), PEG, TDPL, context-free languages, expression, grammar,
+       matching, parser, parsing expression, parsing expression grammar, push
+       down automaton, recursive descent, state, top-down parsing languages,
+       transducer
+
+CATEGORY
+       Parsing and Grammars
+
+COPYRIGHT
+       Copyright (c) 2009 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

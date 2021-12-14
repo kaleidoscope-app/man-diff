@@ -1,0 +1,91 @@
+TMDIAGNOSE(8)                System Manager's Manual               TMDIAGNOSE(8)
+
+
+
+NAME
+     tmdiagnose – gather information to aid in diagnosing Time Machine issues
+
+SYNOPSIS
+     tmdiagnose -h
+     tmdiagnose [-d seconds] [-f path] [-m] [-r]
+
+DESCRIPTION
+     The tmdiagnose tool gathers system and backup information in order to
+     assist Apple when investigating issues related to Time Machine. A great
+     deal of information is harvested, spanning system state, system and backup
+     configuration, and snapshot details.
+
+   What tmdiagnose Collects:
+           •   A spindump of the system
+           •   Several seconds of fs_usage ouput
+           •   Several seconds of top output
+           •   Individual samples of backupd and Finder
+           •   Power Management state and logs
+           •   IOKit registry information
+           •   A netstat inspection
+           •   A list of all open files on the system
+           •   All system logs
+           •   All kernel logs
+           •   All install logs
+           •   All fsck_hfs logs
+           •   All WiFi logs
+           •   Disk Utility logs for all local users
+           •   The system migration log
+           •   All spin and crash reports for the following processes:
+                  backupd
+                  mds
+                  diskimages-helper
+                  DesktopServicesHelper
+                  newfs_hfs
+                  NetAuthSysAgent
+
+           •   Recent spin and crash reports for the following processes, for
+               all local users:
+                  Finder
+                  Locum
+                  System Preferences
+                  SystemUIServer
+                  iPhoto
+                  Mail
+                  MailTimeMachineHelper
+                  Address Book
+
+           •   Basic information about reachable AirPort and Time Capsule
+               devices
+           •   The FindSystemFiles cache
+           •   Information about disks and mounted network shares
+           •   Information about attached disk images
+           •   A System Profiler report
+           •   A list of software that has been installed via the darwinup tool
+           •   Time Machine preferences, caches, and configuration information
+           •   Comprehensive information about Time Machine backups and
+               snapshots
+
+     The high-level backup structure for the current machine directory is
+     recreated inside the diagnostic bundle, including the capture of various
+     Time Machine log files contained within snapshots. Items in this "skeleton"
+     structure have on them the extended attributes of the originals.
+     Recreations of local snapshots are also captured in the same manner.
+
+     The tmdiagnose tool will run the Spotlight diagnostic tool mddiagnose
+     automatically, if it is available.
+
+   What tmdiagnose Doesn't Collect:
+           •   No user files are harvested from within backups
+           •   No authentication credentials are harvested from the system
+           •   No authentication credentials are harvested for reachable AirPort
+               and Time Capsule devices
+
+OPTIONS
+     -h      Print full usage.
+     -d sec  Delay the start of the diagnostic by sec seconds. The system alert
+             sound will play two times when the diagnostic begins.
+     -f path Write the diagnostic to the specified path.
+     -m      Gather memory diagnostics for backupd and Finder.
+     -r      Do not reveal the diagnostic in Finder when finished.
+
+EXIT STATUS
+     tmdiagnose exits with status 0 if there were no internal errors encountered
+     during the diagnostic, or >0 when an error unrelated to external state
+     occurs or unusable input is provided by the user.
+

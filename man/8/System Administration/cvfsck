@@ -1,0 +1,403 @@
+CVFSCK(8)                    System Manager's Manual                   CVFSCK(8)
+
+
+
+NAME
+       cvfsck - Check and Recover a Xsan Volume
+
+SYNOPSIS
+       cvfsck [options] [VolName] [VolPath]
+
+DESCRIPTION
+       The cvfsck program can check and repair Xsan file system metadata
+       corruption due to a system crash, bad disk or other catastrophic failure.
+       This program also has the ability to list all of the existing files and
+       their pertinent statistics, such as inode number, size, file type and
+       location in the volume.
+
+       If the volume is active, it may only be checked in a Read-only mode. In
+       this mode, modifications are noted, but not committed. The -n option may
+       be used to perform a read only check as well.
+
+       The file system checking program must be run on the machine where the
+       File System Services are running.
+
+       cvfsck reads the configuration file and compares the configuration
+       against a saved copy that is stored in the metadata.  It is important
+       that the configuration file (see snfs_config(5)) accurately reflect the
+       current state of the volume.  If you need to change a parameter in a
+       current configuration, save a copy of the configuration first or make
+       sure /Library/Logs/Xsan/data/VolName/config_history/*.cfg.<TIMESTAMP>
+       already has a recent copy.  Once the configuration file has been
+       validated with the metadata version, if the configuration file is
+       different and cvfsck is not in read-only mode, the new configuration is
+       stored in the metadata and the previous version is written to
+       /Library/Logs/Xsan/data/VolName/config_history/*.cfg.<TIMESTAMP>.
+
+       After validating the configuration file, cvfsck reads all of the
+       metadata, checks it for any inconsistencies, and the volume is repaired
+       to resolve these issues or if in read-only mode, any problems are
+       reported.
+
+       By default, modifications are first written to a file in the local volume
+       instead of the Xsan disks.  All fixes are made to this local file,
+       including journal replay.  When all problems are fixed and the run is
+       complete, the user is asked if the changes should be copied to the actual
+       Xsan disks.  If the user responds "y", the changes are made.  An answer
+       of "n" indicates that the volume should not be changed.  This allows the
+       user to easily gauge the extent of problems with a volume before
+       committing to the repair.  The user can override this behavior with the
+       -n, -y, and --T options.
+
+OPTIONS
+       NOTE: If no action flags are specified (-e, -f, -g, -j, -F, -K, -M, -p,
+       -r, -s, -t, -w, -x, -q), then cvfsck runs in a verbose read-only mode
+       equivalent to -nv.
+
+
+       -4     If there are files with unconverted or partially converted xattr
+              chains that contain xattrs greater than 4KiB in length, destroy
+              the oversized xattrs so conversion can continue.  Use with
+              caution.
+
+       -A     Scan directories for name collisions that would occur on a case-
+              insensitive file system.
+
+       -a     This option can only be used with -f and is used to tell cvfsck to
+              print totals (all).  When used, a line is printed after each
+              storage pool showing how many free space fragments exist for that
+              storage pool.  In addition, at the end of the run, this options
+              prints the grand total of free space fragments for all storage
+              pools.
+
+       -c pathname
+              Provide a specific path to a configuration file that is to be
+              used, overriding the implicit location.  This option is used when
+              cvupdatefs invokes cvfsck as a sub-process to insure that the
+              volume meta data is consistent prior to doing a capacity or
+              stripegroup expansion.
+
+       -d     Internal debug use.  This option dumps a significant amount of
+              data to the standard output device.
+
+       -e     Report statistics for extents in each file.  This reporting option
+              enables all the same file statistics that the -r flag enables. In
+              addition, the -e flag enables statistic reporting for each extent
+              in a file. All extent data is displayed immediately following the
+              parent file's information. See the -r flag description for file
+              statistics output. The extent stats are output in the following
+              order; Extent#, Stripe group, File relative block, Base block, End
+              block No checking is done. This flag implies -r and -n flags.  No
+              tracing is enabled for this report option.
+
+       -E     Erase i.e. "scrub" on disk free space.  Cvfsck will write zeros
+              over all free space on the disk.  It works in conjunction with the
+              -P option that reports the last block actually scrubbed in case of
+              a crash during a scrub operation. This is intended for Linux.
+
+       -f     Report free space fragmentation.  Each separate chunk of free
+              allocation blocks is tallied based on the chunk's size.  After all
+              free chunks are accounted for, a report is displayed showing the
+              counts for each unique sized free space chunk. Free space
+              fragmentation is reported separately for each storage pool. The
+              free space report is sorted from smallest contiguous allocation
+              chunk to largest. The "Pct." column indicates percentage of the
+              storage pool space the given sized chunks make up. The "(sum)"
+              column indicates what percentage of the total storage pool space
+              is taken up by chunks smaller than, and equal to the given size.
+              The "Chunk Size" gives the chunk's size in volume blocks, and the
+              "Chunk Count" column displays how many instances of this sized
+              chunk are located in this storage pool's free space.  For more
+              information on fragmentation see the snfsdefrag(1) and sgdefrag(8)
+              pages.  No checking is done. Implies -n flag.  See also -a that is
+              used to get more output.
+
+       -F     This option causes cvfsck to make use of the compressed cache even
+              when the configured value of bufferCacheSize is less than or equal
+              to 1GB.  It also sizes the cache to hold all metadata which can
+              dramatically improve performance for aged file systems having
+              large file counts.  This option can cause cvfsck to use a lot of
+              memory, so it is advisable to first obtain an estimate using the
+              -q option.
+
+       -g     Print journal recovery log.  With this flag cvfsck reports
+              contents of the metadata journal. For debugging use only.  Implies
+              -n flag.
+
+       -i     Print inode summary report.  With this flag cvfsck scans the inode
+              list and reports inode statistics information then exits.  This
+              includes a breakdown of the count of inode types, hard links, and
+              size of the largest directory.  This is normally reported as part
+              of the 'Building Inode Index Database' phase anyway but with this
+              flag cvfsck exits after printing the inode summary report and
+              skips the rest of the operations.  This allows the inode summary
+              report to run pretty fast.  Implies -n flag.
+
+       -j     Execute journal recovery and then exit. Running journal recovery
+              will ensure all operations have been committed to disk, and that
+              the metadata state is up to date. It is recommended that cvfsck is
+              run with the -j flag before any read-only checks or volume reports
+              are run.
+
+       -J     Dump raw journal to a file named jrnraw.dat and then exit. For
+              debugging use only.
+
+       -K     Forces the journal to be cleared and reset. WARNING: Resetting the
+              journal may introduce metadata inconsistency. After the journal
+              reset has been completed, run cvfsck to verify and repair any
+              metadata inconsistency. Use this option with extreme caution.
+
+       -l     This option will log any problems to the system log.  This is
+              mainly used on system startup where a file system check may be
+              automatically started by the Xsan File System Services.
+
+       -L     This option forces all orphaned inodes (valid inodes which are not
+              linked in to the directory tree) to be reattached in the
+              lost+found directory.  If this option is not present, cvfsck
+              examines the RPL attribute on the inodes and tries to reattach
+              them to the directory that used to hold them.  In either usage, it
+              tries to name the inodes using the name in the RPL attribute.  If
+              there is no RPL attribute, the inode number is used as a name.  If
+              that name already exists, the inode will be reattached using that
+              name followed by a dash and a random number.
+
+       -M     Performs simple checks that attempt to determine whether a new
+              metadata dump is needed.  If the checks find that a dump is
+              needed, cvfsck will exit with status 1 and print an explanation.
+              If the checks do not find that a dump is needed, cvfsck will exit
+              with status 0.  If an error occurs while performing the checks,
+              cvfsck will print an explanation and exit with status 2.  This
+              option is useful only on managed file systems.  Note: these checks
+              are not exhaustive, and, in some cases, cvfsck will exit with
+              status 0 when a new dump is actually required.
+
+       -m size
+              This option is used to specify the amount of memory in bytes to be
+              used for the internal cache used to hold inode information.  For
+              larger file systems, this can improve the performance of cvfsck.
+              Note that the memory estimate produced using the -q option will be
+              increased by the amount specified with this option.  The 'k', 'm',
+              and 'g' extensions are recognized for this option.  For example,
+              -m 2g can be used to specify 2GB.
+
+       -n     This option allows a volume to be checked in a read-only mode.
+              Modifications are written to a file in the local volume instead of
+              the Xsan disks.  All fixes that would be made if cvfsck was run
+              without the -n option are made to this local file, including
+              journal replay.  When the run is complete, the local file is
+              thrown away.  The volume itself is never changed.
+
+       -O     If cvfsck is run on a file system while the FSM for that file
+              system is active, cvfsck runs in shared mode.  This means that it
+              runs in read-only mode and only a small subset of the usual
+              checking is performed.  This is because the FSM changing the file
+              system may confuse a full cvfsck and cause problems.  The -O
+              option causes cvfsck to perform full (read-only) checking anyway.
+              Strange behavior may be observed.
+
+       -p StripeGroupName
+              This option provides a method for deleting all files that have
+              blocks allocated on the given stripe group. All files that have at
+              least one data extent on the given stripe group will be deleted,
+              even if they have extents on other stripe groups as well.
+              WARNING: Use this option with extreme caution. This option could
+              remove files that the user did not intend to remove, and there are
+              no methods to recover files that have been deleted with this
+              option.
+
+       -q     This option causes cvfsck to generate and estimate for disk and
+              memory requirements and then exit.  Any other options that will
+              get used when performing the actual check should also be specified
+              to improve estimate accuracy.  For example, if the intent is to
+              run cvfsck -m2g -F VolName, then to generate the estimate, run
+              cvfsck -q -m2g -F VolName.  Note that the base memory requirements
+              will typically be around 600MB, so this should be taken into
+              account when also using the -m option.
+
+       -Q     This option causes cvfsck to print qustat statistics just before
+              exiting.
+
+       -P     Report progress of an Erase operation.  This flag enables the
+              writing of a file in /Library/Logs/Xsan/debug of the last block on
+              a given strip group that has been scrubbed.  The files are created
+              on a stripe group by stripe group basis as
+              /Library/Logs/Xsan/data/cvfsck_<VolName>_sg<StripeGroupOrdinal>.
+              This is intended for Linux use.
+
+       -r     This report option shows information on file state. Information
+              for each file is output in the following order.  Inode#, Mode,
+              Size, Block count, Extent count, Storage pools, Affinity, Path No
+              tracing is enabled for this report option.
+
+       -R     This option helps repair a file system which had cvmkfs
+              accidentally run on it.  First, cvfsck restores file system state
+              which was saved by cvmkfs in
+              /Library/Logs/Xsan/debug/VolName.cvmkfs.  Then, it continues as
+              usual to fix any other problems it may encounter.  The COW layer
+              treats the restoration of saved state the same as any other file
+              system modification.  This option is only useful if the accidental
+              cvmkfs is detected before the file system is mounted and changed.
+              Using it at any other time is not advised.  If unsure, please
+              contact customer support.
+
+       -s StripeGroupName
+              THIS FUNCTIONALITY IS ONLY SUPPORTED ON MANAGED FILE SYSTEMS
+              Provides a method for restoring data on the given storage pool
+              from a stored copy. cvfsck will truncate all files with data on
+              the given storage pool. As such, all data blocks on that storage
+              pool will be inaccessible and subsequent access of these files
+              will trigger data retrieval from a stored copy. All data will be
+              lost for files that do not have any stored copies. The cvfsck
+              output will indicate whether or not the ALL_COPIES_MADE flag is
+              set in the SNEA attribute for each truncated file.  Files outside
+              of all managed directories that have data on the given storage
+              pool will be deleted from the file system.  NOTE: Use this option
+              with extreme caution because it can result in permanent data loss.
+
+       -T directory
+              This option specifies the directory where all temporary files
+              created by cvfsck will be placed. If this option is omitted all
+              temporary files will be placed in the system's default temporary
+              folder. NOTE: cvfsck does honor the use of TMPDIR/TEMP environment
+              variables.
+
+       -t     This option is used to check the work of the -U option on thin
+              provisioned devices in the given file system.  It causes cvfsck to
+              print in sn_dmap(1) -v format, from the file system's perspective,
+              an idea of what should be unmapped and mapped on each thin
+              provisioned device in the given file system.  One can then
+              somewhat compare the sn_dmap(1) output with the cvfsck -t output
+              as follows: any "mapped" space indicated by sn_dmap(1) must also
+              be mapped in the cvfsck output.  But, unmapped space from
+              sn_dmap(1) may show up as mapped in the cvfsck output since the
+              space has been allocated but not yet written.  Going the other
+              way, any mapped space from cvfsck may or may not be mapped from
+              sn_dmap, depending if the allocated space was actually written.
+              Any unmapped space (immediately after running cvfsck -U) must also
+              appear as unmapped from sn_dmap(1).  In addition, this option
+              verifies this final condition (checking ummapped space) printing
+              lines where unmapped space is incorrectly still mapped.  If all is
+              copacetic, the following output appears for each device: checked
+              NNN unmapped entries with 0 errors where NNN is the number of
+              unmapped pieces checked.  This currently only works on Linux and
+              is intended as a debugging tool for quality assurance and
+              development.
+
+       -U     This option is for use with thin provisioned devices in the given
+              file system.  It causes UNMAPS or TRIMs operations for all file
+              system free space.  Cvfsck will issue the appropriate UNMAP/TRIM
+              device operations for every free chunk in the file system.  See
+              also the -t option.  This currently only works on Linux and only
+              with Quantum QXS series storage.
+
+       -v     Use verbose reporting methods.
+
+       -w     This option specifies that cvfsck is allowed to make modifications
+              to the file system to correct any problems that are found.
+
+
+       -W     This option causes cvfsck to always clean up any orphaned "Wopens"
+              inodes that may have been generated when an earlier metadata
+              restore from the metadata archive was performed using an older
+              version of Xsan.  Normally, cvfsck will only clean up these inodes
+              if other metadata inconsistencies are detected prior to the orphan
+              inode phase.
+
+       -x     Report statistics for input to a spread sheet.  No checking is
+              done. Implies -e,-r and -n flags.  All values are in decimal.
+              Data is comma separated and in this order: Inode#, Mode, Size,
+              Block Count, Affinity, Path, Extent Count, Extent Number, Storage
+              pool, File Relative Block, Base, End, Depth, Breadth No tracing is
+              enabled for this report option.
+
+       -X     (Engineering use only.) Free all inodes in extended attribute
+              chains. Extended attributes present in these inodes will be
+              deleted.
+
+       -y     Fix any problems found in the file system without prompting for
+              confirmation.  The default behavior is to display the extent of
+              the changes that will be made and prompt for whether or not to
+              make the changes.  The fixes are first made to a file in a file on
+              the local volume (specified by -T).  When all fixes are complete,
+              they are copied into the actual Xsan disks.
+
+       -Y     Same behavior as -y except that the changes are not buffered
+              through the local volume as they are by default.
+
+       -Z     Remove all NT Security Descriptors from the file system.  This is
+              useful when ACLs are being abandoned to allow the use of the
+              unixPermBits Security Model.  This option should only be used when
+              recommended by Apple support. All StorNext systems must first
+              unmount the file system prior to running cvfsck -Z since it
+              modifies the metadata causing the FSM to prevent currently mounted
+              clients from reconnecting. Running cvfsck -Z can take a long time
+              for large file systems because all inodes have to be scanned for
+              security descriptors.  Also, since the metadata is updated by
+              cvfsck -Z, if the metadataArchive parameter is set to true in the
+              file system configuration file, a new metadata archive will be
+              generated when the FSM is restarted. Note that when running cvfsck
+              -Z, the file system must be configured such that the securityModel
+              is NOT acl, and enforceAcls, quotas, and windowsSecurity are all
+              disabled either explicitly or by setting the securityModel to
+              unixpermbits.  After running cvfsck -Z, unix permissions on files
+              and directories should be updated if needed.
+
+       VolName
+              Specifies a volume to check. Otherwise all volumes on this system
+              will be displayed for selection.
+
+       VolPath
+              Forces the program to use VolPath/data instead of
+              /Library/Logs/Xsan/data to locate the volumes.
+
+EXIT VALUES
+       cvfsck will return one of the following condition codes upon exit.
+
+              0 - No error, no changes made to the file system
+              1 - Inconsistencies encountered, changes have been
+                  made to the file system
+               - A read-only cvfsck will return 1 if journal replay is needed.
+               - A read-only cvfsck will only print the needed fixes and not
+                 commit changes to the metadata.
+              2 - Fatal error, cvfsck run aborted
+              3 - Name collisions found, no repair needed
+              4 - Name collisions found, file system successfully repaired
+
+NOTES
+       It is strongly recommended that the user should not run cvfsck with the
+       -y or -Y options until the extent of any metadata corruption is known.
+
+       Unless running cvfsck in read-only mode, the file system should be
+       unmounted from all machines before a check is performed.  In the event
+       that repairs are required and cvfsck modifies metadata, it will report
+       this at the end of the check.  If this occurs, any machines that continue
+       to mount the file system should be rebooted before restarting the file
+       system.
+
+       In order to ensure minimum run-time cvfsck should be run on an idle FSS
+       server. Extraneous I/O and processor usage will severely impact the
+       performance of cvfsck.
+
+       CRC checks are now done on all Windows Security descriptors.  Windows
+       Security Descriptors with inconsistent CRC's are removed causing affected
+       files to inherit permissions from the parent folder.
+
+       Cvfsck limits the number of trace files to 100.  It starts removing the
+       oldest trace file if the max number of trace files in
+       /Library/Logs/Xsan/data/VolName/trace is exceeded before a new file is
+       created.
+
+       NOTE: On large file systems cvfsck may requires 100s of megabytes or more
+       of local system disk space for working files.
+
+FILES
+       /Library/Logs/Xsan/data/*
+       /Library/Logs/Xsan/data/VolName/config_history/*.cfg.<TIMESTAMP>
+       /Library/Preferences/Xsan/*.cfg
+
+SEE ALSO
+       snfs_config(5) cvmkfile(1), cvupdatefs(8), cvadmin(8), sgdefrag(8),
+       snfsdefrag(1)
+
+
+

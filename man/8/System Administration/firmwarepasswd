@@ -1,0 +1,58 @@
+UNTITLED                              LOCAL                             UNTITLED
+
+NAME
+     firmwarepasswd – tool for setting and removing firmware passwords on a
+     system
+
+SYNOPSIS
+     firmwarepasswd [-setpasswd] [-setmode mode [-allow-oroms]] [-mode] [-check]
+                    [-delete] [-verify] [-unlockseed]
+                    [-disable-reset-capability] [-enable-reset-capability] [-h]
+
+DESCRIPTION
+     The firmwarepasswd command is used to add or remove firmware passwords from
+     a system as well as check status and other options.  The firmwarepasswd
+     command requires root privileges to run.
+
+     A list of flags and their descriptions:
+
+     -setpasswd
+             Prompts to add a new firmware password or change and existing
+             password if one exists.
+
+     -setmode mode [-allow-oroms]
+             Set the mode to "command" or "full".  "Command" will prompt for the
+             firmware password if the user attempts to boot from a different
+             volume.  "Full" will prompt on every startup (not recommended).
+             Optional "allow-oroms" flag will permit option roms execution, that
+             is denied by default once firmware password is set.
+
+     -mode   Displays the current mode if one is set.
+
+     -check  Displays whether or not a firmware password is set.
+
+     -delete
+             Prompts for password and clears both password and the mode if
+             correct.
+
+     -verify
+             Prompts for password and displays success if correct.
+
+     -unlockseed
+             Generates a firmware password recovery key.  Note: Machine must be
+             stable for this command to generate a valid seed.  No pending
+             changes that need a restart.  NOTE: Seed is only valid until the
+             next time a firmware password command runs.
+
+     -disable-reset-capability
+             Disables firmware password reset using unlockseed.
+
+     -enable-reset-capability
+             Enables firmware password reset using unlockseed.
+
+     -h      Displays a list of all the commands available in the firmwarepasswd
+             tool, with explanatory information.
+
+FILES
+     /usr/sbin/firmwarepasswd
+

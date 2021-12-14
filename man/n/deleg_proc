@@ -1,0 +1,58 @@
+deleg_proc(n)                 Interpreter utilities                deleg_proc(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       deleg_proc - Creation of comm delegates (procedures)
+
+SYNOPSIS
+       package require Tcl  8.3
+
+       package require interp::delegate::proc  ?0.2?
+
+       ::interp::delegate::proc ?-async? name arguments comm id
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a single command for the convenient creation of
+       procedures which delegate the actual work to a remote location via a
+       "channel" created by the package comm.
+
+API
+       ::interp::delegate::proc ?-async? name arguments comm id
+              This commands creates a procedure which is named by name and
+              returns its fully-qualified name. All invokations of this
+              procedure will delegate the actual work to the remote location
+              identified by the comm channel comm and the endpoint id.
+
+              The name of the remote procedure invoked by the delegator is
+              [namespace tail name]. I.e., namespace information is stripped
+              from the call.
+
+              Normally the generated procedure marshalls the arguments, and
+              returns the result from the remote procedure as its own result. If
+              however the option -async was specified then the generated
+              procedure will not wait for a result and return immediately.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category interp of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       comm, delegation, interpreter, procedure
+
+CATEGORY
+       Programming tools
+
+COPYRIGHT
+       Copyright (c) 2006 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

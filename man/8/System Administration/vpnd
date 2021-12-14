@@ -1,0 +1,85 @@
+vpnd(8)                      System Manager's Manual                     vpnd(8)
+
+
+
+NAME
+     vpnd – Mac OS X VPN service daemon
+
+SYNOPSIS
+     vpnd [-d | -n | -x] [-i server_id]
+     vpnd [-h]
+
+
+
+DESCRIPTION
+     vpnd allows external hosts to tunnel via L2TP over IPSec or via PPTP from
+     an insecure external network (such as the Internet) into a "secure"
+     internal network, such as a corporate network.  All traffic through the
+     tunnel is encrypted to provide secure communications, with L2TP/IPSec
+     providing a higher level of security than PPTP.
+
+     vpnd listens for incoming connections, pairs each one with an available
+     internal IP address, and passes the connection to pppd(8) with appropriate
+     parameters.  Parameters for vpnd are specified in a system configuration
+     (plist) file in XML format.  This file contains a dictionary of
+     configurations each identified by a key referred to as a server_id.
+     Parameters include the tunneling protocol, IP addresses to be assigned to
+     clients, PPP parameters etc.
+
+     vpnd is launched for a particular configuration by using the -i option
+     which takes the server_id to be run as an argument.  vpnd can also be run
+     without the -i option.  In this case it will check the configuration file
+     for a special array which contains a list of configurations to be run and
+     will fork and exec a copy of vpnd for each server_id to be run.  Running
+     multiple vpnd processes simultaneously for a particular protocol is not
+     allowed.
+
+     vpnd will be launched during the boot process by a startup item if the
+     field VPNSERVER is defined in /etc/hostconfig with the value -YES-.
+     Typically, in this case it will be launched without the -i option and will
+     check the configuration file to determine which configuration(s) are to be
+     run.
+
+     vpnd logs items of interest to the system log.  A different log path can be
+     specified in the configuration file.
+
+
+OPTIONS
+     The following options are available:
+
+     -d    Do not move to background and print log strings to the terminal.
+
+     -h    Print usage summary and exit.
+
+     -i    Server_id in the plist file that defines the configuration to be run.
+
+     -n    Do not move to background, print log information to the terminal, and
+           quit after validating the argument list.
+
+     -x    Do not move to background.
+
+
+EXAMPLES
+     The default invocation,
+
+           vpnd
+
+     will read the list of configurations to run from the configuration file and
+     launch them.  This default configuration may be enabled at startup by
+     defining VPNSERVER to -YES-.
+
+     To specify a particular configuration to run use
+
+           vpnd -i server_id
+
+
+FILES & FOLDERS
+     /usr/sbin/vpnd
+     /etc/hostconfig
+     /System/Library/StartupItems/NetworkExtensions
+     /Library/Preferences/SystemConfiguration/com.apple.RemoteAccessServers.plist
+
+
+SEE ALSO
+     pppd(8) vpnd(5)
+

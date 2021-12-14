@@ -1,0 +1,175 @@
+BOUNCE(8)                    System Manager's Manual                   BOUNCE(8)
+
+
+
+
+NAME
+       bounce - Postfix delivery status reports
+
+SYNOPSIS
+       bounce [generic Postfix daemon options]
+
+DESCRIPTION
+       The bounce(8) daemon maintains per-message log files with delivery status
+       information. Each log file is named after the queue file that it
+       corresponds to, and is kept in a queue subdirectory named after the
+       service name in the master.cf file (either bounce, defer or trace).  This
+       program expects to be run from the master(8) process manager.
+
+       The bounce(8) daemon processes two types of service requests:
+
+       •      Append a recipient (non-)delivery status record to a per-message
+              log file.
+
+       •      Enqueue a delivery status notification message, with a copy of a
+              per-message log file and of the corresponding message.  When the
+              delivery status notification message is enqueued successfully, the
+              per-message log file is deleted.
+
+       The software does a best notification effort. A non-delivery notification
+       is sent even when the log file or the original message cannot be read.
+
+       Optionally, a bounce (defer, trace) client can request that the
+       per-message log file be deleted when the requested operation fails.  This
+       is used by clients that cannot retry transactions by themselves, and that
+       depend on retry logic in their own client.
+
+STANDARDS
+       RFC 822 (ARPA Internet Text Messages)
+       RFC 2045 (Format of Internet Message Bodies)
+       RFC 2822 (Internet Message Format)
+       RFC 3462 (Delivery Status Notifications)
+       RFC 3464 (Delivery Status Notifications)
+       RFC 3834 (Auto-Submitted: message header)
+       RFC 5322 (Internet Message Format)
+       RFC 6531 (Internationalized SMTP)
+       RFC 6532 (Internationalized Message Format)
+       RFC 6533 (Internationalized Delivery Status Notifications)
+
+DIAGNOSTICS
+       Problems and transactions are logged to syslogd(8).
+
+CONFIGURATION PARAMETERS
+       Changes to main.cf are picked up automatically, as bounce(8) processes
+       run for only a limited amount of time. Use the command "postfix reload"
+       to speed up a change.
+
+       The text below provides only a parameter summary. See postconf(5) for
+       more details including examples.
+
+       2bounce_notice_recipient (postmaster)
+              The recipient of undeliverable mail that cannot be returned to the
+              sender.
+
+       backwards_bounce_logfile_compatibility (yes)
+              Produce additional bounce(8) logfile records that can be read by
+              Postfix versions before 2.0.
+
+       bounce_notice_recipient (postmaster)
+              The recipient of postmaster notifications with the message headers
+              of mail that Postfix did not deliver and of SMTP conversation
+              transcripts of mail that Postfix did not receive.
+
+       bounce_size_limit (50000)
+              The maximal amount of original message text that is sent in a
+              non-delivery notification.
+
+       bounce_template_file (empty)
+              Pathname of a configuration file with bounce message templates.
+
+       config_directory (see 'postconf -d' output)
+              The default location of the Postfix main.cf and master.cf
+              configuration files.
+
+       daemon_timeout (18000s)
+              How much time a Postfix daemon process may take to handle a
+              request before it is terminated by a built-in watchdog timer.
+
+       delay_notice_recipient (postmaster)
+              The recipient of postmaster notifications with the message headers
+              of mail that cannot be delivered within $delay_warning_time time
+              units.
+
+       deliver_lock_attempts (20)
+              The maximal number of attempts to acquire an exclusive lock on a
+              mailbox file or bounce(8) logfile.
+
+       deliver_lock_delay (1s)
+              The time between attempts to acquire an exclusive lock on a
+              mailbox file or bounce(8) logfile.
+
+       ipc_timeout (3600s)
+              The time limit for sending or receiving information over an
+              internal communication channel.
+
+       internal_mail_filter_classes (empty)
+              What categories of Postfix-generated mail are subject to
+              before-queue content inspection by non_smtpd_milters,
+              header_checks and body_checks.
+
+       mail_name (Postfix)
+              The mail system name that is displayed in Received: headers, in
+              the SMTP greeting banner, and in bounced mail.
+
+       max_idle (100s)
+              The maximum amount of time that an idle Postfix daemon process
+              waits for an incoming connection before terminating voluntarily.
+
+       max_use (100)
+              The maximal number of incoming connections that a Postfix daemon
+              process will service before terminating voluntarily.
+
+       notify_classes (resource, software)
+              The list of error classes that are reported to the postmaster.
+
+       process_id (read-only)
+              The process ID of a Postfix command or daemon process.
+
+       process_name (read-only)
+              The process name of a Postfix command or daemon process.
+
+       queue_directory (see 'postconf -d' output)
+              The location of the Postfix top-level queue directory.
+
+       syslog_facility (mail)
+              The syslog facility of Postfix logging.
+
+       syslog_name (see 'postconf -d' output)
+              A prefix that is prepended to the process name in syslog records,
+              so that, for example, "smtpd" becomes "prefix/smtpd".
+
+       Available in Postfix 3.0 and later:
+
+       smtputf8_autodetect_classes (sendmail, verify)
+              Detect that a message requires SMTPUTF8 support for the specified
+              mail origin classes.
+
+FILES
+       /var/spool/postfix/bounce/* non-delivery records
+       /var/spool/postfix/defer/* non-delivery records
+       /var/spool/postfix/trace/* delivery status records
+
+SEE ALSO
+       bounce(5), bounce message template format
+       qmgr(8), queue manager
+       postconf(5), configuration parameters
+       master(5), generic daemon options
+       master(8), process manager
+       syslogd(8), system logging
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+AUTHOR(S)
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

@@ -1,0 +1,123 @@
+vidio(1)                     General Commands Manual                    vidio(1)
+
+
+
+NAME
+       vidio - Video frame producer consumer performance test
+
+SYNOPSIS
+       vidio [options] dir_path [dir_path...]
+
+DESCRIPTION
+       vidio can emulate a producer or a consumer of video frames.  When run as
+       a producer (write mode), vidio generates video frames and writes them to
+       files that are created in the specified directory.  When vidio is  run as
+       a consumer (read mode), it reads frames from the files in the specified
+       directory that were previously created and written.  By default, vidio
+       runs in producer mode and creates one file for each frame.
+
+       vidio will run in one of two modes, constrained or unconstrained.  The
+       default mode is unconstrained and vidio will produce or consume frames at
+       an unconstrained rate; as fast as the I/O will allow.  If the -F option
+       is specified, vidio will produce or consume frames based upon the
+       specified frame rate.  Dropped frames are noted in the output.
+
+       Optionally, more than one directory can be named.  In this case, vidio
+       will start an identical I/O stream in each specified directory.
+
+       vidio will then write performance information to the standard output.
+       The verbosity of the performance data can be controlled using the -v
+       option.  A realtime updating curses based display is optionally available
+       via the -c option.
+
+OPTIONS
+       -?     Display usage.
+
+       -B     Use system buffered IO per StorNext rules.  The default is direct
+              I/O.
+
+       -c     Display important statistics via a curses based continuously
+              updating display.
+
+       -d[dd] Run in debug mode. The more "d's" specified, the more debug
+              information is printed.
+
+       -f framesize
+              Specify the framesize or the frame type.  Various type of video
+              frame types may be specified.  The default frame type is "hdtv".
+              Currently this results in a frame size of 8,294,400 bytes.  Use
+              the -? option to get a list of currently supported frame types.
+              The framesize can also be specified in bytes.  Optionally, the
+              suffixes k, m, g, K, M or G can be added to the numeric frame size
+              value to represent kilobytes, megabytes, gigabytes, kilobinary,
+              megabinary or gigabinary values, respectively.  The lowercase
+              letters represent base 10 units (e.g. 1k = 1000) and the uppercase
+              letters represent base 2 units (e.g. 1K = 1024.)
+
+       -F framerate
+              Emulate a frame producing or consuming device by limiting the
+              number of frames produced or consumed per second to the specified
+              frame rate.  If the file file system cannot keep up to the
+              specified frame rate, the "Dropped frames" stat is incremented.
+
+       -l filelist
+              vidio can process frames from a file containing a list of
+              frames/files.  In this manner, vidio can be used to process a
+              directory of arbitrary DPX files. Currently this option only works
+              in read mode.  The filelist is simply a file containing a list of
+              frames to be processed in order.  The list can have empty lines
+              and/or comment lines that must begin with #.  All other lines are
+              assumed to be file names in the directory dir_path.
+
+       -n nframes
+              The number of frames to read or write.  The default is currently
+              60 frames.
+
+       -N nframes
+              The number of frames per file. The default is one.
+
+       -O offset
+              File offset in bytes at which to start frames, default 0. This
+              allows very basic emulation of mfx files with non-aligned essence
+              data.
+
+       -u     Use non-aligned memory buffer, simulate bad application buffer
+              alignment.
+
+       -R     Read files in reverse order, simulate scrubbing backwards during
+              edit.  A starting offset near the end of the file must be used.
+
+       -p prefix
+              Frame file names use the given prefix instead of the default of
+              "vidio".  Vidio then appends '_NNNNNNN' as the frame number to the
+              prefix.
+
+       -q qdepth
+              Do asynchronous I/O by queuing requests qdepth deep.  If a frame
+              rate is specified, the qdepth will effectively equate to the
+              number of frames that are buffered.
+
+       -r     Consumer mode.  Read frames of previously created using the -w
+              option.
+
+       -T milliseconds
+              When in constrained mode, stop the test with an error if the
+              actual IO time is greater than the specified number of
+              milliseconds.
+
+       -v[vv] Print performance output in a more verbose fashion.  The more
+              "v's" specified, the more performance information is printed.
+
+       -V     Show the vidio version and exit.
+
+       -w     Producer mode.  Create files and write frames.  Create and write
+              is the default test mode.
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/bin/vidio
+
+SEE ALSO
+       cvfs(8)
+
+
+

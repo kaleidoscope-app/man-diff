@@ -1,0 +1,61 @@
+VIP_CONTROL(8)               System Manager's Manual              VIP_CONTROL(8)
+
+
+
+NAME
+       vip_control - manipulate virtual IP information for Xsan
+
+SYNOPSIS
+       /System/Library/Filesystems/acfs.fs/Contents/bin/vip_control option
+
+DESCRIPTION
+       vip_control provides a mechanism for editing, listing, activating and
+       deactivating virtual IPs (VIPs) for the Xsan system.  Virtual IPs may be
+       helpful for applications needing access to the primary MDC when running
+       in an HA configuration.  Changes made to VIPs are not automatically
+       copied over to an MDC's HA peer.  As such, any changes that are made to
+       the VIP configuration need to be done on both HA MDCs.  vip_control does
+       not update firewall rules.  Changes to VIP configurations may require
+       additional changes to the firewall rules of the system.
+
+OPTIONS
+       -h     Display help
+
+       -a     Activate all configured VIPs
+
+       -d     Deactivate all configured VIPs
+
+       -i     Show VIP status along with physical NIC status
+
+       -l     Show configured VIPs in a compact format
+
+       -u vip_str
+              Update the VIP configuration with the vip_str string.  This
+              replaces the contents of the VIP configuration file.  The format
+              of vip_str is as follows:
+
+                 MAC address, IPV4 VIP, netmask, IPV6 VIP, prefix length
+
+       Each field in a VIP entry is separated by a comma, and each VIP entry can
+       be separated by either a newline or a semicolon.  Typically, the
+       semicolon is used.
+
+       The following is an example of setting up two VIPs:
+
+          # vip_control -u "0030482D38F6,10.0.0.2,255.255.255.0,,;0030482d38f7,10.1.0.2,255.255.255.0,,;"
+
+NOTES
+       When changing the ha_vip.txt on Quantum Appliance you also need to make
+       sure that the iptables rules are updated to reflect the new information.
+       You can use the following command to reset the VIP
+
+          # /opt/DXi/scripts/netcfg.sh --reset_snvip
+
+FILES
+       /Library/Preferences/Xsan/ha_vip.txt /opt/DXi/scripts/netcfg.sh
+
+SEE ALSO
+       cvfs(8), snfs_config(5), cnvt2ha.sh(8), iptables(8)
+
+
+

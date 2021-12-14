@@ -1,0 +1,102 @@
+RTSOLD(8)                    System Manager's Manual                   RTSOLD(8)
+
+NAME
+     rtsold – router solicitation daemon
+
+SYNOPSIS
+     rtsold [-dDfm1] interface ...
+     rtsold [-dDfm1] -a
+     rtsol [-dD] interface ...
+     rtsol [-dD] -a
+
+DESCRIPTION
+     rtsold is the daemon program to send ICMPv6 Router Solicitation messages on
+     the specified interfaces.  If a node (re)attaches to a link, rtsold sends
+     some Router Solicitations on the link destined to the link-local scope all-
+     routers multicast address to discover new routers and to get non link-local
+     addresses.
+
+     rtsold should be used on IPv6 hosts (non-router nodes) only.
+
+     If you invoke the program as rtsol, it will transmit probes from the
+     specified interface, without becoming a daemon.  In other words, rtsol
+     behaves as “rtsold -f1 interfaces”.
+
+     Specifically, rtsold sends at most 3 Router Solicitations on an interface
+     after one of the following events:
+
+     •   Just after invocation of rtsold daemon.
+     •   The interface is up after a temporary interface failure.  rtsold
+         detects such failures by periodically probing to see if the status of
+         the interface is active or not.  Note that some network cards and
+         drivers do not allow the extraction of link state.  In such cases,
+         rtsold cannot detect the change of the interface status.
+     •   Every 60 seconds if the -m option is specified and the rtsold daemon
+         cannot get the interface status.  This feature does not conform to the
+         IPv6 neighbor discovery specification, but is provided for mobile
+         stations.  The default interval for router advertisements, which is on
+         the order of 10 minutes, is slightly long for mobile stations.  This
+         feature is provided for such stations so that they can find new routers
+         as soon as possible when they attach to another link.
+
+     Once rtsold has sent a Router Solicitation, and has received a valid Router
+     Advertisement, it refrains from sending additional solicitations on that
+     interface, until the next time one of the above events occurs.
+
+     When sending a Router Solicitation on an interface, rtsold includes a
+     Source Link-layer address option if the interface has a link-layer address.
+
+     Upon receipt of signal SIGUSR1, rtsold will dump the current internal state
+     into /var/run/rtsold.dump.
+
+OPTIONS
+     -a      Autoprobe outgoing interface.  rtsold will try to find a non-
+             loopback, non-point-to-point, IPv6-capable interface.  If rtsold
+             finds multiple interfaces, rtsold will exit with error.
+
+     -d      Enable debugging.
+
+     -D      Enable more debugging including the printing of internal timer
+             information.
+
+     -f      -f prevents rtsold from becoming a daemon (foreground mode).
+             Warning messages are generated to standard error instead of
+             syslog(3).
+
+     -m      Enable mobility support.  If this option is specified, rtsold sends
+             probing packets to default routers that have advertised Router
+             Advertisements when the node (re)attaches to an interface.
+             Moreover, if the option is specified, rtsold periodically sends
+             Router Solicitation on an interface that does not support
+             SIOCGIFMEDIA ioctl.
+
+     -1      Perform only one probe.  Transmit Router Solicitation packets until
+             at least one valid Router Advertisement packet has arrived on each
+             interface, then exit.
+
+DIAGNOSTICS
+     The rtsold utility exits 0 on success, and >0 if an error occurs.
+
+FILES
+     /var/run/rtsold.pid   the pid of the currently running rtsold.
+     /var/run/rtsold.dump  dumps internal state on.
+
+SEE ALSO
+     rtadvd(8), sysctl(8)
+
+HISTORY
+     The rtsold command is based on the rtsol command, which first appeared in
+     WIDE/KAME IPv6 protocol stack kit.  rtsol is now integrated into rtsold(8).
+
+BUGS
+     In some operating systems, when a PCMCIA network card is removed and
+     reinserted, the corresponding interface index is changed.  However, rtsold
+     assumes such changes will not occur, and always uses the index that it got
+     at invocation. As a result, rtsold may not work if you reinsert a network
+     card.  In such a case, rtsold should be killed and restarted.
+
+     The IPv6 autoconfiguration specification assumes a single-interface host.
+     You may see kernel error messages if you try to autoconfigure a host with
+     multiple interfaces.  Also, it seems contradictory for rtsold to accept
+     multiple interface arguments.
+

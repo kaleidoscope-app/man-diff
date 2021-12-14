@@ -1,0 +1,59 @@
+is(n)                              [incr Tcl]                              is(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       is - test argument to see if it is a class or an object
+
+SYNOPSIS
+       itcl::is option ?arg arg ...?
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The is command is used to check if the argument given is a class or an
+       object; depending on the option given. If the argument if a class or
+       object, then 1 is returned. Otherwise, 0 is returned.  The is command
+       also recognizes the commands wrapped in the itcl code command.
+
+       The option argument determines what action is carried out by the command.
+       The legal options (which may be abbreviated) are:
+
+       is class command
+              Returns 1 if command is a class, and returns 0 otherwise.
+
+              The fully qualified name of the class needs to be given as the
+              command argument. So, if a class resides in a namespace, then the
+              namespace needs to be specified as well. So, if a class C resides
+              in a namespace N, then the command should be called like:
+              is N::C
+                  or
+              is ::N::C
+
+       is object ?-class className? command
+              Returns 1 if command is an object, and returns 0 otherwise.
+
+              If the optional "-class" parameter is specified, then the command
+              will be checked within the context of the class given. Note that
+              className has to exist. If not, then an error will be given. So,
+              if className is uncertain to be a class, then the programmer will
+              need to check it's existance beforehand, or wrap it in a catch
+              statement.
+
+              So, if c is an object in the class C, in namespace N then these
+              are the possibilities (all return 1):
+              set obj [N::C c]
+              itcl::is object N::c
+              itcl::is object c
+              itcl::is object $obj
+              itcl::is object [itcl::code c]
+
+
+KEYWORDS
+       class, object
+
+
+
+

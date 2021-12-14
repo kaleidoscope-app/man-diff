@@ -1,0 +1,38 @@
+APFS_CONDENSER(8)            System Manager's Manual           APFS_CONDENSER(8)
+
+NAME
+     apfs_condenser – insert the contents of an existing B-tree into a new B-
+     tree to improve B-tree space utilization
+
+SYNOPSIS
+     apfs_condenser [-s snap_name] [-w watchdog_timeout] [-v] -p device_path
+                    -i filesystem_slice
+
+DESCRIPTION
+     The apfs_condenser command sequentially inserts the contents of an existing
+     B-tree into a new B-tree to improve B-tree space utilization.  The
+     apfs_condenser requires the container to be unmounted and an encrypted
+     volume to be unlocked.  The filesystem_slice parameter is 1-based and the
+     device_path parameter is the path of the device representing the container.
+
+     The options are as follows:
+
+     -s snap_name          If compaction succeeds, the snapshot will be deleted.
+                           Usually used in the OTA environment.
+
+     -v                    Increase verbosity of the output.
+
+     -w timeout            Force the compaction to abort after the supplied
+                           timeout in seconds.
+
+EXIT STATUS
+     The apfs_condenser utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     The following condenses the first APFS volume with /dev/disk1 as the
+     synthesized container path :
+           apfs_condenser -p /dev/disk1 -i 1
+
+HISTORY
+     The apfs_condenser utility first appeared in OS X 10.14.
+

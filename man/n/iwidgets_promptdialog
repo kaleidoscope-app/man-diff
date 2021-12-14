@@ -1,0 +1,160 @@
+iwidgets::promptdialog(1)        [incr Widgets]        iwidgets::promptdialog(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::promptdialog - Create and manipulate a prompt dialog widget
+
+SYNOPSIS
+       iwidgets::promptdialog pathName ?options?
+
+INHERITANCE
+       itk::Toplevel <- iwidgets::Dialogshell <- iwidgets::Dialog <-
+       iwidgets::Promptdialog
+
+STANDARD OPTIONS
+
+       background         borderWidth       cursor              exportSelection
+       foreground         highlightColor    highlightThickness  insertBackground
+       insertBorderWidth  insertOffTime     insertOnTime        insertWidth
+       relief             selectBackground  selectBorderWidth   selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       show
+
+       See the "entry" widget manual entry for details on the above associated
+       options.
+
+       invalid         textBackground textFont        validate
+
+       See the "entryfield" widget manual entry for details on the above
+       associated options.
+
+       labelFont       labelPos       labelText
+
+       See the "labeledwidget" widget manual entry for details on the above
+       associated options.
+
+INHERITED OPTIONS
+       buttonBoxPadX   buttonBoxPadY  buttonBoxPos    padX
+       padY            separator      thickness
+
+       See the "dialogshell" widget manual entry for details on the above
+       inherited options.
+
+       height          master         modality        width
+
+       See the "shell" widget manual entry for details on the above inherited
+       options.
+
+       title
+
+       See the "Toplevel" widget manual entry for details on the above inherited
+       options.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::promptdialog command creates a prompt dialog similar to the
+       OSF/Motif standard prompt dialog composite widget.  The promptdialog is
+       derived from the dialog class and is composed of a EntryField with
+       commands to manipulate the dialog buttons.
+
+
+METHODS
+       The iwidgets::promptdialog command creates a new Tcl command whose name
+       is pathName.  This command may be used to invoke various operations on
+       the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for promptdialog widgets:
+
+ASSOCIATED METHODS
+       delete          get            icursor         index
+       insert          scan           selection       xview
+
+       See the "entry" widget manual entry for details on the above associated
+       methods.
+
+       clear
+
+       See the "entryfield" widget manual entry for details on the above
+       associated methods.
+
+INHERITED METHODS
+       add             buttonconfigure                defaulthide
+       invoke          show
+
+       See the "buttonbox" widget manual entry for details on the above
+       inherited methods.
+
+       childsite
+
+       See the "dialogshell" widget manual entry for details on the above
+       inherited methods.
+
+       activate        center         deactivate
+
+       See the "shell" widget manual entry for details on the above inherited
+       methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::promptdialog command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::promptdialog command.
+
+
+COMPONENTS
+       Name:           prompt
+       Class:          Entryfield
+
+              The prompt component is the entry field for user input in the
+              prompt dialog.  See the "entryfield" widget manual entry for
+              details on the prompt component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               option add *textBackground white
+
+               iwidgets::promptdialog .pd -modality global -title Password -labeltext Password: -show *
+               .pd hide Apply
+
+               if {[.pd activate]} {
+                   puts "Password entered: [.pd get]"
+               } else {
+                   puts "Password prompt cancelled"
+               }
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       promptdialog, dialog, dialogshell, shell, widget
+
+
+

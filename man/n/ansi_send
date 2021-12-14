@@ -1,0 +1,516 @@
+term::ansi::send(n)             Terminal control             term::ansi::send(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       term::ansi::send - Output of ANSI control sequences to terminals
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require term::ansi::send  ?0.1?
+
+       ::term::ansi::send::import ?ns? ...
+
+       ::term::ansi::send::eeol
+
+       ::term::ansi::send::esol
+
+       ::term::ansi::send::el
+
+       ::term::ansi::send::ed
+
+       ::term::ansi::send::eu
+
+       ::term::ansi::send::es
+
+       ::term::ansi::send::sd
+
+       ::term::ansi::send::su
+
+       ::term::ansi::send::ch
+
+       ::term::ansi::send::sc
+
+       ::term::ansi::send::rc
+
+       ::term::ansi::send::sca
+
+       ::term::ansi::send::rca
+
+       ::term::ansi::send::st
+
+       ::term::ansi::send::ct
+
+       ::term::ansi::send::cat
+
+       ::term::ansi::send::qdc
+
+       ::term::ansi::send::qds
+
+       ::term::ansi::send::qcp
+
+       ::term::ansi::send::rd
+
+       ::term::ansi::send::elw
+
+       ::term::ansi::send::dlw
+
+       ::term::ansi::send::eg
+
+       ::term::ansi::send::lg
+
+       ::term::ansi::send::scs0 tag
+
+       ::term::ansi::send::scs1 tag
+
+       ::term::ansi::send::sda arg...
+
+       ::term::ansi::send::sda_fgblack
+
+       ::term::ansi::send::sda_fgred
+
+       ::term::ansi::send::sda_fggreen
+
+       ::term::ansi::send::sda_fgyellow
+
+       ::term::ansi::send::sda_fgblue
+
+       ::term::ansi::send::sda_fgmagenta
+
+       ::term::ansi::send::sda_fgcyan
+
+       ::term::ansi::send::sda_fgwhite
+
+       ::term::ansi::send::sda_fgdefault
+
+       ::term::ansi::send::sda_bgblack
+
+       ::term::ansi::send::sda_bgred
+
+       ::term::ansi::send::sda_bggreen
+
+       ::term::ansi::send::sda_bgyellow
+
+       ::term::ansi::send::sda_bgblue
+
+       ::term::ansi::send::sda_bgmagenta
+
+       ::term::ansi::send::sda_bgcyan
+
+       ::term::ansi::send::sda_bgwhite
+
+       ::term::ansi::send::sda_bgdefault
+
+       ::term::ansi::send::sda_bold
+
+       ::term::ansi::send::sda_dim
+
+       ::term::ansi::send::sda_italic
+
+       ::term::ansi::send::sda_underline
+
+       ::term::ansi::send::sda_blink
+
+       ::term::ansi::send::sda_revers
+
+       ::term::ansi::send::sda_hidden
+
+       ::term::ansi::send::sda_strike
+
+       ::term::ansi::send::sda_nobold
+
+       ::term::ansi::send::sda_noitalic
+
+       ::term::ansi::send::sda_nounderline
+
+       ::term::ansi::send::sda_noblink
+
+       ::term::ansi::send::sda_norevers
+
+       ::term::ansi::send::sda_nohidden
+
+       ::term::ansi::send::sda_nostrike
+
+       ::term::ansi::send::sda_reset
+
+       ::term::ansi::send::fcp row col
+
+       ::term::ansi::send::cu ?n?
+
+       ::term::ansi::send::cd ?n?
+
+       ::term::ansi::send::cf ?n?
+
+       ::term::ansi::send::cb ?n?
+
+       ::term::ansi::send::ss ?s e?
+
+       ::term::ansi::send::skd code str
+
+       ::term::ansi::send::title str
+
+       ::term::ansi::send::gron
+
+       ::term::ansi::send::groff
+
+       ::term::ansi::send::tlc
+
+       ::term::ansi::send::trc
+
+       ::term::ansi::send::brc
+
+       ::term::ansi::send::blc
+
+       ::term::ansi::send::ltj
+
+       ::term::ansi::send::ttj
+
+       ::term::ansi::send::rtj
+
+       ::term::ansi::send::btj
+
+       ::term::ansi::send::fwj
+
+       ::term::ansi::send::hl
+
+       ::term::ansi::send::vl
+
+       ::term::ansi::send::groptim str
+
+       ::term::ansi::send::clear
+
+       ::term::ansi::send::init
+
+       ::term::ansi::send::showat row col text
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides commands to send ANSI terminal control sequences to
+       a terminal. All commands come in two variants, one for sending to any
+       channel, the other for sending to stdout.
+
+       The commands are defined using the control sequences provided by the
+       package term::ansi::code::ctrl. They have the same arguments as the
+       commands they are based on, with the exception of the variant for sending
+       to any channel.  Their first argument is always a channel handle, then
+       followed by the original arguments. Below we will list only the variant
+       sending to stdout.
+
+       ::term::ansi::send::import ?ns? ...
+              Imports the commands of this package into the namespace ns. If not
+              specified it defaults to send. Note that this default is a
+              relative namespace name, i.e. the actual namespace will be created
+              under the current namespace.
+
+              By default all commands will be imported, this can however be
+              restricted to specific commands, by listing them after the
+              namespace to import them into.
+
+       ::term::ansi::send::eeol
+              Erase (to) End Of Line.
+
+       ::term::ansi::send::esol
+              Erase (to) Start Of Line.
+
+       ::term::ansi::send::el
+              Erase (current) Line.
+
+       ::term::ansi::send::ed
+              Erase Down (to bottom).
+
+       ::term::ansi::send::eu
+              Erase Up (to top).
+
+       ::term::ansi::send::es
+              Erase Screen.
+
+       ::term::ansi::send::sd
+              Scroll Down.
+
+       ::term::ansi::send::su
+              Scroll Up.
+
+       ::term::ansi::send::ch
+              Cursor Home.
+
+       ::term::ansi::send::sc
+              Save Cursor. Note: Only one saved position can be handled.  This
+              is no unlimited stack. Saving before restoring will overwrite the
+              saved data.
+
+       ::term::ansi::send::rc
+              Restore Cursor (Unsave).
+
+       ::term::ansi::send::sca
+              Save Cursor + Attributes.
+
+       ::term::ansi::send::rca
+              Restore Cursor + Attributes.
+
+       ::term::ansi::send::st
+              Set Tab (@ current position).
+
+       ::term::ansi::send::ct
+              Clear Tab (@ current position).
+
+       ::term::ansi::send::cat
+              Clear All Tabs.
+
+       ::term::ansi::send::qdc
+              Query Device Code.
+
+       ::term::ansi::send::qds
+              Query Device Status.
+
+       ::term::ansi::send::qcp
+              Query Cursor Position.
+
+       ::term::ansi::send::rd
+              Reset Device.
+
+       ::term::ansi::send::elw
+              Enable Line Wrap.
+
+       ::term::ansi::send::dlw
+              Disable Line Wrap.
+
+       ::term::ansi::send::eg
+              Enter Graphics Mode.
+
+       ::term::ansi::send::lg
+              Exit Graphics Mode.
+
+       ::term::ansi::send::scs0 tag
+
+       ::term::ansi::send::scs1 tag
+              Select Character Set.
+
+              Choose which character set is used for default (scs0) and
+              alternate font (scs1).  This does not change whether default or
+              alternate font are used, just their definitions.
+
+              The legal tags, and their meanings, are:
+
+              A      United Kingdom Set
+
+              B      ASCII Set
+
+              0      Special Graphics
+
+              1      Alternate Character ROM Standard Character Set
+
+              2      Alternate Character ROM Special Graphics
+
+       ::term::ansi::send::sda arg...
+              Set Display Attributes. The arguments are the code sequences for
+              the possible attributes, as provided by the package
+              term::ansi::code::attr. For convenience this package also provides
+              additional commands each setting a single specific attribute.
+
+       ::term::ansi::send::sda_fgblack
+              Set text color to Black.
+
+       ::term::ansi::send::sda_fgred
+              Set text color to Red.
+
+       ::term::ansi::send::sda_fggreen
+              Set text color to Green.
+
+       ::term::ansi::send::sda_fgyellow
+              Set text color to Yellow.
+
+       ::term::ansi::send::sda_fgblue
+              Set text color to Blue.
+
+       ::term::ansi::send::sda_fgmagenta
+              Set text color to Magenta.
+
+       ::term::ansi::send::sda_fgcyan
+              Set text color to Cyan.
+
+       ::term::ansi::send::sda_fgwhite
+              Set text color to White.
+
+       ::term::ansi::send::sda_fgdefault
+              Set default text color (Black).
+
+       ::term::ansi::send::sda_bgblack
+              Set background to Black.
+
+       ::term::ansi::send::sda_bgred
+              Set background to Red.
+
+       ::term::ansi::send::sda_bggreen
+              Set background to Green.
+
+       ::term::ansi::send::sda_bgyellow
+              Set background to Yellow.
+
+       ::term::ansi::send::sda_bgblue
+              Set background to Blue.
+
+       ::term::ansi::send::sda_bgmagenta
+              Set background to Magenta.
+
+       ::term::ansi::send::sda_bgcyan
+              Set background to Cyan.
+
+       ::term::ansi::send::sda_bgwhite
+              Set background to White.
+
+       ::term::ansi::send::sda_bgdefault
+              Set default background (Transparent).
+
+       ::term::ansi::send::sda_bold
+              Bold on.
+
+       ::term::ansi::send::sda_dim
+              Dim on.
+
+       ::term::ansi::send::sda_italic
+              Italics on.
+
+       ::term::ansi::send::sda_underline
+              Underscore on.
+
+       ::term::ansi::send::sda_blink
+              Blink on.
+
+       ::term::ansi::send::sda_revers
+              Reverse on.
+
+       ::term::ansi::send::sda_hidden
+              Hidden on.
+
+       ::term::ansi::send::sda_strike
+              Strike-through on.
+
+       ::term::ansi::send::sda_nobold
+              Bold off.
+
+       ::term::ansi::send::sda_noitalic
+              Italics off.
+
+       ::term::ansi::send::sda_nounderline
+              Underscore off.
+
+       ::term::ansi::send::sda_noblink
+              Blink off.
+
+       ::term::ansi::send::sda_norevers
+              Reverse off.
+
+       ::term::ansi::send::sda_nohidden
+              Hidden off.
+
+       ::term::ansi::send::sda_nostrike
+              Strike-through off.
+
+       ::term::ansi::send::sda_reset
+              Reset all attributes to their default values.
+
+       ::term::ansi::send::fcp row col
+              Force Cursor Position (aka Go To).
+
+       ::term::ansi::send::cu ?n?
+              Cursor Up. n defaults to 1.
+
+       ::term::ansi::send::cd ?n?
+              Cursor Down. n defaults to 1.
+
+       ::term::ansi::send::cf ?n?
+              Cursor Forward. n defaults to 1.
+
+       ::term::ansi::send::cb ?n?
+              Cursor Backward. n defaults to 1.
+
+       ::term::ansi::send::ss ?s e?
+              Scroll Screen (entire display, or between rows start end,
+              inclusive).
+
+       ::term::ansi::send::skd code str
+              Set Key Definition.
+
+       ::term::ansi::send::title str
+              Set the terminal title.
+
+       ::term::ansi::send::gron
+              Switch to character/box graphics. I.e. switch to the alternate
+              font.
+
+       ::term::ansi::send::groff
+              Switch to regular characters. I.e. switch to the default font.
+
+       ::term::ansi::send::tlc
+              Character graphics, Top Left Corner.
+
+       ::term::ansi::send::trc
+              Character graphics, Top Right Corner.
+
+       ::term::ansi::send::brc
+              Character graphics, Bottom Right Corner.
+
+       ::term::ansi::send::blc
+              Character graphics, Bottom Left Corner.
+
+       ::term::ansi::send::ltj
+              Character graphics, Left T Junction.
+
+       ::term::ansi::send::ttj
+              Character graphics, Top T Junction.
+
+       ::term::ansi::send::rtj
+              Character graphics, Right T Junction.
+
+       ::term::ansi::send::btj
+              Character graphics, Bottom T Junction.
+
+       ::term::ansi::send::fwj
+              Character graphics, Four-Way Junction.
+
+       ::term::ansi::send::hl
+              Character graphics, Horizontal Line.
+
+       ::term::ansi::send::vl
+              Character graphics, Vertical Line.
+
+       ::term::ansi::send::groptim str
+              Optimize character graphics. The generator commands above create
+              way to many superfluous commands shifting into and out of the
+              graphics mode. This command removes all shifts which are not
+              needed. To this end it also knows which characters will look the
+              same in both modes, to handle strings created outside of this
+              package.
+
+       ::term::ansi::send::clear
+              Clear screen. In essence a sequence of CursorHome + EraseDown.
+
+       ::term::ansi::send::init
+              Initialize default and alternate fonts to ASCII and box graphics.
+
+       ::term::ansi::send::showat row col text
+              Show the block of text at the specified location.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category term of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       character output, control, terminal
+
+CATEGORY
+       Terminal control
+
+COPYRIGHT
+       Copyright (c) 2006 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

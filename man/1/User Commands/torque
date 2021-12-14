@@ -1,0 +1,843 @@
+TORQUE(1)                    General Commands Manual                   TORQUE(1)
+
+NAME
+     torque – Launches one or more child processes, each of which performs a
+     series of bandwidth intensive operations, and after completion torque
+     reports the bandwidth actually achieved by each operation during a period
+     when all operation streams were executing simultaneously.
+
+SYNOPSIS
+     torque [Global Parameters] [[Local Parameters] Action1]
+            [[Local Parameters] Action2] [[Local Parameters] Action3] [...]
+
+            Global Parameters (affect all actions performed):
+            [-aliasFile f] [-bo] [-c configuration file] [-example]
+            [-f test file] [-fast] [-freeSharedMemory] [-g] [-h] [-ha] [-help]
+            [-hg] [-hl] [-nh] [-printAlias] [-quit] [-seed n] [-slow]
+            [-smkey key] [-sp] [-v] [-version] [-vl n]
+
+            Local Parameters (only affect immediately following action):
+            [-affinityNumber n] [-affinityNumberDiff n] [-affinityParent n]
+            [-B bytes] [-bp p] [-bpkey p] [-bp1 p] [-bp2 p] [-bt p] [-btr]
+            [-cfiles] [-checkpoint] [-dir path] [-display display] [-execChild]
+            [-extraReadB n] [-fbc] [-GB GBytes] [-i iterations] [-IH pixels]
+            [-IW pixels] [-KB KBytes] [-linesize bytes] [-m] [-MB MBytes]
+            [-mfileKB n] [-mfileXfer transfers] [-n transfers]
+            [-noResetParentAffinity] [-noVideoInitLoops] [-offsetB n]
+            [-p process count] [-percR p] [-s offset] [-sa interval]
+            [-sample interval] [-sleepEnd n] [-stride bytes] [-T usec] [-touch]
+            [-touch4K] [-vectorB n] [-wire]
+
+            Actions (Specific action to perform):
+            [-aio n] [-bcopy] [-bzero] [-child n] [-files n] [-load] [-ls]
+            [-memStreams label lookahead size bw startTime runTime mfile] [-r]
+            [-rand] [-rmw] [-rw] [-Sadd] [-scan fn] [-scanfile fn] [-Scopy]
+            [-spinWait] [-Sscale] [-store]
+            [-streams label lookahead size bw startTime runTime mfile] [-Striad]
+            [-V n] [-w]
+
+DESCRIPTION
+     torque exercises a computer system in ways that mimic normal operation,
+     while retaining as much simplicity as possible to aid in debugging.  This
+     is achieved by launching one or more child processes performing a series of
+     operations (usually high bandwidth) and after completion reporting the
+     bandwidth achieved by each operation during a period where all operation
+     streams were executing simultaneously in their steady-state behavior.  Note
+     that torque only measures its own processes and does not measure bandwidth
+     of any other executing process.
+
+     This tool is currently in use for measuring system bandwidth, testing for
+     interactions between different sub-systems, reproducing problems, power
+     analysis, thermal analysis, signal sensitivity analysis, and more.  torque
+     contains a number of simple tests that are used together in any combination
+     to exercise memory, video, and/or any component that supports a file
+     system.  Each separate test is run in its own process, and each action
+     listed above specifies one or more tests to execute simultaneously.  Common
+     processor memory access patterns such as bcopy, bzero, load, and store are
+     supported as well as different ways to access the file system.  All test
+     runtime parameters can be entered using a configuration file or as a
+     command line parameter.
+
+     When executed, torque reports the most common system characteristics such
+     as processor speed and memory size.  In addition many more configuration
+     details are left behind in the file sysctl.current.  During an execution,
+     the first two things displayed are always the torque version number and the
+     command line used for execution to make it as easy as possible to rerun the
+     test and reproduce results at a later time.
+
+     Since torque uses a large number of operational parameters, the command
+     line parameters are broken into three groups:  global test parameters,
+     local test parameters, and actions/tests.  All tests have default
+     configurations and can be executed with just an action parameter.  For
+     example, " torque -V 7", the action parameter is "-V 7" (run video test 7)
+     requesting execution of a video system memory read test.
+
+     If a user wishes to change the tests for things like working-set size,
+     transaction size, number of transactions, duration, etc.; all local test
+     parameters on the command line before the action apply to the action.  For
+     the video read test a common sequence is
+
+     torque -n 256 -i 1 -V 6
+
+     to make sure there are exactly 256 transactions (-n 256) issued once.  The
+     local parameters "-n 256 -i 1" only apply to the video read test and not to
+     any other test.  If the user wishes to execute a stream of memory reads
+     while performing the video read test an example command line is:
+
+     torque -p 1 -n 8 -i 20 -MB 4 -load -n 256 -V 6
+
+     In this case the load test has a working-set size of 4 x 8 = 32 MBytes (-n
+     8 -MB 4) that is executed twenty times (-i 20).  The video test still uses
+     the same parameters mentioned above but is executed ten times (default)
+     since "-i 1" was not entered on the command line.  Note that the "-i 20"
+     does not apply to the video test in this example.
+
+     Global parameters can be entered anywhere on the command line and control
+     functions that affect all of the tests.  For example
+
+     torque -n 256 -i 1 -V 6 -nh
+
+     removes the header output for each test, reducing the amount of text added
+     to the screen after execution.
+
+OPTIONS (Actions)
+     -aio <n>    n = number of outstanding transactions
+                 Performs reads and writes of transferSize (e.g. -B, -KB, -MB,
+                 -GB) using asynchronous I/O.  The argument -percR sets the
+                 percentage of reads and writes.  One process is launched that
+                 keeps the specified number of Asynchronous I/Os outstanding.
+                 Using Asynchronous I/O allows the file system greater
+                 flexibility in ordering transactions.  All test transactions
+                 are sequential, unless vector stride (-vectorKB) is set to
+                 space the transactions linearly across a single file.  Setting
+                 -percR 100 makes all outstanding transactions reads and -percR
+                 0 makes all outstanding transactions writes.  Any other
+                 settings causes each transaction to randomly be a read or
+                 write.  Note that the system has a maximum number of
+                 outstanding AIOs for every process which for OS 10.4.3 is 16.
+                 torque makes sure a single process does not go over this limit,
+                 but it is up to the user to make sure multiple processes do not
+                 exceed the system's maximum outstanding AIO limit.
+
+     -bcopy      Perform bcopy test.  Uses system bcopy function.
+
+     -bzero      Perform bzero test.  Uses system bzero function
+
+     -files <n>  n = number of files to test
+
+                 Random access read/write test to large number of files.  To
+                 adjust read vs. write and max file size set -percR and -mfileMB
+                 repectively.  The files test represents the use of a web
+                 server.  There are thousands of files being read and written in
+                 random increments as the web site is being accessed.  The
+                 accesses are of fixed size (transfer size) but random file
+                 choice and file location.
+
+     -load       Perform loads as fast as possible.  The default is one integer
+                 load for every sequential cache line.
+
+     -ls         Performs bursts of loads and stores as fast as possible.  The
+                 burst size is the transactionSize specified.
+
+     -memStreams <label> <lookahead> <size> <bw> <startTime> <runTime> <mfile>
+                 Same as -streams, but works with system memory instead of
+                 files.  At this time only the read stream has been tested.
+
+     -r          Perform Sequential Read Test
+
+     -rand       Randomly read transaction size chunks from a file.  Be sure the
+                 file exists before executing and to set a max file size.  The
+                 percentage of reads is set using the -percR parameter.
+
+     -rmw        Performs test to read, modify, write back to a file using a
+                 Sequential Read Transfer Size, then Write Transfer to modify
+                 read data.
+
+     -rw         Perform read of the specified transaction size, then write to
+                 the next sequential file location.  The following read/write is
+                 to the next two sequential file locations.
+
+     -Sadd       Add test from stream benchmark.  Adds two matrix of doubles and
+                 writes to a third matrix (c[j] = a[j]+b[j]).
+
+     -scan <fn>  fn = filename; includes /dev/rdisk0>
+
+                 It is preferred to use this command when scanning using the raw
+                 file I/O interface (e.g. /dev/rdisk0).  This action can also
+                 scan through the standard file interface if the file location
+                 supplied is not in /dev.  This action is designed to use the
+                 raw file I/O interface to perform transactions with equal
+                 spacing across an entire disk drive/file.  When testing across
+                 an entire hard drive, this test provides bandwidth information
+                 for the different tracks on the physical disk by using the
+                 "sample 0" modifier.  This is useful since accesses to inner
+                 hard drive tracks tend to have one half the bandwidth of
+                 accesses to the outer tracks.  Note that this command
+                 automatically wires down the memory buffers and the wiring
+                 requires root access (see -wire).  The easiest way to provide
+                 root access is by using the sudo command.
+
+     -scanfile <fn>
+                 fn = filename; includes /dev/rdisk0>
+
+                 Scan using standard file I/O interface to perform the same
+                 function as -scanDisk, but using the standard interface.  The
+                 only real difference is the memory is not wired by default when
+                 using the -scanfile command.  This command behaves identically
+                 to -scan if the -wire local parameter is set.
+
+     -Scopy      Copy test from stream benchmark (www.streambench.org).  Copies
+                 double values from one matrix to another (c[j] = a[j]).
+
+     -spinWait   This test is a random number generation routine.  No bandwidth
+                 is generated or measured, but the processor is kept busy.  This
+                 can be very useful when using affinity as it keeps a processor
+                 busy.
+
+     -Sscale     Scale test from stream benchmark.  Scales doubles from one
+                 matrix to another (b[j] = scalar*c[j]).
+
+     -store      Perform stores as fast as possible.  The default is one integer
+                 store for every sequential cache line.
+
+     -streams <label> <lookahead> <size> <bw> <startTime> <runTime> <mfile>
+                 Labels:  r,w,rw,wr,rwr,rrw
+                     r = read stream
+                     w = write stream
+                    rw = write back the stream being read (modify stream)
+                    wr = read back the stream being written (from camera)
+                   rwr = read, change and write back, then read back
+                   rrw = combine to reads and write back (two cameras)
+                 Lookahead:  # of Transfers for 1st read stream to prefetch
+                 Size:  Size of each transfer (KBytes)
+                 BW:  Bandwidth of each process within the stream (MBytes/sec)
+                 StartTime:  Delay in seconds before starting stream
+                 RunTime:  Length in seconds of stream duration
+                 mfile:  reset stream to start of file when reached (Mbytes)
+
+                 Instead of trying to discover the maximum bandwidth capability
+                 of a path to memory or I/O, the stream/HDTV test attempts to
+                 hold one or more streams to a particular bandwidth.  In
+                 addition, streams can be dependent upon each other.  The goal
+                 is to simulate how video streams are used.  For example, the
+                 rrw option represents a video stream composed of combining two
+                 video feeds.  This means that the two read streams are consumed
+                 to produce the one write stream.  The option rwr consists of a
+                 read stream that is then written back with a second read stream
+                 reading the written results.  This may happen on a video feed
+                 that is being saved and watched at the same time.  All
+                 combinations of rw,wr,rwr, and rrw include dependencies.  If
+                 the goal is to create streams without dependencies, then just
+                 specify multiple streams using r and w.  If it is not possible
+                 to meet the specified bandwidth, then torque reports the
+                 achieved bandwidth.
+
+     -Striad     Triad test from stream benchmark.  Scales a matrix of doubles,
+                 adds from another matrix and then writes to a third matrix.
+                 (a[j] = b[j]+scalar*c[j]).
+
+     -V <n>      n = video test number
+
+                 n=1; Read Pixels (W):  proc. reads VRAM, writes system memory
+                 n=2; sync image copy (W):  Video DMA to system memory
+                 n=3; async image copy (W):  Video DMA to system memory
+                 n=4; test 3 with glFlush() (W):  Video DMA to sys. memory
+                 n=5; sync PBO copy (W):  Video PBO DMA to system memory
+                 n=6; async PBO copy (W):  Video PBO DMA to system memory;
+                 n=7; async image copy (R):  DMA system memory to VRAM
+                 n=8; sync image copy (R):  DMA to VRAM (Added glFlush())
+                 n=9; sync image copy (R):  DMA to VRAM (Added glFinish())
+                 n=10; async image copy (R):  DMA system memory to VRAM
+                 n=11; sync image copy (R):  DMA to VRAM (Added glFlush())
+                 n=12; sync image copy (R):  DMA to VRAM (Added glFinish())
+
+                 The first video test consists of the processor reading the
+                 VRAM, the next five video tests involve copying data from the
+                 VRAM to system memory, and the sixth through ninth tests copy
+                 data from system memory to VRAM.  Tests 10 through 12 are
+                 identical to tests 6 through 9, but the texture is rotated
+                 between three different textures every transaction.  This was
+                 necessary since the newest video cards are only performing the
+                 first transfer on tests 6 through 9 and reporting unbelievable
+                 bandwidths.  The hope is that the card is now smart enough to
+                 buffer the texture, but this has not yet been proven.  If tests
+                 6 through 9 report unbelievable bandwidths, use the results
+                 from tests 10 through 12 instead.  The default transfer size is
+                 1.32 MBytes, but this can be changed using -IH and -IW.
+
+     -w          Perform Sequential Write test.
+
+OPTIONS (Global Parameters)
+     -aliasFile filename
+                 Provides file location for torque alias definitions.
+
+     -bo         only print bandwidth results.
+
+     -c <configuration filename>
+                 Choose the configuration file for torque ; Torque.config is the
+                 default.  A configuration file may contain any option or
+                 argument that may be entered on the command line of torque This
+                 is very useful for commands that are required for every
+                 execution of torque such as -f.  Note that command line
+                 arguments are consumed before configuration file commands.
+
+     -child n    Grabs shared memory and executes test for child n.  In Leopard,
+                 the video tests can no longer be executed as a forked process.
+                 Instead a fork-exec is used with command line parameters
+                 telling torque which child needs to be executed as a separate
+                 program.  When this happens, torque grabs the shared memory
+                 already set up for the child process and executes the test.
+
+     -example    Print Testing Example.
+                 The usage/help output is long, so there are ways to display
+                 only a portion of the help file.  The -h option displays the
+                 shortest output and the -help option displays everything.
+
+     -f <test file>
+                 Place new test file on file list.  As many as 128 tests may be
+                 included in this list.  It is usually easiest to place the
+                 tests in the configuration file and use the -s option to make
+                 sure each test uses the appropriate file.  A file on the
+                 command line is placed on the file list before any files from
+                 the configuration file.  Each test stops upon its own
+                 completion.  With more than one test, all tests might not be
+                 running during the measurment interval.  If torque is
+                 interrupted, this can be used to removed shared memory.
+                 Running torque a second time without interruption should also
+                 work.
+
+     -g          Delay start of torque using getchar.  No testing starts until a
+                 key is pressed.  This is useful for finding the PID and
+                 attaching shark to the process before testing begins.  See
+                 shark documentation for details.  A reference to the shark
+                 documentation can be found in the SEE ALSO section.
+
+     -h          Print torque Global Usage/Help
+
+     -ha         Print torque Tests/Actions Usage/Help
+
+     -help       Print All torque Usage and Example
+
+     -hg         Print torque Global Usage/Help
+
+     -hl         Print torque Local Usage/Help
+
+     -nh         Don't print header.  Along with the Bandwidth numbers, certain
+                 header information is included to help describe the test
+                 choices under execution and the system under test.  This option
+                 reduces the output to just the Bandwidth results.
+
+     -printAlias
+                 Print current set of torque aliases.
+
+     -quit       Quits torque as soon as the command line parameters and
+                 configuration file are parsed.  Sometimes it is useful to see
+                 how the parameters are parsed before testing begins.  This
+                 option allows the checking of parameters without having to wait
+                 for results.
+
+     -seed <n>   Provide seed for all random number generation.  This provides
+                 the seed for the first random number generated.  All numbers
+                 after that depend on the first random number generated
+                 otherwise the current time is used.  Providing a random number
+                 guarrentees that two identical executions are identical even
+                 when random numbers are used.
+
+     -slow       Continue All testing until slowest test completes.  When
+                 executing two tests that interact during the testing phase, if
+                 one test finishes before the other, there is a period where
+                 only one test is executing.  This makes the test that ran
+                 without overlap produce a higher bandwidth number.  The -slow
+                 option keeps all tests running until the slowest test
+                 completes.  Note that the testing takes at least twice as long
+                 in this mode.  This option is on by default whenever more than
+                 one test is run simultaneously.
+
+     -smkey <key>
+                 Provides new key for shmget (default:  0xDECA).  Does not
+                 currently work with -childExec.
+
+     -sp         Run torque as a single process.  Normally torque forks off one
+                 process for every test and leave behind the main process to
+                 gather results.  This option is useful for a single test where
+                 the main process should perform the testing.  For example it is
+                 much easier to use this option for debugging.
+
+     -v          Use couts in code (gv->verbose).  A large amount of information
+                 about the program and how the tests are progressing is sent to
+                 stdout.  Unluckily cout and printf are very system invasive and
+                 using the -v option may skew test results.
+
+     -version    Prints installed torque version information.
+
+     -vl <n>     Set verbose level greater than one.  This option provides more
+                 feedback than just using -v.  Currently torque supports three
+                 levels of verbosity.  Using -vl 1 is equivalent to -v while
+                 using -vl 2 or -vl 3 provides so much detail that in some cases
+                 stdout shows information about every transaction.  This level
+                 of verbosity tends to reduce the effectiveness of tests, but
+                 provides for detailed debugging.  This should never be used by
+                 a typical user.
+
+OPTIONS (Local/Modifying Parameters)
+     -affinityNumber <n>
+                 Provides a test with an affinity number used for process
+                 scheduling.  All processes in a group of tests will have the
+                 same affinity number.  Leopard Only.
+
+     -affinityNumberDiff <n>
+                 Provides a test with an affinity number used for process
+                 scheduling.  All processes in a group of tests will have
+                 different affinity numbers.  Leopard Only.
+
+     -affinityParent <n>
+                 Provides the parent process with the affinity number of the
+                 child before launch.  This is used for process scheduling.
+                 Leopard Only.
+
+     -B <Bytes>  Set test transfer size; Bytes to transfer.
+
+     -bp <p>     Memory Test Pattern Initialization.  Sets 64 bit init pattern 1
+                 and 2 for Memory Tests.  For example "-bp 0x5555555555555555".
+
+     -bpKey <p>  Sets whether the Memory Test Pattern Initialization starts each
+                 buffer with a unique key that can be detected by a logic
+                 analyzer.
+                   0 = Do not add a key to memory test buffer.
+                   1 = add LA Key to start of Memory Buffer Init (default).
+
+     -bp1 <p>    Memory Test Pattern Initialization.  Sets 64 bit init pattern 1
+                 for Memory Tests.  For example "-bp 0x5555555555555555".
+
+     -bp2 <p>    Memory Test Pattern Initialization.  Sets 64 bit init pattern 2
+                 for Memory Tests.  For example "-bp 0x5555555555555555".
+
+     -bt <p>     Memory Test Pattern Initialization.  Sets usage of 64 bit init
+                 patterns 1 and 2 for Memory Tests.
+                   p = percentage of bit toggling on a 64 bit bus0;
+                      0   = pattern 1 is written every bus cycle
+                            (1,1,1,1,...).
+                      100 = alternate between pattern 1 and 2
+                            (1,2,1,2,1,2,...).
+                      50  = alternate between pairs of pattern 1 and 2
+                            (1,1,2,2,1,1,...).
+                      75  = repeating pattern using pattern 1 and 2
+                            (1,2,1,2,2,1,2,1,1,2,1,2,2,1,2,1,1,...).
+                      101 = Pattern visually recognizable on a logic analyzer0;
+                      102 = Random Pattern0;
+
+     -btr        Memory Test Pattern Initialization with random numbers.
+
+     -cfiles     Make sure files exist for files test.  The files test requires
+                 a specific file structure.  If the tester has any doubt that
+                 the correct file structure exists, this command generates the
+                 required file structure.  In some cases perfomance can be
+                 slightly different after creating a file structure so it is
+                 important to know the effects of running this command before
+                 the test as a separate execution and on the same command line
+                 as the test.  The actual file creation is performed before the
+                 test and is not timed.
+
+     -checkpoint
+                 Used for measuring times for different portions of torque
+                 execution.  Currently only works for memory tests.
+
+     -dir <path>
+                 Specifies directory used for files test.  If no directory is
+                 specified, the default is to use filestest in the launching
+                 directory.
+
+     -display    Picks display used by video test.  Warning:  openGL cannot see
+                 a display unless a monitor is attached.
+
+     -execChild  This is a mechanism to perform an execp() if a forked test uses
+                 mach calls.  The video tests require this for leopard if they
+                 are not run standalone.  If the video tests are run standalone,
+                 then -sp should be used instead.
+
+     -extraReadB <Bytes>
+                 Add an extra read and lseek back for every transfer (Read test
+                 Only).
+
+     -extraReadKB <KBytes>
+                 Add an extra read and lseek back for every transfer (Read test
+                 Only).
+
+     -extraReadMB <MBytes>
+                 Add an extra read and lseek back for every transfer (Read test
+                 Only).
+                 This parameter causes an extra read to be performed after each
+                 test transfer of the specified size.  After the extra read is
+                 performed, a lseek is also performed to reset the file pointer
+                 to where it was before the read
+
+     -fbc        Turn on unix file buffer cache.
+                 By default the file buffer cache (fbc) is disabled by the test.
+                 Using this parameter re-enables the file buffer cache.  Note
+                 turning off the file buffer cache for a file prevents new data
+                 from entering the fbc.  If the file already has data in the
+                 fbc, the data remains until pushed out.  This may cause
+                 problems if trying to execute with and without the file buffer
+                 cache enabled.  The results for a torque run may be dependent
+                 upon a previous execution.  When enabling the fbc, make sure to
+                 execute twice, once to warm up the fbc and once to get results.
+
+     -GB <GBytes>
+                 Set test transfer size in GBytes.
+
+     -i <number of iterations>
+                 A test may be run more than one time using this command.  The
+                 bandwidth reported is averaged over all iterations.
+
+     -IH <h>     Image height for Video Tests in pixels.
+
+     -IW <w>     Image width for Video Tests in pixels.
+                 Video Image Size = h x w x 4 bytes.
+                 The Video tests work with one Image at a time.  The image size
+                 defaults to 720 x 480 = 1.32 Mbytes, but can be changed to
+                 provide different transfer sizes.
+
+     -KB <KBytes>
+                 Set test transfer size in KBytes.
+
+     -linesize <bytes of cache line>
+                 System cache line size for -load and -store for integer access
+                 spacing.  A system's cache line size is determined by torque
+                 during initializaiton and the line size is used for the default
+                 stride of the -load and -store tests.  The -linesize option
+                 overrides the cache line size determined by the system and is
+                 used as a new default by torque.  Since -stride overides the
+                 cache line size for -load and -store, changing the line size
+                 has no effect if -stride is specified for the test.  torque
+                 automatically sets the cache line size for the processor under
+                 test, but this parameter can override torque and replace the
+                 value with whatever the user desires.  This is really the same
+                 as setting -stride.
+
+     -m          Cause valloced memory not to be on page boundaries.  Vallocs
+                 are carefully aligned on 4 KByte page boundaries.  This option
+                 offsets all of the file test vallocs (not bcopy, bzero, store,
+                 and load) by one byte to make sure nothing is properly aligned.
+
+     -MB <MBytes>
+                 Set test transfer size in MBytes.
+
+     -mfile4KB <4 KBytes Chunks>
+                 Setting Max File Size in number of 4K blocks.
+
+     -mfileGB <GBytes>
+                 Setting Max File Size in GBytes.
+
+     -mfileKB <KBytes>
+                 Setting Max File Size in KBytes.
+
+     -mfileMB <MBytes>
+                 Setting Max File Size in MBytes.
+
+     -mfileXfer <transfers>
+                 Setting Max File Size in number of transfer size chunks.
+                 Some tests require a maximum file size.  In addition, if a file
+                 is smaller than the desired test requirement, this setting can
+                 cause the test to wrap and reuse the file until the desired
+                 number of transfers have been completed.  Be careful with this
+                 command as processor caches, the file buffer cache, and other
+                 artifacts may alter the performance results when the file size
+                 is too small.  One way to be certain is to use 4 GByte file
+                 sizes.  If this is not set, torque does not check that the file
+                 size is large enough to perform the test.  In the case of
+                 writes, accessing an offset greater than the file size just
+                 increases the file size.  In the case of reads an error is
+                 returned and displayed to stdout for every transaction when the
+                 offset exceeds the file size.
+
+     -n <file transfers>
+                 Specifies number of data transfers of transferSize.
+
+     -noResetParentAffinity
+                 When using affinity, do not reset the parent's affinity number.
+                 All child processes still have their affinity number changed.
+                 Leopard Only.
+
+     -noVideoInitLoops
+                 Disables video test warm-up.  This allows using -sample to
+                 measure all video transactions as the warmup is not measured.
+
+     -offsetB <Bytes>
+                 Begin test transfers at offset n Bytes.
+
+     -offsetKB <KBytes>
+                 Begin test transfers at offset n KBytes.
+
+     -offsetMB <MBytes>
+                 Begin test transfers at offset n MBytes.
+                 Used for starting transfers at a place in a file or buffer
+                 other than the start.  The offset given is in bytes, kilobytes,
+                 or megabytes; and if maxFileSize is set, the transfers wrap to
+                 the beginning of the file, not the offset.
+
+     -p <process count>
+                 This parameter controls the number duplicate tests running in
+                 the system simultaneously using separate processes for a single
+                 action.  Each test behaves identically, but usually accesses
+                 different files/memory.  For example -p 2 may be used in a two
+                 hard drive system to test each hard drive simultaneously.  This
+                 gives the user a chance to see if each hard drive can affect
+                 the other using the specified test sequence.  For example two
+                 Hard Drives on one ATA cable may both compete for bandwidth
+                 reducing each hard drive's individual bandwidth component.  The
+                 two files used are specified with multiple -f parameters or in
+                 the configuration file.  This is a short cut method for
+                 duplicate tests.  The long-hand method would be to write the
+                 test parameters twice on the same command line.
+
+     -percR <p>  For -rand, percent of reads executed (default 100) and any
+                 other test that uses a random percentage of reads verses
+                 writes.  The -rand test performs a series of random reads and
+                 writes of the requested transfer size.  The -percR parameter
+                 specifies the percentage of reads and writes from/to the file.
+                 For example -percR 100 would cause the test to only perform
+                 reads and no writes.  Note that the -rand test still chooses
+                 reads vs. writes randomly, it just makes sure that the reads
+                 happen a given percentage of the time.
+
+     -s <start with offset into file list>
+                 Each file added by the -f parameter is numbered starting from
+                 zero.  If -s is not specified, the third test uses the third
+                 file specified.  If -s is specified, then the test uses the
+                 specified file instead.  If the test uses more than one file
+                 (e.g. -p), then the second file used for the test is s+1, the
+                 third is s+2, etc.
+
+     -sa <interval>
+                 Same as -sample, but only outputs the bandwidth portion of the
+                 sampled data.  Showing only the bandwidth of sampled
+                 transactions is very useful if the display is not wide enough
+                 to show all results.  Since all sampled results are displayed
+                 as one table, using -sa applies to all sampled results even if
+                 -sample ocurrs again on the same command line.
+
+     -sample <interval>
+                 Interval = how many transfers between samples.
+                 Samples I/O requests for duration and bandwidth.
+                 torque automatically reports an aggregate bandwidth for each
+                 test stream.  In addition each stream may take up to 1024
+                 transaction samples allowing periodic capture of bandwidth
+                 between intervals.  Since the time at the beginning and end of
+                 the sample is also given, bandwidth during intervals can be
+                 calculated, but torque currently only calculates the bandwidth
+                 during each sample.  This is especially important if a file is
+                 not sequentially located on the hard drive as the outer edge of
+                 the hard disk can be about twice as fast as the inner edge
+                 (-scan).  It is also a good way to detect bursty behavior due
+                 to a bad hard drive, choppy file placement, or other system
+                 effects.  A sample is time stamped after a specified number of
+                 transactions.  Please make sure and check the number of
+                 transfers requested to make sure to keep the number of samples
+                 less than 1024 samples as that is the maximum that can be
+                 collected.  For a test performing 2048 transfers, the interval
+                 must be set to greater than one or only the first 1/2 of the
+                 test is sampled.  Sometimes it is useful to set the interval
+                 higher say 255 (2048 transfers implies 8 samples) to reduce the
+                 amount of data reported.  Note that torque automatically stops
+                 taking samples after 1024, so any extra are lost.  Remember
+                 these are samples; therefore the argument "-sample 3" measures
+                 every fourth transaction.  Warning, if the transactions being
+                 measured are small and a lot of samples are taken, sampling can
+                 reduce the accuracy of the average bandwidth measurements
+                 performed by torque
+
+     -stride <stride>
+                 Test option to space load/store tests by stride.  For the load
+                 and store tests an integer is loaded or stored.  The default is
+                 to stride by cache line size since that equates to every load
+                 or store accessing system memory, but any stride can be
+                 specified.  If a stride is specified smaller than the size of
+                 an integer, then torque may not perform as expected due to
+                 processor and cache line edge constraints.  Note the default
+                 stride is automatically set to a system's cache line size;
+                 therefore the default is dependent upon what system the test is
+                 executed on.
+
+     -T usec     Slows down (throttles) a test to consume less than the maximum
+                 bandwidth possible.  This is performed by adding the specified
+                 delay in microseconds to every transfer.  If the delay is too
+                 small, then it may not have an effect for things like I/O where
+                 there is substantial overhead that is not in the process
+                 requesting the I/O.  If the delay is too big, then the
+                 bandwidth consumed may become too small to be interesting.  The
+                 best setting is usually determined by trial and error since it
+                 is very dependant upon the hardware being used and the desires
+                 of the testor.
+
+     -touch      Access one byte in the buffer holding the read data for each
+                 read transfer.  This can be important if the tester is worried
+                 that the test commands were optimized away due to doing nothing
+                 with the data.  As of Mac OS 10.4.8 this has not yet become an
+                 issue.
+
+     -touch4K    Access one byte for each 4K page in a read transfer.  This
+                 parameter only affects read transfers.  When set, the processor
+                 reads from the fetched read data (after it is placed in memory)
+                 one word for every transfer (-touch), or one word from every 4
+                 Kbyte block (-touch4K) in a transfer.  This makes sure the data
+                 fetched by a file read is used by the processor to detect any
+                 optimizations that perform differently when a file I/O fetch is
+                 not used by the processor.  It also causes at least one cache
+                 line of each file transfer to be in a processor's cache.
+
+     -vectorB <stride>
+                 Test option to space file operations by stride in Bytes.
+
+     -vectorKB <stride>
+                 Test option to space file operations by stride in KBytes.
+
+     -vectorMB <stride>
+                 Test option to space file operations by stride in MBytes.
+                 Full spacing is transferSize + stride.
+                 When used, the test performs a transfer then performs a lseek
+                 of "stride" before performing the next transfer.
+
+     -wire       Wire malloc'ed memory for test.  The user must have root access
+                 to wire memory.  This is performed automatically for ScanDisk
+                 Test.  This was originally meant to be an option of the
+                 ScanDisk Test, but was later decided to be mandatory.  It is
+                 still an option for all other tests except bcopy, bzero, load,
+                 store.
+
+USAGE
+     This section details how to use torque and understand the returned results.
+     The goal of torque is to exercise desired portions of the computer system
+     exactly as specified and report on the results.  To provide maximum
+     flexibility every operation is detailed through user specified parameters.
+     To prevent very long command lines, every parameter has a default that may
+     be overridden by the user.  The user parameters can be provided through the
+     command line or through a specification file.  The default specification
+     file provided with torque is called Torque.config and is read in
+     automatically if it exists unless overridden with the -c option.
+
+     Below is a simple two processor load test, that can be run using either of
+     the two equivalent command lines shown below.  The test output follows the
+     two command lines.  Note that this test was executed on a single processor
+     system and the total bandwidth reports the same results (with a small
+     deviation) when performing a one or two process test.  With one processor a
+     two process test has each test running individually and then context
+     switching with the other test.  Therefore you get the same bandwidth, but
+     it takes twice as long to complete.
+
+     torque -p 2 -n 8 -i 10 -MB 4 -load
+
+          or
+
+     torque -p 1 -n 8 -i 10 -MB 4 -load -p 1 -n 8 -i 10 -MB 4 -load
+
+       torque, version:  2.0(1014)-17
+       torque -p 2 -n 8 -i 10 -MB 4 -load
+       Wed Aug  2 11:02:52 PDT 2006
+
+       hw.machine:  Power Macintosh
+       hw.model:  PowerBook3,4
+       Ethernet Address:   00:03:93:c6:73:12
+
+        1000 hw.cpufrequency (MHz)
+         133 hw.busfrequency (MHz)
+          32 hw.cachelinesize (Bytes)
+          32 hw.l1icachesize (KByte)
+          32 hw.l1dcachesize (KByte)
+         256 hw.l2cachesize (KByte)
+        1024 hw.memsize (MByte)
+           1 hw.physicalcpu
+           1 hw.logicalcpu
+          18 hw.cputype
+          11 hw.cpusubtype
+
+       torque (time in ms)
+       We waited for 2 processes
+       transaction size = 4194304  (4096K),  (4M)
+       configuration file = Torque.config
+       number of transactions = 8
+       Largest File Size = 40 MBytes
+       Bytes Transferred = 320 MBytes/process
+       Number of processes = 2
+       Number of iterations = 10
+       -p 2 -n 8 -i 10 -MB 4 -load
+
+     proc,Start,Finish,Diff,Xfers,BW(MB/s),TS(KB),IO/sec,Test,File,PID
+      0,   1372,  2275, 902,   80,   354.8,  4096,    88, Load, NA, 707
+      1,   1436,  2326, 890,   80,   359.6,  4096,    89, Load, NA, 708
+
+     BW, , , , , , , , , , , Load , , , , , , , , , , , , , , , Total
+     BW:, , , , , , , , , , , 714, , , , , , , , , , , , , , , 714
+
+          714:  Total Bandwidth Consumed (MBytes/sec)
+
+     There are three stages to torque execution:  setup, testing, and reporting.
+     In the setup stage the system configuration is reported, the test processes
+     are created, memory both shared and private is allocated, and then
+     everything waits behind a barrier semaphore until all processes are ready
+     to begin testing.  This ensures that all tests start at the same time.  The
+     information printed during setup consists of the torque version number, the
+     command line used to execute torque , the date, the machine name, machine
+     model, ethernet address, and relevant machine statistics.  The ethernet
+     address is provided as a way to verify which individual machine the test
+     was executed on.
+
+     During testing there is no information printed to the terminal as a
+     printf/cout is very system intensive and may change the measured results.
+     This means that during testing there is no feedback to let the user know
+     that everything is progressing properly.  When planning to perform long
+     tests, run shorter versions first to make sure the test is progressing
+     properly before starting a long test.  Measuring Multiple Simultaneous
+     Tests on page 28 of the torque documentation (a pointer to the
+     documentation is located in the SEE ALSO section below) details how testing
+     is performed to make sure that all tests are executing simultaneously
+     during the measurement interval.  Of course if a user tries to run more
+     tests than the machine has resources to support, such as two memory tests
+     on a single processor as performed above, torque does nothing to prevent
+     it.
+
+     The last step of execution is to report the results of testing.  This is
+     done in three sections:  individual test information, table of bandwidths,
+     and summary/totals.  Each group of tests, one group for every action,
+     details statistics on items like transfer size, number of transactions,
+     etc.  Appended at the end is the portion of the command line that was
+     relevant to the group of tests described.
+
+     The table of bandwidths has a number of columns:
+
+       proc:  Process/test number
+       Start:  Start time of measurement in milliseconds
+       Finish:  Finish time of measurement in milliseconds
+       Diff:  Measurement duration in milliseconds (Finish - Start)
+       Xfers:  Number of transfers during measurement interval
+       BW(MB/s):  Measured bandwidth in MBytes/second
+       TS(KB):  Transfer size of each transfer
+       IO/sec:  IOmeter like reporting (best to ignore).
+       Test:  Test Type.  This may also include a number such as Display number
+     for the video tests or file accessed for the hard drive tests
+       File:  File name if applicable
+       PID:  Process Id for the testing process
+
+     Though this is a great way to catalog the results for one execution, it can
+     be very hard to combine into a table of multiple executions.  There are
+     also caveats such as a bcopy performing 1 MByte/sec of bcopy, but actually
+     resulting in 2 MBytes/second of system bandwidth.  A comma separated list
+     of individual system bandwidths for each test is included to make it easy
+     to combine multiple executions of torque in a single spreadsheet.  Only the
+     tests names that are executed are included in the comma separated list to
+     keep the list from getting too long.  Lastly torque reports the total
+     system bandwidth consumed.  An easy way to extract just the comma separated
+     bandwidths is to redirect multiple test outputs to a file and then use grep
+     to grab the bandwidth results line.  You may have to add a "-a" to grep
+     since some commands like "date" sometimes use output that makes grep think
+     the output file is binary.
+
+       grep -a BW: filename
+
+BUGS
+     Please send your comments, suggestions and bug reports to: perftools-
+     feedback@group.apple.com
+
+SEE ALSO
+     /Developer/ADC Reference Library/documentation/CHUD and /Developer/ADC
+     Reference Library/documentation/CHUD/TorqueUserGuide.pdf
+

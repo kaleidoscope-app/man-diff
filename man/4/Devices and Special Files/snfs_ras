@@ -1,0 +1,343 @@
+SNFS_RAS(4)                   Device Drivers Manual                  SNFS_RAS(4)
+
+
+
+NAME
+       snfs_ras - Xsan Volume RAS Events
+
+DESCRIPTION
+       The Xsan File System supports logging and delivery of specific
+       Reliability/Availability/Serviceability (RAS) events.  When a RAS event
+       occurs, an entry is added to the event log
+       (/System/Library/Filesystems/acfs.fs/Contents/ras/raslog) on the Name
+       Server coordinators (see fsnameservers(4)).  It is also possible to
+       configure the coordinators to automatically send e-mail for RAS events or
+       pass the RAS event to any script or executable as described in the NOTES
+       section below.  In an environment that includes the StorNext Management
+       Suite (SNMS), RAS events also generate Service Request RAS tickets that
+       can be viewed through the SNMS GUI by selecting "System Status" from the
+       Service menu.
+
+EVENTS
+       The following list contains the currently supported events.
+
+       Event:  SL_EVT_NO_RESPONSE (Not responding)
+
+       Occurs:
+              When a reply from the FSM is delayed.
+
+       Example detail:
+              client2.foo.com (kernel): Timeout while attempting to force data
+              flush for file ´file1´ (inode "895468127") for file system ´snfs1´
+              on host client1.  Allowing host client2 to open file. This may
+              cause data coherency issues. The data path for host client1 should
+              be inspected to confirm that I/O is working correctly.
+
+
+       Suggested Action(s):
+              Confirm that the data path is working properly on the system
+              specified in the event detail.
+
+       Event:  SL_EVT_INVALID_LABEL (Label validation failure)
+
+       Occurs:
+              When client-side label verification fails.
+
+       Example detail:
+              wedge.foo.com (kernel): fs snfs1: disk label verification for
+              'CvfsDisk0' failed on rawdev /dev/rhdisk0 blkdev /dev/hdisk0
+              (HBA:2 LUN:0)
+
+       Suggested Action(s):
+              Check for corrupt, incorrect, or missing labels using the cvlabel
+              command.  Also inspect system logs for I/O errors and check SAN
+              integrity.
+
+       Event:  SL_EVT_DISK_ALLOC_FAIL (Failed to allocate disk space)
+
+       Occurs:
+              When a disk allocation fails due to lack of space.
+
+       Example detail:
+              fsm[PID=1234]: fs snfs1: Disk Allocation failed
+
+       Suggested Action(s):
+              Free up disk space by removing unnecessary disk copies of files,
+              or add disk capacity.
+
+       Event:  SL_EVT_COMM_LUN_FAIL (LUN communication failure)
+
+       Occurs:
+              When an I/O error occurs in a multi-path environment, causing a
+              path to become disabled.
+
+       Example detail:
+              wedge.foo.com (kernel): Disk Path '/dev/rdisk0' (HBA:2 LUN:0) used
+              by file system snfs1 temporarily disabled due to I/O error
+
+       Suggested Action(s):
+              Check system and RAID logs for SAN integrity.
+
+       Event:  SL_EVT_IO_ERR (I/O Error)
+
+       Occurs:
+              When an I/O error is detected by the FSM or a client.
+
+       Example detail:
+              wedge.foo.com (kernel): fs snfs1: I/O error on cookie 0x12345678
+              cvfs error 'I/O error' (0x3)
+
+       Suggested Action(s):
+              Check LUN and disk path health, as well as overall SAN integrity.
+              Also inspect the system logs for driver-level I/O errors.
+
+       Event:  SL_EVT_SHUTDOWN_ERR (Error shutting down)
+
+       Occurs:
+              When a problem occurs when unmounting or shutting down a file
+              system.
+
+       Example detail:
+              wedge.foo.com cvadmin[PID=1234]: fs snfs1: could not unmount all
+              cvfs file systems
+
+       Suggested Action(s):
+              Inspect the file system and system logs to determine the root
+              cause.
+
+       Event:  SL_EVT_INITIALIZATION_FAIL (Initialization failure)
+
+       Occurs:
+              When the FSM or fsmpm process fails to start up or a mount fails.
+
+       Example detail:
+              wedge.foo.com fsm[PID=1880]: fs snfs1: FSM Initialization failed
+              with status 0x14 (missing disk(s))
+
+       Suggested Action(s):
+              Correct the system configuration as suggested by the event detail,
+              or examine the system logs to determine the root cause.  If the
+              detail text suggests a problem with starting the fsmpm process,
+              run "cvlabel -l" to verify that disk scanning is working properly.
+
+       Event:  SL_EVT_LICENSE_FAIL (License failed)
+
+       Occurs:
+              When a Xsan license expires.
+
+       Example detail:
+              wedge.foo.com fsm[PID=2588]: fs snfs1: Xsan Client lady.foo.com
+              (1372A4B126) license has expired.  All further client operations
+              not permitted.
+
+       Suggested Action(s):
+              Contact the Apple Technical Assistance Center to obtain a valid
+              license.
+
+       Event:  SL_EVT_LICENCE_REQUIRED (License Required)
+
+       Occurs:
+              When a Xsan license will expire within 48 hours.
+
+       Example detail:
+              wedge.foo.com fsm[PID=3325]: fs snfs1: Please update license file!
+              Xsan File System license will expire on Tue Dec 12 11:28:26 CST
+              2006
+
+       Suggested Action(s):
+              Contact the Apple Technical Assistance Center to obtain a valid
+              license.
+
+       Event:  SL_EVT_FAIL_OVER (Fail-over has occurred)
+
+       Occurs:
+              During during FSM fail-over.
+
+       Example detail:
+              wedge.foo.com fsm[PID=3325]: fs snfs1: Fail-over has occurred:
+              Previous MDC '172.16.82.71' Current MDC '172.16.82.78'
+
+       Suggested Action(s):
+              Inspect the system log and the FSM cvlog to determine the root
+              cause.
+
+       Event:  SL_EVT_META_ERR (Metadata error)
+
+       Occurs:
+              When the FSM detects a metadata inconsistency.
+
+       Example detail:
+              wedge.foo.com fsm[PID=3325]: Invalid inode lookup: 0x345283
+              markers 0x3838/0x3838 gen 0x2 next iel 0x337373
+
+       Suggested Action(s):
+              Check SAN integrity and inspect the system logs for I/O errors.
+              If the SAN is healthy, run cvfsck on the affected file system at
+              the earliest convenient opportunity.
+
+       Event:  SL_EVT_BADCFG_NOT_SUP (Configuration not supported)
+
+       Occurs:
+              When an FSM configuration file is invalid or missing.  Also occurs
+              when the total number of FSMs running on metadata controllers
+              under a fsnameservers domain exceeds the capacity limit of the
+              heartbeat protocol.
+
+       Example detail:
+              wedge.foo.com fsm[PID=3832]: fs snfs1: Problem encountered parsing
+              configuration file 'snfs1.cfg': There were no disk types defined
+
+       Example detail:
+              wedge.foo.com fsm[PID=3832]: fs snfs1: Problem encountered parsing
+              configuration file 'snfs1.cfg': There were no disk types defined
+
+       Suggested Action(s):
+              Verify that a valid file system configuration file exists for the
+              specified file system.  Also check the system logs for additional
+              configuration file error details.  The capacity of the heartbeat
+              protocol is a function of the number of FSMs and the length of the
+              file-system names.  The maximum number of FSMs can be configured
+              by limiting file-system names to seven characters or fewer, and by
+              ensuring that all clients are upgraded to use the expanded
+              heartbeat-protocol packet size.
+
+       Event:  SL_EVT_TASK_DIED (Process/Task died, not restarted)
+
+       Occurs:
+              When the FSM or fsmpm unexpectedly exists.
+
+       Example detail:
+              wedge.foo.com fsm[PID=5543]: fs snfs1: PANIC: Alloc_init
+              THREAD_MUTEX_INIT alloc_space lock
+
+       Suggested Action(s):
+              Check the FSM logs and system logs to determine the root cause.
+              If possible, take corrective action.  If you suspect a software
+              bug, contact the Apple Technical Assistance Center.
+
+       Event:  SL_EVT_SYS_RES_FAIL (System resource failure)
+
+       Occurs:
+              When a memory allocation fails.
+
+       Example detail:
+              wedge.foo.com fsm[PID=9939]: Memory allocation of 65536 bytes
+              failed: file 'disks.c' line 256
+
+       Suggested Action(s):
+              Determine the cause of memory depletion and correct the condition
+              by adding memory or paging space to your system.  If SNFS is using
+              excessive amounts of memory adjusting the configuration parameters
+              might resolve the problem.  For information about adjusting
+              parameters, refer to the Release Notes, the snfs_config(5) and
+              mount_acfs(8) man pages, and the SNFS Tuning Guide.
+
+       Event:  SL_EVT_SYS_RES_CRIT (System resource critical)
+
+       Occurs:
+              When the filesystem is running out of space.
+
+       Example detail:
+              wedge.foo.com fsm[PID=3947]: fs 'snfs1': System over 10% full
+
+       Suggested Action(s):
+              Add additional storage or reduce file system usage.  If the
+              message indicates metadata stripe groups are full, add additional
+              metadata storage.
+
+       Event:  SL_EVT_SYS_RES_WARN (System resource warning)
+
+       Occurs:
+              When a condition such as a fragmented file is detected.
+
+       Example detail:
+              wedge.foo.com fsm[PID=5213]: fs 'snfs1': Excessive fragmentation
+              detected in file 'foo'
+
+       Suggested Action(s):
+              If fragmentation has been detected, consult the snfsdefrag(1) man-
+              page for instructions on performing fragmentation analysis and
+              defragmenting files.  Free space defragmentation for the file
+              system as a whole may also be performed using the sgdefrag(8)
+              utility.
+
+       Event:  SL_EVT_CONNECTION_FAIL (Connection rejected)
+
+       Occurs:
+              When the FSM rejects a client connection attempt (other than for a
+              licensing issue).
+
+       Example detail:
+              wedge.foo.com fsm[PID=9939]: The client node [Node 13] does not
+              support cluster-wide central control feature, please upgrade the
+              client to a newer version
+
+       Suggested Action(s):
+              Check the system logs to determine the root cause.
+
+       Event:  SL_EVT_LUN_CHANGE (LUN mapping changed)
+
+       Occurs:
+              When an fsmpm disk scan detects a change in an existing path.
+
+       Example detail:
+              wedge.foo.com fsmpm[4872]: Disk 'CvfsDisk0' is no longer
+              accessible as '/dev/hdisk0' -- path may have been assigned to
+              another device.
+
+       Suggested Action(s):
+              If the LUN mapping change is unexpected, run the cvadmin "disks"
+              and "paths" commands to confirm that all LUN paths are present.
+              Also check SAN integrity and inspect the system logs to determine
+              the root cause.
+
+       Event:  SL_EVT_JOURNAL_ERR (Journaling error)
+
+       Occurs:
+              When journal recovery fails.
+
+       Example detail:
+              wedge.foo.com fsm[5555]: fs snfs1: Journal error: Journal_recover:
+              Journal_truncate failed
+
+       Suggested Action(s):
+              Contact the Apple technical assistance center and open a service
+              request.
+
+NOTES
+       To reduce overhead, some types of RAS events are throttled so that only
+       one event is generated per hour per system.
+
+       To quickly set up RAS event e-mail notification, use the following steps
+       on each of the Name Server coordinators:
+
+       1. copy
+       /System/Library/Filesystems/acfs.fs/Contents/examples/rasexec.example to
+       /Library/Preferences/Xsan/rasexec
+
+       2. edit /Library/Preferences/Xsan/rasexec and modify RAS_EMAIL as
+       appropriate.
+
+       After setting up notification, you may prefer to exclude certain events
+       to reduce the number of e-mail messages you receive.  This can be
+       accomplished by adding events that you wish to skip to the RAS_EXCLUDE
+       variable in /Library/Preferences/Xsan/rasexec.
+
+       To call an arbitrary executable for each RAS event, simply invoke a
+       command from /Library/Preferences/Xsan/rasexec.  The first argument
+       passed to rasexec is the event (e.g. SL_EVT_IO_ERR) and the second is the
+       detail string and these can be passed into your program.  Be careful when
+       choosing the command to run so that it does not hang or cause other ill
+       effects.
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/ras/raslog
+       /System/Library/Filesystems/acfs.fs/Contents/ras/OLDraslog
+       /Library/Preferences/Xsan/rasexec
+       /System/Library/Filesystems/acfs.fs/Contents/examples/rasexec.example
+
+SEE ALSO
+       fsnameservers(4), fsm(8), cvfs_failover(8), snfsdefrag(1), sgdefrag(8)
+
+
+

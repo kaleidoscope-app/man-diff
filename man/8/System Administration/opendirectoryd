@@ -1,0 +1,113 @@
+opendirectoryd(8)            System Manager's Manual           opendirectoryd(8)
+
+NAME
+     opendirectoryd – is a launchd(8) job for client access to local or remote
+     directory systems
+
+SYNOPSIS
+     opendirectoryd [--version]
+
+DESCRIPTION
+     opendirectoryd is a launchd(8) job which replaces "DirectoryService" as a
+     core part of the Open Directory technology. Several modules are provided
+     that allow access to existing directory systems:
+
+           •   Active Directory
+           •   LDAP
+           •   Local Database
+           •   NIS
+
+   Modules
+     opendirectoryd modules have specific capabilities:
+
+           Authentication  password verification, password changes, etc.
+           Connection      general connections used for queries, record
+                           modifications, etc.
+           Discovery       location and prioritization of servers to contact
+                           (a.k.a., service discovery)
+           Unspecified     a generic module used for unspecified purpose
+                           (usually to extend capabilities)
+
+     Third party plugins developed for "DirectoryService" are supported via
+     dspluginhelperd(8).
+
+   Open Directory
+     Open Directory is a technology which includes a client API abstraction
+     layer, a directory server, and the opendirectoryd daemon.  This allows
+     clients to utilize a single API to access a variety of directory servers
+     simultaneously or configure their own directory server.
+
+     Open Directory forms the foundation of how Mac OS X accesses all
+     authoritative configuration information (users, groups, mounts, managed
+     desktop data, etc.).  This allows use of virtually any directory system via
+     Apple and third party modules.
+
+     Configuration of opendirectoryd is done via "System Preferences" under the
+     "Users & Groups" preference pane. Advanced settings are available by using
+     "Open Directory Utility..." within "Users & Groups" preference pane.
+
+     More information is available from the Open Directory website:
+
+         http://developer.apple.com/darwin/projects/opendirectory/
+
+   Open Directory Server
+     Open Directory Server utilizes OpenLDAP which is included as part of Mac OS
+     X Client, Mac OS X Server, and Darwin. OpenLDAP provides a robust and
+     scalable platform for serving directory-based information for both
+     standalone and networked systems.
+
+   NFSv4 Domain name
+     The following will set the default domain name used to map user and group
+     identities in NFSv4 client/server operations.
+
+     dscl . -create Config/NFSv4Domain RealName <Example.com>
+
+     This command requires root privileges.
+
+FILES
+     Files are stored in various locations for opendirectoryd depending on use.
+     A list of folders and files are shown below.
+
+   System files provided by Apple and should only change with operating system
+   updates:
+     /System/Library/OpenDirectory/Configurations/
+                                                  node configuration files
+     /System/Library/OpenDirectory/DynamicNodeTemplates/
+                                                  dynamic node definitions
+     /System/Library/OpenDirectory/Mappings/      record/attribute mapping
+                                                  tables
+     /System/Library/OpenDirectory/Modules/       modules to be loaded on demand
+     /System/Library/OpenDirectory/Templates/     templates used for node styles
+                                                  (module layout and mappings)
+     /System/Library/OpenDirectory/record-schema.plist
+                                                  OpenDirectory record/attribute
+                                                  schema
+     /System/Library/OpenDirectory/permissions.plist
+                                                  OpenDirectory global
+                                                  record/attribute permissions
+
+   User defined files:
+     /Library/OpenDirectory/Templates/            templates used for node styles
+                                                  (module layout and mappings)
+     /Library/OpenDirectory/Mappings/             record/attribute mapping
+                                                  tables
+
+   Files that change periodically are located in:
+     /Library/Preferences/OpenDirectory/Configurations/
+                                                  node configuration files
+     /Library/Preferences/OpenDirectory/DynamicData/
+                                                  dynamic data stored by nodes
+     /Library/Preferences/OpenDirectory/.LogDebugAtStartOnce
+                                                  enables debug logging until
+                                                  process exits or system is
+                                                  rebooted (reboot required)
+     /var/log/opendirectoryd.log*                 log file(s) for opendirectoryd
+
+   Legacy locations:
+     /Library/DirectoryServices/PlugIns/          third party DirectoryService
+                                                  plugins loaded by
+                                                  dspluginhelperd
+
+SEE ALSO
+     odutil(1), dspluginhelperd(8), slapd(8)
+

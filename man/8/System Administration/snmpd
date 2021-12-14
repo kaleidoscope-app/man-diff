@@ -1,0 +1,273 @@
+SNMPD(8)                            Net-SNMP                            SNMPD(8)
+
+
+
+NAME
+       snmpd - daemon to respond to SNMP request packets.
+
+SYNOPSIS
+       snmpd [OPTIONS] [LISTENING ADDRESSES]
+
+DESCRIPTION
+       snmpd is an SNMP agent which binds to a port and awaits requests from
+       SNMP management software.  Upon receiving a request, it processes the
+       request(s), collects the requested information and/or performs the
+       requested operation(s) and returns the information to the sender.
+
+OPTIONS
+       -a      Log the source addresses of incoming requests.
+
+       -A      Append to the log file rather than truncating it.
+
+       -c FILE Read FILE as a configuration file (or a comma-separated list of
+               configuration files).  Note that the loaded file will only
+               understand snmpd.conf tokens, unless the configuration type is
+               specified in the file as described in the snmp_config man page
+               under SWITCHING CONFIGURATION TYPES IN MID-FILE.
+
+       -C      Do not read any configuration files except the ones optionally
+               specified by the -c option.  Note that this behaviour also covers
+               the persistent configuration files.  This may result in
+               dynamically-assigned values being reset following an agent
+               restart, unless the relevant persistent config files are
+               explicitly loaded using the -c option.
+
+       -d      Dump (in hexadecimal) the sent and received SNMP packets.
+
+       -D[TOKEN[,...]]
+               Turn on debugging output for the given TOKEN(s).  Without any
+               tokens specified, it defaults to printing all the tokens (which
+               is equivalent to the keyword "ALL").  You might want to try ALL
+               for extremely verbose output.  Note: You can not put a space
+               between the -D flag and the listed TOKENs.
+
+       -f      Do not fork() from the calling shell.
+
+       -g GID  Change to the numerical group ID GID after opening listening
+               sockets.
+
+       -h, --help
+               Display a brief usage message and then exit.
+
+       -H      Display a list of configuration file directives understood by the
+               agent and then exit.
+
+       -I [-]INITLIST
+               Specifies which modules should (or should not) be initialized
+               when the agent starts up.  If the comma-separated INITLIST is
+               preceded with a '-', it is the list of modules that should not be
+               started.  Otherwise this is the list of the only modules that
+               should be started.
+
+               To get a list of compiled modules, run the agent with the
+               arguments -Dmib_init -H (assuming debugging support has been
+               compiled in).
+
+       -L[efos]
+               Specify where logging output should be directed (standard error
+               or output, to a file or via syslog).  See LOGGING OPTIONS in
+               snmpcmd(5) for details.
+
+       -m MIBLIST
+               Specifies a colon separated list of MIB modules to load for this
+               application.  This overrides the environment variable MIBS.  See
+               snmpcmd(1) for details.
+
+       -M DIRLIST
+               Specifies a colon separated list of directories to search for
+               MIBs.  This overrides the environment variable MIBDIRS.  See
+               snmpcmd(1) for details.
+
+       -n NAME Set an alternative application name (which will affect the
+               configuration files loaded).  By default this will be snmpd,
+               regardless of the name of the actual binary.
+
+       -p FILE Save the process ID of the daemon in FILE.
+
+       -q      Print simpler output for easier automated parsing.
+
+       -r      Do not require root access to run the daemon.  Specifically, do
+               not exit if files only accessible to root (such as /dev/kmem
+               etc.) cannot be opened.
+
+       -u UID  Change to the user ID UID (which can be given in numerical or
+               textual form) after opening listening sockets.
+
+       -U      Instructs the agent to not remove its pid file (see the -p
+               option) on shutdown. Overrides the leave_pidfile token in the
+               snmpd.conf file, see snmpd.conf(5).
+
+       -v, --version
+               Print version information for the agent and then exit.
+
+       -V      Symbolically dump SNMP transactions.
+
+       -x ADDRESS
+               Listens for AgentX connections on the specified address rather
+               than the default AGENTX_SOCKET.  The address can either be a Unix
+               domain socket path, or the address of a network interface.  The
+               format is the same as the format of listening addresses described
+               below.
+
+       -X      Run as an AgentX subagent rather than as an SNMP master agent.
+
+       --name="value"
+               Allows to specify any token ("name") supported in the snmpd.conf
+               file and sets its value to "value". Overrides the corresponding
+               token in the snmpd.conf file. See snmpd.conf(5) for the full list
+               of tokens.
+
+LISTENING ADDRESSES
+       By default, snmpd listens for incoming SNMP requests on UDP port 161 on
+       all IPv4 interfaces.  However, it is possible to modify this behaviour by
+       specifying one or more listening addresses as arguments to snmpd.  A
+       listening address takes the form:
+
+              [<transport-specifier>:]<transport-address>
+
+       At its simplest, a listening address may consist only of a port number,
+       in which case snmpd listens on that UDP port on all IPv4 interfaces.
+       Otherwise, the <transport-address> part of the specification is parsed
+       according to the following table:
+
+           <transport-specifier>       <transport-address> format
+
+           udp (default)               hostname[:port] or IPv4-address[:port]
+
+           tcp                         hostname[:port] or IPv4-address[:port]
+
+           unix                        pathname
+
+           ipx                         [network]:node[/port]
+
+           aal5pvc or pvc              [interface.][VPI.]VCI
+
+           udp6 or udpv6 or udpipv6    hostname[:port] or IPv6-address[:port]
+
+           tcp6 or tcpv6 or tcpipv6    hostname[:port] or IPv6-address[:port]
+
+           ssh                         hostname:port
+
+           dtlsudp                     hostname:port
+
+       Note that <transport-specifier> strings are case-insensitive so that, for
+       example, "tcp" and "TCP" are equivalent.  Here are some examples, along
+       with their interpretation:
+
+       127.0.0.1:161           listen on UDP port 161, but only on the loopback
+                               interface.  This prevents snmpd being queried
+                               remotely.  The  port specification ":161" is not
+                               strictly necessary since that is the default SNMP
+                               port.
+
+       TCP:1161                listen on TCP port 1161 on all IPv4 interfaces.
+
+       ipx:/40000              listen on IPX port 40000 on all IPX interfaces.
+
+       unix:/tmp/local-agent   listen on the Unix domain socket /tmp/local-
+                               agent.
+
+       /tmp/local-agent        is identical to the previous specification, since
+                               the Unix domain is assumed if the first character
+                               of the <transport-address> is '/'.
+
+       PVC:161                 listen on the AAL5 permanent virtual circuit with
+                               VPI=0 and VCI=161 (decimal) on the first ATM
+                               adapter in the machine.
+
+       udp6:10161              listen on port 10161 on all IPv6 interfaces.
+
+       ssh:127.0.0.1:22        Allows connections from the snmp subsystem on the
+                               ssh server on port 22.  The details of using SNMP
+                               over SSH are defined below.
+
+       dtlsudp:127.0.0.1:9161  Listen for connections over DTLS on UDP port
+                               9161.  The snmp.conf file must have the
+                               serverCert, configuration tokens defined.
+
+       Note that not all the transport domains listed above will always be
+       available; for instance, hosts with no IPv6 support will not be able to
+       use udp6 transport addresses, and attempts to do so will result in the
+       error "Error opening specified endpoint".  Likewise, since AAL5 PVC
+       support is only currently available on Linux, it will fail with the same
+       error on other platforms.
+
+Transport Specific Notes
+
+       ssh     The SSH transport, on the server side, is actually just a unix
+               named pipe that can be connected to via a ssh subsystem
+               configured in the main ssh server.  The pipe location
+               (configurable with the sshtosnmpsocket token in snmp.conf) is
+               /var/net-snmp/sshtosnmp.  Packets should be submitted to it via
+               the sshtosnmp application, which also sends the user ID as well
+               when starting the connection.  The TSM security model should be
+               used when packets should process it.
+
+               The sshtosnmp command knows how to connect to this pipe and talk
+               to it.  It should be configured in the OpenSSH sshd configuration
+               file (which is normally /etc/ssh/sshd_config using the following
+               configuration line:
+
+               Subsystem snmp /usr/local/bin/sshtosnmp
+
+               The sshtosnmp command will need read/write access to the
+               /var/net-snmp/sshtosnmp pipe.  Although it should be fairly safe
+               to grant access to the average user since it still requires
+               modifications to the ACM settings before the user can perform
+               operations, paranoid administrators may want to make the
+               /var/net-snmp directory accessible only by users in a particular
+               group.  Use the sshtosnmpsocketperms snmp.conf configure option
+               to set the permissions, owner and group of the created socket.
+
+               Access control can be granted to the user "foo" using the
+               following style of simple snmpd.conf settings:
+
+               rouser -s tsm foo authpriv
+
+               Note that "authpriv" is acceptable assuming as SSH protects
+               everything that way (assuming you have a non-insane setup).
+               snmpd has no notion of how SSH has actually protected a packet
+               and thus the snmp agent assumes all packets passed through the
+               SSH transport have been protected at the authpriv level.
+
+       dtlsudp The DTLS protocol, which is based off of TLS, requires both
+               client and server certificates to establish the connection and
+               authenticate both sides.  In order to do this, the client will
+               need to configure the snmp.conf file with the clientCert
+               configuration tokens.  The server will need to configure the
+               snmp.conf file with the serverCert configuration tokens defined.
+
+               Access control setup is similar to the ssh transport as the TSM
+               security model should be used to protect the packet.
+
+CONFIGURATION FILES
+       snmpd checks for the existence of and parses the following files:
+
+       /etc/snmp/snmp.conf
+             Common configuration for the agent and applications. See
+             snmp.conf(5) for details.
+
+       /etc/snmp/snmpd.conf
+
+       /etc/snmp/snmpd.local.conf
+             Agent-specific configuration.  See snmpd.conf(5) for details.
+             These files are optional and may be used to configure access
+             control, trap generation, subagent protocols and much else besides.
+
+             In addition to these two configuration files in /etc/snmp, the
+             agent will read any files with the names snmpd.conf and
+             snmpd.local.conf in a colon separated path specified in the
+             SNMPCONFPATH environment variable.
+
+       /usr/share/snmp/mibs/
+             The agent will also load all files in this directory as MIBs.  It
+             will not, however, load any file that begins with a '.' or descend
+             into subdirectories.
+
+SEE ALSO
+       (in recommended reading order)
+
+       snmp_config(5), snmp.conf(5), snmpd.conf(5)
+
+
+

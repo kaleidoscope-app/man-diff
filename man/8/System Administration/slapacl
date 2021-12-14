@@ -1,0 +1,109 @@
+SLAPACL(8C)                                                          SLAPACL(8C)
+
+
+
+NAME
+       slapacl - Check access to a list of attributes.
+
+SYNOPSIS
+       /usr/sbin/slapacl -b_DN [-d_debug-level] [-D_authcDN_| -U_authcID]
+       [-f_slapd.conf] [-F_confdir] [-o_option[=value]] [-u] [-v] [-X_authzID_|
+       -o  authzDN=DN] [attr[/access][:value]] [...]
+
+DESCRIPTION
+       slapacl is used to check the behavior of slapd(8) by verifying access to
+       directory data according to the access control list directives defined in
+       its configuration.  It opens the slapd.conf(5) configuration file or the
+       slapd-config(5) backend, reads in the access/olcAccess directives, and
+       then parses the attr list given on the command-line; if none is given,
+       access to the entry pseudo-attribute is tested.
+
+OPTIONS
+       -b_DN  specify the DN which access is requested to; the corresponding
+              entry is fetched from the database, and thus it must exist.  The
+              DN is also used to determine what rules apply; thus, it must be in
+              the naming context of a configured database.  See also -u.
+
+       -d_debug-level
+              enable debugging messages as defined by the specified debug-level;
+              see slapd(8) for details.
+
+       -D_authcDN
+              specify a DN to be used as identity through the test session when
+              selecting appropriate <by> clauses in access lists.
+
+       -f_slapd.conf
+              specify an alternative slapd.conf(5) file.
+
+       -F_confdir
+              specify a config directory.  If both -f and -F are specified, the
+              config file will be read and converted to config directory format
+              and written to the specified directory.  If neither option is
+              specified, an attempt to read the default config directory will be
+              made before trying to use the default config file. If a valid
+              config directory exists then the default config file is ignored.
+
+       -o_option[=value]
+              Specify an option with a(n optional) value.  Possible generic
+              options/values are:
+
+                     syslog=<subsystems>  (see `-s' in slapd(8))
+                     syslog-level=<level> (see `-S' in slapd(8))
+                     syslog-user=<user>   (see `-l' in slapd(8))
+
+              Possible options/values specific to slapacl are:
+
+                     authzDN
+                     domain
+                     peername
+                     sasl_ssf
+                     sockname
+                     sockurl
+                     ssf
+                     tls_ssf
+                     transport_ssf
+
+              See the related fields in slapd.access(5) for details.
+
+       -u     do not fetch the entry from the database.  In this case, if the
+              entry does not exist, a fake entry with the DN given with the -b
+              option is used, with no attributes.  As a consequence, those rules
+              that depend on the contents of the target object will not behave
+              as with the real object.  The DN given with the -b option is still
+              used to select what rules apply; thus, it must be in the naming
+              context of a configured database.  See also -b.
+
+       -U_authcID
+              specify an ID to be mapped to a DN as by means of authz-regexp or
+              authz-rewrite rules (see slapd.conf(5) for details); mutually
+              exclusive with -D.
+
+       -v     enable verbose mode.
+
+       -X_authzID
+              specify an authorization ID to be mapped to a DN as by means of
+              authz-regexp or authz-rewrite rules (see slapd.conf(5) for
+              details); mutually exclusive with -o authzDN=DN.
+
+EXAMPLES
+       The command
+
+            /usr/sbin/slapacl -f /etc/openldap/slapd.conf -v \
+                   -U bjorn -b "o=University of Michigan,c=US" \
+                "o/read:University of Michigan"
+
+       tests whether the user bjorn can access the attribute o of the entry
+       o=University of Michigan,c=US at read level.
+
+SEE ALSO
+       ldap(3), slapd(8), slaptest(8), slapauth(8)
+
+       "OpenLDAP Administrator's Guide" (http://www.OpenLDAP.org/doc/admin/)
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

@@ -1,0 +1,37 @@
+VIPW(8)                      System Manager's Manual                     VIPW(8)
+
+NAME
+     vipw – edit the password file
+
+SYNOPSIS
+     vipw
+
+DESCRIPTION
+     Vipw edits the password file after setting the appropriate locks, and does
+     any necessary processing after the password file is unlocked.  If the
+     password file is already locked for editing by another user, vipw will ask
+     you to try again later. The default editor for vipw is vi(1).
+
+     Vipw performs a number of consistency checks on the password entries, and
+     will not allow a password file with a “mangled” entry to be installed.  If
+     vipw rejects the new password file, the user is prompted to re-enter the
+     edit session.
+
+     Once the information has been verified, vipw uses pwd_mkdb(8) to update the
+     user database.  This is run in the background, and, at very large sites
+     could take several minutes.  Until this update is completed, the password
+     file is unavailable for other updates and the new information is not
+     available to programs.
+
+ENVIRONMENT
+     If the following environment variable exists it will be utilized by vipw:
+
+     EDITOR  The editor specified by the string EDITOR will be invoked instead
+             of the default editor vi(1).
+
+SEE ALSO
+     chpass(1), passwd(1), passwd(5), pwd_mkdb(8)
+
+HISTORY
+     The vipw command appeared in 4.0BSD.
+

@@ -1,0 +1,81 @@
+lpoptions(1)                       Apple Inc.                       lpoptions(1)
+
+
+
+NAME
+       lpoptions - display or set printer options and defaults
+
+SYNOPSIS
+       lpoptions [ -E ] [ -h server[:port] ] -d destination[/instance] [ -l ]
+       lpoptions [ -E ] [ -h server[:port] ] [ -p destination[/instance] ] -o
+       option[=value] ...
+       lpoptions [ -E ] [ -h server[:port] ] [ -p destination[/instance] ] -r
+       option
+       lpoptions [ -E ] [ -h server[:port] ] -x destination[/instance]
+
+DESCRIPTION
+       lpoptions displays or sets printer options and defaults.  If no printer
+       is specified using the -p option, the default printer is used as
+       described in lp(1).
+
+       If no -l, -o, or -r options are specified, the current options are
+       reported on the standard output.
+
+       Options set with the lpoptions command are used by the lp(1) and lpr(1)
+       commands when submitting jobs.
+
+       When run by the root user, lpoptions gets and sets default options and
+       instances for all users in the /etc/cups/lpoptions file.  Otherwise, the
+       per-user defaults are managed in the ~/.cups/lpoptions file.
+
+OPTIONS
+       lpoptions supports the following options:
+
+       -E   Enables encryption when communicating with the CUPS server.
+
+       -d destination[/instance]
+            Sets the user default printer to destination.  If instance is
+            supplied then that particular instance is used.  This option
+            overrides the system default printer for the current user.
+
+       -h server[:port]
+            Uses an alternate server.
+
+       -l   Lists the printer specific options and their current settings.
+
+       -o option[=value]
+            Specifies a new option for the named destination.
+
+       -p destination[/instance]
+            Sets the destination and instance, if specified, for any options
+            that follow.  If the named instance does not exist then it is
+            created.  Destinations can only be created using the lpadmin(8)
+            program.
+
+       -r option
+            Removes the specified option from the named destination.
+
+       -x destination[/instance]
+            Removes the options for the named destination and instance, if
+            specified.  If the named instance does not exist then this does
+            nothing.  Destinations can only be removed using the lpadmin(8)
+            command.
+
+FILES
+       ~/.cups/lpoptions - user defaults and instances created by non-root
+       users.
+       /etc/cups/lpoptions - system-wide defaults and instances created by the
+       root user.
+
+CONFORMING TO
+       The lpoptions command is unique to CUPS.
+
+SEE ALSO
+       cancel(1), lp(1), lpadmin(8), lpr(1), lprm(1), CUPS Online Help
+       (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

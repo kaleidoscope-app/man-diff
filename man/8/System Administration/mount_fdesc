@@ -1,0 +1,74 @@
+MOUNT_FDESC(8)               System Manager's Manual              MOUNT_FDESC(8)
+
+NAME
+     mount_fdesc – mount the file-descriptor file system
+
+SYNOPSIS
+     mount_fdesc [-o options] fdesc mount_point
+
+DESCRIPTION
+     The mount_fdesc command attaches an instance of the per-process file
+     descriptor namespace to the global filesystem namespace.  The conventional
+     mount point is /dev and the filesystem should be union mounted in order to
+     augment, rather than replace, the existing entries in /dev.  This command
+     is normally executed by mount(8) at boot time.
+
+     The options are as follows:
+
+     -o      Options are specified with a -o flag followed by a comma separated
+             string of options.  See the mount(8) man page for possible options
+             and their meanings.
+
+     The contents of the mount point are fd, stderr, stdin, stdout and tty.
+
+     fd is a directory whose contents appear as a list of numbered files which
+     correspond to the open files of the process reading the directory.  The
+     files /dev/fd/0 through /dev/fd/# refer to file descriptors which can be
+     accessed through the file system.  If the file descriptor is open and the
+     mode the file is being opened with is a subset of the mode of the existing
+     descriptor, the call:
+
+           fd = open("/dev/fd/0", mode);
+
+     and the call:
+
+           fd = fcntl(0, F_DUPFD, 0);
+
+     are equivalent.
+
+     The files /dev/stdin, /dev/stdout and /dev/stderr appear as symlinks to the
+     relevant entry in the /dev/fd sub-directory.  Opening them is equivalent to
+     the following calls:
+
+           fd = fcntl(STDIN_FILENO,  F_DUPFD, 0);
+           fd = fcntl(STDOUT_FILENO, F_DUPFD, 0);
+           fd = fcntl(STDERR_FILENO, F_DUPFD, 0);
+
+     Flags to the open(2) call other than O_RDONLY, O_WRONLY and O_RDWR are
+     ignored.
+
+     The /dev/tty entry is an indirect reference to the current process's
+     controlling terminal.  It appears as a named pipe (FIFO) but behaves in
+     exactly the same way as the real controlling terminal device.
+
+FILES
+     /dev/fd/#
+     /dev/stdin
+     /dev/stdout
+     /dev/stderr
+     /dev/tty
+
+SEE ALSO
+     mount(2), unmount(2), tty(4), fstab(5), mount(8)
+
+CAVEATS
+     No ~.  and .. entries appear when listing the contents of the /dev/fd
+     directory.  This makes sense in the context of this filesystem, but is
+     inconsistent with usual filesystem conventions.  However, it is still
+     possible to refer to both ~.  and .. in a pathname.
+
+     This filesystem may not be NFS-exported.
+
+HISTORY
+     The mount_fdesc utility first appeared in 4.4BSD.
+

@@ -1,0 +1,77 @@
+page_util_quote(n)           Parser generator tools           page_util_quote(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       page_util_quote - page character quoting utilities
+
+SYNOPSIS
+       package require page::util::quote  ?0.1?
+
+       package require snit
+
+       ::page::util::quote::unquote char
+
+       ::page::util::quote::quote'tcl char
+
+       ::page::util::quote::quote'tclstr char
+
+       ::page::util::quote::quote'tclcom char
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a few utility commands to convert characters into
+       various forms.
+
+API
+       ::page::util::quote::unquote char
+              A character, as stored in an abstract syntax tree by a PEG
+              processor (See the packages grammar::peg::interpreter,
+              grammar::me, and their relations), i.e. in some quoted form, is
+              converted into the equivalent Tcl character. The character is
+              returned as the result of the command.
+
+       ::page::util::quote::quote'tcl char
+              This command takes a Tcl character (internal representation) and
+              converts it into a string which is accepted by the Tcl parser,
+              will regenerate the character in question and is 7bit ASCII. The
+              string is returned as the result of this command.
+
+       ::page::util::quote::quote'tclstr char
+              This command takes a Tcl character (internal representation) and
+              converts it into a string which is accepted by the Tcl parser and
+              will generate a human readable representation of the character in
+              question.  The string is returned as the result of this command.
+
+              The string does not use any unprintable characters. It may use
+              backslash-quoting. High UTF characters are quoted to avoid
+              problems with the still prevalent ascii terminals. It is assumed
+              that the string will be used in a double-quoted environment.
+
+       ::page::util::quote::quote'tclcom char
+              This command takes a Tcl character (internal representation) and
+              converts it into a string which is accepted by the Tcl parser when
+              used within a Tcl comment. The string is returned as the result of
+              this command.
+
+BUGS, IDEAS, FEEDBACK
+       This document, will undoubtedly contain bugs and other problems.  Please
+       report such in the category page of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have.
+
+KEYWORDS
+       page, parser generator, quoting, text processing
+
+CATEGORY
+       Page Parser Generator
+
+COPYRIGHT
+       Copyright (c) 2007 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

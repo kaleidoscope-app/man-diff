@@ -1,0 +1,63 @@
+COPY(9)                     Kernel Developer's Manual                    COPY(9)
+
+NAME
+     copy, copyin, copyinstr, copyout, copystr – kernel copy functions
+
+SYNOPSIS
+     #include <sys/types.h>
+     #include <sys/systm.h>
+
+     int
+     copyin(const void *uaddr, void *kaddr, size_t len);
+
+     int
+     copyinstr(const void *uaddr, void *kaddr, size_t len, size_t *done);
+
+     int
+     copyout(const void *kaddr, void *uaddr, size_t len);
+
+     int
+     copystr(const void *kfaddr, void *kdaddr, size_t len, size_t *done);
+
+DESCRIPTION
+     The copy functions are designed to copy contiguous data from one address to
+     another.  All but copystr() copy data from user-space to kernel-space or
+     vice-versa.
+
+     The copy routines provide the following functionality:
+
+     copyin()      Copies len bytes of data from the user-space address uaddr to
+                   the kernel-space address kaddr.
+
+     copyinstr()   Copies a NUL-terminated string, at most len bytes long, from
+                   user-space address uaddr to kernel-space address kaddr.  The
+                   number of bytes actually copied, including the terminating
+                   NUL, is returned in *done.
+
+     copyout()     Copies len bytes of data from the kernel-space address kaddr
+                   to the user-space address uaddr.
+
+     copystr()     Copies a NUL-terminated string, at most len bytes long, from
+                   kernel-space address kfaddr to kernel-space address kdaddr.
+                   The number of bytes actually copied, including the
+                   terminating NUL, is returned in *done.
+
+RETURN VALUES
+     The copy functions return 0 on success or the following error on failure:
+
+     [EFAULT]           If a bad address is encountered. When this error is
+                        returned, the contents of the destination buffer (
+                        *kaddr for copyin(), copyinstr(), and copystr(); *uaddr
+                        for copyout()) are undefined. For copyinstr() and
+                        copystr(), the contents of the *done parameter are also
+                        undefined on a return of EFAULT.
+
+     In addition to EFAULT, copystr() and copyinstr() on failure will return:
+
+     [ENAMETOLONG]      When the string is longer than len bytes. On this error
+                        return, the destination buffer is not null-terminated,
+                        but the *done parameter is maintained.
+
+SEE ALSO
+     fetch(9), store(9)
+

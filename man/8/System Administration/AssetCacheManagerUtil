@@ -1,0 +1,78 @@
+AssetCacheManagerUtil(8)     System Manager's Manual    AssetCacheManagerUtil(8)
+
+NAME
+     AssetCacheManagerUtil – control the macOS Content Cache
+
+SYNOPSIS
+     AssetCacheManagerUtil [-a|--all] [-j|--json] [-l|--linger] command
+
+DESCRIPTION
+     AssetCacheManagerUtil controls the macOS Content Cache.
+     AssetCacheManagerUtil must be run by root except as noted below.  The
+     options are:
+
+     -a|--all
+             Show all events, not just the end result of the specified command.
+
+     -j|--json
+             Print results in machine-parseable JSON format to stdout.
+
+     -l|--linger
+             Linger after completing command, to show other events.
+
+     The commands are:
+
+     activate
+             Activates the content cache.  Content caching is deactivated by
+             default.  After you activate content caching, restart devices on
+             your network to take advantage of content caching immediately.
+             Devices on your network will discover this content cache over time.
+             Devices that are restarted will use this content cache immediately.
+
+     deactivate
+             Deactivates the content cache.
+
+     isActivated
+             Reports the content cache's activation status.  Does not require
+             root.
+
+     canActivate
+             Reports whether the content cache is eligible for activation.  Does
+             not require root.
+
+     flushCache
+             Flushes the content cache.
+
+     flushPersonalCache
+             Flushes all personal (iCloud) content from the content cache.
+
+     flushSharedCache
+             Flushes all shared (non-iCloud) content from the content cache.
+
+     status  Reports the content cache's status.  Does not require root.
+
+     settings
+             Reports the content cache's settings.  Does not require root.
+
+     reloadSettings
+             Forces the content cache to reload its settings.
+
+     moveCacheTo path
+             Moves the cache to path.  The path must end with
+             /Library/Application Support/Apple/AssetCache/Data.  The contents
+             of path are deleted and replaced with the cache.
+
+     absorbCacheFrom path read-only|and-destroy
+             Imports the cache from path.  The path must end with either
+             /Library/Application Support/Apple/AssetCache/Data or
+             /Library/Server/Caching/Data.  If the last argument is read-only
+             the cache at path is not modified, otherwise it is emptied.  This
+             command only starts the absorption, which proceeds and finishes in
+             the background.  Use the log(1) command to view progress, for
+             example: log show --predicate 'subsystem == "com.apple.AssetCache"'
+             --style compact --last 5m
+
+SEE ALSO
+     System Preferences > Sharing > Content Caching, AssetCache(8),
+     AssetCacheLocatorUtil(8), AssetCacheTetheratorUtil(8)
+

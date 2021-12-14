@@ -1,0 +1,154 @@
+DPSERVER(4)                   Device Drivers Manual                  DPSERVER(4)
+
+
+
+NAME
+       dpserver - Xsan File System Proxy Client Configuration
+
+SYNOPSIS
+       /Library/Preferences/Xsan/dpserver
+
+       /Library/Preferences/Xsan/dpserver.VolName
+
+DESCRIPTION
+       The Xsan File System dpserver file is a configuration file used to
+       control the Stornext Distributed LAN Server (also called Proxy Server or
+       Gateway) on Linux systems.  This file is required in order to start a
+       Proxy Server and is consulted when a mount command specifies the Proxy
+       Server option.
+
+       The sndpscfg command is normally used to generate and maintain dpserver
+       files on non-Windows systems - see sndpscfg(8) for details.  To view and
+       adjust the Proxy Server settings on Windows systems, use the LAN
+       Client/Gateway tab in the Client Configuration tool instead.
+
+SYNTAX
+       At minimum, the dpserver file specifies the network interfaces to use for
+       Proxy Server.  It can also be used to override various Proxy Server
+       tuning parameters.
+
+       There can be both file-system-specific dpserver.VolName files and a
+       default dpserver file.  If a file-system-specific dpserver.VolName file
+       exists, it will be used in preference to the default dpserver file.
+
+       The format rules for a line in the dpserver file are:
+
+       Any line beginning with "#" is considered a comment line.
+
+       Blank/empty lines are ignored.
+
+       There are several keywords:
+
+              interface ifname [address ipaddr]
+              transfer_buffer_size_kb n
+              transfer_buffer_count n
+              server_buffer_count n
+              tcp_window_size_kb n
+              daemon_threads n
+              server_conn_count n
+
+       The keywords are interpreted as follows:
+
+       The interface keyword specifies the name of a network interface (e.g.,
+       eth0) to use for Proxy Client traffic.  If a NIC has been assigned only
+       one IP or IPv6 address, then only the interface name needs to be
+       specified. If the NIC has been assigned more than one address (multiple
+       IP addresses, multiple IPv6 addresses, or both IP and IPv6 addresses),
+       then the address keyword and one IP or IPv6 address should also be
+       specified.  If a single interface entry exists for the NIC and the
+       address is omitted, the "main" address assigned to the interface is used
+       and other assigned addresses are ignored.  Finally, if an interface entry
+       exists with the address omitted and another interface entry exists for
+       the same NIC containing an address, the specified address is used.
+
+       At least one interface keyword must be specified in the file in order for
+       a Disk Proxy Client Server to be started.
+
+       The remaining keywords are used to override the default values for
+       tunable parameters.  Note that these values are propagated from the Proxy
+       Servers to the Proxy Clients , and thus can affect the behavior of both.
+       Note also that not all tuning parameters affect all platforms.
+
+       The optional transfer_buffer_size_kb keyword specifies the size in
+       Kilobytes of the socket transfer buffers used for Proxy Client I/O.  The
+       default value is 256 and values between 32 and 4096 are allowed.
+
+       The optional transfer_buffer_count keyword specifies the number of socket
+       transfer buffers used per connection for Proxy Client I/O.  Note that
+       this parameter is not used on Linux Proxy Servers or Clients.  However,
+       it is used by Windows Proxy Clients, and the value is passed to them by
+       Linux Proxy Servers.  The default value is 16 and values between 4 and
+       128 are allowed.
+
+       The optional server_buffer_count keyword specifies the number of I/O
+       buffers that will be allocated per network interface on the Proxy Server.
+       The default value is 24 and values between 4 and 512 are allowed.
+
+       The optional tcp_window_size keyword specifies the size in Kilobytes of
+       the TCP window used for Proxy Client I/O connections.  The default value
+       is 0 and values between 0 and 16384 are allowed.  The setting of 0 has a
+       special meaning, which is that no change is made to the default system
+       value. This allows Linux autotuning to adjust the receive buffer size and
+       TCP window size dynamically for each connection. Quantum recommends this
+       setting when autotuning is enabled, which is the default for recent Linux
+       versions.
+
+       The optional daemon_threads keyword specifies the number of kernel
+       threads on the server that will be used to service Proxy Client I/O
+       requests.  The default value is 8 and values between 2 and 256 are
+       allowed.
+
+       The optional server_conn_count keyword controls how many connections a
+       client makes to each gateway. This allows the use of multiple TCP links
+       over a single physical subnet rather than having to use multiple subnets
+       and physical NICs.  The default is 1 and up to 16 connections may be
+       configured.  This parameter requires updated logic on the MDC, gateways
+       and DLC clients. If any of these is backrev code, the client will only
+       use one connection per network.
+
+HA ENVIRONMENTS
+       If you choose to configure the Distributed LAN Server on a StorNext
+       cluster running in High Availability (HA) mode, each HA node must have
+       its own dpserver files detailing the NICs on that node.  The dpserver
+       files are not synchronized between HA pairs.
+
+       If the Distributed LAN Server is configured after converting to HA, the
+       file system(s) running as Distributed LAN servers must be unmounted and
+       mounted again to service DLC requests.
+
+       In StorNext startup and failover situations, the VIP is dynamically
+       associated with a physical address on the Primary server.  Do not use VIP
+       interfaces when setting up the dpserver configuration file, or it will
+       not be available when the node is running as Secondary.  The physical
+       interface and IP address should be used in this situation.
+
+EXAMPLE CONFIGURATION FILE
+       A very basic dpserver configuration file
+
+          interface eth0
+
+       A basic multi-interface dpserver configuration file
+
+          interface eth0
+          interface eth1
+          interface eth2
+          interface eth3
+
+       A more complex dpserver configuration file
+
+          interface eth1 address 10.3.21.2
+          tcp_window_size_kb 64
+          transfer_buffer_size_kb 256
+          transfer_buffer_count 16
+          server_buffer_count 8
+          daemon_threads 8
+
+FILES
+       /Library/Preferences/Xsan/dpserver
+       /Library/Preferences/Xsan/dpserver.VolName
+
+SEE ALSO
+       mount_acfs(8), sndpscfg(8)
+
+
+

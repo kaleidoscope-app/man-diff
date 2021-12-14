@@ -1,0 +1,490 @@
+MOUNT_ACFS(8)                System Manager's Manual               MOUNT_ACFS(8)
+
+
+
+NAME
+       mount_acfs - mount an Xsan volume
+
+SYNOPSIS
+       mount_acfs [options] volume dir
+
+DESCRIPTION
+       mount_acfs is a mount helper utility that mounts an Xsan volume on client
+       machines.  This command is normally executed by mount(8) when the -t acfs
+       option is used.
+
+       Each client file system must communicate with a File System Manager (FSM)
+       running either locally or on a remote host.  The FSM manages all the
+       activity for the client in terms of storage allocation and metadata. Data
+       transfers go directly between disks and the client.
+
+       The mount_acfs command supports mounting file systems that are running in
+       a cluster other than your default cluster. Your default cluster is
+       defined with the fsmcluster(4) file or, if this doesn't exist, the
+       default is _cluster0/_addom0.  When mounting a file system in a non-
+       default cluster, the filesystem must be qualified with the correct
+       cluster information. The syntax is filesystem@<cluster>[/addom].
+
+OPTIONS
+       Options supported by the mount command:
+
+       -f     LINUX ONLY
+
+              Fakes the mount process but updates the /etc/mtab file. The mount
+              call will fail if the mtab entry already exists.
+
+       -n     LINUX ONLY
+
+              Mounts the filesystem without updating the /etc/mtab file.
+
+       -v     Verbose mode.
+
+       Additional options may be specified in the /etc/fstab file or on the
+       mount(8) command line via the -o parameter.  The -o parameter should be
+       specified only once.  If multiple options are needed, they should follow
+       the -o in a comma-separated list.
+
+       ro     Default: rw
+
+              Mount the file system read-only.
+
+       rw     Default: rw
+
+              Mount the file system read/write.
+
+       compat32
+              Default: off
+
+              When set, force directory offsets to fit into 31 bits and inode
+              numbers to 32 bits.  This should only be used when a problem has
+              been identified with using the full size of the struct dirent
+              d_off field from readdir(2) or older clients that are unable to
+              handle large inode numbers.
+
+       nodev  Default: off
+
+              Do not allow device special files to be accessed on the file
+              system.
+
+       noexec Default: off
+
+              Do not allow the execution of programs resident on this file
+              system.
+
+       nosuid Default: off
+
+              When executing programs resident on this file system, do not honor
+              the set-user-ID and set-group-ID bits.
+
+       threads=n
+              Default: 12
+
+              Determines the number of kernel threads that are created.  These
+              threads will show up as cvfsiod processes in the output of ps.
+
+              Each client file system dedicates one thread to managing a socket
+              used to communicate with the FSM.  The other threads handle
+              unsolicited messages.
+
+              This setting does not affect other kernel threads, for example,
+              cvfsd, cvfsbufiod, cvfsflusher, cvfs_dputter.
+
+              The minimum value allowed is 12.
+
+       diskless={yes|no}
+              Default: no
+
+              If the diskless option is set to yes then the mount will succeed,
+              even if the volume's disks are unavailable. Any subsequent I/O
+              will fail until the volume's disks are visible through the Xsan
+              portmapper.
+
+       diskproxy={client|server|both}
+              If the diskproxy option is set to client, then the mount may use
+              a  Proxy Server to do its data I/O. If the client host has SAN
+              connectivity to some or all of the disks in the file system, then
+              those disks will be accessed via the SAN connection, not the
+              network. This client is then referred to as a disk proxy hybrid
+              client.  When SAN connectivity is used, the server license on the
+              MDC will be charged for this mount. If it is desired that this
+              client use the network for the mount, then the disks should be
+              made unavailable to this host or the cvpaths file should be
+              configured to prevent StorNext from using the directly attached
+              disks. The who subcommand of cvadmin shows the type of proxy
+              mount.
+
+              If the diskproxy option is set to server, then this system will
+              become a Proxy Server for this file system.  A dpserver
+              configuration file must exist to define the operating parameters
+              for the Server.  See dpserver(4) and sndpscfg(8) for details.
+
+              A set of proxy servers may be configured in a sparse manner where
+              each server sees only a subset of the disks in the file system.
+              The servers make use of the "diskless" mount option. The proxy
+              client will issue disk i/o requests to the appropriate server. No
+              special configuration is needed on the client. A proxy server
+              configured this way will not be able to access disks it does not
+              see locally.
+
+              If the diskproxy option is set to both, then the host acts as both
+              a client and a server. This overcomes the issues of the sparse
+              proxy server configuration mentioned above. This option is only
+              supported on Linux.
+
+              Note: The diskproxy option is available only on Linux and OS X
+              systems, and the server option is available on Linux systems. The
+              diskproxy selection on Windows clients is made through the Client
+              Configuration utility.
+
+       proxypath={balance|rotate|sticky|filestickybalance|filestickyrotate}
+              Only used if the diskproxy option is set to client, controls the
+              algorithm used to balance I/O across Proxy Server connections.
+
+              The proxy client keeps track of bytes of I/O pending, bytes of I/O
+              completed and the elapsed time for each I/O request. It uses these
+              values and certain rules to determine the server that is used for
+              subsequent I/O requests. These collected counters are decayed over
+              time so that only the most recent (minute or so) I/O requests are
+              relevant.
+
+              There are two main components of the selection - the algorithm
+              itself and the use of file sticky behavior. The algorithms are
+              balance, rotate and sticky.
+
+              The balance algorithm attempts to keep the same amount of time's
+              worth of I/O outstanding on each connection. i.e. Faster links
+              will tend to get more of the I/O.  A link could be faster because
+              a given server is more efficient or less busy. It also may be the
+              case that network traffic over a given link uses higher speed
+              interconnects such as 10G ethernet.
+
+              The rotate algorithm attempts to keep the same number of bytes of
+              I/O pending on each Proxy Server connection.  This is similar to
+              balance in that servers which respond more quickly to I/O requests
+              will have the outstanding I/O bytes reduced at a more rapid pace
+              than slower servers and will thus be used more often than slower
+              links.
+
+              The difference between balance and rotate is that with balance,
+              higher speed links will have more bytes of I/O outstanding than
+              slower links.
+
+              In both balance and rotate, if more than one path has the best
+              score, a pseudo-random selection among the winning paths is made
+              to break the tie.
+
+              The sticky algorithm assigns I/O to specific luns to specific
+              Proxy Server connections.
+
+              Filesticky behavior attempts to assign I/O for a given file to a
+              specific proxy server. It does this by using the file's inode
+              number modulo the number of servers to select a server index.
+              Since all clients see the same inode number for a given file, all
+              clients will select the same server.  If there is more than one
+              path to that server, then the algorithm (balance or rotate) will
+              be used to select among the paths.
+
+              Filesticky behavior is controlled through a mount option.
+
+              When no proxypath mount option is specified, the balance option is
+              selected.
+
+              For mount options balance and rotate, filesticky is not selected.
+              For filestickybalance and filestickyrotate filesticky is selected.
+
+              Note: The proxypath mount option is available only on Linux, OS X,
+              and Solaris systems.  The proxypath options are selected on
+              Windows clients through the Client Configuration utility.
+
+       proxyclient_rto=n
+              Only used if the diskproxy option is set to client.  Defines the
+              starting value in seconds to wait for a Proxy Client I/O read
+              request to complete before disconnecting from the Proxy Server and
+              resubmitting the request to a different Proxy Server. If reads are
+              completing but coming close to the configured timeout, the timeout
+              will be increased.
+
+              The minimum value is 1 second, maximum is 3600 and the default
+              value is 15.
+
+              Note: This option is available only on Linux, OS X, and Solaris
+              systems.
+
+       proxyclient_wto=n
+              Only used if the diskproxy option is set to client.  Defines the
+              starting value in seconds to wait for a Proxy Client I/O write
+              request to complete before disconnecting from the Proxy Server and
+              resubmitting the request to a different Proxy Server. If writes
+              are completing but coming close to the configured timeout, the
+              timeout will be increased.
+
+              The minimum value is 1 second, maximum is 3600 and the default
+              value is 30.
+
+              Note: This option is available only on Linux and Solaris systems.
+
+       proxyclient_wrq=n
+              Only used if the diskproxy option is set to client.  Defines the
+              number of seconds to wait for lost write requests.  A lost write
+              request is an active write through a gateway and the connection to
+              that gateway is unexpectedly lost.  These writes may or may not
+              have been flushed to disk or even started at the time the client
+              notices the connection is lost.  The default behavior (0) is that
+              lost writes are immediately re-queued to an available gateway.  If
+              the connection to the gateway over which the lost writes were sent
+              is reactivated, the gateway will be queried if any writes from
+              this connection are still active. If there are none, such as would
+              be the case if the server unexpectedly re-booted, the client will
+              immediately requeue all lost writes from the previous connection
+              to this gateway.  A value of -1 indicates that the client will
+              never time out lost writes.
+
+              The minimum value is -1, maximum is 2147483647 and the default is
+              0.
+
+              Note: This option is available only on Linux systems.
+
+       atimedelay={yes|no}
+              Default: no
+
+              Perform lazy atime updates. This option improves performance by
+              waiting until closing a file before updating the atime value of
+              the file. This reduces extra network traffic and latency linked to
+              atime updates.
+
+       nrtiotokenhold=n
+              Default: 60
+
+              The QOS Token Hold Time (nrtiotokenhold) parameter is only
+              applicable when using the Xsan Quality of Service (QOS) feature
+              for real-time I/O.  The parameter determines the number of seconds
+              that a client storage pool will hold on to a non-realtime I/O
+              token during periods of inactivity. If no I/O is performed on a
+              storage pool within the specified number of seconds, the token
+              will be released back to the FSM.
+
+              The parameter should be specified in five second increments; if
+              the parameter is not a multiple of five, it will be rounded up
+              automatically.
+
+       auto_concwrite={yes|no}
+              Default: no
+
+              When set to yes, allows multiple threads to write to files
+              concurrently.
+
+              Note: setting auto_concwrite=yes requires that sparse=no also be
+              specified.  Also, protect_alloc=yes is disallowed with
+              auto_concwrite=yes.
+
+       verbose={yes|no}
+              Default: no
+
+              When set to yes, mount_acfs will display configuration information
+              about the volume being mounted.
+
+       debug={yes|no}
+              Default: no
+
+              When set to yes, mount_acfs will display debugging information.
+              This can be useful in diagnosing configuration or disk problems.
+
+       mnt_retrans=n
+              Default: 1
+
+              Indicates the number of retransmission attempts the file system
+              will make during the execution of the mount(2) system call. Until
+              the volume is mounted, the kernel will only retransmit messages to
+              the FSM mnt_retrans times.  This parameter works in conjunction
+              with the mnt_recon parameter.  This can help reduce the amount of
+              time a mount command will hang during boot; see the mnt_type
+              option.
+
+       mnt_recon={hard|soft}
+              Default: soft
+
+              Controls whether after mnt_retrans attempts at contacting the FSS
+              during the mounting and unmounting of a volume, the kernel will
+              either give up or continue retrying forever. It is advisable to
+              leave this option at soft so that an unresponsive FSS does not
+              hang the client during boot.
+
+       mnt_type={bg|fg}
+              Default: fg (foreground)
+
+              Setting mnt_type to bg will cause the mount to run in the
+              background if the mount of the indicated volume fails. mount_acfs
+              will retry the mount mnt_retry number of times before giving up.
+              Without this option, an unresponsive FSM could cause a machine to
+              hang during boot while attempting to mount Xsan volumes.
+
+              During background mounts, all output is re-directed to
+              /var/adm/SYSLOG.
+
+       mnt_retry=n
+              Default: Depends on mnt_type. If mnt_type==fg, mnt_retry=5
+              otherwise mnt_retry=500.
+
+              If a mount attempt fails, retry the connection up to n times.
+
+       retrans=n
+              Default: 5
+
+              Indicates the number of attempts that the kernel will make to
+              transmit a message to the FSM. If no response to a transmitted
+              message arrives in the amount of time indicated by the timeout
+              parameter, the request will be retransmitted. If the volume was
+              mounted with the recon=soft parameter, the file system will give
+              up after retrans attempts at sending the message to the FSM and
+              will return an error to the user.
+
+       recon={hard|soft}
+              Default: hard
+
+              This option controls whether after retrans attempts at sending a
+              message to the FSM, the file system will give up or continue
+              retrying forever. For hard mounted volumes, the kernel will retry
+              the connection attempt forever, regardless of the value of the
+              retrans field.  For soft mounted volumes, the kernel will only try
+              retrans number of times before giving up and returning an error of
+              ETIME (62).
+
+       timeout=n
+              Default: 100 (ten seconds)
+
+              The timeout value, in tenths of a second (0.1 seconds) to use when
+              sending message to the FSM.  If no response is received from the
+              FSM in the indicated period the request is tried again. On heavily
+              loaded systems, you may want to adjust the timeout value higher.
+
+       syslog={none|notice|info|debug}
+              Default: notice
+
+              During normal operations, certain messages will be logged to the
+              system console using the syslog facility. debug is the most
+              verbose, with notice being reserved for critical information.  It
+              is important to note that the syslog level is global per system,
+              not unique to each volume. Changing the level for one volume will
+              affect all other Xsan volumes.
+
+       dircachesize=n
+              Default: 10 MB
+
+              This option sets the size of the directory cache. Directory
+              entries are cached on the client to reduce client-FSM
+              communications during directory reads.  Note: the directory cache
+              on a client is shared across all mounted Xsan volumes.  If
+              different values of dircachesize are specified for multiple file
+              systems, the maximum is used.  When applying this setting, ensure
+              that the system has sufficient kernel memory.
+
+              Can be specified in bytes (e.g. 2097152), kilobytes (e.g. 2048k),
+              or megabytes (e.g. 2m).
+
+       cvnode_max=n
+              Default: varies by platform.
+
+              This option sets the maximum number of cvnode entries cached on
+              the client.  Caching cvnode entries improves performance by
+              reducing Client-FSM communication. However, each cached cvnode
+              entry must be maintained by the FSM as well. In environments with
+              many Xsan clients the FSM may be overloaded with cvnode
+              references. In this case reducing the size of the client cvnode
+              cache will alleviate this issue.
+
+       max_dma=n
+              LINUX ONLY
+
+              Default: varies by platform.
+
+              This option tells the kernel the maximum DMA size a user process
+              can issue. This can impact the number of concurrent I/Os the file
+              system issues to the driver for a user I/O. There are other
+              factors that can also limit the number of concurrent I/Os. The
+              default is 512m
+               on Linux.  WARNING: Incorrectly setting this value may degrade
+              performance or cause a crash/hang.
+
+       max_dev=n
+              LINUX ONLY
+
+              Default: Linux: 512M with Linux DM/Multipath. 512K with StorNext
+              multipath.
+
+              This option tells the kernel the maximum I/O size to use when
+              issuing I/Os to the underlying disk driver handling a LUN.  The
+              file system attempts to get the maximum I/O size using the IOCINFO
+              ioctl. Since the ioctl is not always reliable, this mount option
+              exists to override the ioctl return value.  Example usage
+              max_dev=1m or max_dev=256k.  WARNING: Incorrectly setting this
+              value may result in I/O failures or cause a crash/hang. For Linux
+              clients, only use when recommended by Quantum Support.
+
+       sparse={yes|no}
+              Default: yes.
+
+              Some utilities detect "holes" in a file and assume the file system
+              will fill the hole with zeroes. To ensure that Xsan writes zeroes
+              to allocated, but uninitialized areas on the disk, set sparse=yes.
+
+DISK DEVICES
+       mount_acfs will query the local portmapper for the list of all accessible
+       Xsan disk devices. Xsan disks are recognized by their label. This list is
+       matched with the list of devices for each storage pool in the volume. If
+       any disk is missing, I/O will be prohibited, and you will receive I/O
+       errors.
+
+RECONNECT
+       A socket is maintained for each unique Xsan client file system for
+       sending and receiving commands to and from the FSM. If the socket
+       connection is lost for any reason, it must be reconnected.
+
+       There are two daemons involved in re-establishing the connection between
+       an Xsan client and the FSM. The first is the socket input daemon, which
+       is a dedicated daemon that handles all input from the FSM. The second is
+       the reconnect daemon, which handles the work of re-establishing the
+       logical connection with the FSM. Both of these daemons appear as cvfsd in
+       the output from ps.
+
+       Messages will be printed on the system console and to syslog during
+       reconnect processing; the verbosity of the messages displayed can be
+       controlled via the syslog= parameter and cvdb(8).
+
+       When the socket input daemon detects that the connection has been lost,
+       it will attempt to first connect to the fsm portmapper process, fsmpm(8).
+       Once it has succeeded and has the port number of the fsm(8)
+        to use, it attempts to create a new socket to the FSM using the port
+       number returned by fsmportmapper.
+
+       If no response is received from either the Xsan portmapper or the FSM,
+       the daemon will pend for the amount of time specified by the timeout=
+       parameter.  The socket input daemon will attempt to reconnect to the FSM
+       forever.
+
+       If any of the configuration parameters in the FSM configuration file
+       changed, then the connection will be terminated, and no further I/O will
+       be allowed. The only recourse will be to unmount and remount the volumes.
+       See snfs_config(5) (part of the cvfs_server product) for more information
+       on configuring the FSM.
+
+INTERRUPTIBLE SLEEPS
+       Whenever a process must go to sleep in the Xsan file system, the sleep is
+       interruptible, meaning that the process can be sent a signal and the
+       operation will fail with an error (usually EINTR). The only exceptions
+       are when a process is executing the exit(2) system call and is closing
+       out all open files; due to Unix limitations, processes are immune to
+       signals at that point.
+
+EXAMPLES
+       To mount a volume that is described by the FSS configuration file
+       myvolume.cfg on that host:
+
+
+          mount -t acfs myvolume /usr/tmp/foo
+
+
+SEE ALSO
+       cvfsd(8), cvdb(8), mount(8), chkconfig(8), fsmcluster(4) deviceparams(4)
+
+
+

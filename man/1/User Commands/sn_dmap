@@ -1,0 +1,212 @@
+sn_dmap(1)                   General Commands Manual                  sn_dmap(1)
+
+
+
+NAME
+       sn_dmap - Disk map utility
+
+SYNOPSIS
+       sn_dmap [options] devname
+
+DESCRIPTION
+       sn_dmap is a utility that can be used to manage disk volumes that are
+       thin-provisioned.  Typically these volumes remap logical block addresses
+       (LBAs) and allocate space as needed. Space is allocated when a block is
+       first written and can only be freed by issuing a SCSI unmap command.
+
+       sn_dmap operates on one device at a time specified by the devname
+       parameter.  The devname parameter can either be a full path to the device
+       like /dev/mapper/mpathai or the StorNext volume label.  By default
+       sn_dmap will print summary mapping information about the volume.  More
+       detailed information may be displayed using the -v option.  Detailed
+       output is also available in JSON format.
+
+
+OPTIONS
+       -?     Display usage and exit.
+
+       -c     Clear.  Unmap all the blocks on the volume except the StorNext
+              label.  This option should be used only to clean up a volume
+              before a cvmkfs operation.  This will effectively clear all the
+              blocks on the volume except the StorNext label and cannot be
+              undone.
+
+       -C     Clear.  Unmap all the blocks on the volume including the StorNext
+              label.  This option should be used only to clean up a volume
+              before a cvlabel and a cvmkfs operation.  This will effectively
+              clear all the blocks on the volume including the StorNext label
+              and cannot be undone.
+
+       -d[dddd]
+              Run in debug mode. The more "d's" specified, the more debug
+              information is printed.
+
+       -f     Force the clear or unmap operation without an warning message.
+
+       -h     Help. Display usage and exit.
+
+       -l LBA The starting logical block address.  Optional when the -v option
+              is specified and required for an unmap operation. See -u.
+
+       -n nblks
+              Specify the number of blocks. This option is required for an unmap
+              operation. See -u.
+
+       -o nsegments
+              Specify the number of segments to display. This option is valid
+              with the -v option and limits the number of segments displayed to
+              the specified value.
+
+       -j     Write detailed information to standard output in JSON format.
+
+       -P     Write detailed information to standard output in compact JSON
+              format.  This minimizes the size of the output and is intended to
+              be machine readable only.
+
+       -t     Report whether or not the device is thin provisioned and exit with
+              status 0 if thin and status 1 if not thin.
+
+       -u     Unmap the range specified by the -l and -n options.
+
+       -v     Verbose.  Display information about all the segments.  The -l
+              option can be specified to display segments starting with the
+              specified LBA.  The -o may be specified to limit the output to the
+              specified number of segments.
+
+       -x     Display segment information in hexadecimal.  This option is
+              available only with the -v option.
+
+EXAMPLES
+       Display general mapping information about the given volume:
+
+          per1-# sn_dmap  /dev/mapper/mpathal
+          /dev/mapper/mpathal {
+
+                             segments         blocks
+                mapped              4        2277376    1.09 GiBytes
+              unmapped              6    15818022912    7.37 TiBytes
+                 total             10    15820300288    7.37 TiBytes
+
+          } snfs_meta_qx3_L23
+
+       Display verbose information about each segment of the given volume.  Note
+       that we used the StorNext volume name as the device name in this example:
+
+          per1-# sn_dmap -v snfs_meta_qx3_L23
+          /dev/mapper/mpathal {
+
+             Segment                      LBA       NBlocks      Status
+                   0                        0          8192      mapped    4.00 MiBytes
+                   1                     8192       7806976    unmapped    3.72 GiBytes
+                   2                  7815168       2088960      mapped   1020.00 MiBytes
+                   3                  9904128       5718016    unmapped    2.73 GiBytes
+                   4                 15622144        172032      mapped   84.00 MiBytes
+                   5                 15794176    4294959104    unmapped    2.00 TiBytes
+                   6               4310753280    4294959104    unmapped    2.00 TiBytes
+                   7               8605712384    4294959104    unmapped    2.00 TiBytes
+                   8              12900671488    2919620608    unmapped    1.36 TiBytes
+                   9              15820292096          8192      mapped    4.00 MiBytes
+
+          } snfs_meta_qx3_L23
+
+       Unmap a segment with the force option (no warning):
+
+          per1-# sn_dmap -f -u -l 7815168 -n 2088960 snfs_meta_qx3_L23
+
+       Verify that the segment is now unmapped:
+
+          per1-# sn_dmap -v snfs_meta_qx3_L23
+          /dev/mapper/mpathal {
+
+             Segment                      LBA       NBlocks      Status
+                   0                        0          8192      mapped    4.00 MiBytes
+                   1                     8192      15613952    unmapped    7.45 GiBytes
+                   2                 15622144        172032      mapped   84.00 MiBytes
+                   3                 15794176    4294959104    unmapped    2.00 TiBytes
+                   4               4310753280    4294959104    unmapped    2.00 TiBytes
+                   5               8605712384    4294959104    unmapped    2.00 TiBytes
+                   6              12900671488    2919620608    unmapped    1.36 TiBytes
+                   7              15820292096          8192      mapped    4.00 MiBytes
+
+          } snfs_meta_qx3_L23
+
+       Clear all mapped segments except those containing the StorNext label:
+
+          per1-# sn_dmap -c snfs_meta_qx3_L23
+
+          sn_dmap: *WARNING WARNING WARNING*
+
+                    You are about to unmap all the blocks on the device /dev/mapper/mpathal.
+                    This will destroy all data on the StorNext volume snfs_meta_qx3_L23
+                    except the StorNext label. This operation can not be undone.
+
+                    Do you want to proceed? (y / n) -> y
+
+       Verify all is unmapped except the StorNext label (first and last
+       segments):
+
+          per1-# sn_dmap -v snfs_meta_qx3_L23
+          /dev/mapper/mpathal {
+
+             Segment                      LBA       NBlocks      Status
+                   0                        0          8192      mapped    4.00 MiBytes
+                   1                     8192    4294959104    unmapped    2.00 TiBytes
+                   2               4294967296    4294959104    unmapped    2.00 TiBytes
+                   3               8589926400    4294959104    unmapped    2.00 TiBytes
+                   4              12884885504    2935406592    unmapped    1.37 TiBytes
+                   5              15820292096          8192      mapped    4.00 MiBytes
+
+          } snfs_meta_qx3_L23
+
+       Generate detailed output in JSON format:
+
+          [root@dev-snc-daiquiri-n1 ~]# sn_dmap -j snfs_data_dev-sncqx24ss-1_1_L7
+          {
+              "raw device": "/dev/mapper/mpathab",
+              "mappings": [
+                  {
+                      "lba": 0,
+                      "nblocks": 163840,
+                      "status": "mapped"
+                  },
+                  {
+                      "lba": 163840,
+                      "nblocks": 1998848,
+                      "status": "unmapped"
+                  },
+          (additional mappings...)
+                  {
+                      "lba": 1953112064,
+                      "nblocks": 8192,
+                      "status": "mapped"
+                  }
+              ],
+              "mapped segments": 597,
+              "mapped blocks": 8077312,
+              "mapped bytes": 4135583744,
+              "unmapped segments": 596,
+              "unmapped blocks": 1945042944,
+              "unmapped bytes": 995861987328,
+              "total segments": 1193,
+              "total blocks": 1953120256,
+              "total bytes": 999997571072
+          }
+
+NOTES
+       The unmap option (-u) is most likely useful only for development
+       purposes.
+
+       sn_dmap execs the cvlabel command (/usr/cvfs/bin/cvlabel) to match the
+       StorNext volume name to the device.
+
+       sn_dmap is currently supported only on Linux.
+
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/bin/sn_dmap
+
+SEE ALSO
+       cvlabel(8)
+
+
+

@@ -1,0 +1,115 @@
+ICMP(4)                       Device Drivers Manual                      ICMP(4)
+
+NAME
+     icmp – Internet Control Message Protocol
+
+SYNOPSIS
+     #include <sys/socket.h>
+     #include <netinet/in.h>
+
+     int
+     socket(AF_INET, SOCK_RAW, proto);
+
+DESCRIPTION
+     ICMP is the error and control message protocol used by IP and the Internet
+     protocol family.  It may be accessed through a “raw socket” for network
+     monitoring and diagnostic functions.  The proto parameter to the socket
+     call to create an ICMP socket is obtained from getprotobyname(3).  ICMP
+     sockets are connectionless, and are normally used with the sendto and
+     recvfrom calls, though the connect(2) call may also be used to fix the
+     destination for future packets (in which case the read(2) or recv(2) and
+     write(2) or send(2) system calls may be used).
+
+     Outgoing packets automatically have an IP header prepended to them (based
+     on the destination address).  Incoming packets are received with the IP
+     header and options intact.  Note that the ip_off and ip_len fields are in
+     host byte order.  For more information about the IP header structure, see
+     ip(4).
+
+   Non-privileged ICMP
+     ICMP sockets can be opened with the SOCK_DGRAM socket type without
+     requiring root privileges. The synopsis is the following:
+
+     socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP)
+
+     Datagram oriented ICMP sockets offer a subset of the functionality
+     available to raw ICMP sockets. Only IMCP request messages of the following
+     types can be sent: ICMP_ECHO, ICMP_TSTAMP or ICMP_MASKREQ.  The code field
+     must be the value zero (0).  The minimal length of an ICMP message request
+     is eight (8) octets.
+
+     The advantage of using datagram oriented ICMP sockets is that even a non-
+     privileged process can use ICMP echo requests to gauge the quality of the
+     connectivity to a host, or to receive ICMP destination unreachable message
+     for path MTU discovery, or to receive time exceeded messages for
+     traceroute.
+
+     The following IP level option can be used with datagram oriented ICMP
+     sockets:
+
+         IP_OPTIONS
+         IP_HDRINCL
+         IP_TOS
+         IP_TTL
+         IP_RECVOPTS
+         IP_RECVRETOPTS
+         IP_RECVDSTADDR
+         IP_RETOPTS
+         IP_MULTICAST_IF
+         IP_MULTICAST_TTL
+         IP_MULTICAST_LOOP
+         IP_ADD_MEMBERSHIP
+         IP_DROP_MEMBERSHIP
+         IP_MULTICAST_VIF
+         IP_PORTRANGE
+         IP_RECVIF
+         IP_IPSEC_POLICY
+         IP_STRIPHDR
+
+     When the IP option IP_HDRINCL is used, the provided IP header must obey the
+     following rules:
+
+         ip_v       Must be IPVERSION (4);
+         ip_hl      Between 5 and 10 (inclusive);
+         ip_tos     Any value;
+         ip_len     Must be the total length of IP datagram (IP header + ICMP
+                    message);
+         ip_id      Must be zero, will be automatically set;
+         ip_off     Must be zero, will be automatically set;
+         ip_ttl     Any value;
+         ip_p       Must be IPPROTO_IP;
+         ip_sum     Value ignored, will be automatically set;
+         ip_src     Must be an IP address currently assigned to one of the local
+                    interface or INADDR_ANY;
+         ip_dst     Any address;
+         ip_opts    Any option.
+
+     The maximum length of a IMCP message that can be sent is controlled by the
+     sysctl variable net.inet.raw.maxdgram.
+
+DIAGNOSTICS
+     A socket operation may fail with one of the following errors returned:
+
+     [EISCONN]        when trying to establish a connection on a socket which
+                      already has one, or when trying to send a datagram with
+                      the destination address specified and the socket is
+                      already connected;
+
+     [ENOTCONN]       when trying to send a datagram, but no destination address
+                      is specified, and the socket hasn't been connected;
+
+     [ENOBUFS]        when the system runs out of memory for an internal data
+                      structure;
+
+     [EADDRNOTAVAIL]  when an attempt is made to create a socket with a network
+                      address for which no network interface exists;
+
+     [EINVAL]         when an invalid value is used with IMCP datagram socket
+                      for a field of the IP or ICMP header.
+
+SEE ALSO
+     recv(2), send(2), inet(4), intro(4), ip(4)
+
+HISTORY
+     The icmp protocol appeared in 4.3BSD.
+

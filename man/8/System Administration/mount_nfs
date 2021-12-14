@@ -1,0 +1,490 @@
+MOUNT_NFS(8)                 System Manager's Manual                MOUNT_NFS(8)
+
+NAME
+     mount_nfs – mount NFS file systems
+
+SYNOPSIS
+     mount_nfs [-o options] server:/path directory
+
+DESCRIPTION
+     The mount_nfs command calls the mount(2) system call to prepare and graft a
+     remote NFS file system ( server:/path ) on to the file system tree at the
+     point directory.
+
+     This command is expected to be executed by the mount(8) command.  Direct
+     use of mount_nfs to mount NFS file systems is strongly discouraged because
+     there is little practical benefit of using it instead of mount(8).
+
+     For NFS versions that use a separate mount protocol, mount_nfs implements
+     the mount protocol as described in RFC 1094, Appendix A and NFS: Network
+     File System Version 3 Protocol Specification, RFC 1813, Appendix I.
+
+     By default, mount_nfs will attempt the mount twice before exiting with an
+     error.  If the -o bg option is given, it will attempt the mount once and
+     then background itself to continue trying another 10,000 times (pausing for
+     one minute between attempts).  The option -o retrycnt=⟨num⟩ can be used if
+     a different retry behavior is desired for a mount.
+
+     If the server becomes unresponsive while an NFS file system is mounted, any
+     new or outstanding file operations on that file system will hang
+     uninterruptibly until the server comes back (or that NFS file system is
+     forcibly unmounted).  To modify this default behaviour, see the -o intr and
+     -o soft mount options.
+
+     Mount options are specified with a -o flag followed by a comma separated
+     string of options.  See the mount(8) man page for possible options and
+     their meanings.  The following NFS-specific options are also available:
+
+     bg      Retry mount in background.  If an initial attempt to contact the
+             server fails, fork off a child to keep trying the mount in the
+             background.  Useful for startup scripts where the file system mount
+             is not critical to multiuser operation.
+
+     retrycnt=⟨num⟩
+             Set the retry count for doing the mount to the specified value.
+             The default is 1 for foreground mounts and 10,000 for background
+             mounts.
+
+     udp     Use UDP transport protocol.
+
+     tcp     Use the TCP transport protocol instead of UDP.  The default is to
+             try TCP first, then fall back to UDP if the server doesn't support
+             TCP.
+
+     inet    Use only IPv4 addresses.
+
+     inet6   Use only IPv6 addresses.
+
+     proto=⟨netid⟩
+             Use the transport protocol and address family as specified by the
+             given ONC RPC Netid (RFC 5665).  Valid netid values are: tcp (TCP
+             over IPv4), udp (UDP over IPv4), tcp6 (TCP over IPv6), and udp6
+             (UDP over IPv6).  Note that this option differs from the separate
+             tcp and udp options described above in that each netid value
+             specifies both a transport protocol and address family (IP
+             version).
+
+     mntudp  Force the mount protocol to use UDP transport, even for TCP NFS
+             mounts.  (Necessary for some old BSD servers.)
+
+     mountport=⟨port-number⟩
+             Connect to the NFS server's mount daemon using the given port
+             number.
+
+     port=⟨port-number⟩
+             Connect to an NFS server at the given port number.
+
+     noconn  Do not connect UDP sockets.  For UDP mount points, do not do a
+             connect(2).  This must be used for servers that do not reply to
+             requests from the standard NFS port number 2049.  It may also be
+             required for servers with more than one IP address if replies come
+             from an address other than the one specified in the requests.
+
+     resvport
+             Use a reserved socket port number.  This is useful for mounting
+             servers that require clients to use a reserved port number on the
+             mistaken belief that this makes NFS more secure. (For the rare case
+             where the client has a trusted root account but untrustworthy users
+             and the network cables are in secure areas this does help, but for
+             normal desktop clients this does not apply.)
+
+     intr    Make the mount interruptible, which implies that file system calls
+             that are delayed due to an unresponsive server will fail with EINTR
+             when a termination signal is posted for the process.
+
+     soft    Make the mount soft, which means that file system calls will fail
+             after retrans round trip timeout intervals.  Note: mounts which are
+             both soft and read-only will also have the locallocks mount option
+             enabled by default - unless explicitly overridden with a lock
+             option (for example, nolocks or nolocallocks ).
+
+     vers=⟨num[.num]⟩[-⟨num[.num]⟩]
+     nfsvers=⟨num[.num]⟩[-⟨num[.num]⟩]
+             NFS protocol version number - 2 for NFSv2, 3 for NFSv3 and 4 for
+             NFSv4.  The default is to try version 3 first, and fall back to
+             version 2 if the mount fails. A range of versions can be specified
+             by including a dash and another version with no spaces between
+             versions and the dash. In that case the highest version is tried
+             first and if not successful fall back to each version down to the
+             lowest version specified until the mount succeeds or the lowest
+             version fails.  Note minor versions may be specified for versions
+             greater than or equal to four by appending a dot and then the minor
+             version number. Currently NFSv4 is the highest supported version
+             with a minor version of zero. If no minor version is specified,
+             zero is assumed. Specifying a non supported version or minor
+             version will print a warning and ignore the vers or nfsvers option.
+             Versions 2 or 3 do not support minor versioning so minor versions
+             greater than zero are treated as above.
+
+     nfsv2
+     nfsv3
+     nfsv4   Deprecated.  Use -o vers=⟨num⟩ to specify NFS protocol version.
+
+     sec=⟨mechanism⟩
+             Force a specific security mechanism to be used for the mount, where
+             mechanism is one of: krb5p, krb5i, krb5, or sys.  When this option
+             is not given the security mechanism will be negotiated
+             transparently with the remote server.
+
+     etype=⟨encryption-type⟩
+             Use the specified encryption type for the mount, where
+             encryption-type is one of: des3, des3-cbc-sha1, des3-cbc-sha1-kd,
+             aes128, aes128-cts-hmac-sha1, aes128-cts-hmac-sha1-96, aes256-cts-
+             hmac-sha1, or aes256-cts-hmac-sha1-96.
+
+     realm=⟨realm⟩
+             Use the default credential for realm or security domain. For
+             Kerberos realms are usually uppercase. If the realm specified does
+             not begin with an “@”, an “@” sign will be prepended to it.  Note
+             specifying the realm is typically used for automounter maps when
+             clients may have multiple credential caches, and tells the client
+             what cache to use on the mount.
+
+     principal=⟨principal⟩
+             Use the specified principal for acquiring credentials for the
+             mount.  That principal will be used for all accesses by the
+             mounting credential on the mounted file system. Note specifying a
+             principal is useful for user initiated command line mounts, where
+             the user knows the particular credential to use.
+
+     sprincipal=⟨server-principal⟩
+             Use the specified server-principal for establishing credentials for
+             the mount. That server principal will be use for all mount access.
+             If no server principal is specified, then the
+             GSS_C_NT_HOSTBASED_SERVICE nfs@server is used, where server is
+             taken from the mount argument server:/path. Note its rare to use
+             this option.
+
+     rsize=⟨readsize⟩
+             Set the read data size to the specified value.  The default is 8192
+             for UDP mounts and 32768 for TCP mounts.  It should normally be a
+             power of 2 greater than or equal to 1024.  Values greater than 4096
+             should be multiples of 4096.  It may need to be lowered for UDP
+             mounts when the “fragments dropped due to timeout” value is getting
+             large while actively using a mount point.  (Use netstat(1) with the
+             -s option to see what the “fragments dropped due to timeout” value
+             is.)
+
+     wsize=⟨writesize⟩
+             Set the write data size to the specified value.  Ditto the comments
+             w.r.t. the rsize option, but using the “fragments dropped due to
+             timeout” value on the server instead of the client.  Note that both
+             the rsize and wsize options should only be used as a last ditch
+             effort at improving performance when mounting servers that do not
+             support TCP mounts.
+
+     rwsize=⟨size⟩
+             Set both the read data size and write data size to the specified
+             value.
+
+     dsize=⟨readdirsize⟩
+             Set the directory read size to the specified value. The value
+             should normally be a multiple of DIRBLKSIZ that is <= the read size
+             for the mount.  The default is 8192 for UDP mounts and 32768 for
+             TCP mounts.
+
+     readahead=⟨maxreadahead⟩
+             Set the maximum read-ahead count to the specified value.  The
+             default is 16.  This may be in the range of 0 - 128, and determines
+             how many blocks will be read ahead when a large file is being read
+             sequentially.  Trying larger values for this is suggested for
+             mounts with a large bandwidth * delay product.
+
+     rdirplus / nordirplus
+             Used with NFS v3/v4 to specify that directory read operations
+             should retrieve additional information about each entry (e.g. use
+             the NFSv3 ReaddirPlus RPC).  This option typically reduces RPC
+             traffic for cases such as directory listings that use or display
+             basic attributes (e.g.  “ls -F” and “find . -type f” ).  Note that
+             the long directory listing format case (i.e.  “ls -l” ) may not be
+             helped much when the file system does not natively support extended
+             attributes.  Older implementations tended to flood the vnode and
+             name caches with prefetched entries which may not be referenced.
+             The current implementation avoids creating those entries until they
+             are referenced.  Try this option and see whether performance
+             improves or degrades. Probably most useful for client to server
+             network interconnects with a large bandwidth times delay product.
+             Default value is rdirplus.
+
+     acregmin=⟨seconds⟩
+     acregmax=⟨seconds⟩
+     acdirmin=⟨seconds⟩
+     acdirmax=⟨seconds⟩
+             These options set the minimum and maximum attribute cache timeouts
+             for directories and "regular" (non-directory) files.  The default
+             minimum is 5 seconds and the default maximum is 60 seconds.
+             Setting both the minimum and maximum to zero will disable attribute
+             caching.  The algorithm to calculate the timeout is based on the
+             age of the file or directory.  The older it is, the longer the
+             attribute cache is considered valid, subject to the limits above.
+             Note that the effectiveness of this algorithm depends on how well
+             the clocks on the client and server are synchronized.
+
+     actimeo=⟨seconds⟩
+             Set all attribute cache timeouts to the same value.
+
+     noac    Disable attribute caching.  Equivalent to setting actimeo to 0.
+
+     nonegnamecache
+             Disable negative name caching.
+
+     locallocks
+             Perform all file locking operations locally on the NFS client (in
+             the VFS layer) instead of on the NFS server.  This option can
+             provide file locking support on an NFS file system for which the
+             server does not support file locking.  However, because the file
+             locking is only performed on the client, the NFS server and other
+             NFS clients will have no knowledge of the locks.  Note: mounts
+             which are both soft and read-only will also have the locallocks
+             mount option enabled by default - unless explicitly overridden with
+             a lock option (for example, nolocks or nolocallocks ).
+
+     nolocks
+     nolockd
+     nolock
+     nonlm   Do not support NFS file locking operations.  Any attempt to perform
+             file locking operations on this mount will return the error ENOTSUP
+             regardless of whether or not the NFS server supports NFS file
+             locking.
+
+     noquota
+             Do not support file system quota operations that would normally be
+             serviced by using the RQUOTA protocol.  Any attempt to perform
+             quota operations on this mount will return the error ENOTSUP
+             regardless of whether or not the NFS server supports the RQUOTA
+             service.
+
+     maxgroups=⟨num⟩
+             Set the maximum size of the group list for the credentials to the
+             specified value.  This should be used for mounts on old servers
+             that cannot handle a group list size of 16, as specified in RFC
+             1057.  Try 8, if users in a lot of groups cannot get a response
+             from the mount point.
+
+     dumbtimer
+             Turn off the dynamic retransmit timeout estimator.  This may be
+             useful for UDP mounts that exhibit high retry rates, since it is
+             possible that the dynamically estimated timeout interval is too
+             short.
+
+     timeo=⟨timeout⟩
+             Set the initial retransmit timeout to the specified value (in
+             tenths of a second).  The default is 1 second.  May be useful for
+             fine tuning UDP mounts over internetworks with high packet loss
+             rates or an overloaded server.  Try increasing the interval if
+             nfsstat(1) shows high retransmit rates while the file system is
+             active or reducing the value if there is a low retransmit rate but
+             long response delay observed.  (Normally, the dumbtimer option
+             should be specified when using this option to manually tune the
+             timeout interval.)
+
+     retrans=⟨count⟩
+             Set the retransmit timeout count for soft mounts to the specified
+             value.  The default value is 10.
+
+     deadtimeout=⟨timeout⟩
+             If the mount is still unresponsive timeout seconds after it is
+             initially reported unresponsive, then mark the mount as dead so
+             that it will be forcibly unmounted.  Note: mounts which are both
+             soft and read-only will also have the deadtimeout mount option set
+             to 60 seconds.  This can be explicitly overridden by setting
+             deadtimeout=0.
+
+     mutejukebox
+             When NFS requests repeatedly get jukebox errors (NFS3ERR_JUKEBOX,
+             NFS4ERR_DELAY) from the server the NFS file system is reported as
+             being unresponsive.  Use of this option will prevent the file
+             system from being included in the list of unresponsive file systems
+             that would be included in a dialog presented to the user.  This
+             option may be useful when a file system is expected to get such
+             errors during normal operation.  For example, when it's backed by a
+             hierarchical storage management system.
+
+     async   Assume that unstable write requests have actually been committed to
+             stable storage on the server, and thus will not require resending
+             in the event that the server crashes.  Use of this option may
+             improve performance but only at the risk of data loss if the server
+             crashes.  Note: this mount option will only be honored if the
+             nfs.client.allow_async option in nfs.conf(5) is also enabled.
+
+     sync    Perform I/O requests (specifically, write requests) synchronously.
+             The operation will not return until a response is received from the
+             server.  (The default, nosync, behavior is to return once the I/O
+             has been queued up.)
+
+     nocallback
+             For NFSv4 mounts, don't support callback requests from the server.
+             This should effectively disable features that require callback
+             requests such as delegations.
+
+     nonamedattr
+             For NFSv4 mounts, don't support named attributes even if the server
+             does. This is the default.
+
+     namedattr
+             For NFSv4 mounts, if the server appears to support named
+             attributes, they will be used to store extended attributes and
+             named streams (e.g. FinderInfo and resource forks).
+
+     noacl   For NFSv4 mounts, don't support ACLs even if the server does.  ACLs
+             are currently disabled by default to avoid issues with the way ACLs
+             and modes are handled differently on other operating systems.  This
+             may be overriden by specifying the acl option.
+
+     aclonly
+             For NFSv4 mounts, only support ACLs; do not support the mode
+             attribute.  (Any mode attribute values returned will have all
+             permission bits set - regardless of the value of any ACL or access
+             mode stored in the file system.)  This option overrides the noacl
+             option.
+
+     nfc     Convert name strings to Unicode Normalization Form C (NFC) when
+             sending them to the NFS server.  This option may be used to improve
+             interoperability with NFS clients and servers that typically use
+             names in the NFC form.
+
+     nfs.conf(5) can be used to configure some NFS client options.  In
+     particular, nfs.client.mount.options can be used to specify default mount
+     options.  This can be useful in situations where it is not easy to
+     configure the command-line options.  Some NFS client options in nfs.conf(5)
+     correspond to kernel configuration values which will get set by mount_nfs
+     when performing a mount.  To update these values without performing a
+     mount, use the command: mount_nfs configupdate.
+
+COMPATIBILITY
+     The following mount_nfs command line flags have equivalent -o option forms
+     (shown in parentheses) and their use is strongly discouraged.  These
+     command line flags are deprecated and the -o option forms should be used
+     instead.
+
+     -2 (vers=2), -3 (vers=3), -4 (vers=4), -L (nolocks), -P (resvport), -T
+     (tcp), -U (mntudp), -b (bg), -c (noconn), -d (dumbtimer), -i (intr), -l
+     (rdirplus), -m (nordirplus), -s (soft), -I readdirsize (dsize=#), -R
+     retrycnt (retrycnt=#), -a maxreadahead (readahead=#), -g maxgroups
+     (maxgroups=#), -r readsize (rsize=#), -t timeout (timeo=#), -w writesize
+     (wsize=#), -x retrans (retrans=#).
+
+EXAMPLES
+     The simplest way to invoke mount_nfs is with a command like:
+
+           mount remotehost:/filesystem /localmountpoint
+
+     or:
+
+           mount -t nfs remotehost:/filesystem /localmountpoint
+
+PERFORMANCE
+     As can be derived from the comments accompanying the options, performance
+     tuning of NFS can be a non-trivial task.  Here are some common points to
+     watch:
+
+     •       Use of the sync option will probably have a detrimental affect on
+             performance.  Its use is discouraged as it provides little benefit.
+
+     •       Use of the async option may improve performance, but only at the
+             risk of losing data if the server crashes because the client will
+             not be making sure that all data is committed to stable storage on
+             the server.
+
+     •       Increasing the read and write size with the rsize and wsize options
+             respectively will increase throughput if the network interface can
+             handle the larger packet sizes.
+
+             The default read and write sizes are 8K when using UDP, and 32K
+             when using TCP.  Values over 16K are only supported for TCP, where
+             2M is the maximum.
+
+             Any value over 32K is unlikely to get you more performance, unless
+             you have a very fast network.
+
+     •       If the network interface cannot handle larger packet sizes or a
+             long train of back to back packets, you may see low performance
+             figures or even temporary hangups during NFS activity.
+
+             This can especially happen with lossy network connections (e.g.
+             wireless networks) which can lead to a lot of dropped packets.
+
+             In this case, decreasing the read and write size, using TCP, or a
+             combination of both will usually lead to better throughput.
+
+     •       For connections that are not on the same LAN, and/or may experience
+             packet loss, using TCP is strongly recommended.
+
+ERRORS
+     Some common problems with mount_nfs can be difficult for first time users
+     to understand.
+
+           mount_nfs: can't access /foo: Permission denied
+
+     This message means that the remote host is either not exporting the file
+     system you requested or is not exporting it to your host.  If you believe
+     the remote host is indeed exporting a file system to you, make sure the
+     exports(5) file is exporting the proper directories.  The program
+     showmount(8) can be used to see a server's exports list.  The command
+     “showmount -e remotehostname” will display what file systems the remote
+     host is exporting.
+
+     A common mistake is that mountd(8) will not export a file system with the
+     -alldirs option, unless it is a mount point on the exporting host.  It is
+     not possible to remotely mount a subdirectory of an exported mount, unless
+     it is exported with the -alldirs option.
+
+     The following error:
+
+           NFS Portmap: RPC: Program not registered
+
+     means that the remote host is not running nfsd(8).  or mountd(8).  The
+     program rpcinfo(8) can be used to determine if the remote host is running
+     nfsd and mountd by issuing the command:
+
+           rpcinfo -p remotehostname
+
+     If the remote host is running nfsd, mountd, rpc.statd, and rpc.lockd it
+     would display:
+
+           program vers proto   port
+            100000    2   tcp    111  portmapper
+            100000    2   udp    111  portmapper
+            100005    1   udp    950  mountd
+            100005    3   udp    950  mountd
+            100005    1   tcp    884  mountd
+            100005    3   tcp    884  mountd
+            100003    2   udp   2049  nfs
+            100003    3   udp   2049  nfs
+            100003    2   tcp   2049  nfs
+            100003    3   tcp   2049  nfs
+            100024    1   udp    644  status
+            100024    1   tcp    918  status
+            100021    0   udp    630  nlockmgr
+            100021    1   udp    630  nlockmgr
+            100021    3   udp    630  nlockmgr
+            100021    4   udp    630  nlockmgr
+            100021    0   tcp    917  nlockmgr
+            100021    1   tcp    917  nlockmgr
+            100021    3   tcp    917  nlockmgr
+            100021    4   tcp    917  nlockmgr
+
+     The following error:
+
+           mount_nfs: can't resolve host
+
+     indicates that mount_nfs could not resolve the name of the remote host.
+
+     The following error:
+
+           mount_nfs: can't mount <dst-path> from <dst-ip> onto <local-path>:
+           RPC prog. not avail
+
+     In case the remote host is not running rpc.statd and the client is mounting
+     the NFS directory with remote locks (enabled by default), mount_nfs should
+     fail with EPROGUNAVAIL. rpc.statd status can be verified using rpcinfo (see
+     above).
+
+SEE ALSO
+     mount(2), unmount(2), mount(8), umount(8), nfsstat(1), netstat(1),
+     rpcinfo(8), showmount(8), automount(8), nfs.conf(5), nfs(5)
+
+CAVEATS
+     An NFS server shouldn't loopback-mount its own exported file systems
+     because it's fundamentally prone to deadlock.
+

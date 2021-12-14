@@ -1,0 +1,50 @@
+REPQUOTA(8)                  System Manager's Manual                 REPQUOTA(8)
+
+NAME
+     repquota – summarize quotas for a file system
+
+SYNOPSIS
+     repquota [-g] [-u] [-v] filesystem ...
+     repquota [-g] [-u] [-v] -a
+
+DESCRIPTION
+     Repquota prints a summary of the disk usage and quotas for the specified
+     file systems.
+
+     Available options:
+
+     -a      Print the quotas of all the filesystems configured with a quota
+             mount option file at its root.
+
+     -g      Print only group quotas (the default is to print both group and
+             user quotas if they exist).
+
+     -u      Print only user quotas (the default is to print both group and user
+             quotas if they exist).
+
+     -v      Print a header line before printing each filesystem quotas.
+
+     For each user or group, the current number of files and amount of space (in
+     kilobytes) is printed, along with any quotas created with edquota(8).
+
+     Only members of the operator group or the super-user may use this command.
+
+FILES
+     Each of the following quota files is located at the root of the mounted
+     filesystem.  The mount option files are empty files whose existence
+     indicates that quotas are to be enabled for that filesystem.
+
+     .quota.user       data file containing user quotas
+     .quota.group      data file containing group quotas
+     .quota.ops.user   mount option file used to enable user quotas
+     .quota.ops.group  mount option file used to enable group quotas
+
+SEE ALSO
+     quota(1), quotactl(2), edquota(8), quotacheck(8), quotaon(8)
+
+DIAGNOSTICS
+     Various messages about inaccessible files; self-explanatory.
+
+HISTORY
+     The repquota command appeared in 4.2BSD.
+

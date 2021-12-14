@@ -1,0 +1,155 @@
+lskq(1)                      General Commands Manual                     lskq(1)
+
+NAME
+     lskq – display process kqueue state
+
+SYNOPSIS
+     lskq [-vhe] [-p <pid> | -a]
+
+DESCRIPTION
+     The lskq command enumerates kqueues and registered kevents of running
+     processes.
+
+OPTIONS
+     -p <pid>
+          Show kqueues of process <pid>.
+
+     -a   Show kqueues for all running processes. Requires root.
+
+     -v   Verbose: show opaque user data and filter-specific extension fields.
+
+     -e   Ignore empty kqueues.
+
+     -r   Print fields in raw hex.
+
+     -h   Show help and exit.
+
+OUTPUT
+     lskq prints one line of output for each registered kevent, consisting of
+     process, kqueue, and kevent information. For kqueues with no registered
+     kevents, a single line is output with an ident of `-'. See kevent(2) for
+     field semantics. The output columns are:
+
+     command       shortened process name.
+
+     pid           process identifier.
+
+     kq            file descriptor corresponding to kqueue, or ``wq'' for the
+                   special workq kqueue.
+
+     kqst          kqueue status bitmask.
+                   k        kqueue is in a kevent*() wait set (KQ_SLEEP).
+                   s        kqueue is in a select() wait set (KQ_SEL).
+                   3 6 q    Type of kevents on this kqueue: KEV32, KEV64, or
+                            KEV_QOS.
+
+     ident         kevent identifier. The meaning depends on the kevent filter
+                   specified. Where possible, lskq prints both numeric and
+                   symbolic names.
+
+     filter        kevent filter type (EVFILT_*).
+
+     fdtype        file descriptor type, for filters operating on file
+                   descriptors.
+
+     fflags        kevent filter flags bitmask. The meaning of each field
+                   depends on the filter type.
+
+                   EVFILT_READ:
+                   l        NOTE_LOWAT
+
+                   EVFILT_MACHPORT:
+                   r        MACH_RCV_MSG
+
+                   EVFILT_VNODE:
+                   d        NOTE_DELETE
+                   w        NOTE_WRITE
+                   e        NOTE_EXTEND
+                   a        NOTE_ATTRIB
+                   l        NOTE_LINK
+                   r        NOTE_RENAME
+                   v        NOTE_REVOKE
+                   u        NOTE_FUNLOCK
+
+                   EVFILT_PROC:
+                   x        NOTE_EXIT
+                   t        NOTE_EXITSTATUS
+                   d        NOTE_EXIT_DETAIL
+                   f        NOTE_FORK
+                   e        NOTE_EXEC
+                   s        NOTE_SIGNAL
+                   r        NOTE_REAP
+
+                   EVFILT_TIMER:
+                   s u n m  NOTE_SECONDS, NOTE_USECONDS, NOTE_NSECONDS,
+                            NOTE_MACHTIME
+                   a A      NOTE_ABSOLUTE, NOTE_MACH_CONTINUOUS_TIME
+                   c        NOTE_CRITICAL
+                   b        NOTE_BACKGROUND
+                   l        NOTE_LEEWAY
+
+                   EVFILT_USER:
+                   t        NOTE_TRIGGER
+                   a        NOTE_FFAND
+                   o        NOTE_FFOR
+
+                   EVFILT_WORKLOOP:
+                   t w i    NOTE_WL_THREAD_REQUEST, NOTE_WL_SYNC_WAIT,
+                            NOTE_WL_SYNC_IPC
+                   W        NOTE_WL_SYNC_WAKE
+                   q        NOTE_WL_UPDATE_QOS
+                   o        NOTE_WL_DISCOVER_OWNER
+                   e        NOTE_WL_IGNORE_ESTALE
+
+     flags         kevent generic flags bitmask.
+                   a        EV_ADD
+                   n        EV_ENABLE
+                   d        EV_DISABLE
+                   x        EV_DELETE
+
+                   r        EV_RECEIPT
+                   1        EV_ONESHOT
+                   c        EV_CLEAR
+                   s        EV_DISPATCH
+
+                   u        EV_UDATA_SPECIFIC
+                   p        EV_FLAG0 (EV_POLL)
+                   b        EV_FLAG1 (EV_OOBAND)
+                   o        EV_EOF
+                   e        EV_ERROR
+
+     evst          kevent status bitmask.
+                   a        KN_ACTIVE (event has triggered)
+                   q        KN_QUEUED (event has been added to the active list)
+                   d        KN_DISABLED (knote is disabled)
+                   p        KN_SUPPRESSED (event delivery is in flight)
+                   s        KN_STAYACTIVE (event is marked as always-enqueued on
+                            the active list)
+
+                   d        KN_DROPPING (knote is about to be dropped)
+                   l        KN_LOCKED (knote is locked)
+                   P        KN_POSTING (knote is being posted)
+                   m        KN_MERGE_QOS (knote is in override saturating mode)
+
+                   D        KN_DEFERDELETE (knote is waiting for deferred-delete
+                            ack)
+                   v        KN_REQVANISH
+                   n        KN_VANISHED
+
+     qos           The QoS requested for the knote.
+
+     data          Filter-specific data.
+
+     If the -v (verbose) option is specified, the opaque user-data field and
+     further filter-specific extension fields are printed in raw hexadecimal.
+
+NOTES
+     The output of lskq is not an atomic snapshot of system state. In cases
+     where lskq is able to detect an inconsistency, a warning will be printed.
+
+     Not all flags are symbolicated. Use -r (raw mode) to inspect additional
+     flags.
+
+SEE ALSO
+     kqueue(2), kevent(2), ddt(1), lsof(8), lsmp(1)
+

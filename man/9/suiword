@@ -1,0 +1,57 @@
+STORE(9)                    Kernel Developer's Manual                   STORE(9)
+
+NAME
+     store, subyte, suibyte, suiword, sulong, suulong, suword – store data to
+     user-space
+
+SYNOPSIS
+     #include <sys/types.h>
+     #include <sys/time.h>
+     #include <sys/systm.h>
+     #include <sys/resourcevar.h>
+
+     int
+     subyte(user_addr_t addr, int byte);
+
+     int
+     suibyte(user_addr_t addr, int byte);
+
+     int
+     suiword(user_addr_t addr, int word);
+
+     int
+     sulong(user_addr_t addr, int64_t longword);
+
+     int
+     suulong(user_addr_t addr, uint64_t longword);
+
+     int
+     suword(user_addr_t addr, int word);
+
+DESCRIPTION
+     The store functions are designed to copy small amounts of data to user-
+     space.
+
+     The store routines provide the following functionality:
+
+     subyte()   Stores a byte of data to the user-space address addr.
+
+     suibyte()  Stores a byte of data to the user-space address addr.  This
+                function is safe to call during an interrupt context.
+
+     suiword()  Stores a word of data to the user-space address addr.  This
+                function is safe to call during an interrupt context.
+
+     sulong()   Stores a long word of data to the user-space address addr.
+
+     suulong()  Stores a unsigned long word of data to the user-space address
+                addr.
+
+     suword()   Stores a word of data to the user-space address addr.
+
+RETURN VALUES
+     The store functions return 0 on success or -1 on failure.
+
+SEE ALSO
+     copy(9), fetch(9)
+

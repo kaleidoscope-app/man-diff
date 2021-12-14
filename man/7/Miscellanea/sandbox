@@ -1,0 +1,24 @@
+SANDBOX(7)              Miscellaneous Information Manual              SANDBOX(7)
+
+NAME
+     sandbox – overview of the sandbox facility
+
+SYNOPSIS
+     #include <sandbox.h>
+
+DESCRIPTION
+     The sandbox facility allows applications to voluntarily restrict their
+     access to operating system resources.  This safety mechanism is intended to
+     limit potential damage in the event that a vulnerability is exploited.  It
+     is not a replacement for other operating system access controls.
+
+     New processes inherit the sandbox of their parent.  Restrictions are
+     generally enforced upon acquisition of operating system resources only.
+     For example, if file system writes are restricted, an application will not
+     be able to open(2) a file for writing.  However, if the application already
+     has a file descriptor opened for writing, it may use that file descriptor
+     regardless of restrictions.
+
+SEE ALSO
+     sandbox-exec(1), sandbox_init(3), sandboxd(8)
+

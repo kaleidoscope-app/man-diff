@@ -1,0 +1,93 @@
+grammar::me::util(n)      Grammar operations and usage      grammar::me::util(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       grammar::me::util - AST utilities
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require grammar::me::util  ?0.1?
+
+       ::grammar::me::util::ast2tree ast tree ?root?
+
+       ::grammar::me::util::ast2etree ast mcmd tree ?root?
+
+       mcmd lc location
+
+       mcmd tok from ?to?
+
+       ::grammar::me::util::tree2ast tree ?root?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a number of utility command for the conversion
+       between the various representations of abstract syntax trees as specified
+       in the document grammar::me_ast.
+
+       ::grammar::me::util::ast2tree ast tree ?root?
+              This command converts an ast from value to object representation.
+              All nodes in the ast will be converted into nodes of this tree,
+              with the root of the AST a child of the node root. If this node is
+              not explicitly specified the root of the tree is used. Existing
+              content of tree is not touched, i.e.  neither removed nor changed,
+              with the exception of the specified root node, which will gain a
+              new child.
+
+       ::grammar::me::util::ast2etree ast mcmd tree ?root?
+              This command is like ::grammar::me::util::ast2tree, except that
+              the result is in the extended object representation of the input
+              AST.  The source of the extended information is the command prefix
+              mcmd.  It has to understand two methods, lc, and tok, with the
+              semantics specified below.
+
+              mcmd lc location
+                     Takes the location of a token given as offset in the input
+                     stream and return a 2-element list containing the
+                     associated line number and column index, in this order.
+
+              mcmd tok from ?to?
+                     Takes one or two locations from and to as offset in the
+                     input stream and returns a Tcl list containing the
+                     specified part of the input stream. Both location are
+                     inclusive. If to is not specified it will default to the
+                     value of from.
+
+                     Each element of the returned list is a list containing the
+                     token, its associated lexeme, the line number, and column
+                     index, in this order.
+
+       Both the ensemble command ::grammar::me::tcl provided by the package
+       grammar::me::tcl and the objects command created by the package
+       ::grammar::me::cpu fit the above specification.
+
+       ::grammar::me::util::tree2ast tree ?root?
+              This command converts an ast in (extended) object representation
+              into a value and returns it.  If a root node is specified the AST
+              is generated from that node downward. Otherwise the root of the
+              tree object is used as the starting point.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category grammar_me
+       of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       abstract syntax tree, syntax tree, tree
+
+CATEGORY
+       Grammars and finite automata
+
+COPYRIGHT
+       Copyright (c) 2005 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

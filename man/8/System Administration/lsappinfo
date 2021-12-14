@@ -1,0 +1,935 @@
+LSAPPINFO(8)                                                        LSAPPINFO(8)
+
+
+
+NAME
+       lsappinfo - Control and query CoreApplicationServices about the app state
+       on the system
+
+SYNOPSIS
+       lsappinfo [options] [ command [command options] ] ...
+
+COMMON COMMANDS
+       •   front Show the front application.
+
+       •   find [ key=value ]+
+           Show the ASN of all applications which have the given key/value
+           present in their application information. For key the actual CFString
+           value for the key can be used, or any of the aliases described below
+           under Key Strings. For value, see the rules below under Key Values.
+
+       •   info [-only information-item-key] [-app app-specifier]
+           [-long][app-specifier]
+           Show the information for the application app-specifier
+
+       •   list
+           Show the application list and information about each running
+           application
+
+       •   listen [+notificationcode]* [-notificationcode]* [-addasn asn]
+           [-removeasn asn] [ -id # ] duration [--]
+           Listen for the given notifications ( those with ´+´, excluding those
+           with ´-´ ) and display each one and its payload. Notifications are
+           displayed when they receive when this tool is executing a wait or
+           forever command.
+
+       •   launch [[launch-modifier=value]+ [launch-option=value]+ [-arg
+           argument] [path-to-bundle] [--]
+           Launch an application with CoreApplicationServices in LaunchServices.
+           At the minimum, the execpath must be included as one of the
+           launch-options or -poseas and a path-to-bundle. This is a fairly low
+           level operation and does not handle a number of conditions that the
+           higher level functions do.
+
+       •   metainfo
+           Show the meta information, which is the session-wide information
+           which CoreApplicationServices maintains for each login session.
+
+       •   processList
+           Show the application list, in ascending ASN order.
+
+       •   restart
+           Ask the launchservicesd to restart. The requestor must be privileged.
+
+       •   sharedmemory
+           Show the shared memory information page for this session.
+
+       •   unlisten [ -id ID ] [ -all ]
+           Unlisten to all notifications on notification ID.
+
+       •   visibleProcessList
+           Show the visible ( front-to-back ) application list.
+
+
+
+
+UNCOMMON COMMANDS
+       •   allocateASN Ask launchservicesd to allocate an ASN, and print it out.
+
+       •   createFile PATH Create a file at the given path
+
+       •   file path Open the file at path and read lines, treating each one as
+           if it were passed to lsappinfo on the command line.
+
+       •   forever Wait forever before executing the next command
+
+       •   log [ -d | -i | -n | -w | -e | -c | -a ] [ -B ] [ -sender
+           *processname* ] [ string ... -- ] If an option is given, dump any
+           LaunchServices logging information on the system until the process is
+           terminated with control-C. If a string is provided, log that string
+           to syslog.
+
+       •   removeFile PATH Remove the file at the given path
+
+       •   server [ -xpcservicename ARG ] [ -local ] [ -duration *DURATION* ] [
+           -file *FILEPATH* ] [ -gone FILEGONEPATH ] [ -forever ] Start up the
+           launchservicesd server in process, with the optional given xpc
+           service name or if -local then processing xpc requests from future
+           commands for this same process. Terminate the server after the given
+           DURATION seconds, or when the file at FILEPATH exists, or the file at
+           path FILEPATHFONE is deleted, or never if -forever.
+
+       •   setinfo [-app app-specifier] [app-info-item=value]+ [--] Set the
+           values for the given application information items in the specified
+           application.
+
+       •   setmetainfo [meta-info-item=value]+ [--]
+
+       •   wait [ -duration duration ] [ -file FILEPATH ] [ -gone FILEPATHGONE ]
+           duration Wait for duration seconds before executing the next command,
+           or if FILEPATH is given until that file exists, or if FILEPATHGONE is
+           given until that file no longer exists.
+
+       •   writePIDToFile PATH Write the current processes pid to a file at
+           PATH.
+
+
+
+
+OPTIONS
+       •   -v | --verbose Be more verbose about many operations
+
+       •   -q | --quiet Be less verbose about many operations
+
+       •   -defaultSession Use kLSDefaultSessionID as the sessionID passed to
+           all calls (the default)
+
+       •   -currentSession Use kLSCurrentSessionID as the sessionID passed to
+           all calls
+
+       •   -debug | -info | -notice | -warning | -err | -critical | -alert |
+           -emergency Set the log level for this process to the given level
+
+
+
+
+APPLICATION SPECIFIERS
+       There are different ways to indicate what application the commands
+       operate on, collectively called the app-specifier. This may be one of the
+       following.
+
+       •   "ASN:0xAAAA:0xBBBB:" where AAAA and BBBB are the values for an
+           application ASN.
+
+       •   "0xBBBB" where BBBB are the values from the lower part of an
+           application ASN for which the upper part of the ASN is 0x0
+
+       •   "#" where # is a decimal value above 10, representing the application
+           with the pid #
+
+       •   "name" where name is the display name of a running application
+
+       •   "bundleid" where bundleid is the bundle id of a running application
+
+       •   "me" the asn of the lsappinfo tool
+
+
+
+
+KEY STRINGS
+       Any string from this set will map to the corresponding constant from the
+       LaunchServices header files.
+
+
+
+           kCFBundleNameKey
+           kLSASNKey
+           kLSASNToBringForwardAtNextApplicationExitKey
+           kLSAllowedToBecomeFrontmostKey
+           kLSApplicationBackgroundOnlyTypeKey
+           kLSApplicationBackgroundPriorityKey
+           kLSApplicationCountKey
+           kLSApplicationDesiresAttentionKey,
+           kLSApplicationForegroundPriorityKey
+           kLSApplicationForegroundTypeKey
+           kLSApplicationHasRegisteredKey
+           kLSApplicationHasSignalledItIsReadyKey
+           kLSApplicationInStoppedStateKey
+           kLSApplicationInThrottledStateAfterLaunchKey
+           kLSApplicationInformationSeedKey
+           kLSApplicationIsHiddenKey
+           kLSApplicationListSeedKey
+           kLSApplicationReadyToBeFrontableKey
+           kLSApplicationTypeKey
+           kLSApplicationTypeToRestoreKey
+           kLSApplicationUIElementTypeKey
+           kLSApplicationVersionKey
+           kLSApplicationWasTerminatedByTALKey
+           kLSApplicationWouldBeTerminatedByTALKey
+           kLSArchitectureKey
+           kLSBundleIdentifierLowerCaseKey
+           kLSBundlePathDeviceIDKey
+           kLSBundlePathINodeKey
+           kLSBundlePathKey
+           kLSCheckInTimeKey
+           kLSDebugLevelKey
+           kLSDisplayNameKey
+           kLSExecutableFormatCFMKey
+           kLSExecutableFormatKey
+           kLSExecutableFormatMachOKey
+           kLSExecutableFormatPoundBangKey
+           kLSExecutablePathDeviceIDKey
+           kLSExecutablePathINodeKey
+           kLSExecutablePathKey
+           kLSExitStatusKey
+           kLSFileCreatorKey
+           kLSFileTypeKey
+           kLSFlavorKey
+           kLSFrontApplicationSeedKey
+           kLSHiddenApplicationCountKey
+           kLSLaunchTimeKey
+           kLSLaunchedByLaunchServicesKey
+           kLSLaunchedByLaunchServicesThruForkExecKey
+           kLSLaunchedByLaunchServicesThruLaunchDKey
+           kLSLaunchedByLaunchServicesThruSessionLauncherKey
+           kLSLaunchedInQuarantineKey
+           kLSMenuBarOwnerApplicationSeedKey
+           kLSModifierLaunchedForPersistenceKey
+           kLSModifierRefConKey
+           kLSNotifyBecameFrontmostAnotherLaunchKey
+           kLSNotifyBecameFrontmostFirstActivationKey
+           kLSNotifyLaunchRequestLaunchModifiersKey
+           kLSOriginalExecutablePathDeviceIDKey
+           kLSOriginalExecutablePathINodeKey
+           kLSOriginalExecutablePathKey
+           kLSOriginalPIDKey
+           kLSPIDKey
+           kLSParentASNKey
+           kLSParentASNWasInferredKey
+           kLSPersistenceSuppressRelaunchAtLoginKey
+           kLSPreviousASNKey
+           kLSPreviousPresentationModeKey
+           kLSPreviousValueKey
+           kLSRecordingAppleEventsKey
+           kLSRequiresCarbonKey
+           kLSSessionIDKey
+           kLSShellExecutablePathKey
+           kLSUIDsInSessionKey
+           kLSUIPresentationModeAllHiddenValue
+           kLSUIPresentationModeAllSuppressedValue
+           kLSUIPresentationModeContentHiddenValue
+           kLSUIPresentationModeContentSuppressedValue
+           kLSUIPresentationModeKey
+           kLSUIPresentationModeNormalValue
+           kLSUIPresentationOptionsKey
+           kLSUnhiddenApplicationCountKey
+           kLSVisibleApplicationCountKey
+           kLSVisibleApplicationListSeedKey
+           kLSWantsToComeForwardAtRegistrationTimeKey
+           launchedThrottled
+
+
+
+
+       Likewise, these short strings also make to the corresponding constants.
+
+
+
+           allowedtobecomefrontmost
+           applicationTypeToRestore
+           applicationWasTerminatedByTAL
+           applicationtype
+           arch
+           asn
+           bundleid
+           bundlelastcomponent
+           bundlename
+           bundlenamelc
+           bundlepath
+           changecount
+           creator
+           debuglevel
+           displayname
+           execpath
+           executablepath
+           filecreator
+           filename
+           filetype
+           hidden
+           isconnectedtowindowserver
+           isready
+           isregistered
+           isstopped
+           isthrottled
+           launchedForPersistence
+           launchedinquarantine
+           name
+           parentasn
+           pid
+           presentationmode
+           presentationoptions
+           psn
+           recordingAppleEvents
+           session
+           shellpath
+           supressRelaunch
+           version
+
+
+
+
+KEY VALUES
+       In numerous places a key can be set to a value. The format of value can
+       be any of the following
+
+       •   "string" A string, surrounded by double quotes.
+
+       •   numeric-digits | -numeric-digits |
+           numeric-digits.numeric-digits[E]numeric-digits A numeric value,
+           either an integer type or a double floating point type.
+
+       •   $hex-digits A numeric value given by the hex value hex-digits.
+
+       •   "ASN:0xAAAA:0xBBBB:" An ASN, where AAAA and BBBB are the values for
+           an application ASN.
+
+       •   App:str An ASN, where str matches one of the application-specifier
+           formats.
+
+       •   ( [[str,] str] ) A CFArrayRef, where each str is converted as if it
+           were a key value.
+
+       •   true The kCFBooleanTrue value.
+
+       •   false The kCFBooleanFalse value.
+
+       •   null The kCFNull value.
+
+       •   Any of the application information item, or launch modifier strings
+           The equivalent, exported LaunchServices CFStringRef key for the item
+           or launch modifier.
+
+
+
+
+APPLICATION INFORMATION ITEM KEYS
+       •   asn An application ASN, which is unique identifier assigned to each
+           application when the application is launched and persists until the
+           application exits, and likely is unique for the entire time a user is
+           logged in. When displayed, an ASN looks like "ASN:0x0-0x1f01f:".
+
+       •   parentasn The ASN of the application which launched this application.
+
+       •   bundlename The bundle name, if one exists, for the application.
+
+       •   bundlenamelc The bundle name, if one exists, for the application, but
+           with every upper case character converted into the equivalent lower
+           case character.
+
+       •   bundlepath The bundle path, if the application is bundled
+
+       •   executablepath The executable path of the application
+
+       •   filetype The file type of the application, if it has one.
+
+       •   filecreator The creator type of the application, if it has one.
+
+       •   pid The pid of the application.
+
+       •   filename The filename of the executable (the last component of the
+           executable path), converted into a lowercase string
+
+       •   bundlelastcomponent The last component of the bundle path, converted
+           into a lowercase string.
+
+       •   displayname | name The display name of this application
+
+       •   bundleid The bundle identifier of the application, if one exists.
+
+       •   applicationtype The type of the application (generally "Foreground",
+           "Background", or "UIElement")
+
+       •   allowedtobecomefrontmost The application is allowed to be frontmost.
+
+       •   version The version string for the application, if it has one
+
+       •   presentationmode The UIPresentationMode for this application (only
+           for foreground applications), generally one of "Normal",
+           "ContentSupressed", "ContentHidden", "Suppressed", "AllHidden"
+
+       •   presentationoptions
+
+       •   session A number indicating which audit session this application is
+           running in.
+
+       •   hidden If this application is a foreground application, then if it is
+           hidden, "true", or "false" if it is not hidden
+
+       •   changecount A number which changes whenever any items in the
+           application´s information dictionary is changed.
+
+       •   debuglevel
+
+       •   isregistered If this application has registered, then "true",
+           otherwise "false".
+
+       •   isready If this application has entered its main runloop and is able
+           to respond to requests to hide or show itself, "true", otherwise
+           "false".
+
+       •   isstopped If this application was launched stopped, and if it has not
+           been started yet, then "true", otherwise "false" or not present.
+
+       •   launchedinquarantine If this application was launched in a
+           quarantined state, then "true", otherwise "false" or not present.
+
+       •   arch The architecture of the code running this application, generally
+           "x86_64" or "i386".
+
+       •   recordingAppleEvents If this application is recording AppleEvents,
+           then "true", otherwise "false" or not present.
+
+       •   supressRelaunch If this application should not be re-launched after a
+           logout and login, then "true", otherwise "false" or not present.
+
+       •   applicationTypeToRestore
+
+       •   applicationWasTerminatedByTAL
+
+       •   isthrottled If this application was launched in the throttled state,
+           and if it has not been unthrottled, then "true", otherwise false or
+           not present.
+
+       •   applicationWouldBeTerminatedByTALKey
+
+       •   launchedhidden If the application was launched hidden, then "true",
+           otherwise "false" or not present. This is not whether the application
+           is currently hidden, just whether at the time it was launched the
+           request was to have it hide itself.
+
+       •   launchandhideothers If the application was launched and asked to hide
+           all other application, then "true", otherwise "false" or not present.
+           This is not whether the application is currently hidden, just whether
+           at the time it was launched the request was to have it hide all other
+           applications.
+
+       •   launchForPersistence If the application was launched with
+           launchForPersistence=true, then "true", otherwise "false" or not
+           present.
+
+
+
+
+LAUNCHMODIFIER KEYS
+       •   async=[true|false] Launch asynchronously
+
+       •   refcon=[#] Launch with the given numeric refcon.
+
+       •   nofront=[true|false] If true, do not bring the application to the
+           front when it finishes launching
+
+       •   stopped=[true|false] Launch the process but do not start it.
+
+       •   launchandhide=[true|false] Launch the process and cause it to hide
+           itself when it finishes launching
+
+       •   \launchandhideothers`=[true|false] Launch the process and couse it to
+           hide all other applications when it finishes launching
+
+       •   launchForPersistence=[true|false]
+
+       •   launchWithASLRDisabled=[true|false]
+
+
+
+
+NOTIFICATION CODES
+       Notifications are sent out by LaunchServices when various conditions
+       arrive. Each notification has a type, called the notification-code, a
+       dictionary of data items which are specific to the notification, a time
+       the notification was sent, and an optional affected ASN.
+
+       •   launch
+
+
+
+
+       Sent when an application is launched
+
+       •   creation
+
+
+
+
+       Sent when an entry for an application is created on the system and
+       associated with an ASN.
+
+       •   birth
+
+
+
+
+       Sent when an
+
+       •   death
+
+
+
+
+       Sent when an application exits.
+
+       •   abnormaldeath
+
+
+
+
+       Sent when an application exits with a non-zero exit status.
+
+       •   childDeath
+
+
+
+
+       Sent when an application exits, with affected ASN set to the parent ASN
+       of the application which exited.
+
+       •   abnormalChildDeath
+
+
+
+
+       Sent when an application exits with a non-zero exit status, with affected
+       ASN set to the parent ASN of the application which exited.
+
+       •   launchFailure
+
+
+
+
+       Sent when an application launch fails, after a launch notification has
+       been sent out.
+
+       •   appCreation
+
+
+
+
+       Sent when an application is "created", which happens immediately after
+       the application is created and certain items are added into the
+       application information dictionary.
+
+       •   childAppCreation
+
+
+
+
+       Sent when an application is "created", which happens immediately after
+       the application is created and certain items are added into the
+       application information dictionary, with affected ASN set to the asn of
+       the parent ASN of this application.
+
+       •   appReady
+
+
+
+
+       Sent when an applications signals to LaunchServices that it is ready to
+       accept hide/show events, generally when it has entered its main runloop.
+
+       •   childAppReady
+
+
+
+
+       Sent when an applications signals to LaunchServices that it is ready to
+       accept hide/show events, generally when it has entered its main runloop,
+       with affected ASN set to the parent ASN of the application which
+       signalled ready.
+
+       •   readyToAcceptAppleEvents
+
+
+
+
+       Sent when an application signals that it is ready to accept AppleEvents.
+
+       •   launchTimedOut
+
+       •   launchFinished
+
+       •   allTALAppsRegistered
+
+
+
+
+       Sent when talagentd decides that all applications which were launched for
+       persistence have registered.
+
+       •   becameFrontmost
+
+
+
+
+       Sent when an application is made into the front application.
+
+       •   lostFrontmost
+
+
+
+
+       Sent when an application which previously was the front application is no
+       longer the front application.
+
+       •   orderChanged
+
+
+
+
+       Sent when the front-to-back order of the application list changes.
+
+       •   bringForwardRequest
+
+
+
+
+       Someone has requested that the application with affected ASN make itself
+       frontmost.
+
+       •   menuBarAcquired
+
+
+
+
+       Sent when the application which is responsible for drawing the menu bar
+       (generally the frontmost foreground application) changes
+
+       •   menuBarLost
+
+
+
+
+       Sent when the application which was responsible for drawing the menu bar
+       (generally the frontmost foreground application) is no longer responsible
+
+       •   hidden
+
+
+
+
+       Sent when the application is hidden
+
+       •   shown
+
+
+
+
+       Sent when the application is shown
+
+       •   showRequest
+
+
+
+
+       Someone has requested that the application with the affected application
+       asn should show (un-hide) itself.
+
+       •   hideRequest
+
+
+
+
+       Someone has requested that the application with the affected application
+       asn should hide itself.
+
+       •   pullwindowsforward
+
+
+
+
+       Someone has requested that the application with the affected application
+       asn should show itself and pull all of its windows forward.
+
+       •   appInfoChanged
+
+
+
+
+       Sent when the information for the application is changed.
+
+       •   appInfoKeyAdded
+
+
+
+
+       Sent when a key is added to the information for the application. The data
+       for the notification will include the key being added and its value.
+
+       •   appInfoKeyChanged
+
+
+
+
+       Sent when a value for an item in the application information is changed.
+       The data for the notification will include the key being changes and its
+       new and old value.
+
+       •   appInfoKeyRemoved
+
+
+
+
+       Sent when the value for an item in the application information is
+       removed. The data for the notification will include the key being removed
+       and its value.
+
+       •   appTypeChanged
+
+
+
+
+       Sent when the "ApplicationType" key in the application information is
+       changed.
+
+       •   appNameChanged
+
+
+
+
+       Sent when the application name in the application information is changed.
+
+       •   wantsAttentionChanged
+
+
+
+
+       Sent when the LSWantsAttention key in the application information is
+       changed.
+
+       •   presentationModeChanged
+
+
+
+
+       Sent when an application changes its presentation mode.
+
+       •   pidChanged
+
+
+
+
+       Sent when an application changes its pid. In practice this can never
+       happen, except when LaunchServices launches a process which itself forks
+       or spawns a new process, and then checks-in from that new pid.
+
+       •   frontPresentationModeChanged
+
+
+
+
+       Sent when the presentation mode of the system changes, generally when the
+       foreground application changes its own presentation mode or when the
+       front application changes and the old and new applications have different
+       presentation modes.
+
+       •   presentationModeChangedBecauseFrontApplicationChanged
+
+
+
+
+       Sent when the presentation mode of the system changes only because the
+       front application changed and the old and new applications have different
+       presentation modes.
+
+       •   launchrequest
+
+       •   started
+
+
+
+
+       Sent when a formally stopped application is started.
+
+       •   sessionLauncherRegister
+
+
+
+
+       Sent when the ASN of the session launcher application registers with
+       LaunchServices.
+
+       •   sessionLauncherUnregistered
+
+
+
+
+       Sent when the application registered as the session launcher unregisters
+       or exits.
+
+       •   nextAppToBringForwardAtQuitRegistered
+
+
+
+
+       Sent when the meta-information item for the next application to bring
+       forward ASN is changed
+
+       •   nextAppToBringForwardAtQuitUnregistered
+
+       •   systemProcessRegistered
+
+
+
+
+       Sent when the system process (generally loginwindow) registers with
+       LaunchServices.
+
+       •   systemProcessUnregistered
+
+
+
+
+       Sent when the system process (generally loginwindow) unregisters with
+       LaunchServices.
+
+       •   frontReservationCreated
+
+
+
+
+       Sent when a front-reservation is created.
+
+       •   frontReservationDestroyed
+
+
+
+
+       Sent when a front reservation is destroyed.
+
+       •   permittedFrontASNsChanged
+
+
+
+
+       Sent when the array of permitted-front-applications changes.
+
+       •   suppressRelaunch
+
+
+
+
+       Sent when an application changes its "LSSupressRelaunch" key.
+
+       •   terminatedByTALChanged
+
+
+
+
+       Sent when an application changes its "TerminatedByTAL" key.
+
+       •   launchedThrottledChanged
+
+
+
+
+       Sent when an application changes *
+       applicationWouldBeTerminatedByTALChanged *
+       applicationProgressValueChanged * applicationVisualNotification * wakeup
+
+       Request that the application with affected ASN resume running its main
+       runloop.
+
+       •   sessionCreated
+
+
+
+
+       Sent when a session is created, generally when the first application
+       registers inside the session. Affected ASN is always NULL, since this
+       does not refer to any particular application.
+
+       •   sessionDestroyed
+
+
+
+
+       Sent when a session is destroyed. Affected ASN is always NULL, since this
+       does not refer to any particular application.
+
+       •   invalid
+
+
+
+
+       This represents an invalid notification code, and is never sent.
+
+       •   all
+
+
+
+
+       This represents all notification codes, and is never sent, but gets used
+       when specifying which notifications to listen for.
+
+EXAMPLES
+       •   List all of the running applications
+
+
+
+
+       lsappinfo list
+
+       •   Show all the notifications which are being sent out
+
+
+
+
+       lsappinfo listen +all forever
+
+       •   Show the notifications sent out whenever the front application is
+           changed, for the next 60 seconds
+
+
+
+
+       lsappinfo listen +becameFrontmost wait 60
+
+       •   Launch TextEdit.app, asyncronously, and don´t bring it to the front
+
+
+
+
+       lsappinfo launch nofront=true async=true /Applications/TextEdit.app/
+
+       •   Find the ASN for the running application "TextEdit", by bundle id
+
+
+
+
+       lsappinfo find bundleid=com.apple.TextEdit
+
+       •   Find the ASN for the running application "TextEdit", by name
+
+
+
+
+       lsappinfo find name="TextEdit"
+
+       •   Show the information for the running application "TextEdit"
+
+
+
+
+       lsappinfo info "TextEdit"
+
+
+

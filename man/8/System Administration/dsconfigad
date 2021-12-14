@@ -1,0 +1,219 @@
+dsconfigad(8)                System Manager's Manual               dsconfigad(8)
+
+NAME
+     dsconfigad – retrieves/changes configuration for Active Directory.
+
+SYNOPSIS
+     dsconfigad -help
+     dsconfigad -show [-xml]
+     dsconfigad -add fqdn -username username [-password password]
+                [-computer computerid] [-ou dn] [-preferred server] [-force]
+                [-localuser username] [-localpassword password]
+                [-packetencrypt allow | disable | require | ssl]
+     dsconfigad -leave [-localuser username] [-localpassword password]
+     dsconfigad -remove -username username [-password password]
+                [-localuser username] [-localpassword password]
+     dsconfigad [-localuser username] [-localpassword password]
+                [-alldomains enable | disable] [-localhome enable | disable]
+                [-gid attribute | -nogid] [-ggid attribute | -noggid]
+                [-groups "group1,group2,..." | -nogroups]
+                [-mobile enable | disable] [-mobileconfirm enable | disable]
+                [-namespace forest | domain]
+                [-packetencrypt allow | disable | require | ssl]
+                [-packetsign allow | disable | require] [-passinterval value]
+                [-preferred server | -nopreferred] [-protocol afp | smb | nfs]
+                [-restrictDDNS interface,interface,...]
+                [-sharepoint enable | disable] [-shell value]
+                [-uid attribute | -nouid] [-useuncpath enable | disable]
+
+DESCRIPTION
+     This tool allows command-line configuration of the Active Directory.
+     dsconfigad has the same functionality for configuring the Active Directory
+     as the Directory Utility application.  It requires "admin" privileges to
+     the local workstation and to the Directory to make changes.
+
+     A list of flags and their descriptions:
+
+     -add fqdn
+              The fully-qualified DNS name of the Domain to be used when adding
+              the computer to the Directory (e.g., domain.ads.example.com).
+
+     -alldomains enable | disable
+              This flag determines whether the plugin allows authentication from
+              any domain in the forest.  When this is enabled, individual
+              domains will not be visible, only "All Domains". If it is
+              disabled, you will have the ability to select the specific domains
+              that can authenticate to this computer. Enabled by default.
+
+     -computer computerid
+              The "computerid" to add the specified Domain
+
+     -force   Force the process (i.e., join the existing account or remove the
+              binding)
+
+     -ggid attribute
+              This specifies the attribute to be used for the GID of the group.
+              By default, a group GID is generated from the Active Directory
+              GUID of the group.
+
+     -gid attribute
+              This specifies the attribute to be used for the GID of the user.
+              By default, a GID is derived from the primaryGroupID of the user
+              (typically Domain Users).
+
+     -groups group1,group2,...
+              Use the listed groups to determine who has local administrative
+              privileges on this computer.  Groups can be specified by domain to
+              ensure security is not compromised, e.g., "domain
+              admins@domain.ads.demo.com"
+
+     -help    Lists the options for calling dsconfigad
+
+     -leave   Leaves the current domain (preserving the computer record in the
+              directory).
+
+     -localhome enable | disable
+              This flag determines whether the plugin forces all home
+              directories to be local to the computer (i.e., /Users/username)
+              (enabled by default).
+
+     -localpassword password
+              Password to use in conjunction with the specified local username.
+              If this is not specified, you will be prompted for entry.  Note
+              that using this option has a security risk due to a small window
+              where the password could be captured from running process list.
+              Consider using the prompting mechanism to ensure passwords are not
+              exposed unexpectedly.
+
+     -localuser username
+              Username of a local account that has administrative privileges to
+              this computer
+
+     -mobile enable | disable
+              This flag determines whether the plugin will enable mobile account
+              support for offline logon (disabled by default).  This flag is a
+              hint.  If the appopriate Workgroup Management settings exist for a
+              user, this will not override, as directory settings for the user
+              take precendence.
+
+     -mobileconfirm enable | disable
+              This flag determines whether the plugin will warn the user when a
+              mobile account is going to be created.  This flag is a hint as
+              discussed in -mobile
+
+     -namespace forest | domain
+              Sets the primary account username naming convention.  By default
+              it is set to "domain" naming which assumes no conflicting user
+              accounts across all domains.  If your Active Directory forest has
+              conflicts setting this to "forest" will prefix all usernames with
+              "DOMAIN\" to ensure unique naming between domains (e.g.,
+              "ADDOMAIN\user1").  Warning:  this will change the primary name of
+              the user for all logins.  Changing this setting on an existing
+              system will cause any existing homes to be unused on the local
+              machine.
+
+     -noggid  Turn off any previously mapped attribute and generate the group
+              GID from the Active Directory GUID.
+
+     -nogid   Turn off any previously mapped attribute and use the GID from the
+              directory.
+
+     -nogroups
+              Disable use of the current groups for determining administrative
+              privileges on this computer.
+
+     -nopreferred
+              Turn off any previously specified server and default to dynamic
+              server discovery.
+
+     -nouid   Turn off any previously mapped attribute and generate the UID from
+              the Active Directory GUID.
+
+     -ou dn   The LDAP DN of the container to use for adding the computer.  If
+              this is not specified, it will default to the container
+              "CN=Computers" within the domain that was specified (e.g.,
+              "CN=Computers,DC=domain,DC=ads,DC=demo,DC=com"
+
+     -packetencrypt allow | disable | require | ssl
+              By default packet encryption is allowed but not required, but can
+              be required or disabled (for example if debugging a problem).
+              This ensures that the data to/from the server is encrypted and
+              signed guaranteeing the content was not tampered with and cannot
+              be seen by other computers on the network.
+
+     -packetsign allow | disable | require
+              By default packet signing is allowed but not required, but can be
+              required or disabled (for example if debugging a problem).  This
+              ensures that the data to/from the server is not tampered with by
+              another computer before received it is received.
+
+     -passinterval value
+              Set how often the computer trust account password should be
+              changed (default 14).
+
+     -password password
+              Password to use in conjunction with the specified username.  If
+              this is not specified, you will be prompted for entry.  Note that
+              using this option has a security risk due to a small window where
+              the password could be captured from running process list.
+              Consider using the prompting mechanism to ensure passwords are not
+              exposed unexpectedly.
+
+     -preferred server
+              Use the specified server for all Directory lookups and
+              authentications.  If the server is no longer available, it will
+              fail-over to other servers.
+
+     -protocol afp | smb | nfs
+              This flag determines how a home directory is mounted on the
+              desktop.  By default SMB is used, but AFP can be used for use with
+              Mac OS X Server or 3rd Party AFP solutions on Windows Servers
+              (previously known as mountstyle)
+
+     -restrictDDNS
+              Restricts Dynamic DNS updates to specific interfaces (e.g., en0,
+              en1, en2, etc.).  To disable restrictions pass "" as the list.
+
+     -remove  Remove this computer from the current Domain
+
+     -sharepoint enable | disable
+              Enable or disable mounting of the network home as a sharepoint.
+
+     -shell value
+              Use the specified shell (e.g., "/bin/bash") if a shell attribute
+              does not exist in the directory for the user logging into this
+              computer.  Use a shell value of "none" to disable use of a default
+              shell, preserving values that are only specified in the directory.
+
+     -show    Shows the current configuration of the Active Directory
+
+     -uid attribute
+              This specifies the attribute to be used for the UID of the user.
+              By default, a UID is generated from the Active Directory GUID.
+
+     -username username
+              Username of a Network account that has administrative privileges
+              to add/remove this computer to/from the specified Domain
+
+     -useuncpath enable | disable
+              This flag determines whether the plugin uses the UNC specified in
+              the Active Directory when mounting the network home.  If this is
+              disabled, the plugin will look for Apple schema extensions to
+              mount the home directory.
+
+     -xml     Output in XML rather than plain text.  Valid only with -show.
+
+EXAMPLES
+     Adding a computer to a Directory:
+
+     dsconfigad -add domain.ads.example.com -computer ThisComputer -username
+     "administrator" -ou "CN=Computers,OU=Engineering,DC=ads,DC=example,DC=com"
+
+     Giving a set of groups administrative access to the local computer:
+
+     dsconfigad -groups "DOMAIN\domain admins,FOREST\enterprise
+     admins,DOMAIN\desktop techs"
+
+SEE ALSO
+     opendirectoryd(8), odutil(1)
+

@@ -1,0 +1,34 @@
+pam_sacl(8)                  System Manager's Manual                 pam_sacl(8)
+
+NAME
+     pam_sacl – Service Access Control List PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_sacl [options]
+
+DESCRIPTION
+     The Service Access Control List PAM module supports the account management
+     function class.  In terms of the function-class parameter, this is the
+     “account” class.
+
+     The Service Access Control List account management module verifies that the
+     authenticated user is permitted access by checking the username against the
+     the SACL of the service named by the sacl_service option.
+
+     The following option must be passed to this account module:
+
+     sacl_service=SERVICE
+             This option names the SACL that the username should be checked
+             against.  SERVICE should be the literal name of the service (e.g.
+             “sacl_service=smb”).
+
+     The following options may be passed to the account module:
+
+     allow_trustacct
+             Always allow access to computer trust accounts.
+
+     debug   Debug information will be printed to the system log.
+
+SEE ALSO
+     pam.conf(5), pam(8)
+

@@ -1,0 +1,94 @@
+ARP(8)                       System Manager's Manual                      ARP(8)
+
+NAME
+     arp – address resolution display and control
+
+SYNOPSIS
+     arp [-n] [-i interface] hostname
+     arp [-n] [-i interface] [-l] -a
+     arp -d hostname [pub] [ifscope interface]
+     arp -d [-i interface] -a
+     arp -s hostname ether_addr [temp] [reject] [blackhole] [pub [only]]
+         [ifscope interface]
+     arp -S hostname ether_addr [temp] [reject] [blackhole] [pub [only]]
+         [ifscope interface]
+     arp -f filename
+
+DESCRIPTION
+     The arp utility displays and modifies the Internet-to-Ethernet address
+     translation tables used by the address resolution protocol (arp(4)).  With
+     no flags, the program displays the current ARP entry for hostname.  The
+     host may be specified by name or by number, using Internet dot notation.
+
+     Available options:
+
+     -a      The program displays or deletes all of the current ARP entries.
+
+     -d      A super-user may delete an entry for the host called hostname with
+             the -d flag.  If the pub keyword is specified, only the “published”
+             ARP entry for this host will be deleted.  If the ifscope keyword is
+             specified, the entry specific to the interface will be deleted.
+
+             Alternatively, the -d flag may be combined with the -a flag to
+             delete all entries.
+
+     -i interface
+             Limit the operation scope to the ARP entries on interface.
+             Applicable only to the following operations: display one, display
+             all, delete all.
+
+     -l      Show link-layer reachability information.
+
+     -n      Show network addresses as numbers (normally arp attempts to display
+             addresses symbolically).
+
+     -s hostname ether_addr
+             Create an ARP entry for the host called hostname with the Ethernet
+             address ether_addr.  The Ethernet address is given as six hex bytes
+             separated by colons.  The entry will be permanent unless the word
+             temp is given in the command.  If the word pub is given, the entry
+             will be “published”; i.e., this system will act as an ARP server,
+             responding to requests for hostname even though the host address is
+             not its own.  In this case the ether_addr can be given as auto in
+             which case the interfaces on this host will be examined, and if one
+             of them is found to occupy the same subnet, its Ethernet address
+             will be used.  If the only keyword is also specified, this will
+             create a “published (proxy only)” entry.  This type of entry is
+             created automatically if arp detects that a routing table entry for
+             hostname already exists.
+
+             If the reject keyword is specified the entry will be marked so that
+             traffic to the host will be discarded and the sender will be
+             notified the host is unreachable.  The blackhole keyword is similar
+             in that traffic is discarded but the sender is not notified.  These
+             can be used to block external traffic to a host without using a
+             firewall.
+
+             If the ifscope keyword is specified, the entry will set with an
+             additional property that strictly associate the entry to the
+             interface. This allows for the presence of mutiple entries with the
+             same destination on different interfaces.
+
+     -S hostname ether_addr
+             Is just like -s except any existing ARP entry for this host will be
+             deleted first.
+
+     -f filename
+             Cause the file filename to be read and multiple entries to be set
+             in the ARP tables.  Entries in the file should be of the form
+
+                   hostname ether_addr [temp] [pub [only]] [ifscope interface]
+
+             with argument meanings as given above.  Leading whitespace and
+             empty lines are ignored.  A ‘#’ character will mark the rest of the
+             line as a comment.
+
+     -x      Show extended link-layer reachability information in addition to
+             that shown by the -l flag.
+
+SEE ALSO
+     inet(3), arp(4), ifconfig(8), ndp(8)
+
+HISTORY
+     The arp utility appeared in 4.3BSD.
+

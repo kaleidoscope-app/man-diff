@@ -1,0 +1,127 @@
+APFS.UTIL(8)                 System Manager's Manual                APFS.UTIL(8)
+
+NAME
+     apfs.util – APFS file system utility
+
+SYNOPSIS
+     apfs.util -A get path
+     apfs.util -A set=yes/no path
+     apfs.util -C -type TYPE path
+     apfs.util -D get device
+     apfs.util -D set=yes/no device
+     apfs.util -E path
+     apfs.util -G path
+     apfs.util -h
+     apfs.util -k device
+     apfs.util -m <verb> path
+     apfs.util -M dir
+     apfs.util -O path fs_name
+     apfs.util -p device removable writable
+     apfs.util -P verb1 verb2 path
+     apfs.util -r path
+     apfs.util -R SNAPSHOT device
+     apfs.util -s device
+     apfs.util -S dir
+     apfs.util -t
+     apfs.util -y path
+     apfs.util -Y dir
+     apfs.util -z path
+     apfs.util -Z path
+
+DESCRIPTION
+     The apfs.util Command supports getting and setting various file system
+     options.
+
+     path argument is a path to any file within the mounted file system.  If it
+     is used to specify a volume, any file within the same volume will get the
+     same result.  device argument is the /dev/diskXsY identifier corresponding
+     to the volume.  dir could be any directory in the mounted file system.
+
+     Options:
+
+     -A get path
+             get atime update setting for volume specified by path.
+
+     -A set=yes/no path
+             enable or disable update setting for volume specified by path.
+
+     -C -type TYPE path
+             clear the purgeability of files of the specified type on the volume
+             referred to by path.
+             TYPE could be one of: photos, music, mail, document, data, podcast,
+             video, movie, messages, books.
+
+     -D get device
+             Get defragmentation setting for volume or container specied by
+             device.
+
+     -D set=yes/no device
+             enable / disable defragmentation for volume or container specified
+             by device.
+
+     -E path
+             drop the extents for path from the first snapshot
+
+     -G path
+             get stats on the purgeble files on the volume specified by path.
+
+     -k      Return the UUID of the apfs volume on device.
+
+     -m verb path
+             mark the file at path as purgeable with the various options
+             specified.
+             verb could be many of: -low -med -high -photo -music -mail
+             -document -data -podcast -video -movie -message -book -fault -clear
+
+     -M dir  flag the named directory as "maintain-dir-stats".
+
+     -O path fs_name
+             override the fstypename for apfs to be fs_name or "hfs" if the
+             optional fs_name was not given.
+
+     -p device
+             Return the apfs volume name of device.
+
+     -P criteria path
+             purge files meeting the criteria specified on the volume referred
+             to by path.
+             criteria could be -low -med -high
+             and/or with specified parameters: -minsize VAL -maxage VAL -maxage
+             AGE_IN_SECONDS -total TOTAL_PURGE_AMOUNT
+             and/or specifiend by: -type TYPE, that could be one of -photos
+             -music -mail -document -data -podcast -video -movie -messages
+             -books
+
+     -r dir  set the sync-root flag on the specified dir directory.
+
+     -R SNAPSHOT device
+             set the volume specified by device to revert to the snapshot named
+             by SNAPSHOT on next mount.
+
+     -s device
+             Set container UUID and its volume(s) UUID(s) to new random values.
+             device must be an identifier of a container.
+
+     -S dir  get the directory stats from dir.  path.
+
+     -t      stitches and creates synthetic objects on root volume group
+
+     -y path
+             get the sync-root flag from the first parent that has one for the
+             item identified by path.
+
+     -Y dir  get the sync-root flag from the specified directory in dir.
+
+     -z path
+             make the file at exempt from copy-on-write semantics for snapshots
+
+     -Z path
+             get the purgeable file flags for the specific file at path.
+
+
+SEE ALSO
+     diskarbitrationd(8)
+
+HISTORY
+     The apfs.util utility first appeared in OS X 10.12.
+

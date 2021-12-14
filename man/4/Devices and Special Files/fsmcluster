@@ -1,0 +1,76 @@
+FSMCLUSTER(4)                 Device Drivers Manual                FSMCLUSTER(4)
+
+
+
+NAME
+       fsmcluster - Xsan File System cluster configuration
+
+SYNOPSIS
+       /Library/Preferences/Xsan/fsmcluster
+
+DESCRIPTION
+       The Xsan File System fsmcluster file describes cluster configuration
+       information for the fsmpm(8) daemon and mount_acfs(8) command.  It is a
+       list of keywords with values.
+
+OVERVIEW
+       Traditionally, Xsan volumes have been grouped into clusters which share a
+       common name service providing visibility to clients. The clients would
+       typically be able to mount these volumes using either direct SAN
+       connections to the data LUNs or proxy access using the distributed LAN
+       client connection to a Xsan gateway server. If a set of clients require
+       access to a volume in a different cluster, an fsforeignservers(4) may be
+       configured.
+
+       The Xsan cluster and administrative domain feature allows more flexible
+       configurations where sharing access between clusters is desired.
+       Conversely, this feature may also be used to separate large clusters into
+       multiple smaller clusters where sets of volumes may be grouped with
+       clients that access only those volumes.
+
+       Multiple volumes with the same name may coexist, provided they reside in
+       separate clusters.
+
+SYNTAX
+       default_cluster cluster
+              Specify the default cluster name for this machine.  If not
+              specified, it will default to _cluster0.
+
+       default_addom admin_domain
+              Specify the default administrative domain name for this machine.
+              An administrative domain is a group of named clusters.  If not
+              specified, it will default to _addom0.
+
+       Lines that contain white space only or that contain the comment token as
+       the first non-white space character are ignored.
+
+       The default administrative domain name and default cluster names are used
+       when an fsm name is specified without a cluster name or administrative
+       domain name, such as when mounting a Xsan Volume
+
+Changing the Cluster or Administrative Domain Name
+       Changing the cluster name on an MDC node affects the location of the file
+       systems running on that node. Changing the cluster name on a coordinator
+       node affects the services that are being advertised by that coordinator.
+       All clients must unmount the file systems that are to be affected by the
+       change.  Services must be stopped on the MDC and coordinator nodes,
+       including both primary and secondary nodes of an HA pair.  The fsmcluster
+       file may then be updated on all affected nodes including both nodes of an
+       HA pair.  Start the services on the coordinator nodes first if these
+       nodes are different than the MDC nodes.  Start the services on the MDC
+       nodes next.  The file systems are now available for client mounts at
+       their new cluster location.
+
+       When converting a system to HA, if the first node has an fsmcluster file,
+       the second node must have one as well, prior to attempting the
+       conversion.
+
+FILES
+       /Library/Preferences/Xsan/fsmcluster
+
+SEE ALSO
+       cvadmin(8), fsforeignservers(4), fsnameservers(4), fsmpm(8),
+       mount_acfs(8)
+
+
+

@@ -1,0 +1,64 @@
+HFS.UTIL(8)                  System Manager's Manual                 HFS.UTIL(8)
+
+NAME
+     hfs.util – HFS/HFS+ file system utility
+
+SYNOPSIS
+     hfs.util -m device mountpoint [mountflag1] [mountflag2] [mountflag3]
+              [mountflag4]
+
+     hfs.util -p device [mountflag1] [mountflag2] [mountflag3] [mountflag4]
+
+     hfs.util -J [size] mountpoint
+
+     hfs.util -U mountpoint
+
+     hfs.util -N device
+
+     hfs.util -I mountpoint
+
+     hfs.util [-aksu] device
+
+DESCRIPTION
+     The hfs.util command supports the mounting, probing, and unmounting of HFS
+     file systems.
+
+     Options:
+           -a      Adopt permissions for the HFS file system at device
+           -I      Print out status information about the journal on the HFS
+                   file system at mountpoint
+           -J [size]
+                   Enable journaling on the HFS file system mounted on
+                   mountpoint.  An optional size may be specified (e.g. 32M for
+                   a 32 megabyte journal).
+           -k      Get the UUID key for the HFS file system at device.
+           -m      Mount the HFS file system located on device onto mountpoint
+                   with the flags mountflag1 mountflag2 mountflag3 mountflag4
+           -M      Force mount the HFS file system located on device onto
+                   mountpoint with the flags mountflag1 mountflag2 mountflag3
+                   mountflag4.  This is a deprecated option.
+           -N      Disable journaling on a HFS+ file system located at device
+           -p      Probe the device for an HFS file system using the flags
+                   mountflag1 mountflag2 mountflag3 mountflag4
+           -s      Set the UUID key (generates a new UUID value) for the HFS
+                   file system at device
+           -u      Unmount the HFS file system located at device
+           -U      Disable journaling on the HFS+ file system mounted on
+                   mountpoint
+
+     The mountflags referenced above are either:
+           •   removable or fixed
+           •   readonly or writeable
+           •   suid or nosuid
+           •   dev or nodev
+
+     Note that for the device references above, you must only supply the last
+     component of the path to the device in question, such as disk0s2 rather
+     than /dev/disk0s2.
+
+SEE ALSO
+     diskarbitrationd(8)
+
+HISTORY
+     Derived from the Openstep Workspace Manager file system utility programs.
+

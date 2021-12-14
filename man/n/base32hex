@@ -1,0 +1,92 @@
+base32::hex(n)                   Base32 encoding                  base32::hex(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       base32::hex - base32 extended hex encoding
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require base32::core  ?0.1?
+
+       package require base32::hex  ?0.1?
+
+       ::base32::hex::encode string
+
+       ::base32::hex::decode estring
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides commands for encoding and decoding of strings into
+       and out of the extended hex base32 encoding as specified in the RFC
+       3548bis draft.
+
+API
+       ::base32::hex::encode string
+              This command encodes the given string in extended hex base32 and
+              returns the encoded string as its result. The result may be padded
+              with the character = to signal a partial encoding at the end of
+              the input string.
+
+       ::base32::hex::decode estring
+              This commands takes the estring and decodes it under the
+              assumption that it is a valid extended hex base32 encoded string.
+              The result of the decoding is returned as the result of the
+              command.
+
+              Note that while the encoder will generate only uppercase
+              characters this decoder accepts input in lowercase as well.
+
+              The command will always throw an error whenever encountering
+              conditions which signal some type of bogus input, namely if
+
+              [1]    the input contains characters which are not valid output of
+                     a extended hex base32 encoder,
+
+              [2]    the length of the input is not a multiple of eight,
+
+              [3]    padding appears not at the end of input, but in the middle,
+
+              [4]    the padding has not of length six, four, three, or one
+                     characters,
+
+CODE MAP
+       The code map used to convert 5-bit sequences is shown below, with the
+       numeric id of the bit sequences to the left and the character used to
+       encode it to the right. The important feature of the extended hex mapping
+       is that the first 16 codes map to the digits and hex characters.
+
+            0 0    9 9        18 I   27 R
+            1 1   10 A        19 J   28 S
+            2 2   11 B        20 K   29 T
+            3 3   12 C        21 L   30 U
+            4 4   13 D        22 M   31 V
+            5 5   14 E        23 N
+            6 6   15 F        24 O
+            7 7        16 G   25 P
+            8 8        17 H   26 Q
+
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category base32 of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       base32, hex, rfc3548
+
+CATEGORY
+       Text processing
+
+COPYRIGHT
+       Copyright (c) Public domain
+
+
+
+

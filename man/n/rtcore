@@ -1,0 +1,237 @@
+fileutil::magic::rt(n)           file utilities           fileutil::magic::rt(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       fileutil::magic::rt - Runtime core for file type recognition engines
+       written in pure Tcl
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require fileutil::magic::rt  ?1.0?
+
+       ::fileutil::magic::rt::open filename
+
+       ::fileutil::magic::rt::close
+
+       ::fileutil::magic::rt::file_start name
+
+       ::fileutil::magic::rt::result ?msg?
+
+       ::fileutil::magic::rt::resultv ?msg?
+
+       ::fileutil::magic::rt::emit msg
+
+       ::fileutil::magic::rt::offset where
+
+       ::fileutil::magic::rt::Nv type offset ?qual?
+
+       ::fileutil::magic::rt::N type offset comp val ?qual?
+
+       ::fileutil::magic::rt::Nvx atlevel type offset ?qual?
+
+       ::fileutil::magic::rt::Nx atlevel type offset comp val ?qual?
+
+       ::fileutil::magic::rt::S offset comp val ?qual?
+
+       ::fileutil::magic::rt::Sx atlevel offset comp val ?qual?
+
+       ::fileutil::magic::rt::L newlevel
+
+       ::fileutil::magic::rt::I base type delta
+
+       ::fileutil::magic::rt::R offset
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides the runtime core for file type recognition engines
+       written in pure Tcl and is thus used by all other packages in this
+       module, i.e. the two frontend packages fileutil::magic::mimetypes and
+       fileutil::magic::filetypes, and the two engine compiler packages
+       fileutil::magic::cgen and fileutil::magic::cfront.
+
+COMMANDS
+       ::fileutil::magic::rt::open filename
+              This command initializes the runtime and prepares the file
+              filename for use by the system.  This command has to be invoked
+              first, before any other command of this package.
+
+              The command returns the channel handle of the opened file as its
+              result.
+
+       ::fileutil::magic::rt::close
+              This command closes the last file opened via
+              ::fileutil::magic::rt::open and shuts the runtime down.  This
+              command has to be invoked last, after the file has been dealt with
+              completely.  Afterward another invokation of
+              ::fileutil::magic::rt::open  is required to process another file.
+
+              This command returns the empty string as its result.
+
+       ::fileutil::magic::rt::file_start name
+              This command marks the start of a magic file when debugging. It
+              returns the empty string as its result.
+
+       ::fileutil::magic::rt::result ?msg?
+              This command returns the current result and stops processing.
+
+              If msg is specified its text is added to the result before it is
+              returned. See ::fileutil::magic::rt::emit for the allowed special
+              character sequences.
+
+       ::fileutil::magic::rt::resultv ?msg?
+              This command returns the current result.  In contrast to
+              ::fileutil::magic::rt::result processing continues.
+
+              If msg is specified its text is added to the result before it is
+              returned. See ::fileutil::magic::rt::emit for the allowed special
+              character sequences.
+
+       ::fileutil::magic::rt::emit msg
+              This command adds the text msg to the result buffer. The message
+              may contain the following special character sequences. They will
+              be replaced with buffered values before the message is added to
+              the result. The command returns the empty string as its result.
+
+              \b     This sequence is removed
+
+              %s     Replaced with the last buffered string value.
+
+              %ld    Replaced with the last buffered numeric value.
+
+              %d     See above.
+
+       ::fileutil::magic::rt::Nv type offset ?qual?
+              This command fetches the numeric value with type from the absolute
+              location offset and returns it as its result. The fetched value is
+              further stored in the numeric buffer.
+
+              If qual is specified it is considered to be a mask and applied to
+              the fetched value before it is stored and returned. It has to have
+              the form of a partial Tcl bit-wise expression, i.e.
+
+                   & number
+
+              For example:
+
+                   Nv lelong 0 &0x8080ffff
+
+              For the possible types see section NUMERIC TYPES.
+
+       ::fileutil::magic::rt::N type offset comp val ?qual?
+              This command behaves mostly like ::fileutil::magic::rt::Nv, except
+              that it compares the fetched and masked value against val as
+              specified with comp and returns the result of that comparison.
+
+              The argument comp has to contain one of Tcl's comparison
+              operators, and the comparison made will be
+
+                   <val> <comp> <fetched-and-masked-value>
+
+
+              The special comparison operator x signals that no comparison
+              should be done, or, in other words, that the fetched value will
+              always match val.
+
+       ::fileutil::magic::rt::Nvx atlevel type offset ?qual?
+              This command behaves like ::fileutil::magic::rt::Nv, except that
+              it additionally remembers the location in the file after the fetch
+              in the calling context, for the level atlevel, for later use by
+              ::fileutil::magic::rt::R.
+
+       ::fileutil::magic::rt::Nx atlevel type offset comp val ?qual?
+              This command behaves like ::fileutil::magic::rt::N, except that it
+              additionally remembers the location in the file after the fetch in
+              the calling context, for the level atlevel, for later use by
+              ::fileutil::magic::rt::R.
+
+       ::fileutil::magic::rt::S offset comp val ?qual?
+              This command behaves like ::fileutil::magic::rt::N, except that it
+              fetches and compares strings, not numeric data. The fetched value
+              is also stored in the internal string buffer instead of the
+              numeric buffer.
+
+       ::fileutil::magic::rt::Sx atlevel offset comp val ?qual?
+              This command behaves like ::fileutil::magic::rt::S, except that it
+              additionally remembers the location in the file after the fetch in
+              the calling context, for the level atlevel, for later use by
+              ::fileutil::magic::rt::R.
+
+       ::fileutil::magic::rt::L newlevel
+              This command sets the current level in the calling context to
+              newlevel. The command returns the empty string as its result.
+
+       ::fileutil::magic::rt::I base type delta
+              This command handles base locations specified indirectly through
+              the contents of the inspected file. It returns the sum of delta
+              and the value of numeric type fetched from the absolute location
+              base.
+
+              For the possible types see section NUMERIC TYPES.
+
+       ::fileutil::magic::rt::R offset
+              This command handles base locations specified relative to the end
+              of the last field one level above.
+
+              In other words, the command computes an absolute location in the
+              file based on the relative offset and returns it as its result.
+              The base the offset is added to is the last location remembered
+              for the level in the calling context.
+
+NUMERIC TYPES
+       byte   8-bit integer
+
+       short  16-bit integer, stored in native endianess
+
+       beshort
+              see above, stored in big endian
+
+       leshort
+              see above, stored in small/little endian
+
+       long   32-bit integer, stored in native endianess
+
+       belong see above, stored in big endian
+
+       lelong see above, stored in small/little endian
+
+       All of the types above exit in an unsigned form as well. The type names
+       are the same, with the character "u" added as prefix.
+
+       date   32-bit integer timestamp, stored in native endianess
+
+       bedate see above, stored in big endian
+
+       ledate see above, stored in small/little endian
+
+       ldate  32-bit integer timestamp, stored in native endianess
+
+       beldate
+              see above, stored in big endian
+
+       leldate
+              see above, stored in small/little endian
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category fileutil ::
+       magic of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+SEE ALSO
+       file(1), fileutil, magic(5)
+
+KEYWORDS
+       file recognition, file type, file utilities, mime, type
+
+CATEGORY
+       Programming tools
+
+
+

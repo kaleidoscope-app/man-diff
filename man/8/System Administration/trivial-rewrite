@@ -1,0 +1,328 @@
+TRIVIAL-REWRITE(8)           System Manager's Manual          TRIVIAL-REWRITE(8)
+
+
+
+
+NAME
+       trivial-rewrite - Postfix address rewriting and resolving daemon
+
+SYNOPSIS
+       trivial-rewrite [generic Postfix daemon options]
+
+DESCRIPTION
+       The trivial-rewrite(8) daemon processes three types of client service
+       requests:
+
+       rewrite context address
+              Rewrite an address to standard form, according to the address
+              rewriting context:
+
+              local  Append the domain names specified with $myorigin or
+                     $mydomain to incomplete addresses; do swap_bangpath and
+                     allow_percent_hack processing as described below, and strip
+                     source routed addresses (@site,@site:user@domain) to
+                     user@domain form.
+
+              remote Append the domain name specified with
+                     $remote_header_rewrite_domain to incomplete addresses.
+                     Otherwise the result is identical to that of the local
+                     address rewriting context. This prevents Postfix from
+                     appending the local domain to spam from poorly written
+                     remote clients.
+
+       resolve sender address
+              Resolve the address to a (transport, nexthop, recipient, flags)
+              quadruple. The meaning of the results is as follows:
+
+              transport
+                     The delivery agent to use. This is the first field of an
+                     entry in the master.cf file.
+
+              nexthop
+                     The host to send to and optional delivery method
+                     information.
+
+              recipient
+                     The envelope recipient address that is passed on to
+                     nexthop.
+
+              flags  The address class, whether the address requires relaying,
+                     whether the address has problems, and whether the request
+                     failed.
+
+       verify sender address
+              Resolve the address for address verification purposes.
+
+SERVER PROCESS MANAGEMENT
+       The trivial-rewrite(8) servers run under control by the Postfix master
+       server.  Each server can handle multiple simultaneous connections.  When
+       all servers are busy while a client connects, the master creates a new
+       server process, provided that the trivial-rewrite server process limit is
+       not exceeded.  Each trivial-rewrite server terminates after serving at
+       least $max_use clients of after $max_idle seconds of idle time.
+
+STANDARDS
+       None. The command does not interact with the outside world.
+
+SECURITY
+       The trivial-rewrite(8) daemon is not security sensitive.  By default,
+       this daemon does not talk to remote or local users.  It can run at a
+       fixed low privilege in a chrooted environment.
+
+DIAGNOSTICS
+       Problems and transactions are logged to syslogd(8).
+
+CONFIGURATION PARAMETERS
+       On busy mail systems a long time may pass before a main.cf change
+       affecting trivial-rewrite(8) is picked up. Use the command "postfix
+       reload" to speed up a change.
+
+       The text below provides only a parameter summary. See postconf(5) for
+       more details including examples.
+
+COMPATIBILITY CONTROLS
+
+       resolve_dequoted_address (yes)
+              Resolve a recipient address safely instead of correctly, by
+              looking inside quotes.
+
+       Available with Postfix version 2.1 and later:
+
+       resolve_null_domain (no)
+              Resolve an address that ends in the "@" null domain as if the
+              local hostname were specified, instead of rejecting the address as
+              invalid.
+
+       Available with Postfix version 2.3 and later:
+
+       resolve_numeric_domain (no)
+              Resolve "user@ipaddress" as "user@[ipaddress]", instead of
+              rejecting the address as invalid.
+
+       Available with Postfix version 2.5 and later:
+
+       allow_min_user (no)
+              Allow a sender or recipient address to have `-' as the first
+              character.
+
+ADDRESS REWRITING CONTROLS
+
+       myorigin ($myhostname)
+              The domain name that locally-posted mail appears to come from, and
+              that locally posted mail is delivered to.
+
+       allow_percent_hack (yes)
+              Enable the rewriting of the form "user%domain" to "user@domain".
+
+       append_at_myorigin (yes)
+              With locally submitted mail, append the string "@$myorigin" to
+              mail addresses without domain information.
+
+       append_dot_mydomain (Postfix >= 3.0: no, Postfix < 3.0: yes)
+              With locally submitted mail, append the string ".$mydomain" to
+              addresses that have no ".domain" information.
+
+       recipient_delimiter (empty)
+              The set of characters that can separate a user name from its
+              extension (example: user+foo), or a .forward file name from its
+              extension (example: .forward+foo).
+
+       swap_bangpath (yes)
+              Enable the rewriting of "site!user" into "user@site".
+
+       Available in Postfix 2.2 and later:
+
+       remote_header_rewrite_domain (empty)
+              Don't rewrite message headers from remote clients at all when this
+              parameter is empty; otherwise, rewrite message headers and append
+              the specified domain name to incomplete addresses.
+
+ROUTING CONTROLS
+       The following is applicable to Postfix version 2.0 and later.  Earlier
+       versions do not have support for: virtual_transport, relay_transport,
+       virtual_alias_domains, virtual_mailbox_domains or proxy_interfaces.
+
+       local_transport (local:$myhostname)
+              The default mail delivery transport and next-hop destination for
+              final delivery to domains listed with mydestination, and for
+              [ipaddress] destinations that match $inet_interfaces or
+              $proxy_interfaces.
+
+       virtual_transport (virtual)
+              The default mail delivery transport and next-hop destination for
+              final delivery to domains listed with $virtual_mailbox_domains.
+
+       relay_transport (relay)
+              The default mail delivery transport and next-hop destination for
+              remote delivery to domains listed with $relay_domains.
+
+       default_transport (smtp)
+              The default mail delivery transport and next-hop destination for
+              destinations that do not match $mydestination, $inet_interfaces,
+              $proxy_interfaces, $virtual_alias_domains,
+              $virtual_mailbox_domains, or $relay_domains.
+
+       parent_domain_matches_subdomains (see 'postconf -d' output)
+              A list of Postfix features where the pattern "example.com" also
+              matches subdomains of example.com, instead of requiring an
+              explicit ".example.com" pattern.
+
+       relayhost (empty)
+              The next-hop destination of non-local mail; overrides non-local
+              domains in recipient addresses.
+
+       transport_maps (empty)
+              Optional lookup tables with mappings from recipient address to
+              (message delivery transport, next-hop destination).
+
+       Available in Postfix version 2.3 and later:
+
+       sender_dependent_relayhost_maps (empty)
+              A sender-dependent override for the global relayhost parameter
+              setting.
+
+       Available in Postfix version 2.5 and later:
+
+       empty_address_relayhost_maps_lookup_key (<>)
+              The sender_dependent_relayhost_maps search string that will be
+              used instead of the null sender address.
+
+       Available in Postfix version 2.7 and later:
+
+       empty_address_default_transport_maps_lookup_key (<>)
+              The sender_dependent_default_transport_maps search string that
+              will be used instead of the null sender address.
+
+       sender_dependent_default_transport_maps (empty)
+              A sender-dependent override for the global default_transport
+              parameter setting.
+
+ADDRESS VERIFICATION CONTROLS
+       Postfix version 2.1 introduces sender and recipient address verification.
+       This feature is implemented by sending probe email messages that are not
+       actually delivered.  By default, address verification probes use the same
+       route as regular mail. To override specific aspects of message routing
+       for address verification probes, specify one or more of the following:
+
+       address_verify_local_transport ($local_transport)
+              Overrides the local_transport parameter setting for address
+              verification probes.
+
+       address_verify_virtual_transport ($virtual_transport)
+              Overrides the virtual_transport parameter setting for address
+              verification probes.
+
+       address_verify_relay_transport ($relay_transport)
+              Overrides the relay_transport parameter setting for address
+              verification probes.
+
+       address_verify_default_transport ($default_transport)
+              Overrides the default_transport parameter setting for address
+              verification probes.
+
+       address_verify_relayhost ($relayhost)
+              Overrides the relayhost parameter setting for address verification
+              probes.
+
+       address_verify_transport_maps ($transport_maps)
+              Overrides the transport_maps parameter setting for address
+              verification probes.
+
+       Available in Postfix version 2.3 and later:
+
+       address_verify_sender_dependent_relayhost_maps
+       ($sender_dependent_relayhost_maps)
+              Overrides the sender_dependent_relayhost_maps parameter setting
+              for address verification probes.
+
+       Available in Postfix version 2.7 and later:
+
+       address_verify_sender_dependent_default_transport_maps
+       ($sender_dependent_default_transport_maps)
+              Overrides the sender_dependent_default_transport_maps parameter
+              setting for address verification probes.
+
+MISCELLANEOUS CONTROLS
+
+       config_directory (see 'postconf -d' output)
+              The default location of the Postfix main.cf and master.cf
+              configuration files.
+
+       daemon_timeout (18000s)
+              How much time a Postfix daemon process may take to handle a
+              request before it is terminated by a built-in watchdog timer.
+
+       empty_address_recipient (MAILER-DAEMON)
+              The recipient of mail addressed to the null address.
+
+       ipc_timeout (3600s)
+              The time limit for sending or receiving information over an
+              internal communication channel.
+
+       max_idle (100s)
+              The maximum amount of time that an idle Postfix daemon process
+              waits for an incoming connection before terminating voluntarily.
+
+       max_use (100)
+              The maximal number of incoming connections that a Postfix daemon
+              process will service before terminating voluntarily.
+
+       relocated_maps (empty)
+              Optional lookup tables with new contact information for users or
+              domains that no longer exist.
+
+       process_id (read-only)
+              The process ID of a Postfix command or daemon process.
+
+       process_name (read-only)
+              The process name of a Postfix command or daemon process.
+
+       queue_directory (see 'postconf -d' output)
+              The location of the Postfix top-level queue directory.
+
+       show_user_unknown_table_name (yes)
+              Display the name of the recipient table in the "User unknown"
+              responses.
+
+       syslog_facility (mail)
+              The syslog facility of Postfix logging.
+
+       syslog_name (see 'postconf -d' output)
+              A prefix that is prepended to the process name in syslog records,
+              so that, for example, "smtpd" becomes "prefix/smtpd".
+
+       Available in Postfix version 2.0 and later:
+
+       helpful_warnings (yes)
+              Log warnings about problematic configuration settings, and provide
+              helpful suggestions.
+
+SEE ALSO
+       postconf(5), configuration parameters
+       transport(5), transport table format
+       relocated(5), format of the "user has moved" table
+       master(8), process manager
+       syslogd(8), system logging
+
+README FILES
+       Use "postconf readme_directory" or "postconf html_directory" to locate
+       this information.
+       ADDRESS_CLASS_README, Postfix address classes howto
+       ADDRESS_VERIFICATION_README, Postfix address verification
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+AUTHOR(S)
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

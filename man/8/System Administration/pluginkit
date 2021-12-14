@@ -1,0 +1,93 @@
+pluginkit(8)                 System Manager's Manual                pluginkit(8)
+
+NAME
+     pluginkit – plugin plug-in extension pluginkit
+
+SYNOPSIS
+     pluginkit -m [-ADv] [-p -protocol] [-i -identifier] [key=value] [...]
+
+     pluginkit [-ar] [-v] [file ...]
+
+     pluginkit -e election [-p -protocol] [-i -identifier] [key=value] [...]
+
+DESCRIPTION
+     pluginkit manages the PlugInKit subsystem for the current user. It can
+     query the plug-in database and make limited interventions for debugging and
+     development.
+
+     A list of flags and their descriptions:
+
+     -A, --all-versions
+              Matches find all versions of a given plug-in known to the system.
+              By default, only the latest (highest) version is returned.
+
+     -a       Explicitly adds plugins at the file location(s) given, even if
+              they are not normally eligible for automatic discovery.  Note that
+              database clean-ups may eventually remove them in that case.
+
+     -e election
+              Perform a matching operation (see -m) and apply the given user
+              election setting to all matching plug-ins.  Elections can be
+              "use", "ignore", and "default". Elections are applied to all plug-
+              ins with given identifier.
+
+     -D, --duplicates
+              Matches find all physical instances of a given plug-in known to
+              the system, even multiple copies with the same version.
+
+     -i, --identifier identifier
+              Specifies a plug-in identifier to match, a short-hand for
+              NSExtensionIdentifier=identifier.
+
+     -m --match
+              Requests pluginkit to scan all registered plug-ins for those
+              matching the given search criteria (see DISCOVERY MATCHING below).
+              All matching plug-ins are returned, one per line. Add the -v
+              option to get more detailed output. This is exactly reproducing
+              the functionality of PlugInKit discovery, except that no host-
+              specific restrictions are imposed. The -A and -D options affect
+              the outcome.
+
+     -p --protocol protocol
+              Specifies a plug-in protocol to  match, a short-hand for
+              NSExtensionPointName=protocol.
+
+     -r       Explicitly removes plugins at the file location(s) given. Note
+              that automatic discovery procedures may add them back if they are
+              still present.
+
+     --raw    Present replies from the management daemon (pkd) in raw XML form.
+              This is primarily useful for debugging and for reporting full
+              state in bug reports.
+
+     -v       Asks for more verbose operation. For matching requests, more
+              detail is printed about each matched plug-in.  This option can be
+              given more than once.
+
+
+DISCOVERY MATCHING
+     During plug-in discovery, PlugInKit matches plug-ins against match criteria
+     and delivers matching plug-ins.  Only plug-ins that match all given
+     criteria are eligible. Criteria are expressed as "key" (must be present) or
+     "key=value" (key must be present and have the given value). The -i and -p
+     arguments are shorthands for the conventional identifier and protocol
+     matching keys.  All matching plug-ins are reduced according to the -A and
+     -D options given. With -D, all eligible plug-ins are returned. With -A, the
+     last-registered (by timestamp) instance of each version is returned. By
+     default, only the last instance of the highest version is returned. Note
+     that this reduction is applied after matching.
+
+EXPLICIT CHANGES
+     The -a and -r options make changes to the system's plug-in registry. The
+     registry is designed to operate automatically, and will update on its own
+     as applications are installed, removed, and discovered. The options
+     available through pluginkit are intended only for limited manipulation
+     during plug-in development and for certain maintenance tasks.  They cannot
+     make permanent alterations of the automatic registry state.
+
+SEE ALSO
+     pkd(8), launchd(8)
+
+HISTORY
+     The pluginkit command first appeared in OS X 10.9.
+

@@ -1,0 +1,60 @@
+SNCFGEDIT(8)                 System Manager's Manual                SNCFGEDIT(8)
+
+
+
+NAME
+       sncfgedit - Edit Xsan Volume configuration file
+
+SYNOPSIS
+       sncfgedit -n VolName [-f FailedTemporaryConfigFile]
+
+       sncfgedit -h
+
+DESCRIPTION
+       The sncfgedit program provides convenient method to edit the Xsan file
+       system configuration file for the named file system and validate the new
+       configuration file before overwriting the old one.  To do so, sncfgedit
+       creates a temporary copy of the configuration file, and then opens it in
+       an editor.
+
+       sncfgedit uses the the EDITOR environment variable to choose the program
+       used to edit the configuration file, or vi if EDITOR is not set.
+
+       Validation includes standalone validation of the new configuration file
+       as well as validation of changes between original configuration file and
+       edited file if a configuration file previously existed.  If no previous
+       configuration file exists, a template will be loaded into the editor
+       using default settings for all values.
+
+       Before an existing configuration file is overwritten, it is copied to
+       /Library/Logs/Xsan/data/VolName/config_history/ for future reference.  A
+       timestamp is appended to the filename to allow for the existence of
+       multiple backup copies.
+
+OPTIONS
+       -h     Display usage.
+
+       -n VolName
+              Required. The name of the file system whose config is to be edited
+              or created.
+
+       -f FailedTemporaryConfigFile
+              Specify the path to the temporary config file from a previous run
+              where the proposed changes were disallowed. This gives you another
+              chance without throwing away all of the previous changes.
+
+EXIT VALUES
+       sncfgedit will return 0 on success and non-zero on failure.
+
+ENVIRONMENT VARIABLES
+       EDITOR Allows the user to choose which editor is used to modify the
+              configuration file.  (default: vi)
+
+FILES
+       /Library/Logs/Xsan/data/VolName/config_history/*
+
+SEE ALSO
+       snfs_config(5), snfs.cfgx(5), snfs.cfg(5)
+
+
+

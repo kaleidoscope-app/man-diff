@@ -1,0 +1,300 @@
+pwpolicy(8)                  System Manager's Manual                 pwpolicy(8)
+
+
+
+NAME
+     pwpolicy – gets and sets password policies
+
+SYNOPSIS
+     pwpolicy [-h]
+     pwpolicy [-v] [-a authenticator] [-p password]
+              [-u username | -c computername] [-n nodename] command command-arg
+     pwpolicy [-v] [-a authenticator] [-p password]
+              [-u username | -c computername] [-n nodename] command
+              "policy1=value1 policy2=value2 ..."
+
+
+
+DESCRIPTION
+     pwpolicy manipulates password policies.
+
+   Options
+     -a    name of the authenticator
+
+     -c    name of the computer account to modify
+
+     -p    password (omit this option for a secure prompt)
+
+     -u    name of the user account to modify
+
+     -n    use a specific directory node; the search node is used by default.
+
+     -v    verbose
+
+     -h    help
+
+   Commands
+     -getglobalpolicy             Get global policies.  DEPRECATED.
+     -setglobalpolicy             Set global policies.  DEPRECATED.
+     -getpolicy                   Get policies for a user.  DEPRECATED.
+     --get-effective-policy       Gets the combination of global and user
+                                  policies that apply to the user.  DEPRECATED.
+     -setpolicy                   Set policies for a user.  DEPRECATED.
+     -setpassword                 Set a new password for a user. Non-
+                                  administrators can use this command to change
+                                  their own passwords.
+     -enableuser                  Enable a user account that was disabled by a
+                                  password policy event.
+     -disableuser                 Disable a user account.
+     -getglobalhashtypes          Returns the default list of password hashes
+                                  stored on disk for this system.
+     -setglobalhashtypes          Edits the default list of password hashes
+                                  stored on disk for this system.
+     -gethashtypes                Returns a list of password hashes stored on
+                                  disk for a user account.
+     -sethashtypes                Edits the list of password hashes stored on
+                                  disk for a user account.
+     -setaccountpolicies          Sets (replaces) the account polices for the
+                                  specified user.  If no user is specified, sets
+                                  the global account policies.  Takes one
+                                  argument: the name of the file containing the
+                                  policies.
+     -getaccountpolicies          Gets the account policies for the specified
+                                  user.  If no user is specified, gets the
+                                  global account policies.
+     -clearaccountpolicies        Removes all of the account policies for the
+                                  specified user.  If no user is specified,
+                                  removes the global account policies.
+     -authentication-allowed      Determines if the policies allow the user to
+                                  authenticate
+
+   Account Policies
+     Account policies are the replacement for the deprecated legacy global and
+     user policies.  Account policies are specified as a dictionary containing
+     three keys, one key for each policy category.  Note that the dictionary is
+     not required to contain all of the policy categories.  Valid keys for the
+     policy categories are:
+
+     policyCategoryAuthentication     Controls when a user may
+                                      login/authenticate.
+     policyCategoryPasswordChange     Determines if/when a user is required to
+                                      change their password
+     policyCategoryPasswordContent    Controls the set of allowable characters
+                                      in a password.
+
+     Each policy category contains an array of individual policy dictionaries.
+     Valid keys in the policy dictionary are:
+
+     policyIdentifier     A user-defined unique identifier for the policy.
+
+     policyParameters     An optional key that contains a dictionary of
+                          parameters to be used in the policy or used for
+                          display purposes.
+
+     policyContent        The actual policy string, from which an NSPredicate
+                          can be created. Any valid NSPredicate keyword may be
+                          used, as well as certain parameters from the user's
+                          record and the policy's parameters dictionary.
+
+     Below is an example account policy dictionary.  Not all policy categories
+     need be present in the dictionary.
+     <dict>
+         <key>policyCategoryPasswordAuthentication</key>
+         <array>
+             <dict>
+                 <key>policyContent</key>
+                 <string>policyAttributeMaximumFailedAuthentications &lt; policyAttributeFailedAuthentications</string>
+                 <key>policyIdentifier</key>
+                 <string>failed auths</string>
+             </dict>
+         </array>
+         <key>policyCategoryPasswordChange</key>
+         <array>
+             <dict>
+                 <key>policyContent</key>
+                 <string>policyAttributeCurrentTime &gt; policyAttributeLastPasswordChangeTime + policyAttributeExpiresEveryNDays * DAYS_TO_SECONDS</string>
+                 <key>policyIdentifier</key>
+                 <string>Change every 30 days</string>
+                 <key>policyParameters</key>
+                     <dict>
+                     <key>policyAttributeExpiresEveryNDays<key>
+                     <integer>30</integer>
+            </dict>
+         </array>
+         <key>policyCategoryPasswordContent</key>
+         <array>
+             <dict>
+                 <key>policyContent</key>
+                 <string>policyAttributePassword matches '.{3,}+'</string>
+                 <key>policyIdentifier</key>
+                 <string>com.apple.policy.legacy.minChars</string>
+                 <key>policyParameters</key>
+                 <dict>
+                     <key>minimumLength</key>
+                     <integer>3</integer>
+                 </dict>
+             </dict>
+         </array>
+     </dict>
+
+   Account Policy Keywords
+     The following keywords may be used in the policy content.  The values from
+     the user's record will be substitued for the keyword when the policy is
+     evaluated.  User-defined keywords may also be used, as long the keyword is
+     present in the policy's parameters dictionary.
+
+     policyAttributePassword                         User's new password.
+     policyAttributePasswordHashes                   Hashes of the new password.
+                                                     Compared against the
+                                                     history.
+     policyAttributePasswordHistory                  User's password history.
+     policyAttributePasswordHistoryDepth             How much password history
+                                                     to keep.
+     policyAttributeCurrentDate                      Current date and time as an
+                                                     NSDate.  Use for comparing
+                                                     localized NSDates.
+     policyAttributeCurrentTime                      Current date and time in
+                                                     seconds.  Used for
+                                                     date/time calculations,
+                                                     i.e. date + interval.
+     policyAttributeCurrentDayOfWeek                 Current day of the week
+                                                     (integer).
+     policyAttributeCurrentTimeOfDay                 Current time of day (0000
+                                                     to 2359).
+     policyAttributeFailedAuthentications            Number of consecutive
+                                                     failed authentication
+                                                     attempts.
+     policyAttributeMaximumFailedAuthentications     Maximum allowed consecutive
+                                                     failed authentication
+                                                     attempts.
+     policyAttributeLastFailedAuthenticationTime     Time of the last failed
+                                                     authentication.
+     policyAttributeLastAuthenticationTime           Time of the last successful
+                                                     authentication.
+     policyAttributeLastPasswordChangeTime           Time of the last password
+                                                     change.
+     policyAttributeNewPasswordRequiredTime          Time when a new password is
+                                                     required.
+     policyAttributeCreationTime                     Time when the account was
+                                                     created.
+     policyAttributeConsecutiveCharacters            Number of consecutive (i.e.
+                                                     run of the same) characters
+                                                     in a password.
+     policyAttributeMaximumConsecutiveCharacters     Maximum number of
+                                                     consectuive characters
+                                                     allowed in a password.
+     policyAttributeSequentialCharacters             Number of sequention
+                                                     (ascending or descending)
+                                                     characters in a password.
+     policyAttributeMaximumSequentialCharacters      Maximum allowed nmber of
+                                                     sequention (ascending or
+                                                     descending) characters in a
+                                                     password.
+     policyAttributeExpiresEveryNDays                Expires every n number of
+                                                     days.
+     policyAttributeDaysUntilExpiration              Synonym for the above.
+     policyAttributeEnableOnDate                     Date on which the account
+                                                     is enabled (localized
+                                                     NSDate).
+     policyAttributeExpiresOnDate                    Date on which the account
+                                                     will expire (localized
+                                                     NSdate).
+     policyAttributeEnableOnDayOfWeek                Day of week on which the
+                                                     account is enabled
+                                                     (integer).
+     policyAttributeExpiresOnDayOfWeek               Day of week on which the
+                                                     account will expire
+                                                     (integer).
+     policyAttributeEnableAtTimeOfDay                Time of day at which the
+                                                     account is enabled
+                                                     (integer, 0000-2359).
+     policyAttributeExpiresAtTimeOfDay               Time of day at which the
+                                                     account will expire
+                                                     (integer, 0000-2359).
+
+   Legacy Global Policies (DEPRECATED)
+     usingHistory                      0 = user can reuse the current password,
+                                       1 = user cannot reuse the current
+                                       password, 2-15 = user cannot reuse the
+                                       last n passwords.
+     usingExpirationDate               If 1, user is required to change password
+                                       on the date in expirationDateGMT
+     usingHardExpirationDate           If 1, user's account is disabled on the
+                                       date in hardExpireDateGMT
+     requiresAlpha                     If 1, user's password is required to have
+                                       a character in [A-Z][a-z].
+     requiresNumeric                   If 1, user's password is required to have
+                                       a character in [0-9].
+     expirationDateGMT                 Date for the password to expire, format
+                                       must be: mm/dd/yy
+     hardExpireDateGMT                 Date for the user's account to be
+                                       disabled, format must be: mm/dd/yy
+     validAfter                        Date for the user's account to be
+                                       enabled, format must be: mm/dd/yy
+     maxMinutesUntilChangePassword     user is required to change the password
+                                       at this interval
+     maxMinutesUntilDisabled           user's account is disabled after this
+                                       interval
+     maxMinutesOfNonUse                user's account is disabled if it is not
+                                       accessed by this interval
+     maxFailedLoginAttempts            user's account is disabled if the failed
+                                       login count exceeds this number
+     minChars                          passwords must contain at least minChars
+     maxChars                          passwords are limited to maxChars
+
+   Additional Legacy User Policies (DEPRECATED)
+     isDisabled                   If 1, user account is not allowed to
+                                  authenticate, ever.
+     isAdminUser                  If 1, this user can administer accounts on the
+                                  password server.
+     newPasswordRequired          If 1, the user will be prompted for a new
+                                  password at the next authentication.
+                                  Applications that do not support change
+                                  password will not authenticate.
+     canModifyPasswordforSelf     If 1, the user can change the password.
+
+   Stored Hash Types
+     CRAM-MD5              Required for IMAP.
+     RECOVERABLE           Required for APOP and WebDAV. Only available on Mac
+                           OS X Server edition.
+     SALTED-SHA512-PBKDF2  The default for loginwindow.
+     SALTED-SHA512         Legacy hash for loginwindow.
+     SMB-NT                Required for compatibility with Windows NT/XP file
+                           sharing.
+     SALTED-SHA1           Legacy hash for loginwindow.
+     SHA1                  Legacy hash for loginwindow.
+
+
+EXAMPLES
+     To get global policies:
+
+           pwpolicy -getglobalpolicy
+
+     To set global policies:
+
+           pwpolicy -a authenticator -setglobalpolicy "minChars=4
+           maxFailedLoginAttempts=3"
+
+     To get policies for a specific user account:
+
+           pwpolicy -u user -getpolicy
+           pwpolicy -u user -n /NetInfo/DefaultLocalNode -getpolicy
+
+     To set policies for a specific user account:
+
+           pwpolicy -a authenticator -u user -setpolicy "minChars=4
+           maxFailedLoginAttempts=3"
+
+     To change the password for a user:
+
+           pwpolicy -a authenticator -u user -setpassword newpassword
+
+     To set the list of hash types for local accounts:
+
+           pwpolicy -a authenticator -setglobalhashtypes SMB-LAN-MANAGER off
+           SMB-NT on
+
+
+SEE ALSO
+     PasswordService(8)
+

@@ -1,0 +1,44 @@
+EndpointSecurity(7)     Miscellaneous Information Manual     EndpointSecurity(7)
+
+NAME
+     EndpointSecurity – APIs for applications to implement system security
+     policy
+
+DESCRIPTION
+     The EndpointSecurity (ES) subsystem is a set of functionality to expose
+     security relevant system events to applications (ES clients).  ES clients
+     can either be standalone applications/executables or installed as system
+     extensions.
+
+     If the ES client is a system extension, the following optional keys can be
+     set in the bundle's Info.plist:
+
+     NSEndpointSecurityEarlyBoot
+              Type: Boolean
+
+              If set to TRUE, the ES subsystem will hold up all third party
+              executions (anything that is not a platform binary) until all
+              early boot ES extensions make their first subscription.
+
+     NSEndpointSecurityRebootRequired
+              Type: Boolean
+
+              If not set or set to FALSE, the new version of the extension is
+              started immediately after terminating the old version.
+
+              If set to TRUE, the new version of the extension is NOT started
+              until the system reboots.  When the system reboots, only the new
+              version will be started and the old version will be removed.  This
+              ensures there is no gap in monitoring of subscribed events.
+
+     NSEndpointSecurityMachServiceName
+              Type: String
+
+              If set, this string will be the name of the MachService which can
+              be used for XPC between the ES extension and its app.  If not set,
+              a default mach service (name: <teamID>.<bundleID>.xpc) will be
+              provided but its usage is deprecated.
+
+SEE ALSO
+     endpointsecurityd(8), sysextd(8), libEndpointSecurity(3)
+

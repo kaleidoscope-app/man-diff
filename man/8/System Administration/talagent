@@ -1,0 +1,48 @@
+TALAGENT(8)                  System Manager's Manual                 TALAGENT(8)
+
+NAME
+     talagent – helper agent for the Transparent App Lifecycle feature.
+
+SYNOPSIS
+     talagent [command [arguments]]
+
+DESCRIPTION
+     The talagent daemon provides services related to the Transparent App
+     Lifecycle feature.  talagent may also be run manually as a command line
+     tool to output information about persistent state.
+
+     The options are as follows:
+
+     -help
+         Outputs usage information.
+
+     -dump bundle_id_fragment
+         Outputs the persistent state of an application whose bundle ID contains
+         the given fragment, case insensitive ("textedit" for example).  You may
+         also pass a path directly to the app's persistent state directory,
+         usually in ~/Library/Saved Application State.
+
+     -launch bundle_id
+         This launches an app (in this case, TextEdit) in a manner approximating
+         how apps get launched at login. You can pass either a bundle ID
+         fragment or a path to an app.  The app is maintained stopped until you
+         hit return in the launching window (or until it receives SIGCONT). This
+         is the easiest way to test the login scenario without needing to log
+         in.
+
+     -casinfo [ASN]
+         With no arguments, outputs summary information about all apps. With one
+         argument (an ASN), outputs the CAS record for that app.
+
+     -memory_pressure
+         Simulates memory pressure, which may cause apps that support automatic
+         termination to exit. This does not actually allocate any memory.
+
+     -refresh_encryption
+         Rotates the bitmap encryption key, and attempts to cross-encrypt all
+         existing window bitmaps under the new key. This is done periodically by
+         talagent.
+
+HISTORY
+     First appeared in Mac OS X 10.7
+

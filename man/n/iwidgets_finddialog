@@ -1,0 +1,243 @@
+iwidgets::finddialog(1)          [incr Widgets]          iwidgets::finddialog(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::finddialog - Create and manipulate a find dialog widget
+
+SYNOPSIS
+       iwidgets::finddialog pathName ?options?
+
+INHERITANCE
+       itk::Toplevel <- iwidgets::Shell <- iwidgets::Dialogshell <-
+       iwidgets::Finddialog
+
+STANDARD OPTIONS
+
+       activeBackground   activeForeground    background        borderWidth
+       cursor             disabledForeground  font              foreground
+       highlightColor     highlightThickness  insertBackground  insertBorderWidth
+       insertOffTime      insertOnTime        insertWidth       selectBackground
+       selectBorderWidth  selectColor         selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       selectColor
+
+       See the "checkbutton" widget manual entry for details on the above
+       associated options.
+
+       selectColor
+
+       See the "entryfield" widget manual entry for details on the above
+       associated options.
+
+       labelFont
+
+       See the "labeledwidget" widget manual entry for details on the above
+       associated options.
+
+INHERITED OPTIONS
+       buttonBoxPadX   buttonBoxPadY  buttonBoxPos    padX
+       padY            separator      thickness
+
+       See the "dialogshell" widget  manual entry for details on the above
+       inherited options.
+
+       height          master         modality        width
+
+       See the "shell" widget  manual entry for details on the above inherited
+       options.
+
+       title
+
+       See the "Toplevel" widget  manual entry for details on the above
+       inherited options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           clearCommand
+       Class:          Command
+       Command-Line Switch:           -clearcommand
+
+              Specifies a command to be invoked following a clear operation.
+              The option is meant to be used as means of notification that the
+              clear has taken place and allow other actions to take place such
+              as disabling a find again menu.
+
+       Name:           matchCommand
+       Class:          Command
+       Command-Line Switch:           -matchcommand
+
+              Specifies a command to be invoked following a find operation.  The
+              command is called with a match point as an argument which
+              identifies where exactly where in the text or scrolledtext widget
+              that the match is located.  Should a match not be found the match
+              point is {}.  The option is meant to be used as a means of
+              notification that the find operation has completed and allow other
+              actions to take place such as disabling a find again menu option
+              if the match point was {}.
+
+       Name:           patternBackground
+       Class:          Background
+       Command-Line Switch:           -patternbackground
+
+              Specifies the background color of the text matching the search
+              pattern.  It may have any of the forms accepted by Tk_GetColor.
+              The default is gray44.
+
+       Name:           patternForeground
+       Class:          Background
+       Command-Line Switch:           -patternforeground
+
+              Specifies the foreground color of the text matching the search
+              pattern.  It may have any of the forms accepted by Tk_GetColor.
+              The default is white.
+
+       Name:           searchBackground
+       Class:          Background
+       Command-Line Switch:           -searchbackground
+
+              Specifies the background color of the line containing the matching
+              the search pattern.  It may have any of the forms accepted by
+              Tk_GetColor.  The default is gray77.
+
+       Name:           searchForeground
+       Class:          Background
+       Command-Line Switch:           -searchforeground
+
+              Specifies the foreground color of the line containing the matching
+              the search pattern.  It may have any of the forms accepted by
+              Tk_GetColor.  The default is black.
+
+       Name:           textWidget
+       Class:          TextWidget
+       Command-Line Switch:           -textwidget
+
+              Specifies the text or scrolledtext widget to be searched.
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::finddialog command creates a find dialog that works in
+       conjunction with a text or scrolledtext widget to provide a means of
+       performing search operations.  The user is prompted for a text pattern to
+       be found in the text or scrolledtext widget.  The search can be for all
+       occurances, by regular expression, considerate of the case, or backwards.
+
+
+METHODS
+       The iwidgets::finddialog command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for finddialog widgets:
+
+INHERITED METHODS
+       add             buttonconfigure                defaulthide
+       invoke          show
+
+       See the "buttonbox" widget manual entry for details on the above
+       inherited methods.
+
+       activate        center         deactivate
+
+       See the "shell" widget manual entry for details on the above inherited
+       methods.
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::finddialog command.
+
+       pathName clear
+              Clears the pattern in the entry field and the pattern matchin
+              indicators in the text or scrolledtext widget.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::finddialog command.
+
+       pathName find
+              Search for a specific text string in the text widget given by the
+              -textwidget option.  This method is the standard callback for the
+              Find button.  It is made available such that it can be bound to a
+              find again action.
+
+
+COMPONENTS
+       Name:           all
+       Class:          Checkbutton
+
+              The all component specifies that all the matches of the pattern
+              should be found when performing the search.  See the "checkbutton"
+              widget manual entry for details on the all component item.
+
+       Name:           backwards
+       Class:          Checkbutton
+
+              The backwards component specifies that the search should continue
+              in a backwards direction towards the beginning of the text or
+              scrolledtext widget.  See the "checkbutton" widget manual entry
+              for details on the backwards component item.
+
+       Name:           case
+       Class:          Checkbutton
+
+              The case component specifies that the case of the pattern should
+              be taken into consideration when performing the search.  See the
+              "checkbutton" widget manual entry for details on the case
+              component item.
+
+       Name:           pattern
+       Class:          Entryfield
+
+              The pattern component provides the pattern entry field.  See the
+              "entryfield" widget manual entry for details on the pattern
+              component item.
+
+       Name:           regexp
+       Class:          Checkbutton
+
+              The regexp component specifies that the pattern is a regular
+              expression.  See the "checkbutton" widget manual entry for details
+              on the regexp component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::scrolledtext .st
+               pack .st
+               .st insert end "Now is the time for all good men\n"
+               .st insert end "to come to the aid of their country"
+
+               iwidgets::finddialog .fd -textwidget .st
+               .fd center .st
+               .fd activate
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       finddialog, dialogshell, shell, widget
+
+
+
+

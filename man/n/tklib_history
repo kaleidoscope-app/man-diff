@@ -1,0 +1,90 @@
+history(n)            Provides a history for Entry widgets            history(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       history - Provides a history for Entry widgets
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require Tk  8.4
+
+       package require history  ?0.1?
+
+       ::history::init pathName ?length?
+
+       ::history::remove pathName
+
+       ::history::add pathName text
+
+       ::history::get pathName
+
+       ::history::clear pathName
+
+       ::history::configure pathName option ?value?
+
+       bell
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a convenient history mechanism for Entry widgets.
+       The history may be accessed with the up and down arrow keys.
+
+       ::history::init pathName ?length?
+              Arranges to remember the history of the named Entry widget. An
+              optional length determines the number of history entries to keep.
+              This may be changed later with ::history::configure. History
+              entries must be added with the ::history::add command before they
+              can be seen.
+
+       ::history::remove pathName
+              Forgets all history entries for the Entry pathName and removes the
+              history bindings.
+
+       ::history::add pathName text
+              This command is used to add history entries to an Entry that has
+              previously had ::history::init called on it. This command should
+              be called from your Entry handler with the contents of the entry
+              (or whatever you wish to add to the history).
+
+       ::history::get pathName
+              This command returns a list containing the history entries for the
+              Entry pathName
+
+       ::history::clear pathName
+              This command clears the history list for the named Entry.
+
+       ::history::configure pathName option ?value?
+              This command queries or sets configuration options. Currently the
+              options recognized are length and alert. Setting the length
+              determines the number of history entries to keep for the named
+              Entry. Alert specifies the command to run when the user reaches
+              the end of the history, it defaults to
+
+       bell
+
+
+       entry .e
+       bind .e <Return> [list ProcessEntry %W]
+       ::history::init .e
+       pack .e
+
+       proc ProcessEntry {w} {
+           set text [$w get]
+           if {$text == ""} { return }
+           ::history::add $w $text
+           puts $text
+           $w delete 0 end
+       }
+
+
+
+KEYWORDS
+       entry, history
+
+
+

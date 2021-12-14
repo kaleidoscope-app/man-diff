@@ -1,0 +1,46 @@
+NFS4MAPID(8)                 System Manager's Manual                NFS4MAPID(8)
+
+NAME
+     nfs4mapid – shows NFSv4 mappings from uids or gids to over the wire string
+     names and string names to uids or gids.
+
+SYNOPSIS
+     nfs4mapid [-G] string name
+     nfs4mapid [-G] GUID
+     nfs4mapid -u uid
+     nfs4mapid -g gid
+
+DESCRIPTION
+     In the first form, nfs4mapid shows translations from NFSv4 string
+     representations of users, and with the -G option, groups, to the
+     corresponding local uids and gids.  In the second form shows the
+     translations from opendirectoy GUIDS to NFSv4 strings. The well known
+     strings names (which are distinguished by a trailing ‘@’ ), such as
+     "OWNER@" and "GROUP@" are represented locally by GUIDs and may not map to
+     uids or gids. To map those GUIDS to NFSv4 strings use this form. The first
+     form can be used to map the well known ids to GUIDs.  nfs4mapid does this
+     by looking at the trailing ‘@’ sign. Note that NFSv4 well known names are
+     always groups and are used in ACEs.  In the third form, it shows the
+     mapping from uids to the NFSv4 user@domain form.  Similarly, in the last
+     form it shows the mapping from gids to the NFSv4 group@domain.  nfs4mapid
+     will also show the intermediate GUID translation if used. The NFSv4 domain
+     name should be set with dscl(1).  See opendirectory(8) for instructions.
+
+     -G      Map an NFSv4 string to a gid.
+
+     -u      Map a uid to an NFSv4 user@domain string.
+
+     -g      Map a gid to an NFSv4 group@domain string.
+
+NOTES
+     nfs4mapid uses a privileged nfs client system call to pass the translation
+     request down to the kernel, so results will be the same as a request coming
+     from an NFSv4 server. Because of this, nfs4mapid must be run with root
+     privileges.
+
+SEE ALSO
+     dscl(1), nfs(5), opendirectoryd(8), mount_nfs(8),
+
+HISTORY
+     The nfs4mapid utility first appeared in OSX 10.10
+

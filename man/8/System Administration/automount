@@ -1,0 +1,38 @@
+AUTOMOUNT(8)                 System Manager's Manual                AUTOMOUNT(8)
+
+NAME
+     automount – mount autofs on the appropriate mount points
+
+SYNOPSIS
+     automount [-v] [-c] [-u] [-t timeout]
+
+DESCRIPTION
+     automount reads the /etc/auto_master file, and any local or network maps it
+     includes, and mounts autofs on the appropriate mount points to cause mounts
+     to be triggered.  It will also attempt to unmount any top-level autofs
+     mounts that correspond to maps no longer found.
+
+OPTIONS
+     -v      Print more detailed information about actions taken by automount.
+
+     -c      Tell automountd(8) to flush any cached information it has.
+
+     -u      Unmount all non-busy automounted mounts.  Top-level triggers are
+             preserved.
+
+     -t timeout
+             Set to timeout seconds the time after which an automounted file
+             system will be unmounted if it hasn't been referred to within that
+             period of time.  The default is 10 minutes (600 seconds).
+
+FILES
+     /etc/autofs.conf
+             configuration file for automount and automountd.
+
+     /etc/auto_master
+             The master map contains a list of directories to be controlled by
+             autofs and their associated direct map or indirect maps.
+
+SEE ALSO
+     auto_master(5), automountd(8), autofs.conf(5)
+

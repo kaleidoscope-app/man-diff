@@ -1,0 +1,117 @@
+rc4(n)                          RC4 Stream Cipher                         rc4(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       rc4 - Implementation of the RC4 stream cipher
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require rc4  ?1.1.0?
+
+       ::rc4::rc4 ?-hex? -key keyvalue ?-command lst? ?-out channel? [ -in
+       channel | -infile filename | string ]
+
+       ::rc4::RC4Init keydata
+
+       ::rc4::RC4 Key data
+
+       ::rc4::RC4Final Key
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package is an implementation in Tcl of the RC4 stream cipher
+       developed by Ron Rivest of RSA Data Security Inc. The cipher was a trade
+       secret of RSA but was reverse-engineered and published to the internet in
+       1994. It is used in a number of network protocols for securing
+       communications. To evade trademark restrictions this cipher is sometimes
+       known as ARCFOUR.
+
+COMMANDS
+       ::rc4::rc4 ?-hex? -key keyvalue ?-command lst? ?-out channel? [ -in
+       channel | -infile filename | string ]
+              Perform the RC4 algorithm on either the data provided by the
+              argument or on the data read from the -in channel. If an -out
+              channel is given then the result will be written to this channel.
+              Giving the -hex option will return a hexadecimal encoded version
+              of the result if not using an -out channel.
+
+              The data to be processes can be specified either as a string
+              argument to the rc4 command, or as a filename or a pre-opened
+              channel. If the -infile argument is given then the file is opened,
+              the data read and processed and the file is closed. If the -in
+              argument is given then data is read from the channel until the end
+              of file. The channel is not closed. If the -out argument is given
+              then the processing result is written to this channel.
+
+              If -command is provided then the rc4 command does not return
+              anything. Instead the command provided is called with the rc4
+              result data appended as the final parameter. This is most useful
+              when reading from Tcl channels as a fileevent is setup on the
+              channel and the data processed in chunks
+
+              Only one of -infile, -in or string should be given.
+
+PROGRAMMING INTERFACE
+       ::rc4::RC4Init keydata
+              Initialize a new RC4 key. The keydata is any amount of binary data
+              and is used to initialize the cipher internal state.
+
+       ::rc4::RC4 Key data
+              Encrypt or decrypt the input data using the key obtained by
+              calling RC4Init.
+
+       ::rc4::RC4Final Key
+              This should be called to clean up resources associated with Key.
+              Once this function has been called the key is destroyed.
+
+EXAMPLES
+
+       % set keydata [binary format H* 0123456789abcdef]
+       % rc4::rc4 -hex -key $keydata HelloWorld
+       3cf1ae8b7f1c670b612f
+       % rc4::rc4 -hex -key $keydata [binary format H* 3cf1ae8b7f1c670b612f]
+       HelloWorld
+
+
+        set Key [rc4::RC4Init "key data"]
+        append ciphertext [rc4::RC4 $Key $plaintext]
+        append ciphertext [rc4::RC4 $Key $additional_plaintext]
+        rc4::RC4Final $Key
+
+
+        proc ::Finish {myState data} {
+            DoStuffWith $myState $data
+        }
+        rc4::rc4 -in $socket -command [list ::Finish $ApplicationState]
+
+
+AUTHORS
+       Pat Thoyts
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category rc4 of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       aes(n), blowfish(n), des(n)
+
+KEYWORDS
+       arcfour,, data integrity, encryption, rc4, security, stream cipher
+
+CATEGORY
+       Hashes, checksums, and encryption
+
+COPYRIGHT
+       Copyright (c) 2003, Pat Thoyts <patthoyts@users.sourceforge.net>
+
+
+
+

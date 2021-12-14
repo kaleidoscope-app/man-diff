@@ -1,0 +1,96 @@
+RPC.STATD(8)                 System Manager's Manual                RPC.STATD(8)
+
+NAME
+     rpc.statd – host status monitoring daemon
+
+SYNOPSIS
+     rpc.statd [-d]
+     rpc.statd [-d] -n
+     rpc.statd [-d] [-l | -L | -N hostname]
+
+DESCRIPTION
+     The rpc.statd utility is a daemon which cooperates with rpc.statd daemons
+     on other hosts to provide a status monitoring service.  The daemon accepts
+     requests from programs running on the local host (typically, rpc.lockd(8),
+     the NFS file locking daemon) to monitor the status of specified hosts.  If
+     a monitored host crashes and restarts, the remote daemon will notify the
+     local daemon, which in turn will notify the local program(s) which
+     requested the monitoring service.  Conversely, if this host crashes and
+     restarts, the statd.notify service will be started to notify all of the
+     hosts which were being monitored at the time of the crash.
+
+     The rpc.statd utility consists of two launchd(8)-controlled services.  The
+     statd.notify service is run whenever the system needs to notify remote
+     hosts of a restart.  The statd service is controlled by rpc.lockd(8) so
+     that the rpc.statd daemon is running whenever rpc.lockd(8) is running.
+
+     The following is a list of command line options that are available.  Note
+     that since rpc.statd is normally started by launchd(8), configuration of
+     these options should be controlled using the equivalent settings in the NFS
+     configuration file.  See nfs.conf(5) for a list of tunable parameters.
+
+     -d      Sets the logging level to the maximum.  Note that finer grain
+             control is available via the nfs.statd.verbose option in
+             nfs.conf(5).
+
+             Logging is performed via syslog(3) using the LOG_DAEMON facility.
+             By default, only messages up to priority LOG_WARNING are logged.
+             Setting the verbose level to one will add LOG_NOTICE messages which
+             includes logging failed mount attempts.  A verbose level of two
+             will increase the log level to LOG_INFO which includes logging
+             successful mount attempts.  A log level of three or more will add
+             LOG_DEBUG messages and cause increasing amounts of debug
+             information to be logged.  The debug information exposes lots of
+             information about rpc.statd's inner workings which is typically
+             only useful to developers.  Note: the syslog(8) configuration may
+             need to be adjusted in order to see the increased verbosity.
+
+     The following command line option causes the daemon to run in the
+     statd.notify notification service mode:
+
+     -n      Send SM_NOTIFY messages to notify any hosts of a restart.
+
+     The remaining command line options may be useful for viewing or modifying
+     the contents of the status file.  They do not start up any daemon or
+     service.
+
+     -l      List each host (and its status) in the status file.
+
+     -L      List each host (and its status) in the status file and then
+             continue to watch the file and report changes.
+
+     -N      Clear the "needs notification" status for hostname so the
+             statd.notify service will no longer try to notify it.
+
+FILES
+     /var/db/statd.status       non-volatile record of monitored hosts.
+     /var/run/statd.pid         The pid of the current statd daemon.
+     /var/run/statd.notify.pid  The pid of the current statd.notify daemon.
+     /System/Library/LaunchDaemons/com.apple.statd.notify.plist
+                                The statd.notify service's property list file
+                                for launchd(8).
+     /usr/include/rpcsvc/sm_inter.x
+                                RPC protocol specification used by local
+                                applications to register monitoring requests.
+
+SEE ALSO
+     nfs.conf(5), rpc.lockd(8), syslog(3), launchd(8)
+
+BUGS
+     There is no means for the daemon to tell when a monitored host has
+     disappeared permanently (eg. catastrophic hardware failure), as opposed to
+     transient failure of the host or an intermediate router.  At present, it
+     will pause and re-try notification at frequent intervals for 10 minutes,
+     then hourly, and finally gives up after 24 hours.  The -N option may be
+     used to remove the "needs notification" status from such hosts.
+
+     The protocol requires that symmetric monitor requests are made to both the
+     local and remote daemon in order to establish a monitored relationship.
+     This is convenient for the NFS locking protocol, but probably reduces the
+     usefulness of the monitoring system for other applications.
+
+STANDARDS
+     The implementation is based on the specification in X/Open CAE
+     Specification C218, "Protocols for X/Open PC Interworking: XNFS, Issue 4",
+     ISBN 1 872630 66 9
+

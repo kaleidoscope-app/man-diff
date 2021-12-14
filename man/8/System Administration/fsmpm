@@ -1,0 +1,188 @@
+FSMPM(8)                     System Manager's Manual                    FSMPM(8)
+
+
+
+NAME
+       fsmpm - Xsan File System Port Mapper daemon
+
+SYNOPSIS
+       fsmpm [-nc] [host-ip [debug [sync [diskscan [extHA]]]]]
+
+DESCRIPTION
+       The FSM Portmapper is a server daemon residing on each Xsan File System
+       client and server. It registers an RPC identifier to the system's portmap
+       daemon. The fsmpm publishes a well known port where the Xsan File System
+       Manager (FSM) daemons can register their volume name and port access
+       number. All clients then talk to their local FSS port mapper to discover
+       access information for their associated service.  This process runs in
+       the background and is started at boot time. It is enabled or disabled
+       (along with the volume) via chkconfig(8) or init.d using the acfs key
+       word.
+
+OPTIONS
+       Apple Internal Use Only - contact support before adding or modifying
+       command line arguments to fsmpm.  Changes from the defaults may result in
+       intermittent or total failure of Xsan.  Options may change abruptly
+       between releases.
+
+       -n     Don't send a SIGQUIT signal to fsm processes that appear to be
+              hung; normally if an fsm process doesn't exit within 60 seconds
+              after breaking the connection to the fsmpm, the fsmpm sends a
+              SIGQUIT signal to the fsm.
+
+       -c     Assume the client kernel module has not been loaded and skip any
+              operations related to it.
+
+       host-ip
+              The IP address used to access this host.  The default is to try to
+              resolve the system's hostname to an address. If set to 127.1, no
+              nameserver will be used and no heartbeats will be sent.  (default:
+              no hostname)
+
+       debug  Bitmask specifying which debug messages to print. (default: 0)
+
+       sync   The name of a file whose creation is used to detect when the fsmpm
+              has successfully started.  (default: no file)
+
+       diskscan
+              How often (in seconds) to rescan for changed paths.  0 disables
+              the disk scan.  (default: 0)
+
+       extHA  External HA mode prevents the fsmpm from automatically starting
+              FSMs in the fsmlist, as well as disabling calls for elections.  1
+              enables external HA mode; 0 disables it.  (default: 0)
+
+       NOTE: Defaults specified with '--'.
+
+FSNAMESERVERS
+       The fsmpm reads the file /Library/Preferences/Xsan/fsnameservers to
+       establish file system name servers for the Xsan file system services.
+       This list is used to coordinate the whereabouts of Xsan file system
+       servers.
+
+       A name server list must be established on each client that has Xsan
+       installed so that all clients can discover the location of the Xsan FSM
+       servers. It is important that this list is consistent across the SAN.
+       Inconsistent fsnameservers configuration may result in the inability for
+       some clients to find a file system service. See fsnameservers(4) for
+       specifics of the file format.
+
+FSMLIST
+       The fsmpm is responsible for launching the FSM daemon(s). If
+       /Library/Preferences/Xsan/fsmlist exists then the fsmpm reads from the
+       list file and starts the FSM daemons that are specified. If no
+       /Library/Preferences/Xsan/fsmlist file exists then the fsmpm tries to
+       launch the FSM daemon for the volume named default. See fsmlist(4) for
+       specifics of the file format.
+
+Unique Identifier (UUID)
+       The fsmpm creates or accesses the /Library/Preferences/Xsan/snfs_uuid
+       file. This contains a Xsan unique identifier (UUID) for this host.  The
+       file should not initially exist on a host that deploys StorNext.  If
+       configuration information is copied from one host to another, this file
+       should either not be copied or be deleted on the new host.
+
+ENVIRONMENT
+       These variables are for use by Apple support personnel only.
+
+       FSMPM_MAX_LOGFILES
+          Controls the number of old nssdbg.out log files that will be saved by
+          fsmpm when the current log file reaches its maximum size.  The default
+          is 4.
+
+       FSMPM_MAX_LOGSIZE
+          Controls the maximum size that the nssdbg.out file can grow to before
+          a new log file will be started.  The value is a number followed by an
+          optional suffix (K for Kilobytes, M for Megabytes, G for Gigabytes),
+          or the string unlimited, indicating that the file can grow without
+          bound.  The default is 1M and the minimum is 64K.
+
+       FSMPM_ACTIVE_FSM_CLIENT_TIMEOUT
+          Adjusts the logic that determines when an FSM should be considered
+          lost and an election started to determine a new active FSM. The value
+          is specified in seconds.
+
+DEBUG
+       Debugging traces are written to the file
+       /Library/Logs/Xsan/debug/nssdbg.out.  The amount of debug information is
+       controlled by the /Library/Logs/Xsan/debug/verbose file.  This file
+       contains the list of debug traces to turn on.  If the file does not
+       exist, none of the optional debug traces are enabled.  Blank lines and
+       comments that begin with a # are ignored.  Everything else is treated as
+       a name for what debug traces to turn on.  Names are separated by
+       whitespace or commas, and may be listed on multiple lines.  Unknown names
+       are silently ignored.
+
+       general
+              Print general trace information.  This include information about
+              acquiring port numbers for coordinators, listing FSMs, mapping IDs
+              hostnames, disk requests, portmap inquiries, device event
+              handlers, and other events.
+
+       input  Print a trace for every NSS packet received.
+
+       output Print a trace for every NSS packet sent.
+
+       mbr    Print traces about Heartbeat Membership changes.
+
+       vote   Print traces about FSM elections.
+
+       ldap_cred
+              Print traces for LDAP credential processing.
+
+       proxy  Print traces about proxy processing (Distributed LAN client).
+
+       cctl   Print traces about the cluster-wide central control (nss_cctl).
+
+       hamon_reset
+              Print traces for HAMON resets.
+
+       helper Print traces about starting and stopping helper processes.
+
+       ahb    Print traces about NSS accelerated heartbeats.
+
+       protobuf
+              Print details of all NSS2 packets as they are created and parsed.
+
+       all    Enable all debug tracing
+
+       Numeric values are also recognized as specific debug bits to set.  This
+       is mainly for backwards compatibility.  A value of -1 or 0xffffffff is
+       the same as specifying all.
+
+       If there are no recognized names or numeric values in the verbose file,
+       e.g. if it exists but is empty, then the mbr and vote traces will be
+       enabled.
+
+       An example of a verbose file:
+
+          # Comments are ignored
+          vote, mbr # Turn on the vote and membership traces
+             general
+          foo bar # Unknown items are silently ignored
+
+          # These are very noisy
+          #input
+          #output
+
+          0x1000 # turn on an undefined bit
+
+FILES
+       /Library/Preferences/Xsan/fsnameservers
+       /Library/Preferences/Xsan/fsforeignservers
+       /Library/Preferences/Xsan/fsmlist
+       /Library/Preferences/Xsan/nss_cctl*.xml
+       /Library/Logs/Xsan/debug/nssdbg.out
+       /Library/Logs/Xsan/debug/snfs_uuid
+       /Library/Logs/Xsan/debug/verbose
+
+NOTES
+       When a SIGHUP signal is received, the configuration files will be re-
+       read.  This allows, for example, the FSM list to be modified, or
+       debugging levels to be changed.
+
+SEE ALSO
+       fsm(8), fsnameservers(4), fsmlist(4), nss_cctl(4), portmap(8), rpcinfo(8)
+
+
+

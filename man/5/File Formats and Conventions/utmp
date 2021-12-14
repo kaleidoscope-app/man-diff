@@ -1,0 +1,88 @@
+UTMP(5)                        File Formats Manual                       UTMP(5)
+
+NAME
+     utmp, wtmp, lastlog – login records (DEPRECATED)
+
+SYNOPSIS
+     #include <utmp.h>
+
+DESCRIPTION
+     The interfaces in file ⟨utmp.h⟩ are all DEPRECATED and are only provided
+     for compatibility with previous releases of Mac OS X.  See pututxline(3)
+     and utmpx(5) for the supported interfaces.
+
+     ⟨utmp.h⟩ declares the structures used to record information about current
+     users in the file utmp, logins and logouts in the file wtmp, and last
+     logins in the file lastlog.  The time stamps of date changes, shutdowns and
+     reboots are also logged in the wtmp file.
+
+     These files can grow rapidly on busy systems, daily or weekly rotation is
+     recommended.  If any of these files do not exist, it is not created.  These
+     files must be created manually and are normally maintained in either the
+     script /etc/daily or the script /etc/weekly.  (See cron(8).)
+
+           #define _PATH_UTMP      "/var/run/utmp"
+           #define _PATH_WTMP      "/var/log/wtmp"
+           #define _PATH_LASTLOG   "/var/log/lastlog"
+
+           #define UT_NAMESIZE     8
+           #define UT_LINESIZE     8
+           #define UT_HOSTSIZE     16
+
+           struct lastlog {
+                   time_t  ll_time;
+                   char    ll_line[UT_LINESIZE];
+                   char    ll_host[UT_HOSTSIZE];
+           };
+
+           struct utmp {
+                   char    ut_line[UT_LINESIZE];
+                   char    ut_name[UT_NAMESIZE];
+                   char    ut_host[UT_HOSTSIZE];
+                   time_t  ut_time;
+           };
+
+     Each time a user logs in, the login program looks up the user's UID in the
+     file lastlog. If it is found, the timestamp of the last time the user
+     logged in, the terminal line and the hostname are written to the standard
+     output. (Providing the login is not quiet, see login(1).) The login program
+     then records the new login time in the file lastlog.
+
+     After the new lastlog record is written , the file utmp is opened and the
+     utmp record for the user inserted.  This record remains there until the
+     user logs out at which time it is deleted.  The utmp file is used by the
+     programs rwho(1), users(1), w(1), and who(1).
+
+     Next, the login program opens the file wtmp, and appends the user's utmp
+     record.  The same utmp record, with an updated time stamp is later appended
+     to the file when the user logs out. (See launchd(8).) The wtmp file is used
+     by the programs last(1) and ac(8).
+
+     In the event of a date change, a shutdown or reboot, the following items
+     are logged in the wtmp file.
+
+     reboot
+     shutdown    A system reboot or shutdown has been initiated.  The character
+                 ‘~’ is placed in the field ut_line, and reboot or shutdown in
+                 the field ut_name.  (See shutdown(8) and reboot(8).)
+
+     date        The system time has been manually or automatically updated.
+                 (See date(1).) The command name date is recorded in the field
+                 ut_name.  In the field ut_line, the character ‘|’ indicates the
+                 time prior to the change, and the character ‘{’ indicates the
+                 new time.
+
+FILES
+     (These files no longer exist in 10.5 or later.)
+
+     /var/run/utmp     The utmp file.
+     /var/log/wtmp     The wtmp file.
+     /var/log/lastlog  The lastlog file.
+
+SEE ALSO
+     last(1), login(1), who(1), ac(8), launchd(8)
+
+HISTORY
+     A utmp and wtmp file format appeared in Version 6 AT&T UNIX.  The lastlog
+     file format appeared in 3.0BSD.
+

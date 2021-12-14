@@ -1,0 +1,74 @@
+close(n)                      Tcl Built-In Commands                     close(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       close - Close an open channel
+
+SYNOPSIS
+       close channelId
+________________________________________________________________________________
+
+
+DESCRIPTION
+       Closes the channel given by channelId.
+
+       ChannelId must be an identifier for an open channel such as a Tcl
+       standard channel (stdin, stdout, or stderr), the return value from an
+       invocation of open or socket, or the result of a channel creation command
+       provided by a Tcl extension.
+
+       All buffered output is flushed to the channel's output device, any
+       buffered input is discarded, the underlying file or device is closed, and
+       channelId becomes unavailable for use.
+
+       If the channel is blocking, the command does not return until all output
+       is flushed.  If the channel is nonblocking and there is unflushed output,
+       the channel remains open and the command returns immediately; output will
+       be flushed in the background and the channel will be closed when all the
+       flushing is complete.
+
+       If channelId is a blocking channel for a command pipeline then close
+       waits for the child processes to complete.
+
+       If the channel is shared between interpreters, then close makes channelId
+       unavailable in the invoking interpreter but has no other effect until all
+       of the sharing interpreters have closed the channel.  When the last
+       interpreter in which the channel is registered invokes close, the cleanup
+       actions described above occur. See the interp command for a description
+       of channel sharing.
+
+       Channels are automatically closed when an interpreter is destroyed and
+       when the process exits.  Channels are switched to blocking mode, to
+       ensure that all output is correctly flushed before the process exits.
+
+       The command returns an empty string, and may generate an error if an
+       error occurs while flushing output.  If a command in a command pipeline
+       created with open returns an error, close generates an error (similar to
+       the exec command.)
+
+EXAMPLE
+       This illustrates how you can use Tcl to ensure that files get closed even
+       when errors happen by combining catch, close and return:
+              proc withOpenFile {filename channelVar script} {
+                  upvar 1 $channelVar chan
+                  set chan [open $filename]
+                  catch {
+                      uplevel 1 $script
+                  } result options
+                  close $chan
+                  return -options $options $result
+              }
+
+
+SEE ALSO
+       file(n), open(n), socket(n), eof(n), Tcl_StandardChannels(3)
+
+
+KEYWORDS
+       blocking, channel, close, nonblocking
+
+
+

@@ -1,0 +1,50 @@
+taskpolicy(8)                System Manager's Manual               taskpolicy(8)
+
+NAME
+     taskpolicy – execute a program with an altered I/O or scheduling policy or
+     change settings of already running process
+
+SYNOPSIS
+     taskpolicy [-d policy] [-g policy] [-c clamp] [-b] [-t thruput_tier]
+                [-l latency_tier] [-a] program [arg1 [...]]
+     taskpolicy [-b|-B] [-t thruput_tier] [-l latency_tier] [-p pid]
+
+DESCRIPTION
+     The taskpolicy program uses the setiopolicy_np(3) and setpriority(2) APIs
+     to execute a program with altered I/O or scheduling policies. All children
+     of the specified program also inherit these policies.
+
+     taskpolicy accepts the following flags and arguments:
+
+           -d policy  Run the program after calling setiopolicy_np(3) with an
+                      iotype of IOPOL_TYPE_DISK, a scope of IOPOL_SCOPE_PROCESS,
+                      and the specified policy. The argument can either be an
+                      integer, or a symbolic string like "default" or
+                      "throttle", which is interpreted case-insensitively.
+
+           -g policy  Run the program after calling setiopolicy_np(3) with an
+                      iotype of IOPOL_TYPE_DISK, a scope of
+                      IOPOL_SCOPE_DARWIN_BG, and the specified policy. The
+                      argument is interpreted in the same manner as -d.
+
+           -c clamp   Run the program using the specified QoS clamp. The
+                      argument can be either "utility", "background", or
+                      "maintenance", which is interpreted case-insensitively.
+
+           -p pid     Change settings for the process specified by pid.
+
+           -b         Run the program after calling setpriority(2) with a
+                      priority of PRIO_DARWIN_BG.
+
+           -B         Move target process out of PRIO_DARWIN_BG.
+
+           -t         Set throughput tier of the process to thruput_tier.
+
+           -l         Set latency tier of the process to latency_tier.
+
+           -a         Run the program with the resource management policies
+                      given to applications.
+
+SEE ALSO
+     setpriority(2), setiopolicy_np(3)
+

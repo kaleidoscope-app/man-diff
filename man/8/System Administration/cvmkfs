@@ -1,0 +1,146 @@
+CVMKFS(8)                    System Manager's Manual                   CVMKFS(8)
+
+
+
+NAME
+       cvmkfs - Initialize a Xsan Volume
+
+SYNOPSIS
+       cvmkfs [-GF] [-a key] [-n ninode[k|m|g]] [-r[-e][-m]] [-Q]
+              [-R [date:]time] [-X] [volume_name]
+
+DESCRIPTION
+       cvmkfs will initialize a Xsan volume optionally using volume_name as the
+       name. If no name is supplied, a list of volumes configured will be
+       presented. Active file systems may not be re-initialized. The user will
+       be prompted for a confirmation before initializing the volume.
+
+       WARNING: This will destroy ANY existing volume data for the named Xsan
+       volume!
+
+OPTIONS
+       -a key Set the affinity of the root directory to key.
+
+       -e     When remaking a managed file system in preparation for restoring
+              all metadata from a metadata archive, the -e option specifies that
+              the FSM should restore all user file extents. When this option is
+              not specified, files are truncated which results in them being
+              restored from backup.  Use this option when the metadata disks
+              must be restored but all disks containing user data are intact.
+              This option can only be used in conjunction with the -r option and
+              is ignored when restoring unmanaged file systems.
+
+              This option also causes thin provision unmapping work to be
+              skipped for all stripegroups that can contain user data.
+
+       -G     Bypass "Press return to continue..." type prompts.  These prompts
+              are useful on Windows systems to give the user a chance to read
+              the error message before the window disappears.
+
+       -F     Force. This option has been deprecated and replaced with -X.  It
+              will cause the same action as that option.
+
+       -f     Failure mode - do not fail if there is a configuration mismatch or
+              other serious abnormal condition detected.  Note:  This option is
+              not intended for general use.  Use only if instructed by Apple
+              support. Incorrect use may result in an unusable file system.
+
+       -m     When using the -r option to remake a file system in preparation
+              for a metadata restore from the metadata archive, cvmkfs will
+              issue an error message and exit without modifying the file system
+              if the stripe groups are defined to hold both metadata and user
+              data. It does this because it is possible for the restore
+              procedure to inadvertently allocate disk space for metadata that
+              conflicts with user data, resulting in file corruption.  The -m
+              option can be used in conjunction with the -r option to override
+              this behavior and force cvmkfs to remake the file system despite
+              the risk of corruption. Use this option only if instructed by
+              Quantum support.
+
+       -n ninode[k|m|g]]
+              Pre-allocate ninode inodes.
+              NOTE: This option has been deprecated.
+
+       -Q     This option causes cvmkfs to print qustat statistics just before
+              exiting.
+
+       -R [date:]time
+              Remake the file system in preparation for restoring all metadata
+              as it existed at the given date and time. The format for the
+              date:time argument is yyyy-mm-dd:hh:mm:ss, for example, "-R
+              2016-08-24:08:00:00". If the date is not specified, then today is
+              assumed. This option is only valid for managed file systems when
+              metadataArchiveDays is set to a non-zero value in the
+              configuration file and it cannot be used with the -e option to
+              restore file extents. This "historical" restore will truncate all
+              files, forcing all data to be restored from backup.
+
+              WARNING: It is highly recommended that Quantum Technical Support
+              be contacted before using this option. If used improperly, data
+              could be lost.
+
+       -r     Remake the file system in preparation for restoring all metadata
+              from a metadata archive.  This option can only be used when
+              metadataArchive is set to true in the configuration file and a
+              metadata archive exists that is current as of the last time the
+              corresponding FSM was stopped.
+
+              The remake option can be useful for disaster recovery or for
+              metadata and journal stripe group reconfiguration.
+
+              For a managed file system, the default behavior is to truncate all
+              of the user data files with the expectation that they have been
+              backed up to another media such as tape. The files will be
+              reloaded when next accessed or through other storage manager
+              actions. It is possible to override this behavior by specifying -e
+              on a managed file system. In this case the same cautions as
+              specified below for unmanaged file systems apply.
+
+              For an unmanaged file system, there is no backup copy of the user
+              data.  The -e option can be specified, but it is ignored and is
+              forced on.  The metadata that is restored contains the disk
+              addresses of the user data.  This means that all stripe groups
+              that contain user data must be left completely intact.  Therefore,
+              all thin provision unmap work is skipped for all stripegroups that
+              can contain user data.
+
+              The following statements apply to both managed and unmanaged file
+              systems.  The metadata and journal stripe groups are remade from
+              scratch.  This allows the underlying storage on these stripe
+              groups to be replaced and stripe group attributes to be changed.
+              Metadata stripe groups can be converted to data stripe groups.
+              New stripe groups can be added. The journal stripe group can
+              change.
+
+              WARNING: It is highly recommended that Quantum Technical Support
+              be contacted before using this option. If used improperly, data
+              could be lost or corrupted.
+
+       -T     Normally on linux, cvmkfs opens all devices in the configuration
+              file to check for thin provisioned devices.  This is done to
+              unmap/trim any prior mappings on those devices that are eliminated
+              by this cvmkfs command.  This "thin provision work" can be
+              bypassed using the -T option.
+
+       -U     Do a check for disks that are included in the file system that is
+              being made to see if they are currently in use in another file
+              system that is visible to the cluster. In some configurations,
+              this may take a long time.  If there are disks in use, the
+              operation is aborted.
+
+       -X     Use expert mode to automatically answer all prompts for
+              verification.  This is useful for running cvmkfs as part of a
+              script or automated test.  The failure option can be used instead,
+              but with the failure option no configuration transformation
+              validation is done and is therefore not recommended.  With the -X
+              option, all of the normal checks are performed and if an error is
+              detected, the command exits with appropriate message and status.
+
+FILES
+       /Library/Logs/Xsan/data/*
+
+SEE ALSO
+       cvfs(8), snfs_config(5)
+
+
+

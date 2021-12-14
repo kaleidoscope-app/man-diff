@@ -1,0 +1,140 @@
+PAM_KRB5(8)                  System Manager's Manual                 PAM_KRB5(8)
+
+NAME
+     pam_krb5 – Kerberos 5 PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_krb5 [options]
+
+DESCRIPTION
+     The Kerberos 5 PAM module supports the authentication, account management
+     and password management function classes.  In terms of the function-class
+     parameter, these are “auth” , “account” and “password” respectively.
+
+   Kerberos 5 Authentication Module
+     The Kerberos 5 authentication component provides functions to verify the
+     identity of a user (pam_sm_authenticate()) and to set user specific
+     credentials (pam_sm_setcred()).  pam_sm_authenticate() converts the
+     supplied username into a Kerberos principal, by appending the default local
+     realm name.  It also supports usernames with explicit realm names.  If a
+     realm name is supplied, then upon a successful return, it changes the
+     username by mapping the principal name into a local username (calling
+     krb5_aname_to_localname()).  This typically just means the realm name is
+     stripped.
+
+     It prompts the user for a password and obtains a new Kerberos TGT for the
+     principal.  The TGT is verified by obtaining a service ticket for the local
+     host.
+
+     When prompting for the current password, the authentication module will use
+     the prompt “Password for <principal>:”.
+
+     The pam_sm_setcred() function stores the newly acquired credentials in a
+     credentials cache, and sets the environment variable KRB5CCNAME
+     appropriately.  The credentials cache should be destroyed by the user at
+     logout with kdestroy(1).
+
+     The following options may be passed to this authentication module:
+
+     debug                  openpam_log(3) debugging information at
+                            PAM_LOG_DEBUG level.
+
+     use_first_pass         If the authentication module is not the first in the
+                            stack, and a previous module obtained the user's
+                            password, that password is used to authenticate the
+                            user.  If this fails, the authentication module
+                            returns failure without prompting the user for a
+                            password.  This option has no effect if the
+                            authentication module is the first in the stack, or
+                            if no previous modules obtained the user's password.
+
+     try_first_pass         This option is similar to the use_first_pass option,
+                            except that if the previously obtained password
+                            fails, the user is prompted for another password.
+
+     forwardable            Obtain forwardable Kerberos credentials for the
+                            user.
+
+     no_ccache              Do not save the obtained credentials in a
+                            credentials cache.  This is a useful option if the
+                            authentication module is used for services such as
+                            ftp or pop, where the user would not be able to
+                            destroy them.  [This is not a recommendation to use
+                            the module for those services.]
+
+     ccache=name            Use name as the credentials cache.  name must be in
+                            the form type:residual.  The special tokens ‘%u’, to
+                            designate the decimal UID of the user; and ‘%p’, to
+                            designate the current process ID; can be used in
+                            name.
+
+     default_principal      Construct the principal from the authenticating
+                            user's username, rather than obtaining it from the
+                            AuthenticationAuthority of the  user's OpenDirectory
+                            record.
+
+     use_kcminit            Don't verify password, instead store the password in
+                            kcm and return success in the pam chain.  So when
+                            used in this mode, the pam_krb5 module needs to be
+                            configured to be ‘optional’ and some other module
+                            ‘required’.
+
+   Kerberos 5 Account Management Module
+     The Kerberos 5 account management component provides a function to perform
+     account management, pam_sm_acct_mgmt().  The function verifies that the
+     authenticated principal is allowed to login to the local user account by
+     calling krb5_kuserok() (which checks the user's .k5login file).
+
+   Kerberos 5 Password Management Module
+     The Kerberos 5 password management component provides a function to change
+     passwords (pam_sm_chauthtok()).  The username supplied (the user running
+     the passwd(1) command, or the username given as an argument) is mapped into
+     a Kerberos principal name, using the same technique as in the
+     authentication module.  Note that if a realm name was explicitly supplied
+     during authentication, but not during a password change, the mapping done
+     by the password management module may not result in the same principal as
+     was used for authentication.
+
+     Unlike when changing a UNIX password, the password management module will
+     allow any user to change any principal's password (if the user knows the
+     principal's old password, of course).  Also unlike UNIX, root is always
+     prompted for the principal's old password.
+
+     The password management module uses the same heuristics as kpasswd(1) to
+     determine how to contact the Kerberos password server.
+
+     The following options may be passed to this password management module:
+
+     debug               syslog(3) debugging information at LOG_DEBUG level.
+
+     use_first_pass      If the password management module is not the first in
+                         the stack, and a previous module obtained the user's
+                         old password, that password is used to authenticate the
+                         user.  If this fails, the password management module
+                         returns failure without prompting the user for the old
+                         password.  If successful, the new password entered to
+                         the previous module is also used as the new Kerberos
+                         password.  If the new password fails, the password
+                         management module returns failure without prompting the
+                         user for a new password.
+
+     try_first_pass      This option is similar to the use_first_pass option,
+                         except that if the previously obtained old or new
+                         passwords fail, the user is prompted for them.
+
+ENVIRONMENT
+     KRB5CCNAME  Location of the credentials cache.
+
+FILES
+     /tmp/krb5cc_uid             default credentials cache (uid is the decimal
+                                 UID of the user).
+     $HOME/.k5login              file containing Kerberos principals that are
+                                 allowed access.
+
+SEE ALSO
+     kdestroy(1), passwd(1), syslog(3), pam.conf(5), DirectoryService(8), pam(8)
+
+NOTES
+     Applications should not call pam_authenticate() more than once between
+     calls to pam_start() and pam_end() when using the Kerberos 5 PAM module.
+

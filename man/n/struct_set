@@ -1,0 +1,148 @@
+struct::set(n)                 Tcl Data Structures                struct::set(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       struct::set - Procedures for manipulating sets
+
+SYNOPSIS
+       package require Tcl  8.0
+
+       package require struct::set  ?2.2.3?
+
+       ::struct::set empty set
+
+       ::struct::set size set
+
+       ::struct::set contains set item
+
+       ::struct::set union ?set1...?
+
+       ::struct::set intersect ?set1...?
+
+       ::struct::set difference set1 set2
+
+       ::struct::set symdiff set1 set2
+
+       ::struct::set intersect3 set1 set2
+
+       ::struct::set equal set1 set2
+
+       ::struct::set include svar item
+
+       ::struct::set exclude svar item
+
+       ::struct::set add svar set
+
+       ::struct::set subtract svar set
+
+       ::struct::set subsetof A B
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The ::struct::set namespace contains several useful commands for
+       processing finite sets.
+
+       It exports only a single command, struct::set. All functionality provided
+       here can be reached through a subcommand of this command.
+
+       Note: As of version 2.2 of this package a critcl based C implementation
+       is available. This implementation however requires Tcl 8.4 to run.
+
+COMMANDS
+       ::struct::set empty set
+              Returns a boolean value indicating if the set is empty (true), or
+              not (false).
+
+       ::struct::set size set
+              Returns an integer number greater than or equal to zero. This is
+              the number of elements in the set. In other words, its
+              cardinality.
+
+       ::struct::set contains set item
+              Returns a boolean value indicating if the set contains the element
+              item (true), or not (false).
+
+       ::struct::set union ?set1...?
+              Computes the set containing the union of set1, set2, etc., i.e.
+              "set1 + set2 + ...", and returns this set as the result of the
+              command.
+
+       ::struct::set intersect ?set1...?
+              Computes the set containing the intersection of set1, set2, etc.,
+              i.e. "set1 * set2 * ...", and returns this set as the result of
+              the command.
+
+       ::struct::set difference set1 set2
+              Computes the set containing the difference of set1 and set2, i.e.
+              ("set1 - set2") and returns this set as the result of the command.
+
+       ::struct::set symdiff set1 set2
+              Computes the set containing the symmetric difference of set1 and
+              set2, i.e. ("(set1 - set2) + (set2 - set1)") and returns this set
+              as the result of the command.
+
+       ::struct::set intersect3 set1 set2
+              This command is a combination of the methods intersect and
+              difference.  It returns a three-element list containing
+              "set1*set2", "set1-set2", and "set2-set1", in this order. In other
+              words, the intersection of the two parameter sets, and their
+              differences.
+
+       ::struct::set equal set1 set2
+              Returns a boolean value indicating if the two sets are equal
+              (true) or not (false).
+
+       ::struct::set include svar item
+              The element item is added to the set specified by the variable
+              name in svar. The return value of the command is empty. This is
+              the equivalent of lappend for sets. If the variable named by svar
+              does not exist it will be created.
+
+       ::struct::set exclude svar item
+              The element item is removed from the set specified by the variable
+              name in svar. The return value of the command is empty. This is a
+              near-equivalent of lreplace for sets.
+
+       ::struct::set add svar set
+              All the element of set are added to the set specified by the
+              variable name in svar. The return value of the command is empty.
+              This is like the method include, but for the addition of a whole
+              set. If the variable named by svar does not exist it will be
+              created.
+
+       ::struct::set subtract svar set
+              All the element of set are removed from the set specified by the
+              variable name in svar. The return value of the command is empty.
+              This is like the method exclude, but for the removal of a whole
+              set.
+
+       ::struct::set subsetof A B
+              Returns a boolean value indicating if the set A is a true subset
+              of or equal to the set B (true), or not (false).
+
+REFERENCES
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category struct ::
+       set of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       cardinality, difference, emptiness, exclusion, inclusion, intersection,
+       membership, set, symmetric difference, union
+
+CATEGORY
+       Data structures
+
+COPYRIGHT
+       Copyright (c) 2004-2008 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

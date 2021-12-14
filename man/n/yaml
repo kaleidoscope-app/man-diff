@@ -1,0 +1,185 @@
+yaml(n)                          YAML processing                         yaml(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       yaml - YAML Format Encoder/Decoder
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require yaml  ?0.3.5?
+
+       ::yaml::yaml2dict ?options? txt
+
+       ::yaml::yaml2huddle ?options? txt
+
+       ::yaml::setOption ?options?
+
+       ::yaml::dict2yaml dict ?indent? ?wordwrap?
+
+       ::yaml::list2yaml list ?indent? ?wordwrap?
+
+       ::yaml::huddle2yaml huddle ?indent? ?wordwrap?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The yaml package provides a simple Tcl-only library for parsing the YAML
+       http://www.yaml.org/ data exchange format as specified in
+       http://www.yaml.org/spec/1.1/.
+
+       The yaml package returns data as a Tcl dict.  Either the dict package or
+       Tcl 8.5 is required for use.
+
+COMMANDS
+       ::yaml::yaml2dict ?options? txt
+
+       ::yaml::yaml2huddle ?options? txt
+              Parse yaml formatted text txt into a Tcl dict/huddle and return
+              the value.
+
+              -file  txt is a filename of YAML-stream.
+
+              -stream
+                     txt is just a YAML-stream.
+
+              -types list
+                     The list is a type list for the yaml-scalar types.(e.g.
+                     !!str !!timestamp !!integer !!true ...)
+                      -types {timestamp integer null true false}
+                     In this case, if a string matched "timestamp", converted to
+                     the TCL internal timestamp.(e.g. "2001-12-15T02:59:43.1Z"
+                     => 1008385183)
+
+              -m:true param
+                     The param is two elements of list for the value of true,
+                     and considered strings.
+                      -m:true {1 {true on + yes y}}
+                     In this case, the string "yes" found in YAML Stream,
+                     automatically converted 1.
+
+              -m:false param
+                     The param is two elements of list for the value of false,
+                     and considered strings.
+                      -m:false {0 {false off - no n}}
+
+              -m:null param
+                     The param is two elements of list for the value of null,
+                     and considered strings.
+                      -m:null {"" {null nil "" ~}}
+
+              -validate
+                     Experiment,old: Output stream contains YAML's-tag, each
+                     node.
+                     % puts [::yaml::load -validate {[aaa, bbb]}]
+                     =>
+                     !!seq {{!!str aaa} {!!str bbb}}
+
+
+       ::yaml::setOption ?options?
+              Change implicit options for the library.  Now, the params are the
+              same as ::yaml::yaml2dict.  Arguments of::yaml::yaml2dict is more
+              priority than this setting.
+
+       ::yaml::dict2yaml dict ?indent? ?wordwrap?
+
+       ::yaml::list2yaml list ?indent? ?wordwrap?
+
+       ::yaml::huddle2yaml huddle ?indent? ?wordwrap?
+              Convert a dict/list/huddle object into YAML stream.
+
+              indent spaces indent of each block node.  currently default is 2.
+
+              wordwrap
+                     word wrap for YAML stream.  currently default is 40.
+
+EXAMPLES
+       An example of a yaml stream converted to Tcl.  A yaml stream is returned
+       as a single item with multiple elements.
+
+       {
+       --- !<tag:clarkevans.com,2002:invoice>
+       invoice: 34843
+       date   : 2001-01-23
+       bill-to: &id001
+           given  : Chris
+           family : Dumars
+           address:
+               lines: |
+                   458 Walkman Dr.
+                   Suite #292
+               city    : Royal Oak
+               state   : MI
+               postal  : 48046
+       ship-to: *id001
+       product:
+           - sku         : BL394D
+             quantity    : 4
+             description : Basketball
+             price       : 450.00
+           - sku         : BL4438H
+             quantity    : 1
+             description : Super Hoop
+             price       : 2392.00
+       tax  : 251.42
+       total: 4443.52
+       comments:
+           Late afternoon is best.
+           Backup contact is Nancy
+           Billsmer @ 338-4338.
+       }
+       =>
+       invoice 34843 date 2001-01-23 bill-to {given Chris family Dumars address {lines {458 Walkman Dr.
+       Suite #292
+       } city {Royal Oak} state MI postal 48046}} ship-to {given Chris family Dumars address {lines {458 Walkman Dr.
+       Suite #292
+       } city {Royal Oak} state MI postal 48046}} product {{sku BL394D quantity 4 description Basketball price 450.00} {sku BL4438H quantity 1 description {Super Hoop} price 2392.00}} tax 251.42 total 4443.52 comments {Late afternoon is best. Backup contact is Nancy Billsmer @ 338-4338.}
+
+       An example of a yaml object converted to Tcl.  A yaml object is returned
+       as a multi-element list (a dict).
+
+       {
+       ---
+       - [name        , hr, avg  ]
+       - [Mark McGwire, 65, 0.278]
+       - [Sammy Sosa  , 63, 0.288]
+       -
+         Mark McGwire: {hr: 65, avg: 0.278}
+         Sammy Sosa: { hr: 63, avg: 0.288}
+       }
+       =>
+       {name hr avg} {{Mark McGwire} 65 0.278} {{Sammy Sosa} 63 0.288} {{Mark McGwire} {hr 65 avg 0.278} {Sammy Sosa} {hr 63 avg 0.288}}
+
+
+LIMITATIONS
+       tag parser not implemented. currentry, tags are merely ignored.
+
+       Only Anchor => Aliases ordering. back alias-referring is not supported.
+
+       Too many braces, or too few braces.
+
+       Not enough character set of line feeds. Please use only "\n" as line
+       breaks.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category yaml of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       base64, huddle, json
+
+KEYWORDS
+       data exchange, huddle, parsing, text processing, yaml
+
+COPYRIGHT
+       Copyright (c) 2008 KATO Kanryu <kanryu6@users.sourceforge.net>
+
+
+
+

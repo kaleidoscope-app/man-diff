@@ -1,0 +1,102 @@
+SLAPPASSWD(8C)                                                    SLAPPASSWD(8C)
+
+
+
+NAME
+       slappasswd - OpenLDAP password utility
+
+SYNOPSIS
+       /usr/sbin/slappasswd [-v] [-u] [-g|-s secret|-T file] [-h_hash]
+       [-c_salt-format] [-n]
+
+DESCRIPTION
+       Slappasswd is used to generate an userPassword value suitable for use
+       with ldapmodify(1), slapd.conf(5) rootpw configuration directive or the
+       slapd-config(5) olcRootPW configuration directive.
+
+OPTIONS
+       -v     enable verbose mode.
+
+       -u     Generate RFC 2307 userPassword values (the default).  Future
+              versions of this program may generate alternative syntaxes by
+              default.  This option is provided for forward compatibility.
+
+       -s_secret
+              The secret to hash.  If this, -g and -T are absent, the user will
+              be prompted for the secret to hash.  -s, -g and -T are mutually
+              exclusive flags.
+
+       -g     Generate the secret.  If this, -s and -T are absent, the user will
+              be prompted for the secret to hash.  -s, -g and -T are mutually
+              exclusive flags.  If this is present, {CLEARTEXT} is used as
+              scheme.  -g and -h are mutually exclusive flags.
+
+       -T_"file"
+              Hash the contents of the file.  If this, -g and -s are absent, the
+              user will be prompted for the secret to hash.  -s, -g and -T and
+              mutually exclusive flags.
+
+       -h_"scheme"
+              If -h is specified, one of the following RFC 2307 schemes may be
+              specified: {CRYPT}, {MD5}, {SMD5}, {SSHA}, and {SHA}.  The default
+              is {SSHA}.
+
+              Note that scheme names may need to be protected, due to { and },
+              from expansion by the user's command interpreter.
+
+              {SHA} and {SSHA} use the SHA-1 algorithm (FIPS 160-1), the latter
+              with a seed.
+
+              {MD5} and {SMD5} use the MD5 algorithm (RFC 1321), the latter with
+              a seed.
+
+              {CRYPT} uses the crypt(3).
+
+              {CLEARTEXT} indicates that the new password should be added to
+              userPassword as clear text.  Unless {CLEARTEXT} is used, this flag
+              is incompatible with option -g.
+
+       -c_crypt-salt-format
+              Specify the format of the salt passed to crypt(3) when generating
+              {CRYPT} passwords.  This string needs to be in sprintf(3) format
+              and may include one (and only one) %s conversion.  This conversion
+              will be substituted with a string of random characters from
+              [A-Za-z0-9./].  For example, '%.2s' provides a two character salt
+              and '$1$%.8s' tells some versions of crypt(3) to use an MD5
+              algorithm and provides 8 random characters of salt.  The default
+              is '%s', which provides 31 characters of salt.
+
+       -n     Omit the trailing newline; useful to pipe the credentials into a
+              command.
+
+LIMITATIONS
+       The practice of storing hashed passwords in userPassword violates
+       Standard Track (RFC 4519) schema specifications and may hinder
+       interoperability.  A new attribute type, authPassword, to hold hashed
+       passwords has been defined (RFC 3112), but is not yet implemented in
+       slapd(8).
+
+       It should also be noted that the behavior of crypt(3) is platform
+       specific.
+
+SECURITY CONSIDERATIONS
+       Use of hashed passwords does not protect passwords during protocol
+       transfer.  TLS or other eavesdropping protections should be in-place
+       before using LDAP simple bind.
+
+       The hashed password values should be protected as if they were clear text
+       passwords.
+
+SEE ALSO
+       ldappasswd(1), ldapmodify(1), slapd(8), slapd.conf(5), slapd-config(5),
+       RFC 2307, RFC 4519, RFC 3112
+
+       "OpenLDAP Administrator's Guide" (http://www.OpenLDAP.org/doc/admin/)
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

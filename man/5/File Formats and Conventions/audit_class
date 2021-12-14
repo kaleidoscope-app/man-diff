@@ -1,0 +1,50 @@
+AUDIT_CLASS(5)                 File Formats Manual                AUDIT_CLASS(5)
+
+NAME
+     audit_class – audit event class descriptions
+
+DESCRIPTION (NOW DEPRECATED)
+     The audit_class file contains descriptions of the auditable event classes
+     on the system.  Each auditable event is a member of an event class.  Each
+     line maps an audit event mask (bitmap) to a class and a description.
+     Entries are of the form:
+
+           classmask:eventclass:description
+
+     Example entries in this file are:
+
+           0x00000000:no:invalid class
+           0x00000001:fr:file read
+           0x00000002:fw:file write
+           0x00000004:fa:file attribute access
+           0x00000080:pc:process
+           0x10000000:res:reserved for internal use
+           0xffffffff:all:all flags set
+
+NOTES
+     The audit class res is reserved for internal use. Unentitled applications
+     can still modify the event class preselection mask for an audit event (for
+     example by using the audit_event(5) configuration file or the auditon(2)
+     system call with the A_SETCLASS command), however these applications will
+     not be able to change the res audit class mask for that event.
+
+FILES
+     /etc/security/audit_class
+
+SEE ALSO
+     audit(4), audit_control(5), audit_event(5), audit_user(5)
+
+HISTORY
+     The OpenBSM implementation was created by McAfee Research, the security
+     division of McAfee Inc., under contract to Apple Computer Inc. in 2004.  It
+     was subsequently adopted by the TrustedBSD Project as the foundation for
+     the OpenBSM distribution.
+
+AUTHORS
+     This software was created by McAfee Research, the security research
+     division of McAfee, Inc., under contract to Apple Computer Inc.  Additional
+     authors include Wayne Salamon, Robert Watson, and SPARTA Inc.
+
+     The Basic Security Module (BSM) interface to audit records and audit event
+     stream format were defined by Sun Microsystems.
+

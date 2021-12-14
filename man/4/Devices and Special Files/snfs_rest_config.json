@@ -1,0 +1,195 @@
+SNFS_REST_CONFIG(4)           Device Drivers Manual          SNFS_REST_CONFIG(4)
+
+
+
+NAME
+       snfs_rest_config.json - Xsan File System REST Configuration file
+
+SYNOPSIS
+       /Library/Preferences/Xsan/snfs_rest_config.json
+
+DESCRIPTION
+       The Xsan File System snfs_rest_config.json file is a JSON formatted
+       configuration file used to control the behavior of REST services on REST
+       capable versions of Xsan  and to manage the behavior of REST services in
+       processes.
+
+       The REST interface is for internal Xsan use only, thus there is no
+       support or documentation of the REST interface itself.
+
+       A version of the file is installed with the software and does not need to
+       be changed under typical operating conditions.
+
+       The minport and maxport may be useful in a fire walled environment.  The
+       data timeout may be useful for long running requests.
+
+       Process specific definitions are applied to specific commands and
+       daemons.  The process name is the json object identifier which
+       encapsulates the command or process specific options.
+
+       Process names currently supported are:
+       fsm
+       fsmpm
+       qbmanage
+       sgmanage
+       snhistory
+       snrecover
+       snquota
+       SM_metadb
+       fsrestd
+       sntierd
+
+       The process name sgmanage includes sgdefrag and sgoffload commands.  All
+       processes support the keywords data_timeout and conn_timeout.  The
+       process fsmpm supports the enable_server and rest_job_keep_days keywords.
+       The process fsm supports the enable_rest keyword.  The processes fsm and
+       fsmpm support enable_proxy.
+
+SYNTAX
+       The snfs_rest_config.json file follows the JSON schema. Each of the
+       attribute-value pairs occupies one line and is terminated by a comma,
+       save for the final attribute-value pair.  Items used for processes appear
+       in a process specific section identified by the process name.  No
+       comments of any kind are allowed.  Refer to this man page's EXAMPLE
+       section for a visual representation of the described format.
+
+       General keywords are:
+
+       “conn_timeout”: time
+              Specifies the number of milliseconds before a connect request will
+              timeout.  conn_timeout defaults to 5000 (5 seconds).
+
+       “data_timeout”: time
+              Specifies the number of milliseconds before a connection will
+              timeout.  data_timeout defaults to 10000 (10 seconds), except for
+              the fsm process, which has a default of 900000 (900 seconds).
+
+       “enable_proxy”: true|false
+              Currently unsupported.  Enables use of a proxy interface.
+              enable_proxy defaults to false.
+
+       “enable_rest”: true|false
+              Enables use of the REST interface.  enable_rest must be included
+              as true for use of any services. Default value is false, but is
+              specified as true in the installed file.
+
+       “enable_server”: true|false
+              Currently unsupported.  Enable rest control over some file system
+              admin features.  enable_server defaults to false, but is specified
+              as true in the installed file.
+
+       “maxport”: port_value
+              Specifies the top number for the range of allowed ports.  Use in
+              conjunction with minport.  maxport defaults to 0 (no range).
+
+       “minport”: port_value
+              Specifies the bottom number for the range of allowed ports.  Use
+              in conjunction with maxport.  minport defaults to 0 (no range).
+
+       “port”: port
+              Controls the port used for http communication.  port is process
+              specific only.  The default value is unspecified.
+
+       “proxy_admin”: “proxy_admin”
+              Deprecated, see the snrest(8) command.  If a proxy web server is
+              used, URL of server to which to connect.  However, this value is
+              ignored if an api gateway is configured with the snrest(8)
+              command.  proxy_admin defaults to null.
+
+       “proxy_gw”: “proxy_gw”
+              Deprecated, see the snrest(8) command.  If a proxy web server is
+              used, URL for incoming requests to that server.  However, this
+              value is ignored if an api gateway is configured with the
+              snrest(8) command.  proxy_gw defaults to null.
+
+       “registration_name”: “registration_name”
+              Overrides the use of hostname for a url published by the system.
+              This is expected to be a name which can be mapped to the location
+              of the SNFS host from external locations. For use in environments
+              where the host name does not resolve to a routable address.  The
+              registration_name defaults to null.
+
+       “ssl”: “ssl”
+              Controls the use of secure socket negotiation parameters. In
+              particular the minimum TLS version which will be allowed and the
+              set of ciphers allowed.  ssl has default values, but values are
+              specified in the installed file for use.
+
+       “ssl_port”: ssl_port
+              Controls the port used for https communication.  ssl_port is
+              process specific only and defaults to unspecified.
+
+       “rest_job_keep_days”: days
+              Specifies how long a background job's log and state are to be
+              retained.  A background job can be submitted for certain
+              potentially long-running tasks such as file system check.
+
+       “proxy_retry_seconds”: seconds
+              Specifies how long to wait between retries when registration with
+              the proxy web server fails.  The default value is 300 (5 minutes).
+
+
+EXAMPLE
+       The following is the installed snfs_rest_config.json file.  This file
+       should not need modification.
+
+          {
+              "enable_rest"   : true,
+              "enable_server" : true,
+              "ssl" : {
+                  "ssl_enabled"  : true,
+                  "min_tls"      : "1.0",
+                  "ciphers"      : "HIGH:!aNULL:!MD5:!RC4:!3DES",
+                  "pemfile"      : "/usr/cvfs/config/certs/server.crt",
+                  "keyfile"      : "/usr/cvfs/config/certs/server.key",
+                  "ssl_timeout"  : 124800,
+                  "verify_peer"  : false,
+                  "verify_depth" : 100,
+                  "cafile"       : "",
+                  "capath"       : ""
+              },
+              "rest_job_keep_days" : 120,
+              "proxy_retry_seconds" : 300,
+              "fsm" : {
+                  "data_timeout" : 900000,
+                  "conn_timeout" : 5000
+              },
+              "fsmpm" : {
+                  "data_timeout" : 10000,
+                  "conn_timeout" : 5000
+              },
+              "qbmanage" : {
+                  "data_timeout" : 10000,
+                  "conn_timeout" : 5000
+              },
+              "SM_metadb" : {
+                  "data_timeout" : 300000,
+                  "conn_timeout" : 5000
+              },
+              "fsrestd" : {
+                  "data_timeout" : 300000,
+                  "conn_timeout" : 5000
+              },
+              "sgmanage" : {
+                  "data_timeout" : 60000,
+                  "conn_timeout" : 5000
+              },
+              "snhistory" : {
+                  "data_timeout" : 300000,
+                  "conn_timeout" : 5000
+              },
+              "sntierd" : {
+                  "data_timeout" : 300000,
+                  "conn_timeout" : 5000
+              }
+          }
+
+FILES
+       /Library/Preferences/Xsan/snfs_rest_config.json
+
+SEE ALSO
+       fsm(8), fsmpm(8), qbmanage(8), sgdefrag(8), sgmanage(8), sgoffload(8),
+       snhistory(8)
+
+
+

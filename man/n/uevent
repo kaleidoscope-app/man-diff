@@ -1,0 +1,133 @@
+uevent(n)                          User events                         uevent(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       uevent - User events
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require uevent  ?0.2?
+
+       package require logger
+
+       ::uevent::bind tag event command
+
+       command tag event details
+
+       ::uevent::unbind token
+
+       ::uevent::generate tag event ?details?
+
+       ::uevent::list
+
+       ::uevent::list tag
+
+       ::uevent::list tag event
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a general facility for the handling of user events.
+       Allows the binding of arbitrary commands to arbitrary events on arbitrary
+       tags, removal of bindings, and event generation.
+
+       The main difference to the event system built into the Tcl/Tk core is
+       that the latter can generate only virtual events, and only for widgets.
+       It is not possible to use the builtin facilities to bind to events on
+       arbitrary (pseudo-)objects, nor is it able to generate events for such.
+
+       Here we can, by assuming that each object in question is represented by
+       its own tag. Which is possible as we allow arbitrary tags.
+
+       More differences:
+
+       [1]    The package uses only a two-level hierarchy, tags and events, to
+              handle everything, whereas the Tcl/Tk system uses three levels,
+              i.e.  objects, tags, and events, with a n:m relationship between
+              objects and tags.
+
+       [2]    This package triggers all bound commands for a tag/event
+              combination, and they are independent of each other. A bound
+              command cannot force the event processing core to abort the
+              processing of command coming after it.
+
+API
+       The package exports three commands, as specified below:
+
+       ::uevent::bind tag event command
+              Using this command registers the command prefix to be triggered
+              when the event occurs for the tag. The result of the command is an
+              opaque token representing the binding. Note that if the same
+              combination of <tag,event,command> is used multiple times the same
+              token is returned by every call.
+
+              The signature of the command prefix is
+
+              command tag event details
+
+       where details contains the argument(s) of the event. Its contents are
+       event specific and have to be agreed upon between actual event generator
+       and consumer. This package simply transfers the information and does not
+       perform any processing beyond that.
+
+       ::uevent::unbind token
+              This command releases the event binding represented by the token.
+              The token has to be the result of a call to ::uevent::bind. The
+              result of the command is the empty string.
+
+       ::uevent::generate tag event ?details?
+              This command generates an event for the tag, triggering all
+              commands bound to that combination. The details argument is simply
+              passed unchanged to all event handlers. It is the responsibility
+              of the code generating and consuming the event to have an
+              agreement about the format and contents of the information carried
+              therein. The result of the command is the empty string.
+
+              Note that all bound commands are triggered, independently of each
+              other. The event handlers cannot assume a specific order. They are
+              also not called synchronously with the invokation of this command,
+              but simply put into the event queue for processing when the system
+              returns to the event loop.
+
+              Generating an event for an unknown tag, or for a <tag,event>
+              combination which has no commands bound to it is allowed, such
+              calls will be ignored.
+
+       ::uevent::list
+              In this form the command returns a list containing the names of
+              all tags which have events with commands bound to them.
+
+       ::uevent::list tag
+              In this format the command returns a list containing the names of
+              all events for the tag with commands bound to them. Specifying an
+              unknown tag, i.e. a tag without event and commands, will cause the
+              command to throw an error.
+
+       ::uevent::list tag event
+              In this format the command returns a list containing all commands
+              bound to the event for the tag. Specifying an unknown tag or
+              unknown event, will cause the command to throw an error.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category uevent of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       bind, event, generate event, unbind
+
+CATEGORY
+       Programming tools
+
+COPYRIGHT
+       Copyright (c) 2007 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

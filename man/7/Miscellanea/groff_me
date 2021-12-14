@@ -1,0 +1,123 @@
+GROFF_ME(7)                                                        GROFF_ME(7)
+
+
+
+NAME
+       groff_me - troff macros for formatting papers
+
+SYNOPSIS
+       groff -me [ options ] file ...
+       groff -m me [ options ] file ...
+
+DESCRIPTION
+       This  manual page describes the GNU version of the -me macros, which is
+       part of the groff document formatting system.  This version can be used
+       with  both GNU troff and Unix troff.  This package of troff macro defi-
+       nitions provides a canned formatting facility for technical  papers  in
+       various formats.
+
+       The  macro  requests are defined below.  Many troff requests are unsafe
+       in conjunction with this package, however, these requests may  be  used
+       with impunity after the first .pp:
+
+              .bp     begin new page
+              .br     break output line here
+              .sp n   insert n spacing lines
+              .ls n   (line spacing) n=1 single, n=2 double space
+              .na     no alignment of right margin
+              .ce n   center next n lines
+              .ul n   underline next n lines
+
+       Output  of  the pic, eqn, refer, and tbl preprocessors is acceptable as
+       input.
+
+FILES
+       /usr/share/groff/1.19.2/tmac/me.tmac (a wrapper file for e.tmac)
+       /usr/share/groff/1.19.2/tmac/e.tmac
+
+SEE ALSO
+       groff(1), troff(1)
+       -me Reference Manual, Eric P. Allman
+       Writing Papers with Groff Using -me
+
+REQUESTS
+       This list is incomplete; see The -me Reference Manual  for  interesting
+       details.
+
+Request      Initial Cause Explanation
+             Value   Break
+.(c          -       yes   Begin centered block
+.(d          -       no    Begin delayed text
+.(f          -       no    Begin footnote
+.(l          -       yes   Begin list
+.(q          -       yes   Begin major quote
+.(x x        -       no    Begin indexed item in index x
+.(z          -       no    Begin floating keep
+.)c          -       yes   End centered block
+.)d          -       yes   End delayed text
+.)f          -       yes   End footnote
+.)l          -       yes   End list
+.)q          -       yes   End major quote
+.)x          -       yes   End index item
+.)z          -       yes   End floating keep
+.++ m H      -       no    Define paper section.  m defines the part of the
+                           paper, and can be C (chapter), A (appendix), P
+                           (preliminary, e.g., abstract, table of contents,
+                           etc.), B (bibliography), RC (chapters renumbered
+                           from page one each chapter), or RA (appendix renum-
+                           bered from page one).
+.+c T        -       yes   Begin chapter (or appendix, etc., as set by .++).
+                           T is the chapter title.
+.1c          1       yes   One column format on a new page.
+.2c          1       yes   Two column format.
+.EN          -       yes   Space after equation produced by eqn or neqn.
+.EQ x y      -       yes   Precede equation; break out and add space.  Equa-
+                           tion number is y.  The optional argument x may be I
+                           to indent equation (default), L to left-adjust the
+                           equation, or C to center the equation.
+.GE          -       yes   End gremlin picture.
+.GS          -       yes   Begin gremlin picture.
+.PE          -       yes   End pic picture.
+.PS          -       yes   Begin pic picture.
+.TE          -       yes   End table.
+.TH          -       yes   End heading section of table.
+.TS x        -       yes   Begin table; if x is H table has repeated heading.
+.b x         no      no    Print x in boldface; if no argument switch to bold-
+                           face.
+.ba +n       0       yes   Augments the base indent by n.  This indent is used
+                           to set the indent on regular text (like para-
+                           graphs).
+.bc          no      yes   Begin new column
+.bi x        no      no    Print x in bold italics (nofill only)
+.bu          -       yes   Begin bulleted paragraph
+.bx x        no      no    Print x in a box (nofill only).
+.ef 'x'y'z'  ''''    no    Set even footer to x  y  z
+.eh 'x'y'z'  ''''    no    Set even header to x  y  z
+.fo 'x'y'z'  ''''    no    Set footer to x  y  z
+.hx          -       no    Suppress headers and footers on next page.
+.he 'x'y'z'  ''''    no    Set header to x  y  z
+.hl          -       yes   Draw a horizontal line
+.i x         no      no    Italicize x; if x missing, italic text follows.
+.ip x y      no      yes   Start indented paragraph, with hanging tag x.
+                           Indentation is y ens (default 5).
+.lp          yes     yes   Start left-blocked paragraph.
+.np          1       yes   Start numbered paragraph.
+.of 'x'y'z'  ''''    no    Set odd footer to x  y  z
+.oh 'x'y'z'  ''''    no    Set odd header to x  y  z
+.pd          -       yes   Print delayed text.
+.pp          no      yes   Begin paragraph.  First line indented.
+.r           yes     no    Roman text follows.
+.re          -       no    Reset tabs to default values.
+.sh n x      -       yes   Section head follows, font automatically bold.  n
+                           is level of section, x is title of section.
+.sk          no      no    Leave the next page blank.  Only one page is remem-
+                           bered ahead.
+.sm x        -       no    Set x in a smaller pointsize.
+.sz +n       10p     no    Augment the point size by n points.
+.tp          no      yes   Begin title page.
+.u x         -       no    Underline argument (even in troff).  (Nofill only).
+.uh          -       yes   Like .sh but unnumbered.
+.xp x        -       no    Print index x.
+
+
+

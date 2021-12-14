@@ -1,0 +1,147 @@
+aes(n)                 Advanced Encryption Standard (AES)                 aes(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       aes - Implementation of the AES block cipher
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require aes  ?1.0.2?
+
+       ::aes::aes ?-mode [ecb|cbc]? ?-dir [encrypt|decrypt]? -key keydata ?-iv
+       vector? ?-hex? ?-out channel? ?-chunksize size? [ -in channel | data ]
+
+       ::aes::Init mode keydata iv
+
+       ::aes::Encrypt Key data
+
+       ::aes::Decrypt Key data
+
+       ::aes::Reset Key iv
+
+       ::aes::Final Key
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This is an implementation in Tcl of the Advanced Encryption Standard
+       (AES) as published by the U.S. National Institute of Standards and
+       Technology [1]. AES is a 128-bit block cipher with a variable key size of
+       128, 192 or 256 bits. This implementation supports ECB and CBC modes.
+
+COMMANDS
+       ::aes::aes ?-mode [ecb|cbc]? ?-dir [encrypt|decrypt]? -key keydata ?-iv
+       vector? ?-hex? ?-out channel? ?-chunksize size? [ -in channel | data ]
+              Perform the aes algorithm on either the data provided by the
+              argument or on the data read from the -in channel. If an -out
+              channel is given then the result will be written to this channel.
+
+              The -key option must be given. This parameter takes a binary
+              string of either 16, 24 or 32 bytes in length and is used to
+              generate the key schedule.
+
+              The -mode and -dir options are optional and default to cbc mode
+              and encrypt respectively. The initialization vector -iv takes a 16
+              byte binary argument which defaults to all zeros.  See MODES OF
+              OPERATION for more about available modes and their uses.
+
+              AES is a 128-bit block cipher. This means that the data must be
+              provided in units that are a multiple of 16 bytes.
+
+PROGRAMMING INTERFACE
+       Internal state is maintained in an opaque structure that is returned from
+       the Init function. In ECB mode the state is not affected by the input but
+       for CBC mode some input dependent state is maintained and may be reset by
+       calling the Reset function with a new initialization vector value.
+
+       ::aes::Init mode keydata iv
+              Construct a new AES key schedule using the specified key data and
+              the given initialization vector. The initialization vector is not
+              used with ECB mode but is important for CBC mode.  See MODES OF
+              OPERATION for details about cipher modes.
+
+       ::aes::Encrypt Key data
+              Use a prepared key acquired by calling Init to encrypt the
+              provided data. The data argument should be a binary array that is
+              a multiple of the AES block size of 16 bytes. The result is a
+              binary array the same size as the input of encrypted data.
+
+       ::aes::Decrypt Key data
+              Decipher data using the key. Note that the same key may be used to
+              encrypt and decrypt data provided that the initialization vector
+              is reset appropriately for CBC mode.
+
+       ::aes::Reset Key iv
+              Reset the initialization vector. This permits the programmer to
+              re-use a key and avoid the cost of re-generating the key schedule
+              where the same key data is being used multiple times.
+
+       ::aes::Final Key
+              This should be called to clean up resources associated with Key.
+              Once this function has been called the key may not be used again.
+
+MODES OF OPERATION
+       Electronic Code Book (ECB)
+              ECB is the basic mode of all block ciphers. Each block is
+              encrypted independently and so identical plain text will produce
+              identical output when encrypted with the same key. Any encryption
+              errors will only affect a single block however this is vulnerable
+              to known plaintext attacks.
+
+       Cipher Block Chaining (CBC)
+              CBC mode uses the output of the last block encryption to affect
+              the current block. An initialization vector of the same size as
+              the cipher block size is used to handle the first block. The
+              initialization vector should be chosen randomly and transmitted as
+              the first block of the output. Errors in encryption affect the
+              current block and the next block after which the cipher will
+              correct itself. CBC is the most commonly used mode in software
+              encryption. This is the default mode of operation for this module.
+
+EXAMPLES
+
+       % set nil_block [string repeat \\0 16]
+       % aes::aes -hex -mode cbc -dir encrypt -key $nil_block $nil_block
+       66e94bd4ef8a2c3b884cfa59ca342b2e
+
+
+       set Key [aes::Init cbc $sixteen_bytes_key_data $sixteen_byte_iv]
+       append ciphertext [aes::Encrypt $Key $plaintext]
+       append ciphertext [aes::Encrypt $Key $additional_plaintext]
+       aes::Final $Key
+
+
+REFERENCES
+       [1]    "Advanced Encryption Standard", Federal Information Processing
+              Standards Publication 197, 2001
+              (http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf)
+
+AUTHORS
+       Thorsten Schloermann, Pat Thoyts
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category aes of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       blowfish(n), des(n), md5(n), sha1(n)
+
+KEYWORDS
+       aes, block cipher, data integrity, encryption, security
+
+CATEGORY
+       Hashes, checksums, and encryption
+
+COPYRIGHT
+       Copyright (c) 2005, Pat Thoyts <patthoyts@users.sourceforge.net>
+
+
+
+

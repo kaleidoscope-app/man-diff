@@ -1,0 +1,53 @@
+SNCFGREMOVE(8)               System Manager's Manual              SNCFGREMOVE(8)
+
+
+
+NAME
+       sncfgremove - Remove a Xsan Volume configuration file
+
+SYNOPSIS
+       sncfgremove -n VolName [-M output_format]
+
+       sncfgremove -h
+
+DESCRIPTION
+       The sncfgremove program will remove a Xsan file system configuration
+       file, archiving it to /Library/Logs/Xsan/data/VolName/config_history/ in
+       the process.
+
+OPTIONS
+       -h     Display usage.
+
+       -n VolName
+              Required. The name of the file system whose config is to be
+              removed.
+
+       -M msg_format
+              Specify XML if you want messages to come back in XML format.  This
+              defaults to ASCII.
+
+EXIT VALUES
+       sncfgremove will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       List usage:
+
+          # sncfgremove -h
+          Usage: sncfgremove -n <fs_name> [-M <fmt>]
+            -n            Name of file system to remove
+            -M            Message format: ASCII, XML (default ASCII)
+            -h            This usage
+
+       Remove a config:
+
+          # sncfgremove -n snfs1
+          'snfs1' successfully removed
+
+FILES
+       /Library/Logs/Xsan/data/VolName/config_history/
+
+SEE ALSO
+       snfs_config(5)
+
+
+

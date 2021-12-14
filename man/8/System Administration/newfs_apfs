@@ -1,0 +1,120 @@
+NEWFS_APFS(8)                System Manager's Manual               NEWFS_APFS(8)
+
+NAME
+     newfs_apfs – construct a new APFS volume
+
+SYNOPSIS
+     newfs_apfs [-o options] [-i] [-b block-size]
+                [-s volume-size | -q volume-quota -r volume-reserve]
+                [-v volume-name] [-E] [-R role] special
+     newfs_apfs -C [-o options] [-i] [-b block-size] special
+     newfs_apfs -A [-o options] [-i]
+                [-s volume-size | -q volume-quota -r volume-reserve]
+                [-v volume-name] [-E] [-R role] special
+     newfs_apfs [-o options] [-i]
+                [-s volume-size | -q volume-quota -r volume-reserve]
+                [-v volume-name] [-E] [-R role] special
+
+DESCRIPTION
+     The newfs_apfs command creates a new APFS container on the device and/or
+     adds a new APFS volume to a container.
+
+     The first, more traditional, form of newfs_apfs formats the given special
+     as a container with a single volume inside it.  The second form creates a
+     container only, with no volumes.  The third form is used to non-
+     destructively add additional volumes inside an existing container.  The
+     fourth form reformats an existing volume by effectively deleting and re-
+     creating it; in this usage (only) special indicates a volume inside the
+     container.
+
+     The special parameter should be the path to a disk device node, such as
+     /dev/disk1s2, although can be specified as simply disk1s2.
+
+     The options are as follows:
+
+     -b block-size      The block size of the container.  All volumes within
+                        this container will use this block size.  The default is
+                        4096 bytes.
+
+     -o options         Additional (undocumented) formatting options.
+
+     -i                 Creates a case-insensitive volume.  This is the default
+                        on macOS.
+
+     -e                 Creates a case-sensitive volume.
+
+     -U uid             The UID of the root volume.  Defaults to current UID.
+
+     -G uid             The GID of the root volume.  Defaults to current GID.
+
+     -q volume-quota    Places a quota, or upper limit, on the size of the
+                        volume.  If specified then no more than this much space
+                        will be used for its content, even if there is
+                        additional free space in the container; however it is
+                        not guaranteed that the entire quota will always be
+                        available.  By default a volume has no assigned quota.
+
+     -r volume-reserve  Reserves an amount of space for this volume.  If
+                        specified it is guaranteed that at least this much space
+                        will be available for its content; the volume may also
+                        grow beyond this size (up to its quota limit, if any) if
+                        additional free space in the container.  By default a
+                        volume has no assigned reserve.
+
+     -s volume-size     The fixed size of the volume.  If specified then the
+                        volume is guaranteed that exactly this much space will
+                        be available for its content.  Setting -s is equivalant
+                        to setting both -q and -r to that same value.  If not
+                        specified then the available space is dynamic and
+                        determined by the usage of other volumes within the same
+                        container (space-sharing).
+
+     -v volume-name     The name of the volume.  The default is "untitled".
+
+     -A                 Add a volume to an existing container.  There is a limit
+                        to the number of volumes that may reside inside a
+                        container.
+
+     -C                 Create a container only, with no volume.  newfs_apfs -A
+                        may be used later to format volumes inside that
+                        container.
+
+     -E                 Enable volume encryption.  The volume metadata is also
+                        encrypted.
+
+     -S password        Key used for volume encryption.  If the password option
+                        is omitted for an encrypted volume, a prompt will
+                        request a password for the new volume.  This option is
+                        unsecure because other non-privileged users (on multi-
+                        user systems) have means to see command-line arguments,
+                        including passwords, and is therefore not recommended
+                        for use (use the prompt instead).
+
+     -F special         Format as a Fusion device (with the secondary device
+                        specified here).
+
+     -R role            Set the OS "role" of the volume within the container.
+                        The role may be one of the following characters:
+                          b   Preboot - will contain information used to help
+                              boot System volumes
+                          r   Recovery - will contain the RecoveryOS
+                          v   VM - will contain swapfiles and hibernate image
+
+EXIT STATUS
+     The newfs_apfs utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     The following formats a new container and a volume named "Macintosh" on the
+     /dev/disk1s2 device:
+           newfs_apfs -v Macintosh disk1s2
+
+     And then this adds another volume, named "Data" with a fixed size of 100
+     GB, to that container:
+           newfs_apfs -v Data -s 100g -A disk1s2
+
+SEE ALSO
+     mount_apfs(8)
+
+HISTORY
+     The newfs_apfs utility first appeared in OS X 10.12.
+

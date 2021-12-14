@@ -1,0 +1,407 @@
+ttk::treeview(n)                Tk Themed Widget                ttk::treeview(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ttk::treeview - hierarchical multicolumn data display widget
+
+SYNOPSIS
+       ttk::treeview pathname ?options?
+________________________________________________________________________________
+
+DESCRIPTION
+       The ttk::treeview widget displays a hierarchical collection of items.
+       Each item has a textual label, an optional image, and an optional list of
+       data values.  The data values are displayed in successive columns after
+       the tree label.
+
+       The order in which data values are displayed may be controlled by setting
+       the -displaycolumns widget option.  The tree widget can also display
+       column headings.  Columns may be accessed by number or by symbolic names
+       listed in the -columns widget option; see COLUMN IDENTIFIERS.
+
+       Each item is identified by a unique name.  The widget will generate item
+       IDs if they are not supplied by the caller.  There is a distinguished
+       root item, named {}.  The root item itself is not displayed; its children
+       appear at the top level of the hierarchy.
+
+       Each item also has a list of tags, which can be used to associate event
+       bindings with individual items and control the appearance of the item.
+
+       Treeview widgets support horizontal and vertical scrolling with the
+       standard -[xy]scrollcommand options and [xy]view widget commands.
+
+STANDARD OPTIONS
+       -class                -cursor              -takefocus
+       -style                -xscrollcommand      -yscrollcommand
+
+       See the ttk_widget manual entry for details on the standard options.
+
+WIDGET-SPECIFIC OPTIONS
+       [-columns columns] A list of column identifiers, specifying the number of
+       columns and their names.  [-displaycolumns displayColumns] A list of
+       column identifiers (either symbolic names or integer indices) specifying
+       which data columns are displayed and the order in which they appear, or
+       the string #all.  If set to #all (the default), all columns are shown in
+       the order given.  [-height height] Specifies the number of rows which
+       should be visible.  Note: the requested width is determined from the sum
+       of the column widths.  [-padding padding] Specifies the internal padding
+       for the widget.  The padding is a list of up to four length
+       specifications; see Ttk_GetPaddingFromObj() for details.
+       [-selectmode selectMode] Controls how the built-in class bindings manage
+       the selection.  One of extended, browse, or none.
+
+              If set to extended (the default), multiple items may be selected.
+              If browse, only a single item will be selected at a time.  If
+              none, the selection will not be changed.
+
+              Note that application code and tag bindings can set the selection
+              however they wish, regardless of the value of -selectmode.
+       [-show show] A list containing zero or more of the following values,
+       specifying which elements of the tree to display.
+
+              tree   Display tree labels in column #0.
+
+              headings
+                     Display the heading row.
+
+              The default is tree headings, i.e., show all elements.
+
+              NOTE: Column #0 always refers to the tree column, even if -show
+              tree is not specified.
+
+WIDGET COMMAND
+       pathname bbox item ?column?
+              Returns the bounding box (relative to the treeview widget's
+              window) of the specified item in the form x y width height.  If
+              column is specified, returns the bounding box of that cell.  If
+              the item is not visible (i.e., if it is a descendant of a closed
+              item or is scrolled offscreen), returns the empty list.
+
+       pathname cget option
+              Returns the current value of the specified option; see
+              ttk::widget(n).
+
+       pathname children item ?newchildren?
+              If newchildren is not specified, returns the list of children
+              belonging to item.
+
+              If newchildren is specified, replaces item's child list with
+              newchildren.  Items in the old child list not present in the new
+              child list are detached from the tree.  None of the items in
+              newchildren may be an ancestor of item.
+
+       pathname column column ?-option ?value -option value...?
+              Query or modify the options for the specified column.  If no
+              -option is specified, returns a dictionary of option/value pairs.
+              If a single -option is specified, returns the value of that
+              option.  Otherwise, the options are updated with the specified
+              values.  The following options may be set on each column:
+
+              -id name
+                     The column name.  This is a read-only option.  For example,
+                     [$pathname column #n -id] returns the data column
+                     associated with display column #n.
+
+              -anchor
+                     Specifies how the text in this column should be aligned
+                     with respect to the cell. One of n, ne, e, se, s, sw, w,
+                     nw, or center.
+
+              -minwidth
+                     The minimum width of the column in pixels.  The treeview
+                     widget will not make the column any smaller than -minwidth
+                     when the widget is resized or the user drags a column
+                     separator.
+
+              -stretch
+                     Specifies whether or not the column's width should be
+                     adjusted when the widget is resized.
+
+              -width w
+                     The width of the column in pixels.  Default is something
+                     reasonable, probably 200 or so.
+
+              Use pathname column #0 to configure the tree column.
+
+       pathname configure ?option? ?value option value ...?
+              Modify or query widget options; see ttk::widget(n).
+
+       pathname delete itemList
+              Deletes each of the items in itemList and all of their
+              descendants.  The root item may not be deleted.  See also: detach.
+
+       pathname detach itemList
+              Unlinks all of the specified items in itemList from the tree.  The
+              items and all of their descendants are still present and may be
+              reinserted at another point in the tree with the move operation,
+              but will not be displayed until that is done.  The root item may
+              not be detached.  See also: delete.
+
+       pathname exists item
+              Returns 1 if the specified item is present in the tree, 0
+              otherwise.
+
+       pathname focus ?item?
+              If item is specified, sets the focus item to item.  Otherwise,
+              returns the current focus item, or {} if there is none.
+
+       pathname heading column ?-option ?value -option value...?
+              Query or modify the heading options for the specified column.
+              Valid options are:
+
+              -text text
+                     The text to display in the column heading.
+
+              -image imageName
+                     Specifies an image to display to the right of the column
+                     heading.
+
+              -anchor anchor
+                     Specifies how the heading text should be aligned.  One of
+                     the standard Tk anchor values.
+
+              -command script
+                     A script to evaluate when the heading label is pressed.
+
+              Use pathname heading #0 to configure the tree column heading.
+
+       pathname identify component x y
+              Returns a description of the specified component under the point
+              given by x and y, or the empty string if no such component is
+              present at that position.  The following subcommands are
+              supported:
+
+              pathname identify region x y
+                     Returns one of:
+
+                     heading
+                            Tree heading area; use [pathname identify column x
+                            y] to determine the heading number.
+
+                     separator
+                            Space between two column headings; [pathname
+                            identify column x y] will return the display column
+                            identifier of the heading to left of the separator.
+
+                     tree   The tree area.
+
+                     cell   A data cell.
+              pathname identify item x y Returns the item ID of the item at
+              position y.
+
+              pathname identify column x y
+                     Returns the data column identifier of the cell at position
+                     x.  The tree column has ID #0.
+
+              pathname identify element x y
+                     The element at position x,y.
+
+              pathname identify row x y
+                     Obsolescent synonym for pathname identify item.
+
+              See COLUMN IDENTIFIERS for a discussion of display columns and
+              data columns.
+
+       pathname index item
+              Returns the integer index of item within its parent's list of
+              children.
+
+       pathname insert parent index ?-id id? options...
+              Creates a new item.  parent is the item ID of the parent item, or
+              the empty string {} to create a new top-level item.  index is an
+              integer, or the value end, specifying where in the list of
+              parent's children to insert the new item.  If index is less than
+              or equal to zero, the new node is inserted at the beginning; if
+              index is greater than or equal to the current number of children,
+              it is inserted at the end.  If -id is specified, it is used as the
+              item identifier; id must not already exist in the tree.
+              Otherwise, a new unique identifier is generated.
+
+              pathname insert returns the item identifier of the newly created
+              item.  See ITEM OPTIONS for the list of available options.
+
+       pathname instate statespec ?script?
+              Test the widget state; see ttk::widget(n).
+
+       pathname item item ?-option ?value -option value...?
+              Query or modify the options for the specified item.  If no -option
+              is specified, returns a dictionary of option/value pairs.  If a
+              single -option is specified, returns the value of that option.
+              Otherwise, the item's options are updated with the specified
+              values.  See ITEM OPTIONS for the list of available options.
+
+       pathname move item parent index
+              Moves item to position index in parent's list of children.  It is
+              illegal to move an item under one of its descendants.
+
+              If index is less than or equal to zero, item is moved to the
+              beginning; if greater than or equal to the number of children, it
+              is moved to the end.
+
+       pathname next item
+              Returns the identifier of item's next sibling, or {} if item is
+              the last child of its parent.
+
+       pathname parent item
+              Returns the ID of the parent of item, or {} if item is at the top
+              level of the hierarchy.
+
+       pathname prev item
+              Returns the identifier of item's previous sibling, or {} if item
+              is the first child of its parent.
+
+       pathname see item
+              Ensure that item is visible: sets all of item's ancestors to -open
+              true, and scrolls the widget if necessary so that item is within
+              the visible portion of the tree.
+
+       pathname selection ?selop itemList?
+              If selop is not specified, returns the list of selected items.
+              Otherwise, selop is one of the following:
+
+              pathname selection set itemList
+                     itemList becomes the new selection.
+
+              pathname selection add itemList
+                     Add itemList to the selection
+
+              pathname selection remove itemList
+                     Remove itemList from the selection
+
+              pathname selection toggle itemList
+                     Toggle the selection state of each item in itemList.
+
+       pathname set item ?column? ?value?
+              With one argument, returns a dictionary of column/value pairs for
+              the specified item.  With two arguments, returns the current value
+              of the specified column.  With three arguments, sets the value of
+              column column in item item to the specified value.  See also
+              COLUMN IDENTIFIERS.
+
+       pathname state ?stateSpec?
+              Modify or query the widget state; see ttk::widget(n).
+
+       pathName tag args...
+
+              pathName tag bind tagName ?sequence? ?script?
+                     Add a Tk binding script for the event sequence sequence to
+                     the tag tagName.  When an X event is delivered to an item,
+                     binding scripts for each of the item's -tags are evaluated
+                     in order as per bindtags(n).
+
+                     <KeyPress>, <KeyRelease>, and virtual events are sent to
+                     the focus item.  <ButtonPress>, <ButtonRelease>, and
+                     <Motion> events are sent to the item under the mouse
+                     pointer.  No other event types are supported.
+
+                     The binding script undergoes %-substitutions before
+                     evaluation; see bind(n) for details.
+
+              pathName tag configure tagName ?option? ?value option value...?
+                     Query or modify the options for the specified tagName.  If
+                     one or more option/value pairs are specified, sets the
+                     value of those options for the specified tag.  If a single
+                     option is specified, returns the value of that option (or
+                     the empty string if the option has not been specified for
+                     tagName).  With no additional arguments, returns a
+                     dictionary of the option settings for tagName.  See TAG
+                     OPTIONS for the list of available options.
+
+              pathName tag has tagName ?item?
+                     If item is specified, returns 1 or 0 depending on whether
+                     the specified item has the named tag.  Otherwise, returns a
+                     list of all items which have the specified tag.
+
+              pathName tag names
+                     Returns a list of all tags used by the widget.
+
+              pathName tag add tag items
+                     Adds the specified tag to each of the listed items.  If tag
+                     is already present for a particular item, then the -tags
+                     for that item are unchanged.
+
+              pathName tag remove tag ?items?
+                     Removes the specified tag from each of the listed items.
+                     If items is omitted, removes tag from each item in the
+                     tree.  If tag is not present for a particular item, then
+                     the -tags for that item are unchanged.
+
+       pathName xview args
+              Standard command for horizontal scrolling; see widget(n).
+
+       pathName yview args
+              Standard command for vertical scrolling; see ttk::widget(n).
+
+ITEM OPTIONS
+       The following item options may be specified for items in the insert and
+       item widget commands.  [-text text] The textual label to display for the
+       item.  [-image image] A Tk image, displayed to the left of the label.
+       [-values values] The list of values associated with the item.
+
+              Each item should have the same number of values as the -columns
+              widget option.  If there are fewer values than columns, the
+              remaining values are assumed empty.  If there are more values than
+              columns, the extra values are ignored.
+       [-open open] A boolean value indicating whether the item's children
+       should be displayed (-open true) or hidden (-open false).  [-tags tags] A
+       list of tags associated with this item.
+
+TAG OPTIONS
+       The following options may be specified on tags:
+
+       -foreground
+              Specifies the text foreground color.
+
+       -background
+              Specifies the cell or item background color.
+
+       -font  Specifies the font to use when drawing text.
+
+       -image Specifies the item image, in case the item's -image option is
+              empty.
+
+COLUMN IDENTIFIERS
+       Column identifiers take any of the following forms:
+
+       •      A symbolic name from the list of -columns.
+
+       •      An integer n, specifying the nth data column.
+
+       •      A string of the form #n, where n is an integer, specifying the nth
+              display column.
+
+       NOTE: Item -values may be displayed in a different order than the order
+       in which they are stored.
+
+       NOTE: Column #0 always refers to the tree column, even if -show tree is
+       not specified.
+
+       A data column number is an index into an item's -values list; a display
+       column number is the column number in the tree where the values are
+       displayed.  Tree labels are displayed in column #0.  If -displaycolumns
+       is not set, then data column n is displayed in display column #n+1.
+       Again, column #0 always refers to the tree column.
+
+VIRTUAL EVENTS
+       The treeview widget generates the following virtual events.
+
+       <<TreeviewSelect>>
+              Generated whenever the selection changes.
+
+       <<TreeviewOpen>>
+              Generated just before setting the focus item to -open true.
+
+       <<TreeviewClose>>
+              Generated just after setting the focus item to -open false.
+
+       The focus and selection widget commands can be used to determine the
+       affected item or items.
+
+SEE ALSO
+       ttk::widget(n), listbox(n), image(n), bind(n)
+
+
+

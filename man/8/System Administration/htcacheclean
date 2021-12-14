@@ -1,0 +1,167 @@
+HTCACHECLEAN(8)                   htcacheclean                   HTCACHECLEAN(8)
+
+
+
+
+
+NAME
+       htcacheclean - Clean up the disk cache
+
+
+SYNOPSIS
+       htcacheclean [ -D ] [ -v ] [ -t ] [ -r ] [ -n ] [ -Rround ] -ppath [
+       -llimit ] [ -Llimit ]
+
+
+       htcacheclean [ -n ] [ -t ] [ -i ] [ -Ppidfile ] [ -Rround ] -dinterval
+       -ppath [ -llimit ] [ -Llimit ]
+
+
+       htcacheclean [ -v ] [ -Rround ] -ppath [ -a ] [ -A ]
+
+
+       htcacheclean [ -D ] [ -v ] [ -t ] [ -Rround ] -ppath url
+
+
+
+SUMMARY
+       htcacheclean is used to keep the size of mod_cache_disk's storage within
+       a given size limit, or limit on inodes in use. This tool can run either
+       manually or in daemon mode. When running in daemon mode, it sleeps in the
+       background and checks the cache directory at regular intervals for cached
+       content to be removed. You can stop the daemon cleanly by sending it a
+       TERM or INT signal. When run manually, a once off check of the cache
+       directory is made for cached content to be removed. If one or more URLs
+       are specified, each URL will be deleted from the cache, if present.
+
+
+
+OPTIONS
+       -dinterval
+              Daemonize and repeat cache cleaning every interval minutes. This
+              option is mutually exclusive with the -D, -v and -r options. To
+              shutdown the daemon cleanly, just send it a SIGTERM or SIGINT.
+
+       -D     Do a dry run and don't delete anything. This option is mutually
+              exclusive with the -d option. When doing a dry run and deleting
+              directories with -t, the inodes reported deleted in the stats
+              cannot take into account the directories deleted, and will be
+              marked as an estimate.
+
+       -v     Be verbose and print statistics. This option is mutually exclusive
+              with the -d option.
+
+       -r     Clean thoroughly. This assumes that the Apache web server is not
+              running (otherwise you may get garbage in the cache). This option
+              is mutually exclusive with the -d option and implies the -t
+              option.
+
+       -n     Be nice. This causes slower processing in favour of other
+              processes. htcacheclean will sleep from time to time so that (a)
+              the disk IO will be delayed and (b) the kernel can schedule other
+              processes in the meantime.
+
+       -t     Delete all empty directories. By default only cache files are
+              removed, however with some configurations the large number of
+              directories created may require attention. If your configuration
+              requires a very large number of directories, to the point that
+              inode or file allocation table exhaustion may become an issue, use
+              of this option is advised.
+
+       -ppath Specify path as the root directory of the disk cache. This should
+              be the same value as specified with the CacheRoot directive.
+
+       -Ppidfile
+              Specify pidfile as the name of the file to write the process ID to
+              when daemonized.
+
+       -Rround
+              Specify round as the amount to round sizes up to, to compensate
+              for disk block sizes. Set to the block size of the cache
+              partition.
+
+       -llimit
+              Specify limit as the total disk cache size limit. The value is
+              expressed in bytes by default (or attaching B to the number).
+              Attach K for Kbytes, M for MBytes or G for Gbytes.
+
+       -Llimit
+              Specify limit as the total disk cache inode limit. K, M or G
+              suffix can also be used.
+
+       -i     Be intelligent and run only when there was a modification of the
+              disk cache. This option is only possible together with the -d
+              option.
+
+       -a     List the URLs currently stored in the cache. Variants of the same
+              URL will be listed once for each variant.
+
+       -A     List the URLs currently stored in the cache, along with their
+              attributes in the following order: url, header size, body size,
+              status, entity version, date, expiry, request time, response time,
+              body present, head request.
+
+
+DELETING A SPECIFIC URL
+       If htcacheclean is passed one or more URLs, each URL will be deleted from
+       the cache. If multiple variants of an URL exists, all variants would be
+       deleted.
+
+
+       When a reverse proxied URL is to be deleted, the effective URL is
+       constructed from the Host header, the port, the path and the query. Note
+       the '?' in the URL must always be specified explicitly, whether a query
+       string is present or not. For example, an attempt to delete the path /
+       from the server localhost, the URL to delete would be
+       http://localhost:80/?.
+
+
+LISTING URLS IN THE CACHE
+       By passing the -a or -A options to htcacheclean, the URLs within the
+       cache will be listed as they are found, one URL per line. The -A option
+       dumps the full cache entry after the URL, with fields in the following
+       order:
+
+
+
+       url    The URL of the entry.
+
+       header size
+              The size of the header in bytes.
+
+       body size
+              The size of the body in bytes.
+
+       status Status of the cached response.
+
+       entity version
+              The number of times this entry has been revalidated without being
+              deleted.
+
+       date   Date of the response.
+
+       expiry Expiry date of the response.
+
+       request time
+              Time of the start of the request.
+
+       response time
+              Time of the end of the request.
+
+       body present
+              If 0, no body is stored with this request, 1 otherwise.
+
+       head request
+              If 1, the entry contains a cached HEAD request with no body, 0
+              otherwise.
+
+
+EXIT STATUS
+       htcacheclean returns a zero status ("true") if all operations were
+       successful, 1 otherwise. If an URL is specified, and the URL was cached
+       and successfully removed, 0 is returned, 2 otherwise. If an error
+       occurred during URL removal, 1 is returned.
+
+
+
+

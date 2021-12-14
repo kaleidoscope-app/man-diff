@@ -1,0 +1,334 @@
+KEXTCACHE(8)                 System Manager's Manual                KEXTCACHE(8)
+
+NAME
+     kextcache – create kext cache files
+
+SYNOPSIS
+     kextcache -prelinked-kernel filename [options] [--] [kext_or_directory ...]
+     kextcache -system-prelinked-kernel [options] [--] [kext_or_directory ...]
+     kextcache -system-caches [options]
+     kextcache -update-volume os_volume [options]
+
+DEPRECATED
+     The kextcache utility has been deprecated. It should no longer be necessary
+     to use.  See kmutil(8)
+
+DESCRIPTION
+     The kextcache program creates kext caches, which speed up kext loading
+     operations.  It is invoked automatically as needed to rebuild system
+     caches.
+
+     Caution: Incorrect use of kextcache can render a volume incapable of
+     startup.  Installers and administrators should not use this program to
+     update system kext caches.  Instead they should run touch(1) on the
+     /System/Library/Extensions/ directory of the installation target volume
+     after they have finished, which invalidates the existing caches and causes
+     the system to update all necessary kext caches.  kextcache -update-volume
+     can be used to wait for this process to complete.  See “Apple Developer
+     Technical Q&A QA1319: Installing an I/O Kit Kext Without Rebooting” for
+     information on updating kext caches on prior releases of macOS.
+
+     kextcache creates several kinds of kext caches.  The first is the prelinked
+     kernel (also known as a “prelinkedkernel”), which contains the kernel code
+     and the essential files (info dictionary and executable) for an arbitrary
+     set of kexts, with kext executables linked for their run-time locations.  A
+     prelinked kernel speeds early system startup by collecting these many files
+     in one place for the booter to locate, and by having each kext linked in
+     place and ready to start as needed.  To create or update a prelinked
+     kernel, use the -prelinked-kernel or -system-prelinked-kernel option.
+
+     Other kext caches collect specific data from the info dictionaries of
+     kexts.  There are many individual caches for specific subsets of data; they
+     care collectively called system info caches.  These caches are used to
+     optimize disk I/O when working with kexts during late system startup and
+     beyond.  To update the system kext info caches for the root volume, use the
+     -system-caches option.
+
+PRIMARY OPTIONS
+     You must specify one of these options to have kextcache do anything:
+
+     -c [filename], -prelinked-kernel [filename]
+              Create a prelinked kernel.  filename is required unless this
+              option is the last argument.  If this option is the last argument
+              and no filename is given, the startup prelinked kernel for the
+              system is created.  See -all-loaded.
+
+     -system-prelinked-kernel
+              This option is a convenience to update the prelinked kernel used
+              for startup on the root volume, with all kexts in
+              /System/Library/Extensions and /Library/Extensions that have been
+              loaded to date.  This option implies -all-loaded.
+
+     -system-caches
+              Rebuild the info caches for system kexts on the root volume.
+
+     -i os_volume, -invalidate os_volume
+              Rebuild out-of-date caches and update any helper partitions
+              associated with os_volume.
+
+              This option mimics sudo touch /System/Library/Extensions on
+              os_volume.  If kextcache cannot find or make sense of
+              os_volume/usr/standalone/bootcaches.plist, the volume is treated
+              as if no caches need updating: success is returned.
+
+     -u os_volume, -update-volume os_volume
+              Rebuild out-of-date caches and update any helper partitions
+              associated with os_volume.
+              os_volume/System/Library/Caches/com.apple.bootstamps/ is used as a
+              cache of metadata from any helper partitions.  See -caches-only
+              and -force.
+
+              Which caches are rebuilt depends on the macOS release installed on
+              os_volume.  If kextcache cannot find or make sense of
+              os_volume/usr/standalone/bootcaches.plist the volume is treated as
+              if no caches need updating: success is returned.
+
+     -U os_volume
+              Exit EX_OSFILE (72) if any updates were needed and were
+              successfully made.  -U is used during system startup to check
+              whether the cache from which the currently-running kernel was
+              loaded is out of date.  System startup interprets an EX_OSFILE
+              exit code to mean that the system should be immediately rebooted
+              off the newer kernel cache.
+
+     -Boot    Used with -U to enable early boot behaviors such as limiting which
+              caches must be updated.
+
+     -e, -system-mkext
+              This option is provided for legacy compatibility, and is simply an
+              alias to -system-prelinked-kernel.
+
+     -clear-staging
+              Clears the kernel extension staging area by removing all staged
+              content.
+
+     -prune-staging
+              Prunes the kernel extension staging area by removing all kernel
+              extensions no longer present in their original location.
+
+PRELINKED KERNEL FILTERING OPTIONS
+     These options restrict which kexts are included in a prelinked kernel.  The
+     options -arch and -bundle-id select kexts by supported architecture and
+     bundle identifier; the remaining filtering options select kexts based on
+     the value of their OSBundleRequired property.  If these options are
+     specified, the cache will contain only kexts whose OSBundleRequired
+     property matches any of these options, or whose OSBundleRequired property
+     is “Root” or “Console”.
+
+     A prelinked kernel cache intended for a startup from a local disk should be
+     created with the -local-root option, while a cache intended for startup
+     from the network should be created with the -network-root option.  When
+     creating a prelinked kernel, if the -all-loaded option is specified, kexts
+     requested by the kernel are always included regardless of these filtering
+     options.
+
+     -a arch, -arch arch
+              Include in a prelinked kernel only kexts loadable on arch,
+              thinning executables to that architecture before inclusion.
+              Multiple architectures are allowed; in this case a multi-
+              architecture file is created containing an embedded cache for each
+              of the specified architectures.  If no architectures are
+              specified, a default set of architectures supported by the current
+              macOS version is used (Mac OS X 10.6 and later).
+
+     -b identifier, -bundle-id identifier
+              Find the kext whose CFBundleIdentifier is identifier amongst known
+              kexts and repository directories and include it in the prelinked
+              kernel.  The kext of the highest CFBundleVersion with the given
+              identifier is used; in the case of version ties, the last such
+              kext specified on the command line is used.  This option may be
+              specified multiple times; if so, the specified bundle identifiers
+              select a subset from all named repositories and kexts, to which
+              the remaining filters described in this section are then applied.
+
+     -l, -local-root
+              Specifies that for directory arguments, only extensions required
+              for local disk boot be included in a cache.  Kexts explicitly
+              indicated by name or identifier are included unconditionally; to
+              apply this filter to all kexts, use the -local-root-all option.
+
+     -L, -local-root-all
+              Specifies that only extensions required for local disk boot be
+              included in a cache, regardless of whether they are from a
+              repository directory or are explicitly indicated by name or
+              identifier.  To apply this restriction only to kexts from
+              repository directories, use the -local-root option.
+
+     -n, -network-root
+              Specifies that for directory arguments, only extensions required
+              for network disk boot be included in a cache.  Kexts explicitly
+              indicated by name or identifier are included unconditionally; to
+              apply this filter to all kexts, use the -network-root-all option.
+
+     -N, -network-root-all
+              Specifies that only extensions required for network disk boot be
+              included in a cache, regardless of whether they are from a
+              repository directory or are explicitly indicated by name or
+              identifier.  To apply this restriction only to kexts from
+              repository directories, use the -network-root option.
+
+     -s, -safe-boot
+              Specifies that for directory arguments, only extensions required
+              for safe boot be included in a cache.  Kexts explicitly indicated
+              by name or identifier are included unconditionally; to apply this
+              filter to all kexts, use the -safe-boot-all option.
+
+     -S, -safe-boot-all
+              Specifies that only extensions required for safe boot be included
+              in a cache, regardless of whether they are from a repository
+              directory or are explicitly indicated by name or identifier.  To
+              apply this restriction only to kexts from repository directories,
+              use the -safe-boot option.
+
+OTHER OPTIONS AND ARGUMENTS
+     kext_or_directory
+              A kext bundle or a repository directory containing kexts to
+              consider for inclusion in a prelinked kernel.  The filtering
+              options described under “PRELINKED KERNEL FILTERING OPTIONS”
+              select the individual kexts to be included in the archive.  If no
+              filtering options are specified, then all kexts named as arguments
+              are included (this is probably not what you want).
+
+     -caches-only
+              With -update-volume, skips updating any helper partitions even if
+              they appear out of to date.
+
+     -f, -force
+              With -update-volume, rebuilds any helper partitions even if they
+              appear up to date.  If this version of kextcache does not
+              understand bootcaches.plist well enough to be able to update the
+              helpers, exit with EX_OSFILE (72).
+
+     -Installer
+              With -update-volume, implies -force while making helper partition
+              updates optional.
+
+     -F       Run in low-priority mode, as when forked and executed by kextd(8).
+              (This used to actually fork, but no longer does, as kextd(8)
+              handles the forking.)
+
+     -h, -help
+              Print a help message describing each option flag and exit with a
+              success result, regardless of any other options on the command
+              line.
+
+     -K kernel_filename, -kernel kernel_filename
+              The name of the kernel file to use as the base of a prelinked
+              kernel file (the default is /System/Library/Kernels/kernel).
+
+     -q, -quiet
+              Quiet mode; print no informational or error messages.
+
+     -r, -all-loaded
+              When creating a prelinked kernel, include all kexts in
+              /System/Library/Extensions and /Library/Extensions that have been
+              loaded by the machine running this command during this startup
+              session.  This include kexts loaded and later unloaded.
+
+     -compressed
+              Compress the prelinked kernel (enabled by default).
+
+     -uncompressed
+              Do not compress the prelinked kernel.  If specified as the only
+              other argument with -c, uncompresses an existing prelinked kernel
+              file in place.
+
+     -symbols symbol_directory
+              Generate symbols for every kext in the prelinked kernel and save
+              them in symbol_directory.  The directory must already exist.
+              Symbol files are named after the CFBundleIdentifier of each kext
+              with a .sym suffix attached.
+
+     -t, -print-diagnostics
+              If a kext has validation, authentication, or dependency resolution
+              problems, print them.  Note that tests are performed in three
+              stages: validation, authentication, and dependency resolution; a
+              failure at any stage can make tests in further stages impossible.
+              Thus, a kext with validation failures may have unreported
+              authentication problems or missing dependencies.
+
+     -v [0-6 | 0x####], -verbose [0-6 | 0x####]
+              Verbose mode; print information about program operation.  Higher
+              levels of verbosity include all lower levels.  By default
+              kextcache prints only warnings and errors.  You can specify a
+              level from 0-6, or a hexadecimal log specification (as described
+              in kext_logging(8)). The levels of verbose output are:
+
+              0            Print only errors (that is, suppress warnings); see
+                           also -quiet.
+
+              1 (or none)  Print basic information about program operation.
+
+              2            Print basic information about program progress and
+                           files created.
+
+              3            Print information about individual kexts; for
+                           example, when a kext is added to or omitted from an
+                           archive.
+
+              4            Print information about compression and architectures
+                           processed.
+
+              5            Print debug-level information about internal
+                           operations.
+
+              6            Identical to level 5 for kextcache.
+
+              Unlike in other kext tools, the -verbose flag in kextcache applies
+              to all kexts (that is, it turns on hexadecimal bit 0x8 by
+              default).  See kext_logging(8) for more information on verbose
+              logging.
+
+     -volume-root path
+              When creating caches for a volume other than the root volume,
+              remove path from the beginning of absolute kext paths stored in
+              the cache file.  This ensures that the kext paths stored in the
+              kernel are accurate when the caches are used for startup with that
+              volume.
+
+     -z, -no-authentication
+              Don't authenticate kexts.  This option is for convenience in
+              building cache files.  Caches used for startup must have proper
+              ownership (root:wheel) and permissions (0644) in order to be used
+              by the system.
+
+     --       End of all options. Only kext or directory names follow.
+
+FILES
+     /System/Library/Extensions/
+       The standard system repository of kernel extensions.
+
+     /Library/Extensions/
+       The standard repository of non Apple kernel extensions.
+
+     /System/Library/Caches/com.apple.kext.caches/
+       Contains system kext info caches for a macOS system.
+
+     /System/Library/PrelinkedKernels/
+       Contains prelinked kernel for a macOS system.
+
+     /System/Library/Kernels/kernel
+       The default kernel file.
+
+     /usr/standalone/bootcaches.plist
+       Describes specific kext cache files for a macOS volume.
+
+     /System/Library/Caches/com.apple.bootstamps/
+       Contains timestamp information about kext caches.
+
+     /Library/StagedExtensions/
+       A directory used to stage copies of kernel extensions during validation
+       and loading.
+
+DIAGNOSTICS
+     kextcache exits with a zero status upon success.  Upon failure, it prints
+     an error message and exits with a nonzero status.
+
+BUGS
+     Many single-letter options are inconsistent in meaning with (or directly
+     contradictory to) the same letter options in other kext tools.
+
+SEE ALSO
+     kmutil(8), kernelmanagerd(8), kext_logging(8), kextd(8), kextload(8),
+     kextutil(8), kextstat(8), kextunload(8)
+

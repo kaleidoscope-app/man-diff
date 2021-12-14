@@ -1,0 +1,211 @@
+math::polynomials(n)            Tcl Math Library            math::polynomials(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       math::polynomials - Polynomial functions
+
+SYNOPSIS
+       package require Tcl  ?8.3?
+
+       package require math::polynomials  ?1.0.1?
+
+       ::math::polynomials::polynomial coeffs
+
+       ::math::polynomials::polynCmd coeffs
+
+       ::math::polynomials::evalPolyn polynomial x
+
+       ::math::polynomials::addPolyn polyn1 polyn2
+
+       ::math::polynomials::subPolyn polyn1 polyn2
+
+       ::math::polynomials::multPolyn polyn1 polyn2
+
+       ::math::polynomials::divPolyn polyn1 polyn2
+
+       ::math::polynomials::remainderPolyn polyn1 polyn2
+
+       ::math::polynomials::derivPolyn polyn
+
+       ::math::polynomials::primitivePolyn polyn
+
+       ::math::polynomials::degreePolyn polyn
+
+       ::math::polynomials::coeffPolyn polyn index
+
+       ::math::polynomials::allCoeffsPolyn polyn
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package deals with polynomial functions of one variable:
+
+       •      the basic arithmetic operations are extended to polynomials
+
+       •      computing the derivatives and primitives of these functions
+
+       •      evaluation through a general procedure or via specific procedures)
+
+PROCEDURES
+       The package defines the following public procedures:
+
+       ::math::polynomials::polynomial coeffs
+              Return an (encoded) list that defines the polynomial. A polynomial
+
+                 f(x) = a + b.x + c.x**2 + d.x**3
+
+              can be defined via:
+
+                 set f [::math::polynomials::polynomial [list $a $b $c $d]
+
+
+              list coeffs
+                     Coefficients of the polynomial (in ascending order)
+
+
+       ::math::polynomials::polynCmd coeffs
+              Create a new procedure that evaluates the polynomial. The name of
+              the polynomial is automatically generated. Useful if you need to
+              evualuate the polynomial many times, as the procedure consists of
+              a single [expr] command.
+
+              list coeffs
+                     Coefficients of the polynomial (in ascending order) or the
+                     polynomial definition returned by the polynomial command.
+
+
+       ::math::polynomials::evalPolyn polynomial x
+              Evaluate the polynomial at x.
+
+              list polynomial
+                     The polynomial's definition (as returned by the polynomial
+                     command).  order)
+
+              float x
+                     The coordinate at which to evaluate the polynomial
+
+
+       ::math::polynomials::addPolyn polyn1 polyn2
+              Return a new polynomial which is the sum of the two others.
+
+              list polyn1
+                     The first polynomial operand
+
+              list polyn2
+                     The second polynomial operand
+
+
+       ::math::polynomials::subPolyn polyn1 polyn2
+              Return a new polynomial which is the difference of the two others.
+
+              list polyn1
+                     The first polynomial operand
+
+              list polyn2
+                     The second polynomial operand
+
+
+       ::math::polynomials::multPolyn polyn1 polyn2
+              Return a new polynomial which is the product of the two others. If
+              one of the arguments is a scalar value, the other polynomial is
+              simply scaled.
+
+              list polyn1
+                     The first polynomial operand or a scalar
+
+              list polyn2
+                     The second polynomial operand or a scalar
+
+
+       ::math::polynomials::divPolyn polyn1 polyn2
+              Divide the first polynomial by the second polynomial and return
+              the result. The remainder is dropped
+
+              list polyn1
+                     The first polynomial operand
+
+              list polyn2
+                     The second polynomial operand
+
+
+       ::math::polynomials::remainderPolyn polyn1 polyn2
+              Divide the first polynomial by the second polynomial and return
+              the remainder.
+
+              list polyn1
+                     The first polynomial operand
+
+              list polyn2
+                     The second polynomial operand
+
+
+       ::math::polynomials::derivPolyn polyn
+              Differentiate the polynomial and return the result.
+
+              list polyn
+                     The polynomial to be differentiated
+
+
+       ::math::polynomials::primitivePolyn polyn
+              Integrate the polynomial and return the result. The integration
+              constant is set to zero.
+
+              list polyn
+                     The polynomial to be integrated
+
+
+       ::math::polynomials::degreePolyn polyn
+              Return the degree of the polynomial.
+
+              list polyn
+                     The polynomial to be examined
+
+
+       ::math::polynomials::coeffPolyn polyn index
+              Return the coefficient of the term of the index'th degree of the
+              polynomial.
+
+              list polyn
+                     The polynomial to be examined
+
+              int index
+                     The degree of the term
+
+
+       ::math::polynomials::allCoeffsPolyn polyn
+              Return the coefficients of the polynomial (in ascending order).
+
+              list polyn
+                     The polynomial in question
+
+REMARKS ON THE IMPLEMENTATION
+       The implementation for evaluating the polynomials at some point uses
+       Horn's rule, which guarantees numerical stability and a minimum of
+       arithmetic operations.  To recognise that a polynomial definition is
+       indeed a correct definition, it consists of a list of two elements: the
+       keyword "POLYNOMIAL" and the list of coefficients in descending order.
+       The latter makes it easier to implement Horner's rule.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category math ::
+       polynomials of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       math, polynomial functions
+
+CATEGORY
+       Mathematics
+
+COPYRIGHT
+       Copyright (c) 2004 Arjen Markus <arjenmarkus@users.sourceforge.net>
+
+
+
+

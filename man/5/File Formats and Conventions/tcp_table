@@ -1,0 +1,106 @@
+TCP_TABLE(5)                   File Formats Manual                  TCP_TABLE(5)
+
+
+
+
+NAME
+       tcp_table - Postfix client/server table lookup protocol
+
+SYNOPSIS
+       postmap -q "string" tcp:host:port
+
+       postmap -q - tcp:host:port <inputfile
+
+DESCRIPTION
+       The Postfix mail system uses optional tables for address rewriting or
+       mail routing. These tables are usually in dbm or db format.
+       Alternatively, table lookups can be directed to a TCP server.
+
+       To find out what types of lookup tables your Postfix system supports use
+       the "postconf -m" command.
+
+       To test lookup tables, use the "postmap -q" command as described in the
+       SYNOPSIS above.
+
+PROTOCOL DESCRIPTION
+       The TCP map class implements a very simple protocol: the client sends a
+       request, and the server sends one reply. Requests and replies are sent as
+       one line of ASCII text, terminated by the ASCII newline character.
+       Request and reply parameters (see below) are separated by whitespace.
+
+       Send and receive operations must complete in 100 seconds.
+
+REQUEST FORMAT
+       Each request specifies a command, a lookup key, and possibly a lookup
+       result.
+
+       get SPACE key NEWLINE
+              Look up data under the specified key.
+
+       put SPACE key SPACE value NEWLINE
+              This request is currently not implemented.
+
+REPLY FORMAT
+       Each reply specifies a status code and text. Replies must be no longer
+       than 4096 characters including the newline terminator.
+
+       500 SPACE text NEWLINE
+              In case of a lookup request, the requested data does not exist.
+              In case of an update request, the request was rejected.  The text
+              describes the nature of the problem.
+
+       400 SPACE text NEWLINE
+              This indicates an error condition. The text describes the nature
+              of the problem. The client should retry the request later.
+
+       200 SPACE text NEWLINE
+              The request was successful. In the case of a lookup request, the
+              text contains an encoded version of the requested data.
+
+ENCODING
+       In request and reply parameters, the character %, each non-printing
+       character, and each whitespace character must be replaced by %XX, where
+       XX is the corresponding ASCII hexadecimal character value. The
+       hexadecimal codes can be specified in any case (upper, lower, mixed).
+
+       The Postfix client always encodes a request.  The server may omit the
+       encoding as long as the reply is guaranteed to not contain the % or
+       NEWLINE character.
+
+SECURITY
+       Do not use TCP lookup tables for security critical purposes.  The
+       client-server connection is not protected and the server is not
+       authenticated.
+
+BUGS
+       Only the lookup method is currently implemented.
+
+       The client does not hang up when the connection is idle for a long time.
+
+SEE ALSO
+       postmap(1), Postfix lookup table manager
+       regexp_table(5), format of regular expression tables
+       pcre_table(5), format of PCRE tables
+       cidr_table(5), format of CIDR tables
+
+README FILES
+       Use "postconf readme_directory" or "postconf html_directory" to locate
+       this information.
+       DATABASE_README, Postfix lookup table overview
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+AUTHOR(S)
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

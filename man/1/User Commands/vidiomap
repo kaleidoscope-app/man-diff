@@ -1,0 +1,107 @@
+vidio(1)                     General Commands Manual                    vidio(1)
+
+
+
+NAME
+       vidiomap - Video frame allocation inspector and resequencer
+
+SYNOPSIS
+       vidiomap [options] target_dir [target_dir...]
+
+DESCRIPTION
+       The vidiomap utility can be used to determine how the StorNext file
+       system has allocated the files within a given directory.  Optionally,
+       vidiomap can be used to "defragment" and "resequence" those files.
+       Optionally, multiple target directories may be specified.
+
+       The vidiomap utility is intended to be used primarily on video frame
+       files within a directory.  It is not indented for use as a general
+       purpose file system allocation analysis or "defragmentation" utility.
+       See snfsdefrag(1).
+
+       Without options, vidiomap will print a summary analysis of the allocation
+       of files in the target directory, including the number of regular files,
+       the total number of extents, and space consumed.  Also printed is
+       information relating to the total number and average size of the gaps
+       between the extents.
+
+       The -v option may be used to provide detailed information about file
+       allocation on a per extent basis.  The actual file system block numbers
+       consumed are printed along with the gaps between extents.  Notice that
+       gaps can be negative, indicating the subsequent allocation was to a
+       lesser file system block number than the current allocation.
+
+       To analyze the allocation of files within a directory, the desired file
+       order first must be determined.  By default, vidiomap will sort all the
+       files in the target directory alpha-numerically by file name.
+       Optionally, file names may be filtered by file prefix and file suffix.
+       See the -p and -s options.  Optionally, a list of file names may be
+       provided.  See the -f option.
+
+       The "resequencing" and "defragmentation" of files is a multi-step process
+       that makes heavy use of the StorNext file System Application Programming
+       Interface, SNAPI.  The steps are a follows:
+
+          1.  Determine the file order.
+
+          2.  For each file, a "shadow file" is created and blocks are preallocated.
+
+          3.  The data is copied from the original file, to the shadow file.
+
+          4.  The newly allocated extents are swapped into the original file inode.
+
+          5.  The "shadow files" are removed.
+
+       Shadow files are named filename_shadow and are created in the target
+       directory.
+
+       As stated previously, vidiomap is not a general purpose file system
+       "defragmentor".  An older file system or a file system nearing capacity
+       may have a fragmented free space pool. Using vidiomap to resequence files
+       may not help in this case and could make fragmentation worse.  Consider
+       using snfsdefrag before resequencing files with vidiomap.
+
+       The resequencing option is intended to work with the StorNext Allocation
+       Session Reservation feature.  This feature is managed using the GUI or by
+       modifying the allocSessionReservationSize parameter, see snfs_config(5).
+
+       Because resequencing copies the data to the newly allocated space,
+       consider the performance impact of resequencing files on a production
+       system.  Resequencing a large number of files can take some time,
+       depending on the size of the files, the performance of the underlying
+       storage, and other file system activity.
+
+OPTIONS
+       -?     Display usage.
+
+       -d[dd] Run in debug mode. The more "d's" specified, the more debug
+              information is printed.
+
+       -f file_list
+              Get the list of target files from the specified file instead of
+              the the target directory.  The files will be processed in the
+              order listed.  The format for this file is one file name per line.
+
+       -p prefix
+              Target only files with the specified prefix.  If the prefix option
+              is specified along with the suffix option, both must be true to
+              target a given file.
+
+       -r     Resequence and "defragment" the target files.
+
+       -s suffix
+              Target only files with the specified suffix.  If the prefix option
+              is specified along with the suffix option, both must be true to
+              target a given file.
+
+       -v     Be verbose.  Print each extent of each target file showing the
+              file system blocks consumed and gaps between the extents.
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/bin/vidiomap
+
+SEE ALSO
+       cvfs(8), snfsdefrag(1), snfs_config(5), vidio(1)
+
+
+

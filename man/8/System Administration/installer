@@ -1,0 +1,244 @@
+INSTALLER(8)                 System Manager's Manual                INSTALLER(8)
+
+NAME
+     installer – system software and package installer tool.
+
+SYNOPSIS
+     installer [-dominfo] [-volinfo] [-pkginfo] [-showChoicesXML]
+               [-showChoicesAfterApplyingChangesXML <pathToXMLFile>]
+               [-applyChoiceChangesXML <pathToXMLFile>] [-query <flag>] [-allow]
+               [-dumplog] [-help] [-verbose | -verboseR] [-vers] [-config]
+               [-plist] [-file <pathToFile>] [-lang <ISOLanguageCode>]
+               [-listiso] -pkg <pathToPackage> -target device
+
+DESCRIPTION
+     The installer command is used to install macOS installer packages to a
+     specified domain or volume.  The installer command installs a single
+     package per invocation, which is specified with the -package parameter (
+     -pkg is accepted as a synonym).  It may be either a single package or a
+     metapackage.  In the case of the metapackage, the packages which are part
+     of the default install will be installed unless disqualified by a package's
+     check tool(s).
+
+     The target volume is specified with the -target parameter ( -tgt is
+     accepted as a synonym).  It must already be mounted when the installer
+     command is invoked.
+
+     The installer command requires root privileges to run.  If a package
+     requires authentication (set in a package's .info file) the installer must
+     be either run as root or with the sudo(8) command (but see further
+     discussion under the -store option).
+
+     The installer is not responsible for rebooting the machine after
+     installing.  Use reboot(8) or shutdown(8) -r now to reboot the system.
+
+     The installer displays two forms of output.  The default terse output is
+     intended for parsing by scripting languages for automating (or scripting)
+     installs and verbose output providing additional information and
+     descriptive error messages.
+
+     A list of flags and their descriptions:
+
+     -dominfo
+             Displays a list of domains into which the software package can be
+             installed.  For example: LocalSystem or CurrentUserHomeDirectory.
+             The domains listed are those which are available and enabled when
+             the command is run.
+
+     -volinfo
+             Displays a list of volumes onto which the software package can be
+             installed.  The volumes listed are the mounted volumes available
+             when the command is run.
+
+     -pkginfo
+             Displays a list of packages that can be installed onto the target
+             volume.  If a metapackage is given as the package source, all of
+             its subpackages are listed.
+
+     -query flag
+             Queries a package for information about the metadata.  See -help
+             for supported flags.
+
+     -allowUntrusted
+             Allow install of a package signed by an untrusted (or expired)
+             certificate.
+
+     -dumplog
+             Detailed log information is always sent to syslog using the
+             LOG_INSTALL facility (and will wind up in /var/log/install.log).
+             -dumplog additionally writes this log to standard error output.
+
+     -help   Displays the help screen describing the list of parameters.
+
+     -verbose
+             Displays more descriptive information than the default output.  Use
+             this parameter in conjunction with -pkginfo and -volinfo
+             information requests to see more readable output.  The default
+             output is formatted for scripting.
+
+     -verboseR
+             Displays same information as -verbose except the output is
+             formatted for easy parsing.
+
+     -vers   Displays the version of this command.
+
+     -config
+             Formats the command line installation arguments for later use.  The
+             output is sent to stdout, but can be redirected to a file to create
+             a configuration file.  When specifying this option, an installation
+             is not actually performed.  This configuration file can be supplied
+             as the argument to the -file parameter instead of typing a long
+             series of installation arguments.  The config file can be used to
+             perform multiple identical installs.  You can create a config file
+             as follows:
+
+             installer -pkg ~/Documents/Foo.pkg -target / -config >
+             /tmp/configfile.plist
+
+     -plist  Formats the installer output into an XML file, which is sent by
+             default to stdout.  Use this parameter for -dominfo, -volinfo, and
+             -pkginfo
+
+     -file pathToFile
+             Specifies the path to the XML file containing parameter information
+             in the key/value dictionary.  This file can be used instead of the
+             command line parameters, and supersedes any parameters on the
+             command line.  When you type this parameter, you type the path to
+             the XML file.  Use with config file generated by -config For
+             example:
+
+             installer -file /tmp/configfile.plist
+
+     -lang ISOLanguageCode
+             Default language of installed system (ISO format).  This is only
+             necessary when performing a system (OS) install, otherwise is it
+             ignored.  There is no verification done to make sure that the
+             language being set actually exists on the machine, however the ISO
+             language code is verified to ensure that it is valid.
+
+     -listiso
+             Display the list of valid ISO language codes the installer
+             recognizes.
+
+     -showChoiceChangesXML
+             Prints to stdout the install choices for the package (specified
+             with -pkg) in an XML format. This allows choice attributes to be
+             modified and applied at install-time using -applyChoiceChangesXML.
+             See CHOICE CHANGES FILE for details of this XML format.
+
+     -applyChoiceChangesXML pathToXMLFile
+             Applies the install choice changes specified in pathToXMLFile to
+             the default choices in the package before installation. This allows
+             the command-line installer to customize choice what gets installed.
+             See CHOICE CHANGES FILE for details of this XML format. Any
+             problems encountered while applying the choice changes will be
+             reported to the LOG_INSTALL facility (i.e. to
+             /var/log/install.log), and also to stdout if -dumplog is used.
+
+     -showChoicesAfterApplyingChangesXML pathToXMLFile
+             Applies the install choice changes specified in pathToXMLFile to
+             the default choices in the package, and then dumps the resulting
+             choice state to stdout.  The input and output XML format is as
+             described in CHOICE CHANGES FILE.  Since changing one choice in a
+             package can implicitly change other choices, this option allows you
+             to confirm that a particular choiceChanges file will have the
+             intended effect. You must specify a -target when using this option,
+             since the evaluated choices can also change with the state of the
+             target disk.
+
+     -showChoicesXML
+             Prints to stdout the install choices for the package (specified
+             with -pkg) in a hierarchical XML format. This is not the same
+             format as used with -applyChoiceChangesXML.  This option is
+             provided for System Image Utility only.
+
+     -store  Install the product archive specified by -package, in the same way
+             that it would be installed through the Mac App Store. In this mode,
+             no other options are supported. (You can specify -target, but the
+             only allowable value is the root volume mount point, /). For best
+             Mac App Store fidelity, run installer as an admin user (not using
+             sudo); you will prompted for your admin user's password before the
+             install begins.
+
+             This mode is provided for testing a product archive before
+             submission to the Mac App Store. See productbuild(1) for how to
+             create a product archive.
+
+DEVICES
+     A device parameter for the target is any one of the following:
+
+     1) Any of the values returned by -dominfo
+     2) The device node entry.  Any entry of the form of /dev/disk*.  ex:
+     /dev/disk2
+     3) The disk identifier.  Any entry of the form of disk*.  ex: disk1s9
+     4) The volume mount point.  Any entry of the form of /Volumes/Mountpoint.
+     ex: /Volumes/Untitled
+     5) The volume UUID.  ex: 376C4046-083E-334F-AF08-62FAFBC4E352
+
+CHOICE CHANGES FILE
+     A “choiceChanges” file allows individual installer choices to be selected
+     or deselected. A template choiceChanges file for a given package can be
+     generated with the -showChoiceChangesXML option, and is interpreted as
+     follows.
+
+     The choiceChanges file is a property list containing an array of
+     dictionaries. Each dictionary has the following three keys:
+
+     Key                     Description
+     choiceIdentifier        Identifier for the choice to be modified (string)
+     choiceAttribute         One of the attribute names described below (string)
+     attributeSetting        A setting that depends on the choiceAttribute, described below
+                             (number or string)
+
+     The choiceAttribute and attributeSetting values are as follows:
+
+     choiceAttribute         attributeSetting Description
+     selected                (number) 1 to select the choice, 0 to deselect it
+     enabled                 (number) 1 to enable the choice, 0 to disable it
+     visible                 (number) 1 to show the choice, 0 to hide it
+     customLocation          (string) path at which to install the choice (see below)
+
+     Note that there can be multiple dictionaries for the same choiceIdentifier,
+     since there can be multiple attributes set for a single choice.
+
+     The customLocation attribute can be set for a choice only if that choice
+     explicitly allows a user-defined path. That is, if the choice would have a
+     Location popup when viewed in the Customize pane of the Installer
+     application, it can be set via customLocation.  (Otherwise, installation
+     paths cannot be arbitrarily modified, since the package author must account
+     for custom install locations for the installation to work properly.)
+
+EXAMPLES
+     installer -dominfo -pkg InstallMe.pkg
+
+     installer -volinfo -pkg InstallMe.pkg
+
+     installer -pkginfo -pkg DeveloperTools.mpkg
+
+     installer -pkg OSInstall.mpkg -target LocalSystem
+
+     installer -pkg OSInstall.mpkg -target / -lang en
+
+     installer -pkg DeveloperTools.mpkg -target /
+
+     installer -pkg InstallMe.pkg -target "/Volumes/Macintosh HD2"
+
+     installer -pkg InstallMe.pkg -file /tmp/InstallConfigFile
+
+     installer -pkg InstallMe.pkg -target /dev/disk0s5
+
+ENVIRONMENT
+     COMMAND_LINE_INSTALL  Set when performing an installation using the
+                           installer command.
+
+FILES
+     /usr/sbin/installer  Software package installer tool
+
+SEE ALSO
+     syslog.conf(5) reboot(8) shutdown(8) softwareupdate(8) sudo(8)
+     systemsetup(8)
+
+HISTORY
+     The command line installer tool first appeared in the 10.2 release of Mac
+     OS X.
+

@@ -1,0 +1,223 @@
+simulation::random(n)         Tcl Simulation Tools         simulation::random(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       simulation::random - Pseudo-random number generators
+
+SYNOPSIS
+       package require Tcl  ?8.4?
+
+       package require simulation::random  0.1
+
+       ::simulation::random::prng_Bernoulli p
+
+       ::simulation::random::prng_Discrete n
+
+       ::simulation::random::prng_Poisson lambda
+
+       ::simulation::random::prng_Uniform min max
+
+       ::simulation::random::prng_Exponential min mean
+
+       ::simulation::random::prng_Normal mean stdev
+
+       ::simulation::random::prng_Pareto min steep
+
+       ::simulation::random::prng_Gumbel min f
+
+       ::simulation::random::prng_chiSquared df
+
+       ::simulation::random::prng_Disk rad
+
+       ::simulation::random::prng_Sphere rad
+
+       ::simulation::random::prng_Ball rad
+
+       ::simulation::random::prng_Rectangle length width
+
+       ::simulation::random::prng_Block length width depth
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package consists of commands to generate pseudo-random number
+       generators. These new commands deliver
+
+       •      numbers that are distributed normally, uniformly, according to a
+              Pareto or Gumbel distribution and so on
+
+       •      coordinates of points uniformly spread inside a sphere or a
+              rectangle
+
+       For example:
+
+           set p [::simulation::random::prng_Normal -1.0 10.0]
+
+       produces a new command (whose name is stored in the variable "p") that
+       generates normally distributed numbers with a mean of -1.0 and a standard
+       deviation of 10.0.
+
+PROCEDURES
+       The package defines the following public procedures for discrete
+       distributions:
+
+       ::simulation::random::prng_Bernoulli p
+              Create a command (PRNG) that generates numbers with a Bernoulli
+              distribution: the value is either 1 or 0, with a chance p to be 1
+
+              float p
+                     Chance the outcome is 1
+
+
+       ::simulation::random::prng_Discrete n
+              Create a command (PRNG) that generates numbers 0 to n-1 with equal
+              probability.
+
+              int n  Number of different values (ranging from 0 to n-1)
+
+
+       ::simulation::random::prng_Poisson lambda
+              Create a command (PRNG) that generates numbers according to the
+              Poisson distribution.
+
+              float lambda
+                     Mean number per time interval
+
+       The package defines the following public procedures for continuous
+       distributions:
+
+       ::simulation::random::prng_Uniform min max
+              Create a command (PRNG) that generates uniformly distributed
+              numbers between "min" and "max".
+
+              float min
+                     Minimum number that will be generated
+
+              float max
+                     Maximum number that will be generated
+
+
+       ::simulation::random::prng_Exponential min mean
+              Create a command (PRNG) that generates exponentially distributed
+              numbers with a given minimum value and a given mean value.
+
+              float min
+                     Minimum number that will be generated
+
+              float mean
+                     Mean value for the numbers
+
+
+       ::simulation::random::prng_Normal mean stdev
+              Create a command (PRNG) that generates normally distributed
+              numbers with a given mean value and a given standard deviation.
+
+              float mean
+                     Mean value for the numbers
+
+              float stdev
+                     Standard deviation
+
+
+       ::simulation::random::prng_Pareto min steep
+              Create a command (PRNG) that generates numbers distributed
+              according to Pareto with a given minimum value and a given
+              distribution steepness.
+
+              float min
+                     Minimum number that will be generated
+
+              float steep
+                     Steepness of the distribution
+
+
+       ::simulation::random::prng_Gumbel min f
+              Create a command (PRNG) that generates numbers distributed
+              according to Gumbel with a given minimum value and a given scale
+              factor. The probability density function is:
+
+                   P(v) = exp( -exp(f*(v-min)))
+
+
+              float min
+                     Minimum number that will be generated
+
+              float f
+                     Scale factor for the values
+
+
+       ::simulation::random::prng_chiSquared df
+              Create a command (PRNG) that generates numbers distributed
+              according to the chi-squared distribution with df degrees of
+              freedom. The mean is 0 and the standard deviation is 1.
+
+              float df
+                     Degrees of freedom
+
+       The package defines the following public procedures for random point
+       sets:
+
+       ::simulation::random::prng_Disk rad
+              Create a command (PRNG) that generates (x,y)-coordinates for
+              points uniformly spread over a disk of given radius.
+
+              float rad
+                     Radius of the disk
+
+
+       ::simulation::random::prng_Sphere rad
+              Create a command (PRNG) that generates (x,y,z)-coordinates for
+              points uniformly spread over the surface of a sphere of given
+              radius.
+
+              float rad
+                     Radius of the disk
+
+
+       ::simulation::random::prng_Ball rad
+              Create a command (PRNG) that generates (x,y,z)-coordinates for
+              points uniformly spread within a ball of given radius.
+
+              float rad
+                     Radius of the ball
+
+
+       ::simulation::random::prng_Rectangle length width
+              Create a command (PRNG) that generates (x,y)-coordinates for
+              points uniformly spread over a rectangle.
+
+              float length
+                     Length of the rectangle (x-direction)
+
+              float width
+                     Width of the rectangle (y-direction)
+
+
+       ::simulation::random::prng_Block length width depth
+              Create a command (PRNG) that generates (x,y)-coordinates for
+              points uniformly spread over a block
+
+              float length
+                     Length of the block (x-direction)
+
+              float width
+                     Width of the block (y-direction)
+
+              float depth
+                     Depth of the block (z-direction)
+
+KEYWORDS
+       math, random numbers, simulation, statistical distribution
+
+CATEGORY
+       Mathematics
+
+COPYRIGHT
+       Copyright (c) 2004 Arjen Markus <arjenmarkus@users.sourceforge.net>
+
+
+
+

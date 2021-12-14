@@ -1,0 +1,47 @@
+SLAPO-DYNGROUP(5)              File Formats Manual             SLAPO-DYNGROUP(5)
+
+
+
+NAME
+       slapo-dyngroup - Dynamic Group overlay to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The Dynamic Group overlay allows clients to use LDAP Compare operations
+       to test the membership of a dynamic group the same way they would check
+       against a static group. Compare operations targeting a group's static
+       member attribute will be intercepted and tested against the configured
+       dynamic group's URL attribute.
+
+       Note that this intercept only happens if the actual Compare operation
+       does not return a LDAP_COMPARE_TRUE result. So if a group has both static
+       and dynamic members, the static member list will be checked first.
+
+CONFIGURATION
+       This slapd.conf option applies to the Dynamic Group overlay.  It should
+       appear after the overlay directive.
+
+       attrpair <memberAttr> <URLattr>
+              Specify the attributes to be compared. A compare operation on the
+              memberAttr will cause the URLattr to be evaluated for the result.
+
+EXAMPLES
+         database bdb
+         ...
+         overlay dyngroup
+         attrpair member memberURL
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5).
+
+AUTHOR
+       Howard Chu
+
+
+

@@ -1,0 +1,137 @@
+IOSTAT(8)                    System Manager's Manual                   IOSTAT(8)
+
+NAME
+     iostat – report I/O statistics
+
+SYNOPSIS
+     iostat [-CUdKIoT?] [-c count] [-n devs] [-w wait] [drives]
+
+DESCRIPTION
+     The iostat utility displays kernel I/O statistics on terminal, device and
+     cpu operations.  The first statistics that are printed are averaged over
+     the system uptime.  To get information about the current activity, a
+     suitable wait time should be specified, so that the subsequent sets of
+     printed statistics will be averaged over that time.
+
+     The options are as follows:
+
+     -?    Display a usage statement and exit.
+
+     -c    Repeat the display count times.  If no wait interval is specified,
+           the default is 1 second.
+
+     -C    Display CPU statistics.  This is on by default, unless -d is
+           specified.
+
+     -d    Display only device statistics.  If this flag is turned on, only
+           device statistics will be displayed, unless -C or -U or -T is also
+           specified to enable the display of CPU, load average or TTY
+           statistics.
+
+     -I    Display total statistics for a given time period, rather than average
+           statistics for each second during that time period.
+
+     -K    In the blocks transferred display (-o), display block count in
+           kilobytes rather then the device native block size.
+
+     -n    Display up to devs number of devices.  The iostat utility will
+           display fewer devices if there are not devs devices present.
+
+     -o    Display old-style iostat device statistics.  Sectors per second,
+           transfers per second, and milliseconds per seek are displayed.  If -I
+           is specified, total blocks/sectors, total transfers, and milliseconds
+           per seek are displayed.
+
+     -T    Display TTY statistics.  This is on by default, unless -d is
+           specified.
+
+     -U    Display system load averages.  This is on by default, unless -d is
+           specified.
+
+     -w    Pause wait seconds between each display.  If no repeat count is
+           specified, the default is infinity.
+
+     The iostat utility displays its information in the following format:
+
+     tty
+           tin     characters read from terminals
+           tout    characters written to terminals
+
+     devices
+           Device operations.  The header of the field is the device name and
+           unit number.  The iostat utility will display as many devices as will
+           fit in a standard 80 column screen, or the maximum number of devices
+           in the system, whichever is smaller.  If -n is specified on the
+           command line, iostat will display the smaller of the requested number
+           of devices, and the maximum number of devices in the system.  To
+           force iostat to display specific drives, their names may be supplied
+           on the command line.  The iostat utility will not display more
+           devices than will fit in an 80 column screen, unless the -n argument
+           is given on the command line to specify a maximum number of devices
+           to display, or the list of specified devices exceeds 80 columns.  If
+           fewer devices are specified on the command line than will fit in an
+           80 column screen, iostat will show only the specified devices.
+
+           The standard iostat device display shows the following statistics:
+
+           KB/t    kilobytes per transfer
+           tps     transfers per second
+           MB/s    megabytes per second
+
+           The standard iostat device display, with the -I flag specified, shows
+           the following statistics:
+
+           KB/t    kilobytes per transfer
+           xfrs    total number of transfers
+           MB      total number of megabytes transferred
+
+           The old-style iostat display (using -o) shows the following
+           statistics:
+
+           sps     sectors transferred per second
+           tps     transfers per second
+           msps    average milliseconds per transaction
+
+           The old-style iostat display, with the -I flag specified, shows the
+           following statistics:
+
+           blk     total blocks/sectors transferred
+           xfr     total transfers
+           msps    average milliseconds per transaction
+
+     cpu
+           us      % of cpu time in user mode
+           sy      % of cpu time in system mode
+           id      % of cpu time in idle mode
+
+EXAMPLES
+           iostat -w 1 disk0 disk2
+
+     Display statistics for the first and third disk devices device every second
+     ad infinitum.
+
+           iostat -c 2
+
+     Display the statistics for the first four devices in the system twice, with
+     a one second display interval.
+
+           iostat -Iw 3
+
+     Display total statistics every three seconds ad infinitum.
+
+           iostat -odICTw 2 -c 9
+
+     Display total statistics using the old-style output format 9 times, with a
+     two second interval between each measurement/display.  The -d flag
+     generally disables the TTY and CPU displays, but since the -T and -C flags
+     are given, the TTY and CPU displays will be displayed.
+
+SEE ALSO
+     netstat(1), nfsstat(1), ps(1), top(1), vm_stat(1)
+
+     The sections starting with ``Interpreting system activity'' in Installing
+     and Operating 4.3BSD.
+
+HISTORY
+     This version of iostat first appeared in FreeBSD 3.0.
+

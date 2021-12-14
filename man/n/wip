@@ -1,0 +1,365 @@
+wip(n)                          Word Interpreter                          wip(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       wip - Word Interpreter
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require wip  ?2.2?
+
+       package require snit  ?1.3?
+
+       package require struct::set
+
+       ::wip wipName engine arg...
+
+       def name
+
+       def name method_prefix
+
+       wipName option ?arg arg ...?
+
+       wip::dsl ?suffix?
+
+       wipName def name ?method_prefix?
+
+       wipName defl names
+
+       wipName defd dict
+
+       wipName deflva name...
+
+       wipName defdva (name method_prefix)...
+
+       wipName undefl names
+
+       wipName undefva name...
+
+       wipName unknown cmdprefix
+
+       wipName runl wordlist
+
+       wipName run word...
+
+       wipName run_next
+
+       wipName run_next_while acceptable
+
+       wipName run_next_until rejected
+
+       wipName run_next_if acceptable
+
+       wipName run_next_ifnot rejected
+
+       wipName next
+
+       wipName peek
+
+       wipName peekall
+
+       wipName insertl at wordlist
+
+       wipName replacel wordlist
+
+       wipName pushl wordlist
+
+       wipName addl wordlist
+
+       wipName insert at word...
+
+       wipName replace word...
+
+       wipName push word...
+
+       wipName add word...
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides a micro interpreter for lists of words. Domain
+       specific languages based on this will have a bit of a Forth feel, with
+       the input stream segmented into words and any other structuring left to
+       whatever the language desired. Note that we have here in essence only the
+       core dispatch loop, and no actual commands whatsoever, making this
+       definitely only a Forth feel and not an actual Forth.
+
+       The idea is derived from Colin McCormack's treeql processor, modified to
+       require less boiler plate within the command implementations, at the
+       expense of, likely, execution speed. In addition the interface between
+       processor core and commands is more complex too.
+
+GENERAL BEHAVIOUR
+       Word interpreters have a mappping from the names of the language commands
+       they shall recognize to the methods in the engine to invoke for them, and
+       possibly fixed arguments for these methods. This mapping is largely
+       static, however it is possible to change it during the execution of a
+       word list (= program).
+
+       At the time a language command is defined the word interpreter will use
+       snit's introspection capabilities to determine the number of arguments
+       expected by the method of the egnine, and together with the number of
+       fixed arguments supplied in the method prefix of the mapping it then
+       knows how many arguments the language command is expecting. This is the
+       command's arity. Variable-argument methods (i.e. with the last argument
+       named args) are not allowed and will cause the word interpreter to throw
+       an error at definition time.
+
+       Note that while I said snit's abilities the engine object can be written
+       in any way, as long as it understands the method info args, which takes a
+       method name and returns the list of arguments for that method.
+
+       When executing a list of words (aka program) the first word is always
+       taken as the name of a language command, and the next words as its
+       arguments, per the arity of the command. Command and argument words are
+       removed from the list and then associated method of the engine is
+       executed with the argument words. The process then repeats using the
+       then-first word of the list.
+
+       Note that the methods implementing the language commands may have full
+       access to the list of words and are allowed to manipulate as they see
+       fit.
+
+       [1]    This means, for example, that while we cannot specify variable-
+              argument methods directly they can consume words after their fixed
+              arguments before returning to the execution loop. This may be
+              under the control of their fixed arguments.
+
+       [2]    Another possibility is the use of method run_next and its variants
+              to execute commands coming after the current command, changing the
+              order of execution.
+
+       [3]    Execution can be further changed by use of the program accessor
+              methods which allow a command implementation to modify the
+              remaining list of words (insert, replace, prepend, append words)
+              without executing them immediately.
+
+       [4]    At last the basic run methods save and restore an existing list of
+              words when used, enabling recursive use from within command
+              implementations.
+
+CLASS API
+       The main command of the package is:
+
+       ::wip wipName engine arg...
+              The command creates a new word interpreter object with an
+              associated global Tcl command whose name is wipName. If however
+              the string %AUTO% was used as object name the package will
+              generate its own unique name for the object.
+
+              The engine is the object the word interpreter will dispatch all
+              recognized commands to, and the arguments are a word list which
+              defines an initial mapping from language words to engine methods.
+
+              The recognized language of this word list is
+
+              def name
+                     Defines name as command of the language, to be mapped to a
+                     method of the engine having the same name.
+
+              def name method_prefix
+                     Defines name as command of the language, to be mapped to
+                     the method of the engine named in the method_prefix.
+
+       The returned command may be used to invoke various operations on the
+       object.  It has the following general form:
+
+              wipName option ?arg arg ...?
+                     Option and the args determine the exact behavior of the
+                     command.
+
+       The package additionally exports the command:
+
+       wip::dsl ?suffix?
+              This command is for use within snit types which wish to use one or
+              more wip interpreters as a component. Use within the type
+              definition installs most of the boilerplate needed to setup and
+              use a word interpreter.
+
+              It installs a component named wip, and a method wip_setup for
+              initializing it. This method has to be called from within the
+              constructor of the type using the word interpreter.  If further
+              installs a series of procedures which make the object API of the
+              word interpreter directly available to the type's methods, without
+              having to specify the component.
+
+              Note that this does and cannot install the language to interpret,
+              i.e. the mapping from words to engine methods.
+
+              It is possible to instantiate multiple word interpreter components
+              within a type by using different suffices as arguments to the
+              command.  In that case the name of the component changes to
+              ´wip_$suffix', the setup command becomes ´wip_$suffix_setup' and
+              all the procedures also get the suffix ´_$suffix'.
+
+OBJECT API
+       The following commands are possible for word interpreter objects:
+
+       wipName def name ?method_prefix?
+              Defines a language command name and maps it to the method named in
+              the engine's method_prefix. If the method_prefix name is not
+              specified it is simply the name of the language command.
+
+       wipName defl names
+              Defines a series of language commands, specified through the list
+              of names, all of which are mapped to engine methods of the same
+              name.
+
+       wipName defd dict
+              Defines a series of language commands, specified through the
+              dictionary dict of names and method prefixes.
+
+       wipName deflva name...
+              As method defl, however the list of names is specified through
+              multiple arguments.
+
+       wipName defdva (name method_prefix)...
+              As method defd, however the dictionary of names and method
+              prefixes is specified through multiple arguments.
+
+       wipName undefl names
+              Removes the named series of language commands from the mapping.
+
+       wipName undefva name...
+              As method undefl, however the list of names is specified through
+              multiple arguments.
+
+       wipName unknown cmdprefix
+              Sets the handler for unknown words to cmdprefix. This command
+              prefix takes one argument, the current word, and either throws
+              some error, or returns the result of executing the word, as
+              defined by the handler. The default handler simply throws an
+              error.
+
+       wipName runl wordlist
+              Treats the list of words in wordlist as a program and executes the
+              contained command one by one. The result of the command executed
+              last is returned as the result of this command.
+
+              The wordlist is stored in the object for access by the other
+              run-methods, and the general program accessor methods (see below).
+              A previously stored wordlist is saved during the execution of this
+              method and restored before it returns. This enables the recursive
+              execution of word lists within word lists.
+
+       wipName run word...
+              As method runl, however the list of words to execute is specified
+              through multiple arguments.
+
+       wipName run_next
+              Low-level method. Determines the next word in the list of words,
+              and its arguments, and then executes it. The result of the
+              executed word is the result of this method.
+
+              Exposed for use within command implementations.  The methods run
+              and runl use it to execute words until their word list is
+              exhausted.
+
+       wipName run_next_while acceptable
+              Low-level method. Invokes the method run_next as long as the next
+              word is in the set of acceptable words, and the program is not
+              empty. The result of the command executed last is returned as the
+              result of this command.
+
+              Exposed for use within command implementations to change the order
+              of execution.
+
+       wipName run_next_until rejected
+              Low-level method. Invokes the method run_next until the next word
+              is in the set of rejected words, and the program is not empty. The
+              result of the command executed last is returned as the result of
+              this command.
+
+              Exposed for use within command implementations to change the order
+              of execution.
+
+       wipName run_next_if acceptable
+              Low-level method. Invokes the method run_next if the next word is
+              in the set of acceptable words, and the program is not empty. The
+              result of the command executed last is returned as the result of
+              this command.
+
+              Exposed for use within command implementations to change the order
+              of execution.
+
+       wipName run_next_ifnot rejected
+              Low-level method. Invokes the method run_next if the next word is
+              not in the set of rejected words, and the program is not empty.
+              The result of the command executed last is returned as the result
+              of this command.
+
+              Exposed for use within command implementations to change the order
+              of execution.
+
+       wipName next
+              Returns the next word in the programm. The word is also removed.
+
+       wipName peek
+              Returns the next word in the programm without removing it
+
+       wipName peekall
+              Returns the remaining programm in toto.
+
+       wipName insertl at wordlist
+              Basic programm accessor method. Inserts the specified wordlist
+              into the program, just before the word at position at. Positions
+              are counted from zero.
+
+       wipName replacel wordlist
+              Basic programm accessor method. Replaces the whole stored program
+              with the specified wordlist.
+
+       wipName pushl wordlist
+              Program accessor method. The specified wordlist is added to the
+              front of the remaining program. Equivalent to
+
+              $wip insertl 0 $wordlist
+
+       wipName addl wordlist
+              Program accessor method. The specified wordlist is appended at the
+              end of the remaining program. Equivalent to
+
+              $wip insertl end $wordlist
+
+       wipName insert at word...
+              Like method insertl, except the words are specified through
+              multiple arguments.
+
+       wipName replace word...
+              Like method setl, except the words are specified through multiple
+              arguments.
+
+       wipName push word...
+              Like method pushl, except the words are specified through multiple
+              arguments.
+
+       wipName add word...
+              Like method addl, except the words are specified through multiple
+              arguments.
+
+EXAMPLES
+       No examples yet.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category wip of the
+       Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+KEYWORDS
+       interpreter, list, word
+
+CATEGORY
+       Programming tools
+
+COPYRIGHT
+       Copyright (c) 2007-2010 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

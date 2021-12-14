@@ -1,0 +1,58 @@
+ReportCrash(8)               System Manager's Manual              ReportCrash(8)
+
+NAME
+     ReportCrash – Generates crash reports
+
+SYNOPSIS
+     ReportCrash
+
+DESCRIPTION
+     ReportCrash analyzes crashing processes and saves a crash report to disk.
+     A crash report contains information that can help a developer diagnose the
+     cause of a crash.  ReportCrash also records the identity of the crashing
+     process and the location of the saved crash report in the system.log and
+     the ASL log database.
+
+     ReportCrash is invoked automatically by launchd when a crash is detected.
+     For applications and other processes running in the per-user launchd
+     context, ReportCrash runs as a LaunchAgent and saves crash reports in the
+     user's ~/Library/Logs/DiagnosticReports/ directory.  For daemons, other
+     processes running in the system launchd context and other privileged
+     processes, ReportCrash runs as a LaunchDaemon and saves crash reports in
+     the system's /Library/Logs/DiagnosticReports directory where they are only
+     readable by admin users.  If there are too many crash reports saved for a
+     particular process, older reports will automatically be removed in order to
+     conserve disk space.
+
+     launchtl can be used to disable and re-enable crash reporting.  To disable
+     crash reporting:
+
+           launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+           sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.ReportCrash.Root.plist
+
+     To re-enable crash reporting:
+
+           launchctl load -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+           sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.ReportCrash.Root.plist
+
+     For application crashes (but not background process crashes) ReportCrash
+     will display a dialog notifying the user that the application unexpectedly
+     quit and offering to reopen the application or send the report to Apple.
+     For developers, the behavior of this dialog can be adjusted using
+     /Developer/Applications/Utilities/CrashReporterPrefs.app which is installed
+     as part of the developer tools.
+
+     Crash reports which are sent to Apple are submitted anonymously by the
+     SubmitDiagInfo process.  The reports are used by Apple to improve its
+     products.  Users who need support should use http://www.apple.com/support
+     or other authorized support channels.  Developers who are ADC members
+     should report bugs using http://bugreporter.apple.com in order to allow for
+     two way communication between Apple and the bug reporter.
+
+     More information about interpreting the contents of crash reports can be
+     found in Technote 2123:
+     https://developer.apple.com/library/content/technotes/tn2004/tn2123.html
+
+SEE ALSO
+     launchd(8), launchd.plist(8), launchctl(8), spindump(8), SubmitDiagInfo(8)
+

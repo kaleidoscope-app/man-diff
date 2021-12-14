@@ -1,0 +1,110 @@
+MOUNT_SMBFS(8)               System Manager's Manual              MOUNT_SMBFS(8)
+
+NAME
+     mount_smbfs – mount a shared resource from an SMB file server
+
+SYNOPSIS
+     mount_smbfs [-N] [-o options] [-d mode] [-f mode] [-h] [-s] [-t gmt_token]
+                 [-v] //[domain;][user[:password]@]server[/share] path
+
+DESCRIPTION
+     The mount_smbfs command mounts a share from a remote server using SMB/CIFS
+     protocol.
+
+     The options are as follows:
+
+     -N      Do not ask for a password.  At run time, mount_smbfs reads the
+             ~/Library/Preferences/nsmb.conf file for additional configuration
+             parameters and a password.  If no password is found, mount_smbfs
+             prompts for it.
+
+     -o      Options passed to mount(2) are specified with the -o option
+             followed by a comma separated string of options. See the mount(8)
+             man page for possible options and their meanings. Additional
+             options supported by the mount_smbfs are as follows:
+
+             nobrowse
+                     This option indicates that the mount point should not be
+                     visible via the GUI (i.e., appear on the Desktop as a
+                     separate volume).
+
+             automounted
+                     Set flags on the mountpoint to indicate that the volume has
+                     been mounted by the automounter.
+
+             nostreams
+                     Don't use NTFS Streams even if they are supported by the
+                     server.
+
+             soft    Make the mount soft. Fail file system calls after a number
+                     of seconds.
+
+             nonotification
+                     Turn off using notifications for this volume.
+
+             nodatacache
+                     Turn off using file data caching for this volume.
+
+             nomdatacache
+                     Turn off using meta data caching for this volume.
+
+     -f mode, -d mode
+             Specify permissions that should be assigned to files and
+             directories.  The values must be specified as octal numbers.
+             Default value for the file mode is taken from mount point, default
+             value for the directory mode adds execute permission where the file
+             mode gives read permission.
+
+             Note that these permissions can differ from the rights granted by
+             SMB server.
+
+     -h      Prints a help message, much like the SYNOPSIS above.
+
+     -s      Force a new session to be created to the server.
+
+     -t gmt_token
+             Do a read only mount using the specific snapshot of the share.  A
+             new session is created to allow multiple snapshots of the same
+             share to be mounted.  Value must be in GMT format e.g. @GMT-
+             YYYY.MM.DD-HH.MM.SS
+
+     -v      Prints version.
+
+     //[domain;][user[:password]@] server[/share]
+             The mount_smbfs command will use server as the NetBIOS name of
+             remote computer, user as the remote user name and share as the
+             resource name on a remote server.  Domain and/or password may be
+             specified here.  If user is omitted the logged in user id will be
+             used.  Omitting share is an error when mount_smbfs is run from the
+             command line, otherwise a browsing dialogue is presented.
+
+     path    Path to mount point.
+
+FILES
+     nsmb.conf      Keeps static parameters for connections and other
+                    information.  See man nsmb.conf for details.
+
+EXAMPLES
+     This example shows the proper url to use to mount the share PUBLIC from the
+     SMB server myserver :
+
+           mkdir /smb/public
+           mount -t smbfs //username:userpass@myserver/PUBLIC /smb/public
+
+     This example shows the proper url to use to mount the share PUBLIC from the
+     SMB server myserver as guest:
+
+           mkdir /smb/public
+           mount -t smbfs //guest:@myserver/PUBLIC /smb/public
+     Note: You should always use the system mount command and never call
+     mount_smbfs directly.
+
+SEE ALSO
+     mount(2), nsmb.conf(5), mount(8), umount(8)
+
+BUGS
+     Please report bugs to Apple.
+
+AUTHORS
+     Boris Popov ⟨bp@butya.kz⟩, ⟨bp@FreeBSD.org⟩
+

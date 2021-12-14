@@ -1,0 +1,35 @@
+NOLOGIN(5)                     File Formats Manual                    NOLOGIN(5)
+
+NAME
+     nologin – disallow logins
+
+DESCRIPTION
+     Programs such as login(1) disallow logins if the nologin file exists.  The
+     programs display the contents of nologin to the user if possible and
+     interrupt the login sequence.  This makes it simple to temporarily prevent
+     incoming logins systemwide.
+
+     To disable logins on a per-account basis, investigate nologin(8).
+
+SECURITY
+     The nologin file is ignored for user root by default.
+
+IMPLEMENTATION NOTES
+     The nologin feature is implemented through login.conf(5), which allows to
+     change the pathname of the file and to extend the list of users exempt from
+     temporary login restriction.
+
+     PAM-aware programs can be selectively configured to respect nologin using
+     the pam_nologin(8) module via pam.conf(5).
+
+     The nologin file will be removed at system boot if it resides in /var/run
+     and cleanvar_enable is set to “YES” in rc.conf(5), which is default.
+     Therefore system reboot can effectively re-enable logins.
+
+FILES
+     /var/run/nologin      default location of nologin
+
+SEE ALSO
+     login(1), login.conf(5), pam.conf(5), rc.conf(5), nologin(8),
+     pam_nologin(8), shutdown(8)
+

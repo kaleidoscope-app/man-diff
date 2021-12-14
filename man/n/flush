@@ -1,0 +1,45 @@
+flush(n)                      Tcl Built-In Commands                     flush(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       flush - Flush buffered output for a channel
+
+SYNOPSIS
+       flush channelId
+________________________________________________________________________________
+
+
+DESCRIPTION
+       Flushes any output that has been buffered for channelId.
+
+       ChannelId must be an identifier for an open channel such as a Tcl
+       standard channel (stdout or stderr), the return value from an invocation
+       of open or socket, or the result of a channel creation command provided
+       by a Tcl extension.  The channel must have been opened for writing.
+
+       If the channel is in blocking mode the command does not return until all
+       the buffered output has been flushed to the channel. If the channel is in
+       nonblocking mode, the command may return before all buffered output has
+       been flushed; the remainder will be flushed in the background as fast as
+       the underlying file or device is able to absorb it.
+
+EXAMPLE
+       Prompt for the user to type some information in on the console:
+              puts -nonewline "Please type your name: "
+              flush stdout
+              gets stdin name
+              puts "Hello there, $name!"
+
+
+SEE ALSO
+       file(n), open(n), socket(n), Tcl_StandardChannels(3)
+
+
+KEYWORDS
+       blocking, buffer, channel, flush, nonblocking, output
+
+
+

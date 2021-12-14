@@ -1,0 +1,43 @@
+linsert(n)                    Tcl Built-In Commands                   linsert(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       linsert - Insert elements into a list
+
+SYNOPSIS
+       linsert list index element ?element element ...?
+________________________________________________________________________________
+
+
+DESCRIPTION
+       This command produces a new list from list by inserting all of the
+       element arguments just before the index'th element of list.  Each element
+       argument will become a separate element of the new list.  If index is
+       less than or equal to zero, then the new elements are inserted at the
+       beginning of the list.  The interpretation of the index value is the same │
+       as for the command string index, supporting simple index arithmetic and   │
+       indices relative to the end of the list.
+
+EXAMPLE
+       Putting some values into a list, first indexing from the start and then
+       indexing from the end, and then chaining them together:
+              set oldList {the fox jumps over the dog}
+              set midList [linsert $oldList 1 quick]
+              set newList [linsert $midList end-1 lazy]
+              # The old lists still exist though...
+              set newerList [linsert [linsert $oldList end-1 quick] 1 lazy]
+
+
+SEE ALSO
+       list(n), lappend(n), lindex(n), llength(n), lsearch(n), lset(n),
+       lsort(n), lrange(n), lreplace(n), string(n)                               │
+
+
+KEYWORDS
+       element, insert, list
+
+
+

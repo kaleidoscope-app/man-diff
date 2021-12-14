@@ -1,0 +1,336 @@
+DNCTL(8)                     System Manager's Manual                    DNCTL(8)
+
+NAME
+     dnctl – Traffic shaper control program
+
+SYNOPSIS
+     dnctl [-anqs] {list | show}
+     dnctl [-f | -q] flush
+     dnctl [-q] {delete} [number ...]
+     dnctl {pipe | queue} number config config-options
+     dnctl [-s [field]] {pipe | queue} {delete | list | show} [number ...]
+     dnctl [-nq] [-p preproc [preproc-flags]] pathname
+
+DESCRIPTION
+     The dnctl utility is the user interface for controlling the dummynet(4)
+     traffic shaper.
+
+     dummynet operates by first using a packet filter to classify packets and
+     divide them into flows, using any match pattern that can be used in dnctl
+     rules.  Depending on local policies, a flow can contain packets for a
+     single TCP connection, or from/to a given host, or entire subnet, or a
+     protocol type, etc.
+
+     Packets belonging to the same flow are then passed to either of two
+     different objects, which implement the traffic regulation:
+
+         pipe    A pipe emulates a link with given bandwidth, propagation delay,
+                 queue size and packet loss rate.  Packets are queued in front
+                 of the pipe as they come out from the classifier, and then
+                 transferred to the pipe according to the pipe's parameters.
+
+         queue   A queue is an abstraction used to implement the WF2Q+ (Worst-
+                 case Fair Weighted Fair Queueing) policy, which is an efficient
+                 variant of the WFQ policy.
+                 The queue associates a weight and a reference pipe to each
+                 flow, and then all backlogged (i.e., with packets queued) flows
+                 linked to the same pipe share the pipe's bandwidth
+                 proportionally to their weights.  Note that weights are not
+                 priorities; a flow with a lower weight is still guaranteed to
+                 get its fraction of the bandwidth even if a flow with a higher
+                 weight is permanently backlogged.
+
+     In practice, pipes can be used to set hard limits to the bandwidth that a
+     flow can use, whereas queues can be used to determine how different flow
+     share the available bandwidth.
+
+     The pipe and queue configuration commands are the following:
+
+           pipe number config pipe-configuration
+
+           queue number config queue-configuration
+
+     The following parameters can be configured for a pipe:
+
+     bw bandwidth | device
+             Bandwidth, measured in [K|M]{bit/s|Byte/s}.
+
+             A value of 0 (default) means unlimited bandwidth.  The unit must
+             immediately follow the number, as in
+
+                   dnctl pipe 1 config bw 300Kbit/s
+
+             If a device name is specified instead of a numeric value, as in
+
+                   dnctl pipe 1 config bw tun0
+
+             then the transmit clock is supplied by the specified device.  At
+             the moment no device supports this functionality.
+
+     delay ms-delay
+             Propagation delay, measured in milliseconds.  The value is rounded
+             to the next multiple of the clock tick (typically 10ms, but it is a
+             good practice to run kernels with “options HZ=1000” to reduce the
+             granularity to 1ms or less).  Default value is 0, meaning no delay.
+
+     The following parameters can be configured for a queue:
+
+     pipe pipe_nr
+             Connects a queue to the specified pipe.  Multiple queues (with the
+             same or different weights) can be connected to the same pipe, which
+             specifies the aggregate rate for the set of queues.
+
+     weight weight
+             Specifies the weight to be used for flows matching this queue.  The
+             weight must be in the range 1..100, and defaults to 1.
+
+     Finally, the following parameters can be configured for both pipes and
+     queues:
+
+     buckets hash-table-size
+           Specifies the size of the hash table used for storing the various
+           queues.  Default value is 64 controlled by the sysctl(8) variable
+           net.inet.ip.dummynet.hash_size, allowed range is 16 to 65536.
+
+     mask mask-specifier
+           Packets sent to a given pipe or queue by an dnctl rule can be further
+           classified into multiple flows, each of which is then sent to a
+           different dynamic pipe or queue.  A flow identifier is constructed by
+           masking the IP addresses, ports and protocol types as specified with
+           the mask options in the configuration of the pipe or queue.  For each
+           different flow identifier, a new pipe or queue is created with the
+           same parameters as the original object, and matching packets are sent
+           to it.
+
+           Thus, when dynamic pipes are used, each flow will get the same
+           bandwidth as defined by the pipe, whereas when dynamic queues are
+           used, each flow will share the parent's pipe bandwidth evenly with
+           other flows generated by the same queue (note that other queues with
+           different weights might be connected to the same pipe).
+           Available mask specifiers are a combination of one or more of the
+           following:
+
+           dst-ip mask, dst-ip6 mask, src-ip mask, src-ip6 mask, dst-port mask,
+           src-port mask, proto mask or all,
+
+           where the latter means all bits in all fields are significant.
+
+     noerror
+           When a packet is dropped by a dummynet queue or pipe, the error is
+           normally reported to the caller routine in the kernel, in the same
+           way as it happens when a device queue fills up. Setting this option
+           reports the packet as successfully delivered, which can be needed for
+           some experimental setups where you want to simulate loss or
+           congestion at a remote router.
+
+     plr packet-loss-rate
+           Packet loss rate.  Argument packet-loss-rate is a floating-point
+           number between 0 and 1, with 0 meaning no loss, 1 meaning 100% loss.
+           The loss rate is internally represented on 31 bits.
+
+     queue {slots | sizeKbytes}
+           Queue size, in slots or KBytes.  Default value is 50 slots, which is
+           the typical queue size for Ethernet devices.  Note that for slow
+           speed links you should keep the queue size short or your traffic
+           might be affected by a significant queueing delay.  E.g., 50 max-
+           sized ethernet packets (1500 bytes) mean 600Kbit or 20s of queue on a
+           30Kbit/s pipe.  Even worse effect can result if you get packets from
+           an interface with a much larger MTU, e.g. the loopback interface with
+           its 16KB packets.
+
+     red | gred w_q/min_th/max_th/max_p
+           Make use of the RED (Random Early Detection) queue management
+           algorithm.  w_q and max_p are floating point numbers between 0 and 1
+           (0 not included), while min_th and max_th are integer numbers
+           specifying thresholds for queue management (thresholds are computed
+           in bytes if the queue has been defined in bytes, in slots otherwise).
+           The dummynet(4) also supports the gentle RED variant (gred).
+
+           Three sysctl(8) variables can be used to control the RED behaviour:
+
+           net.inet.ip.dummynet.red_lookup_depth
+                   specifies the accuracy in computing the average queue when
+                   the link is idle (defaults to 256, must be greater than zero)
+
+           net.inet.ip.dummynet.red_avg_pkt_size
+                   specifies the expected average packet size (defaults to 512,
+                   must be greater than zero)
+
+           net.inet.ip.dummynet.red_max_pkt_size
+                   specifies the expected maximum packet size, only used when
+                   queue thresholds are in bytes (defaults to 1500, must be
+                   greater than zero).
+
+     The following options are available:
+
+     -a      While listing, show counter values.  The show command just implies
+             this option.
+
+     -f      Don't ask for confirmation for commands that can cause problems if
+             misused, i.e. flush.  If there is no tty associated with the
+             process, this is implied.
+
+     -h      Displays a short help.
+
+     -n      Only check syntax of the command strings, without actually passing
+             them to the kernel.
+
+     -q      While adding, zeroing, resetlogging or flushing, be quiet about
+             actions (implies -f).  This is useful for adjusting rules by
+             executing multiple dnctl commands in a script or by processing a
+             file of many dnctl rules across a remote login session.  If a flush
+             is performed in normal (verbose) mode (with the default kernel
+             configuration), it prints a message.  Because all rules are
+             flushed, the message might not be delivered to the login session,
+             causing the remote login session to be closed and the remainder of
+             the ruleset to not be processed.  Access to the console would then
+             be required to recover.
+
+     -s [field]
+             While listing pipes, sort according to one of the four counters
+             (total or current packets or bytes).
+
+     -v      Be verbose.
+
+     To ease configuration, rules can be put into a file which is processed
+     using dnctl as shown in the last synopsis line.  An absolute pathname must
+     be used.  The file will be read line by line and applied as arguments to
+     the dnctl utility.
+
+     Optionally, a preprocessor can be specified using -p preproc where pathname
+     is to be piped through.  Useful preprocessors include cpp(1) and m4(1).  If
+     preproc doesn't start with a slash (‘/’) as its first character, the usual
+     PATH name search is performed.  Care should be taken with this in
+     environments where not all file systems are mounted (yet) by the time dnctl
+     is being run (e.g. when they are mounted over NFS).  Once -p has been
+     specified, any additional arguments as passed on to the preprocessor for
+     interpretation.  This allows for flexible configuration files (like
+     conditionalizing them on the local hostname) and the use of macros to
+     centralize frequently required arguments like IP addresses.
+
+CHECKLIST
+     Here are some important points to consider when designing your rules:
+
+     •   Remember that you filter both packets going in and out.  Most
+         connections need packets going in both directions.
+
+     •   Remember to test very carefully.  It is a good idea to be near the
+         console when doing this.
+
+     •   Don't forget the loopback interface.
+
+SYSCTL VARIABLES
+     A set of sysctl(8) variables controls the behaviour of the dummynet module.
+     These are shown below together with their default value (but always check
+     with the sysctl(8) command what value is actually in use) and meaning:
+
+     net.inet.ip.dummynet.expire: 1
+             Lazily delete dynamic pipes/queue once they have no pending
+             traffic.  You can disable this by setting the variable to 0, in
+             which case the pipes/queues will only be deleted when the threshold
+             is reached.
+
+     net.inet.ip.dummynet.hash_size: 64
+             Default size of the hash table used for dynamic pipes/queues.  This
+             value is used when no buckets option is specified when configuring
+             a pipe/queue.
+
+     net.inet.ip.dummynet.max_chain_len: 16
+             Target value for the maximum number of pipes/queues in a hash
+             bucket.  The product max_chain_len*hash_size is used to determine
+             the threshold over which empty pipes/queues will be expired even
+             when net.inet.ip.dummynet.expire=0.
+
+     net.inet.ip.dummynet.red_lookup_depth: 256
+
+     net.inet.ip.dummynet.red_avg_pkt_size: 512
+
+     net.inet.ip.dummynet.red_max_pkt_size: 1500
+             Parameters used in the computations of the drop probability for the
+             RED algorithm.
+
+EXAMPLES
+     The following rules show some of the applications of for simulations and
+     the like by using dummynet rules in pf.conf(8) configuration files.
+
+     To drop random incoming IPv4 and IPv6 ICMP packets with a probability of
+     5%, create a pipe:
+           dnctl pipe 10 config plr 0.05
+
+     and add these rules in your pf.conf file:
+           dummynet in inet proto icmp all pipe 10
+           dummynet in inet6 proto ipv6-icmp all pipe 10
+
+     Should we want to simulate a bidirectional link with bandwidth limitations,
+     the correct way is to create a pipe for each direction:
+           dnctl pipe 1 config bw 14Kbit/s queue 10Kbytes
+           dnctl pipe 2 config bw 1Kbit/s queue 10Kbytes
+
+     and add these rules in your pf.conf file:
+           dummynet in all pipe 1
+           dummynet out all pipe 2
+
+     The above can be very useful, e.g. if you want to see how your fancy Web
+     page will look for a residential user who is connected only through a slow
+     link.  You should not use only one pipe for both directions, unless you
+     want to simulate a half-duplex medium (e.g. AppleTalk, Ethernet, IRDA).
+
+     Note that with the above rules the pipes receive traffic for both the IPv4
+     and IPv6 protocols.
+
+     Should we want to verify network performance with the RED queue management
+     algorithm, create this pipe:
+           dnctl pipe 1 config bw 500Kbit/s queue 100 red 0.002/30/80/0.1
+
+     and then add these rules to you pf.conf file:
+           dummynet all pipe 1
+
+     Another typical application of the traffic shaper is to introduce some
+     delay in the communication.  This can significantly affect applications
+     which do a lot of Remote Procedure Calls, and where the round-trip-time of
+     the connection often becomes a limiting factor much more than bandwidth:
+           dnctl pipe 1 config delay 250ms bw 1Mbit/s
+           dnctl pipe 2 config delay 250ms bw 1Mbit/s
+
+     and add these rules in your pf.conf file:
+           dummynet in all pipe 1
+           dummynet out all pipe 2
+
+     Per-flow queueing can be useful for a variety of purposes.  A very simple
+     one is counting traffic:
+           dnctl pipe 1 config mask all
+
+     and add these statements in your pf.conf file:
+           dummynet in quick proto tcp all pipe 1
+           dummynet out quick proto tcp all pipe 1
+           dummynet in quick proto udp all pipe 1
+           dummynet out quick proto udp all pipe 1
+           dummynet in quick all pipe 1
+           dummynet out quick all pipe 1
+
+     The above set of rules will create queues (and collect statistics) for all
+     traffic.  Because the pipes have no limitations, the only effect is
+     collecting statistics.  Note that we need six rules, not just the last two
+     one, because when dnctl tries to match IP packets it will not consider
+     ports, so we would not see connections on separate ports as different ones.
+
+SEE ALSO
+     cpp(1), dummynet(4), m4(1), ip(4), pfctl(8), pf.conf(5), protocols(5),
+     services(5), sysctl(8)
+
+AUTHORS
+     Ugen J. S. Antsilevich,
+     Poul-Henning Kamp,
+     Alex Nash,
+     Archie Cobbs,
+     Luigi Rizzo.
+
+     API based upon code written by Daniel Boulet for BSDI.
+
+     Work on dummynet(4) traffic shaper supported by Akamba Corp.
+
+HISTORY
+     The dnctl utility first appeared in FreeBSD 2.0.  dummynet(4) was
+     introduced in FreeBSD 2.2.8.  Stateful extensions were introduced in
+     FreeBSD 4.0.
+

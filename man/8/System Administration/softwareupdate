@@ -1,0 +1,100 @@
+softwareupdate(8)            System Manager's Manual           softwareupdate(8)
+
+NAME
+     softwareupdate – system software update tool
+
+SYNOPSIS
+     softwareupdate command [args ...]
+
+DESCRIPTION
+     Software Update checks for new and updated versions of your software based
+     on information about your computer and current software.
+
+     Invoke softwareupdate by specifying a command followed by zero or more
+     args.
+
+     softwareupdate requires admin authentication for all commands except
+     --list.  If you run softwareupdate as a normal admin user, you will be
+     prompted for a password where required. Alternatively, you can run
+     softwareupdate as root and avoid all further authentication prompts.
+
+     The following commands are available:
+
+     -l | --list
+                 List all available updates.
+
+     -i | --install
+                 Each update specified by args is downloaded and installed.
+                 args can be one of the following:
+
+                 -r | --recommended
+                             All updates that are recommended for your system.
+                             These are prefixed with a * character in the --list
+                             output.
+
+                 -R | --restart
+                             Automatically restart (or shut down) if required to
+                             complete installation. If the user invoking this
+                             tool is logged in then macOS will attempt to quit
+                             all applications, logout, and restart. If the user
+                             is not logged in, macOS will trigger a forced
+                             reboot if necessary. If you wish to always perform
+                             a forced reboot, pass -f (--force).
+
+                 -a | --all  All updates that are applicable to your system,
+                             including those non-recommended ones, which are
+                             prefixed with a - character in the --list output.
+                             (Non-recommended updates are uncommon in any case.)
+
+                 item ...    One or more specified updates. The --list output
+                             shows the item names you can specify here, prefixed
+                             by the * or - characters. See EXAMPLES.
+
+     -d | --download
+                 Each update specified by args is downloaded but not installed.
+                 The values of args are the same as for the --install command.
+                 Updates downloaded with --download can be subsequently
+                 installed with --install, or through the App Store (as long as
+                 they remain applicable to your system).  Updates are downloaded
+                 to /Library/Updates, but are not designed to be installed by
+                 double-clicking the packages in that directory: always use
+                 --install or the App Store to actually perform the install.
+
+     --schedule  Returns the per-machine automatic (background) check
+                 preference.
+
+     -h | --help
+                 Print command usage.
+
+EXAMPLES
+     The following examples are shown as given to the shell:
+
+     softwareupdate --list
+
+           Software Update Tool
+
+           Finding available software
+           Software Update found the following new or updated software:
+              * Label: MacBookAirEFIUpdate2.4-2.4
+                   Title: MacBook Air EFI Firmware Update, Version: 2.4, Size: 3817K, Recommended: YES, Action: restart,
+              * Label: ProAppsQTCodecs-1.0
+                   Title: ProApps QuickTime codecs, Version: 1.0, Size: 968K, Recommended: YES,
+              * Label: JavaForOSX-1.0
+                   Title: Java for OS X 2012-005, Version: 1.0, Size: 65288K, Recommended: YES,
+
+     sudo softwareupdate --install JavaForOSX-1.0
+
+           Software Update Tool
+
+           Finding available software
+
+           Downloading Java for OS X 2012-005
+           Downloaded Java for OS X 2012-005
+           Installing Java for OS X 2012-005
+           Done with Java for OS X 2012-005
+           Done.
+
+     sudo softwareupdate --schedule
+
+           Automatic check is on
+

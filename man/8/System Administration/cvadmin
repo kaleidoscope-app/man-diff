@@ -1,0 +1,611 @@
+CVADMIN(8)                   System Manager's Manual                  CVADMIN(8)
+
+
+
+NAME
+       cvadmin - Administer an Xsan File System
+
+SYNOPSIS
+       cvadmin [-H FSMHostName] [-F VolumeName] [-M] [-n] [-x] [-f filename]
+              [-e command1 -e command2...]
+
+DESCRIPTION
+       cvadmin is an interactive command used for general purpose administration
+       of an Xsan volume including:
+
+       1. displaying file system and client status
+
+       2. activating a file system currently in stand-by mode
+
+       3. viewing storage pool attributes
+
+       4. enabling File System Manager (FSM) tracing
+
+       5. displaying disk and path information for the local system
+
+       6. forcing FSM failover
+
+       7. fetching FSM usage and performance statistics
+
+       8. temporarily enabling or disabling global file locking
+
+       9. generating a report of open files
+
+       10. listing currently held file locks
+
+       11. starting, restarting and stopping of daemon processes
+
+       12. resetting RPL information
+
+OPTIONS
+       Invoke cvadmin to start the interactive session and list the running File
+       System Managers (FSMs).  (Note: Xsan system services must be started
+       prior to running cvadmin.  In particular, the local fsmpm(8) process must
+       be active.)
+
+       The initial output shows the running FSMs grouped by the cluster in which
+       they are located. The hostnames or IP addresses are those that are
+       advertised to clients. When more than one location is listed, one or more
+       these will be marked as preferred. This means that this address is on the
+       metadata network and should be used, if possible, by a client to make a
+       connection to the FSM. The remaining addresses can be used if a
+       connection can not be made using a preferred address.
+
+       Note: An administrator can filter out addresses that are not to be
+       advertised by using the snfs_metadata_network_filter.json(5)
+       configuration file.
+
+       Then (optionally) use the select command described below to pick an FSM
+       to connect to.  Once connected, the command will display basic
+       information about the selected volume and prompt for further commands.
+
+       Note that a few commands such as paths, disks, start, and stop require
+       information obtained from the local fsmpm(8) only, so there is is no need
+       to select an FSM prior to using them.
+
+USAGE
+       -H FSMHostName
+              Connect to the FSM located on the machine FSMHostName. By default
+              cvadmin will attempt to connect to an FSM located on the local
+              machine.
+
+       -F VolumeName
+              Automatically set the volume VolumeName as the active volume in
+              cvadmin.
+
+       -M     When listing file systems with the select command, display
+              [managed] next to each file system with DataMigration enabled.
+              This option is currently only intended for use by support
+              personnel.
+
+       -f filename
+              Read commands from filename
+
+       -e command
+              Execute command(s) and exit
+
+       -n     Show numerical addresses instead of trying to determine symbolic
+              host
+
+       -x     Enable extended commands.
+
+COMMANDS
+       The cvadmin commands can be used to display and modify the Xsan active
+       configuration. When a modification is made, it exists only as long as the
+       FSM is running. More permanent changes can be made in the configuration
+       file. Refer to the snfs_config(5) man page for details. The following
+       commands are supported.
+
+       The syntax for volume_name is: name[@cluster[/addom]]
+
+
+       activate volume_name [hostname_or_IP_address]
+              Activate a volume volume_name.  This command may cause an FSM to
+              activate.  If the FSM is already active, no action is taken.
+
+       activate volume_name number_of_votes
+              Apple Internal only.  Bypass the election system and attempt to
+              activate the fsm on this node.
+
+       cluster select [N|[+]cluster_name]
+              Select a cluster to be used by other commands when the cluster
+              name isn't explicitly given with the FSM name.  Normally only a
+              known cluster name can be selected, but preceding it with a '+'
+              will force an unknown cluster name to be used.  A cluster name of
+              none or 0 will de-select the currently selected cluster name.
+              Using no arguments or just select will show all known clusters.
+              Cluster_name is [@]cluster[/addom].
+
+       cluster filter [N|cluster_name]
+              Set a filter for the output of the select command.  When a cluster
+              filter is set, only FSMs in that cluster will be displayed by
+              select.  The filter can be set to all the clusters in an
+              administrative domain by using  A cluster name of none or 0 will
+              disable the filter.  Using no arguments or just filter will show
+              all known clusters.  Cluster_name is [@]cluster[/addom].
+
+       coord [[on] hostname_or_IP_address]
+              Display the list of NSS coordinators on the local host or on the
+              specified host.
+
+       clientunmount gentle_time_in_seconds
+
+       clientunmount hard gentle_time_in_seconds force_time_in_seconds
+              Instruct clients of the selected volume to unmount. The first form
+              of the command waits gentle_time_in_seconds seconds for clients to
+              unmount the volume. Clients receive a message from the fsm
+              directing them to normally unmount the volume.  During this time,
+              no new client connections are permitted. If all clients unmount
+              within that time, the fsm continues with new connections
+              forbidden.
+
+              In the second form of the command, the fsm moves to a second stage
+              if any clients fail to unmount. In this stage, clients are
+              instructed to unmount the volume forcibly. The fsm waits
+              force_time_in_seconds seconds, and then completes the operation.
+              Client connections remain forbidden at the end of this operation.
+
+              After completing this command, the administrator should stop the
+              volume.
+
+       debug [[+|-] flag [ ... ]]
+              View or set the File System Manager's debugging flags. Entering
+              the command with no flag will return current settings, the
+              location of the FSM log file and a legend describing what each
+              setting does.  By entering the command with a flag list, the FSM
+              Debugging Flags will be set accordingly.  Each flag can be either
+              a name or numeric value.  Names will be mapped to their numeric
+              value, and may be abbreviated as long as they remain unique.
+              Numeric values are specified using a standard decimal or
+              hexadecimal (0x) value of up to 32 bits.  Using '+' or '-' enables
+              ('+') or disables ('-') only the selected flags, leaving all other
+              flags unchanged.
+
+              NOTE - Setting Debugging Flags will severely impact the FSM's
+              performance!  Do this only when directed by a Apple specialist.
+
+       discon Forcefully disconnect a client from the FSM.  With no arguments,
+              discon displays the list of connected clients. When supplied an
+              index, discon will immediately disconnect the specified client.
+              Only use when recommended by Technical Support.  Also see the
+              "repblocked" command.
+
+       disks [refresh]
+              Display the Xsan disk volumes local to the system that cvadmin is
+              attached to. Using the optional refresh argument will force the
+              fsmpm to re-scan all volumes before responding. If the fsmpm's
+              view of the disks in any file system changes compared with the
+              FSM's view of that client's disks as a result of the refresh, a
+              disconnect and reconnect to the FSM will take place to
+              resynchronise the file system state.
+
+       disks [refresh] fsm
+              Display the Xsan meta-data disk volumes in use by the fsm.  If the
+              optional refresh argument is used, additional paths to these
+              volumes may be added by the fsm.
+
+       fail [volume_name|index_number]
+              Initiate an FSM Failover of volume volume_name. This command may
+              cause a stand-by FSM to activate. If an FSM is already active, the
+              FSM will shut down. A stand-by FSM will then take over. If a
+              stand-by FSM is not available the primary FSM will re-activate
+              after failover processing is complete.
+
+       files  Report counts of files, directories, symlinks and other objects
+              which are anchored by a user type inode. These include named
+              streams, block and character device files, fifos or pipes and
+              named sockets.  If the file system is undergoing conversion to
+              StorNext 5.0, conversion progress is displayed and counters
+              reflect the count of converted objects.
+
+       fsmlist [volume_name] [ on hostname_or_IP_address]
+              Display the state of FSM processes, running or not.  Optionally
+              specify a single volume_name to display.  Optionally specify the
+              host name or IP address of the system on which to list the FSM
+              processes.
+
+       filelocks
+              Query cluster-wide file/record lock enforcement.  Currently
+              cluster-wide file locks are automatically used on Unix.  Windows
+              file/record locks are optional.
+
+              If enabled, byte-range file locks are coordinated through the FSM,
+              allowing a lock set by one client to block overlapping locks by
+              other clients.  If disabled, then byte-range locks are local to a
+              client and do not prevent other clients from getting byte-range
+              locks on a file, however they do prevent overlapping lock attempts
+              on the same client.
+
+       help (?)
+              The help or ? command will display a command usage summary.
+
+       latency-test [index_number|all] [seconds]
+              Run an I/O latency test between the FSM process and one client or
+              all clients.  The default test duration is 2 seconds.
+
+       metadata
+              Report metadata usage.  Also provide an estimate on the value of
+              bufferCacheSize that will allow all metadata to be cached.
+
+       mdarchive [status|backup|rebuild|prune]
+              Run commands targeting the metadata archive associated with the
+              selected FSM.  Running mdarchive without command arguments will
+              display the full path location of the metadata archive.
+
+       mdarchive status
+              The status command prints the progress of the current metadata
+              archive activity, if any. If generating a new metadata archive or
+              restoring an existing one, the percentage complete will be
+              displayed. Otherwise, the current update backlog is displayed.
+
+       mdarchive rebuild [new]
+              If metadataArchiveDays is set to zero then the rebuild command
+              will force the FSM to discard the existing metadata archive and
+              generate a new one, otherwise the FSM will rebuild the existing
+              metadata archive in a way that will preserve history across the
+              rebuild. Rebuilds can be performed online while clients are active
+              in the file system.
+
+              When metadataArchiveDays is set to a value greater than zero,
+              requesting a new rebuild will cause the FSM to delete the current
+              metadata archive before starting the rebuild. All metadata history
+              that existed prior to the new rebuild will be lost but the rebuild
+              will shrink the mdarchive down to its minimum size. Requesting a
+              new rebuild has no effect when metadataArchiveDays is set to zero
+              because the existing metadata archive is always deleted before
+              starting the rebuild in that case.
+
+              WARNING: When using the new argument to the rebuild command, all
+              metadata history that existed prior to the rebuild will be lost.
+              This will prevent external applications like snaudit and snhistory
+              from reporting events that occurred prior to the rebuild and will
+              prevent snrecover from recovering files that were deleted prior to
+              the rebuild.
+
+       mdarchive rebuild wait
+              Wait for an ongoing rebuild to complete and report status
+              periodically.
+
+       mdarchive backup [full|partial] pathname
+              For an FSM with a current mdarchive, request a backup copy be
+              generated as a compressed tar file.  The pathname must specify an
+              existing directory on the FSM node and include the file name to be
+              created.  A full dump contains all the content, a partial dump
+              contains all the content changed since the last backup.
+
+       mdarchive backup wait
+              Wait for an ongoing mdarchive backup to complete and report
+              progress periodically.
+
+       mdarchive prune
+              The prune command will force the removal of expired historical
+              data from the metadata archive. This command is ignored and a
+              message is written to the system log file if metadataArchiveDays
+              is set to zero in the configuration file or if it is issued while
+              an mdarchive build, file recovery, or metadata restore is in
+              progress.
+
+       paths  Display the Xsan disk volumes visible to the local system.  The
+              display is grouped by <controller> identity, and will indicate the
+              "Active" or "Passive" nature of the path if the Raid Controller
+              has been recognized as configured in Active/Active mode with AVAT
+              enabled.
+
+       proxy [long]
+              Display Disk Proxy servers and optionally display the disks they
+              serve for this volume.
+
+       proxy who hostname
+              The "who" option displays all proxy connections for the specified
+              host.
+
+       qbm trace [clientid]
+              Create a QBM internal trace file on the MDC.  If clientid is
+              specified (where clientid is the client's login id), a client
+              trace is also also generated.  This command creates an SNQBM_xxx
+              file in the debug directory.  Currently, only Windows clients
+              generate internal traces.  This command is for Quantum use only.
+
+       qbm show stripe-group-num
+              Show the QBM allocation table for a stripe group given the stripe-
+              group index.  All bandwidth (BW) is in MB/sec.  The display
+              includes the following sub-tables:
+
+              Stripe Group (SG) Table: SG max (capacity), BW currently free, the
+              total BW in the reserve pools, and the total over-subscripted
+              (over capacity) amount.
+
+              Priority (Pri) Table: table class name, count of clients in the
+              priority, total bandwidth allocated at this priority, minimum BW,
+              maximum BW, extra (over min) BW, reserved BW used/total reserve
+              allocated to this priority, and current BW used.
+
+              Client Entry: list number, IP address, client login number,
+              bandwidth information - minimum, maximum and current BW, restore
+              BW, flag (l - client asked for less, m - client asked for more, g
+              - client given more BW over minimum BW).
+
+       qbm newconfig
+              Re-read the <_file_system_name_>_qbm.conf file and update the
+              clients.
+
+       qos    Display per-stripe group QOS statistics.  Per-client QoS
+              statistics are also displayed under each qos-configured stripe
+              group.
+
+       quit   This command will disconnect cvadmin from the FSM and exit.
+
+       ras enq [ nomerge ] event "detail string"
+              Generate an SNFS RAS event.  If "nomerge" is specified, multiple
+              instances of the RAS event are not merged into a single ticket.
+              For internal use only.
+
+       ras enq [ nomerge ] event reporting_FRU violating_FRU "detail string"
+              Generate a generic RAS event.  If "nomerge" is specified, multiple
+              instances of the RAS event are not merged into a single ticket.
+              For internal use only.
+
+       repblocked
+              Generate a report of files that may be causing open operations to
+              block due to an unresponsive client that is slow to acknowledge a
+              request to change state.  Such clients should be inspected to
+              determine whether there is a reason for their lack of response.
+              One common cause of unresponsiveness is that Xsan clients have
+              entered sleep mode. The settings on these clients should be
+              adjusted so they never sleep. If the client is known to be hung,
+              the connection to the FSM can be reset using the discon command.
+
+       repfl  Generate a report that displays the file locks currently held.
+              Note: this command is only intended for debugging purposes by
+              support personnel.  In future releases, the format of the report
+              may change or the command may be removed entirely. Running the
+              repfl command will write out a report file and display the output
+              filename.
+
+       repof  Generate a report that displays all files that are currently open
+              on each Xsan client.  Running the repof command will write out a
+              report file and display the output filename containing that
+              report.
+              The information displayed for each file is: the pathname, inode
+              number, the number of "writers" (which is the # of times this
+              client has opened the file for write -- usually 1 or 0), and stat
+              information.
+              Next a line is printed showing the open state across all clients.
+              The open state contains: the count of different clients with this
+              file open, the # of those clients that are writers, and which
+              client, if non-zero, has the file open exclusively or that owns
+              the ioToken.  The open state flags are displayed followed by a set
+              of strings indicating the meaning of some of the bits in the flags
+              field.  Some examples:
+
+              flags 0x2000: shared_read
+              flags 0x5000: I/O token shared_excl
+              flags 0x5009: revoking I/O token shared_excl
+              flags 0x9: revoking OLD Exclusive
+
+              If revoking is indicated, that means the client(s) has been sent a
+              message and a response is being awaited.  If client is zero with
+              revoking, a message was sent to one or more clients in
+              shared_read.
+              See also the repblocked command.
+
+              In future releases, the format of the report may change.
+
+       resetrpl [clear]
+              Repopulate Reverse Path Lookup (RPL) information.  The optional
+              clear argument causes existing RPL data to be cleared before
+              starting repopulation.  Note: resetrpl is only available when
+              cvadmin is invoked with the -x option.  Running resetrpl may
+              significantly delay FSM activation.  This command is not intended
+              for general use.  Only run resetrpl when recommended by Technical
+              Support.
+
+       restartd daemon [once]
+              Restart the daemon process.  For internal use only.
+
+       select [volume_name|N]
+              Select an active FSM to view and modify.  If no argument is
+              specified, a numbered list of FSMs and running utilities will be
+              displayed. If there is only one active volume in the list, it will
+              automatically be selected.
+
+              When a running utility is displayed by the select command, it will
+              show the following information. First the name of the file system
+              is displayed. Following that, in brackets "[]", is the name of the
+              utility that is running. Third, a letter indicating the access
+              type of the operation. The options here are (W) for read-write
+              access, (R) for read-only access and (U) for unique access.
+              Finally, the location and process id of the running utility is
+              displayed.
+
+              If volume_name is specified, then cvadmin will connect to the
+              current active FSM for that volume.  If N (a number) is specified,
+              cvadmin will connect to the Nth FSM in the list.  However, only
+              active FSMs may be selected in this form.
+
+       show [poolname] [long]
+              Display information about the storage pools associated with the
+              selected volume. If a storage pool name poolname is given only
+              that storage pool's information will be given. Omitting the
+              poolname argument will display all storage pools associated with
+              the active file system. Using the long modifier will additionally
+              display detailed information about the disk units associated with
+              displayed storage pools.
+
+       start volume_name [on hostname_or_IP_address]
+              Start a File System Manager for the volume volume_name.  When the
+              command is running on an MDC of an HA cluster, the local FSM is
+              started, and then an attempt is made to start the FSM on the peer
+              MDC as identified by the /Library/Preferences/Xsan/ha_peer file.
+              When the optional hostname_or_IP_address is specified, the FSM is
+              started on that MDC only.  The volume's configuration file must be
+              operational and placed in
+              /Library/Preferences/Xsan/<volume_name>.cfg before invoking this
+              command.  See snfs_config(5) for information on how to create a
+              configuration file for an Xsan volume.
+
+       startd daemon [once]
+              Start the daemon process.  For internal use only.
+
+       stat   Display the general status of the volume. The output will show the
+              number of clients connected to the volume. This count includes any
+              administrative programs, such as cvadmin. Also shown are some of
+              the static file-system-wide values such as the block size, number
+              of storage pools, number of mirrored storage pools and number of
+              disk devices.  The output also shows total blocks and free blocks
+              for the entire volume.
+
+       stats client_IP_address [clear]
+              Display read/write statistics for the selected file system.  This
+              command connects to the host FSMPM who then collects statistics
+              from the file system client. The ten most active files by bytes
+              read and written and by the number of read/write requests are
+              displayed.  If clear is specified, zero the stats after printing.
+
+       stop volume_name [on hostname_or_IP_address]
+              Stop the File System Manager for volume_name.  This will shut down
+              the FSM for the specified volume on every MDC.  When the optional
+              hostname or IP address is specified, the FSM is stopped on that
+              MDC only.  Further operations to the volume will be blocked in
+              clients until an FSM for the volume is activated.
+
+       stopd daemon
+              Start the daemon process.  For internal use only.
+
+       winidmap __username__
+              Show the MDC-mapped user id and group information for the
+              username.
+
+       who    Query client list for the active volume. The output will show the
+              following information for each client.
+
+              Type      -  Type of connection. The client types are:
+                 FSM - File System Manager(FSM) process
+                 ADM - Administrative(cvadmin) connection
+                 CLI - Volume client connection. May be followed by a CLI
+                       type character:
+                       S - Disk Proxy Server
+                       C - Disk Proxy Client
+                       H - Disk Proxy Hybrid Client. This is a client that has
+                           been configured as a proxy client but is operating
+                           as a SAN client.
+              Location  - The client's hostname or IP address that was used by
+              this client to connect to the FSM.
+              Up Time   - The time since the client connection was initiated
+
+EXAMPLES
+       Invoke the cvadmin command for volume named snfs1.
+
+
+          [root@dev-snc-daiquiri-n1 debug]# cvadmin -F snfs1
+          StorNext Administrator
+
+          Enter command(s)
+          For command help, enter "help" or "?".
+
+          List FSS
+
+          File System Services (* indicates service is in control of FS):
+          Selected Cluster: _cluster0/_addom0
+
+          Cluster: _cluster0/_addom0
+           1>*fs1-man[0]           located on dev-snc-daiquiri-n1.mdh.quantum.com:52006 (pid 31711)
+                                   located on Qnode1:52006
+                                   located on 169.254.21.1:52006
+                                   located on 192.168.21.11:52006 [preferred]
+           2> fs1-man[0]           located on dev-snc-daiquiri-n2.mdh.quantum.com:52004 (pid 42977)
+                                   located on 172.18.0.1:52004
+                                   located on 172.17.0.1:52004
+                                   located on Qnode2:52004
+                                   located on 169.254.21.2:52004
+                                   located on 192.168.21.12:52004 [preferred]
+           3>*shared-SV1535CKH00012[0] located on dev-snc-daiquiri-n1.mdh.quantum.com:52003 (pid 23220)
+                                   located on Qnode1:52003
+                                   located on 169.254.21.1:52003
+                                   located on 192.168.21.11:52003 [preferred]
+           4> shared-SV1535CKH00012[0] located on dev-snc-daiquiri-n2.mdh.quantum.com:52003 (pid 42382)
+                                   located on 172.18.0.1:52003
+                                   located on 172.17.0.1:52003
+                                   located on Qnode2:52003
+                                   located on 169.254.21.2:52003
+                                   located on 192.168.21.12:52003 [preferred]
+
+          Cluster: cluster1/_addom0
+           5>*shared[0]            located on jk-rh6sp6-1.mdh.quantum.com:52003 (pid 8650)
+           6> shared[0]            located on jk-rh6sp6-2.mdh.quantum.com:52003 (pid 19417)
+           7>*snfs1[0]             located on jk-rh6sp6-1.mdh.quantum.com:52004 (pid 8651)
+           8> snfs1[0]             located on jk-rh6sp6-2.mdh.quantum.com:52004 (pid 19431)
+
+          Select FSM "snfs1"
+
+           Created           :    Wed Sep 26 12:27:43 2018
+           Active Connections:    2
+           Fs Block Size     :    4K
+           Msg Buffer Size   :    8K
+           Disk Devices      :    6
+           Stripe Groups     :    3
+           Fs Blocks         :    2684342720 (10.00 TB)
+           Fs Blocks Free    :    2679776316 (9.98 TB) (99%)
+
+
+          snadmin (snfs1@cluster1/_addom0) >
+
+
+       Show all the storage pools in the volume;
+
+          snadmin (snfs1@cluster1/_addom0) > show
+          Show stripe groups (File System "snfs1@cluster1/_addom0")
+
+          Stripe Group 0 [sg0]  Status:Up,MetaData,Journal,Exclusive
+            Total Blocks:536868544 (2.00 TB)  Reserved:0 (0.00 B) Free:536841775 (2.00 TB)
+          (99%)
+            MultiPath Method:Rotate
+              Primary  Stripe [sg0]  Read:Enabled  Write:Enabled
+
+          Stripe Group 1 [sg1]  Status:Up
+            Total Blocks:1610605632 (6.00 TB)  Reserved:1082880 (4.13 GB) Free:1607753562
+          (5.99 TB) (99%)
+            MultiPath Method:Rotate
+              Primary  Stripe [sg1]  Read:Enabled  Write:Enabled
+
+          Stripe Group 2 [sg2]  Status:Up
+            Total Blocks:1073737088 (4.00 TB)  Reserved:1082880 (4.13 GB) Free:1072022754
+          (3.99 TB) (99%)
+            MultiPath Method:Rotate
+              Primary  Stripe [sg2]  Read:Enabled  Write:Enabled
+
+
+          snadmin (snfs1@cluster1/_addom0) >
+
+
+       Display the long version of the sg2 storage pool;
+
+
+          snadmin (snfs1@cluster1/_addom0) > show sg2 long
+          Show stripe group "sg2" (File System "snfs1@cluster1/_addom0")
+
+          Stripe Group 2 [sg2]  Status:Up
+            Total Blocks:1073737088 (4.00 TB)  Reserved:1082880 (4.13 GB) Free:1072022754 (3.99 TB) (99%)
+            MultiPath Method:Rotate
+            Stripe Depth:2  Stripe Breadth:64 blocks (256.00 KB)
+            Affinity Key:af1
+            Realtime limit IO/sec:0 (~0 mb/sec) Non-Realtime reserve IO/sec:0
+              Committed RTIO/sec:0 Non-RTIO clients:0 Non-RTIO hint IO/sec:0
+            Disk stripes:
+              Primary  Stripe [sg2]  Read:Enabled  Write:Enabled
+                Node 0 [t1_0008]
+                Node 1 [t1_0009]
+
+
+          snadmin (snfs1@cluster1/_addom0) >
+
+
+FILES
+       /Library/Preferences/Xsan/*.cfg
+
+SEE ALSO
+       cvfs(8), snfs_config(5), snfs_metadata_network_filter.json(5), fsmpm(8),
+       fsm(8), mount_acfs(8), sgmanage(8)
+
+
+

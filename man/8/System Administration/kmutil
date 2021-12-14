@@ -1,0 +1,547 @@
+KMUTIL(8)         KernelManagement utility for kext collections        KMUTIL(8)
+
+
+
+SYNOPSIS
+       kmutil <subcommand>
+       kmutil <load|unload|showloaded>
+       kmutil <find|libraries|print-diagnostics>
+       kmutil <create|inspect|check|log|dumpstate>
+       kmutil <clear-staging|trigger-panic-medic>
+       kmutil -h
+
+DESCRIPTION
+       kmutil is a multipurpose tool for managing kernel extensions (kexts) and
+       kext collections on disk.  It takes a subcommand and a number of options,
+       some of which are common to multiple commands.
+
+       kmutil interacts with the KernelManagement subsystem for loading,
+       unloading, and diagnosing kexts.  It can also be used for inspecting the
+       contents of a kext collection, interacting with the kernel to query load
+       information, finding kexts and kext dependencies on disk, creating new
+       collections of kexts, and displaying other diagnostic information.
+
+COLLECTIONS
+       Starting in macOS 11, kernel extensions are found in 3 different
+       artifacts on disk.  Each artifact is loaded exactly once at boot, and a
+       kext must be linked into one of the three artifacts before it can be
+       used.
+
+       • The boot kext collection contains the kernel and all system kexts
+         necessary for starting and bootstrapping the operating system.  It is
+         an immutable artifact in /System/Library/KernelCollections.  On Apple
+         Silicon Macs, this artifact is kept exclusively in the Preboot volume.
+
+       • The system kext collection, if used, contains all remaining system
+         kexts required by the operating system, and is loaded after boot.  It
+         is prelinked against the boot kext collection, and is also an immutable
+         artifact in /System/Library/KernelCollections.  Note that on Apple
+         Silicon Macs, there is no system kext collection.
+
+       • The auxiliary kext collection, if built, contains kexts placed in
+         /Library/Extensions and any other third-party kexts installed on the
+         system.  It is dynamically built by kernelmanagerd(8) and prelinked
+         against the boot kext collection and, if present, the system kext
+         collection.  For more information on installing third-party kexts into
+         the auxiliary kext collection, see INSTALLING.
+
+INSTALLING
+       As of macOS 11, a kext is only loadable once it has been built into the
+       auxiliary kext collection by kernelmanagerd(8), and the system has
+       rebooted.  At boot, kernelmanagerd(8) will load this collection into the
+       kernel which allows all of the kexts in the collection to match and load.
+       If kmutil load, kextload(8), or any invocation of a KextManager function
+       attempts to load a kext that is not yet loadable, kernelmanagerd(8) will
+       stage the kext into a protected location, validate it, and prompt the
+       user to approve a rebuild of the auxiliary kext collection.  If the
+       validation and rebuild are successful, the kext will be available on the
+       next boot.
+
+COMMANDS
+       Commands and their specific options are listed below.  For other options
+       common to most commands, see OPTIONS.
+
+       • create: Create a new kext collection according to the options provided.
+         This command is should only be used by developers investigating custom
+         kernels or replacing the contents of the boot kext collection or system
+         kext collection.  To load or unload kexts already in a collection see
+         the load and unload subcommands.
+
+         -n, —new <boot|sys|aux>
+                Specify one or more of boot, sys, or aux to build one or more
+                collections at a time.
+
+         -L, —no-system-collection
+                If building an auxiliary collection, don’t look for or generate
+                a system kext collection.
+
+         -s, —strip
+                Specify none, all, or allkexts (default: none) to strip symbol
+                information after a kext has been built into a collection.
+
+         -k, —kernel
+                When building the boot kext collection, specify the path to the
+                kernel.  If -V is specified, kmutil will append the variant
+                extension.
+
+         -x, —explicit-only
+                Only consider the bundle identifiers and paths explicitly
+                specified, along with their dependencies.
+
+         —compress
+                Compress results using the LZFSE algorithm.
+
+         —img4-encode
+                Encode the collection in an img4 payload.
+
+       • inspect: Inspect & display the contents of a kext collection according
+         to the options provided.
+
+         —show-mach-header
+                Print the mach header(s) in the collection(s).  Use with
+                —verbose to also display contents of inner fileset entries.
+
+         —show-fileset-entries
+                Only print mach header information present in fileset
+                subentries.  This is useful for determining prelink addresses
+                and other load information about a kext in a collection.
+
+         —show-kext-load-addresses
+                When displaying the default output, include the load addresses
+                of the kexts inline.
+
+         —show-kext-uuids
+                Include the UUIDs of each kext in the output.
+
+         —show-kernel-uuid
+                Print the UUID (and version) of the kernel if present in the
+                collection.  This will output nothing if a kernel is not found
+                in the specified collection(s).
+
+         —show-kernel-uuid-only
+                Print the UUID of the kernel if present in the collection, and
+                suppress default kext information.
+
+         —show-prelink-info
+                Dump the raw __PRELINK_INFO segment of the collection(s).
+
+         —show-collection-metadata
+                Print the metadata of the collection(s), such as their prelink
+                uuids, the uuids of collections they link against, and the build
+                version that produced the collection.
+
+         —json  Output the section layout as JSON.
+
+       • load: Load the extension(s) specified with -b or -p.  If the extension
+         is not already in the auxiliary kext collection, the collection will be
+         dynamically rebuilt by kernelmanagerd(8) for use on the next reboot.
+         For more information, see INSTALLING.  For kexts already contained in
+         the boot, system, or auxiliary kext collection, the load subcommand
+         will start the kext if it has not already been started.
+
+         For most kexts, the load subcommand must run as the superuser (root).
+         Kexts installed under /System/ with an OSBundleAllowUserLoad property
+         set to true may be loaded via the load subcommand by non-root users.
+
+         macOS 10.6 introduced C functions for loading kexts,
+         KextManagerLoadKextWithIdentifier() and KextManagerLoadKextWithURL(),
+         which are described in Apple’s developer documentation.  These
+         functions continue to be supported as of macOS 11.
+
+         -P, —personality-name
+                If this kext is already loaded, send the named personality to
+                the catalog.
+
+         -e, —no-default-repositories
+                Don’t use the default repositories for kexts.  If you use this
+                option, you will have to explicitly specify all dependencies of
+                the kext being loaded, or otherwise worked on using the
+                —repository option.
+
+         —load-style
+                Control the load style of the request to load extension.  Valid
+                options:
+
+                • start-and-match: Start the kernel extension and also begin
+                  matching on any accompanying personalities.  (default)
+
+                • start-only: Start any specified kernel extensions but do not
+                  begin matching against any personalities provided by those
+                  extensions (unless matching has already started for them).
+
+                • match-only: Do not explictly start any of the given kernel
+                  extensions but do begin matching on IOKit personalities
+                  provided by them.  This is useful to allow extensions that
+                  were previous loaded with start-only to now begin matching.
+
+       • unload: Unload the extension(s) specified with -b or -p.  The extension
+         must have been previously linked into a kext collection and loaded by
+         the KernelManagement system.  A successfull call to the unload
+         subcommand will invoke the kext’s stop function and end the kext’s
+         IOKit lifecycle, however the kext remains in kernel memory as part of
+         the kext collection from which it was loaded.  The extension will not
+         be removed from any collection, including the auxiliary kext
+         collection, and will still be available for loading without requiring a
+         reboot.
+
+         If another loaded kext has a dependency on the kext being unloaded, the
+         unload will fail.  You can determine whether a kext has dependents
+         using the showloaded subcommand.
+
+         -c, —class-name <class-name>
+                Terminate all instances of the IOService class, but do not
+                unload its kext or unload its personalities.
+
+         -P, —personalities-only
+                Terminate services and remove personalities only; do not unload
+                kexts.
+
+       • libraries: Search for library kexts in the boot kext collection and the
+         system kext collection (if available) that define symbols needed for
+         linking the specified kexts, printing their bundle identifiers and
+         versions.  Information on symbols not found are printed after the
+         library kext information for each architecture.
+
+         A handy use of the libraries subcommand is to run it with just the —xml
+         flag and pipe the output to pbcopy(1).  If the exit status is zero
+         (indicating no undefined or multiply-defined symbols), you can open
+         your kext’s Info.plist file in a text editor and paste the library
+         declarations over the OSBundleLibraries property.
+
+         You can specify other collections with the libraries subcommand to look
+         for dependencies in other collections as well.
+
+         —all-symbols
+                List all symbols; found, not found, or found more than once.
+
+         —onedef-symbols
+                List all symbols found, with the library kext they were found
+                in.
+
+         —multdef-symbols
+                List all symbols found more than once, with their library kexts.
+
+         —undef-symbols
+                List all symbols not found in any library.
+
+         —unsupported
+                Look in unsupported kexts for symbols.
+
+         -c, —compatible-versions
+                Use library kext compatible versions rather than current
+                versions.
+
+         —xml   Print XML fragment suitable for pasting.
+
+       • showloaded: Display the status/information of loaded kernel extensions
+         on the system, according to the options provided.  By default, the
+         following is shown for each kext:
+
+         Index  The load index of the kext (used to track linkage references).
+                Gaps in the list indicate kexts that have been unloaded.
+
+         Refs   The number of references to this kext by others.  If nonzero,
+                the kext cannot be unloaded.
+
+         Address
+                The address in kernel space where the kext has been loaded.
+
+         Size   The number of bytes of kernel memory that the kext occupies.  If
+                this is zero, the kext is a built-in part of the kernel that has
+                an entry as a kext for resolving dependencies among kexts.
+
+         Wired  The number of wired bytes of kernel memory that the kext
+                occupies.
+
+         Architecture
+                The architecture of the kext, displayed only if using the —arch-
+                info option.
+
+         Name   The CFBundleIdentifier of the kext.
+
+         Version
+                The CFBundleVersion of the kext.
+
+         <Linked Against>
+                The index numbers of all other kexts that this kext has a
+                reference to.
+
+         The following options are available for the showloaded command:
+
+         —show-mach-headers
+                Show the mach headers of the loaded extensions and/or kernel, if
+                —show-kernel is specified.
+
+         —show <loaded|unloaded|all>
+                Restrict output to a specific load state.
+
+         —collection <boot|sys|aux|codeless>
+                Restrict the load information to a particular kind.  Defaults to
+                all non-codeless kexts if unspecified.  To display information
+                about codeless kexts and dexts that the kernel knows about, use
+                —collection codeless —show all.
+
+         —sort  Sort the output by load address of each extension, instead of by
+                index.
+
+         —list-only
+                Print the list of extensions only, omitting the header on the
+                first line.
+
+         —arch-info
+                Include the architecture info in output.
+
+         —no-kernel-components
+                Do not show kernel components in output.
+
+         —show-kernel
+                Show load information about the kernel in the output.  Use with
+                —show-mach-headers to view the kernel mach header.
+
+       • dumpstate: Display diagnostic information about the state of
+         kernelmanagerd(8).
+
+       • find: Locate and print paths of kexts (or kexts in collections)
+         matching the filter criteria.  For more information on filtering, see
+         FILTERING OPTIONS.  Searches are performed using the same kext
+         management logic used elsewhere in kmutil, by which only kexts
+         specified with the repository or bundle options are eligible; this is
+         specifically not an exhaustive, recursive filesystem search.
+
+       • check: Check that load information and/or kext collections on the
+         system are consistent.
+
+         —collection-linkage
+                Check to see that the collections on the system are properly
+                linked together by inspecting the UUID metadata in the prelink
+                info section of each collection on the system.
+
+         —load-info
+                Check to see that the load information in the kernel properly
+                mirrors the collections on disk.  This is the default action if
+                no other options are specified.
+
+         —kernel-only
+                If checking load info, just check that the kernel matches, and
+                no other kexts.
+
+         —collection <boot|sys|aux>:
+                Restrict consistency check to one (or more) of the specified
+                collection types.  If unspecified, check all by default.
+
+       • log: Display logging information about the kext management subsystem.
+         This is a wrapper around the system log(1) command with a pre-defined
+         predicate to show only logs from kernelmanagerd and kmutil.
+
+       • print-diagnostics: Perform all possible tests on one or more kexts, and
+         indicate whether or not the kext can be successfully built into a
+         collection.  If there are issues found with the kext, diagnostic
+         information is reported which can help to isolate and resolve the
+         problem.  Note that some tests require root.  Note that custom
+         collections, variants, and architectures can be specified with the
+         GENERIC and COLLECTION kmutil options.
+
+         -p, —bundle-path
+                Print diagnostics for the bundle specified at this path (can be
+                specified more than once).
+
+         -Z —no-resolve-dependencies
+                Don’t resolve kext dependencies
+
+         -D —diagnose-dependencies
+                Recursively diagnose all kext dependencies of each kext
+                specified with -p.  Ignored when -Z is present.
+
+         —plugins
+                Diagnose each kext found in the PlugIns directory of kexts
+                specified with -p.
+
+         —do-staging
+                Perform kext staging to the SIP protected location.  This test
+                requires root privileges.
+
+       • clear-staging: Clear the staging directory managed by kernelmanagerd(8)
+         and kmutil(8).
+
+       • migrate: System subcommand used during a software update.
+
+       • install: System subcommand used to update the Boot and System kext
+         collections.
+
+RECOVERY COMMANDS
+       The following commands can only be run in Recovery Mode.
+
+       • trigger-panic-medic: Remove the auxiliary kext collection and remove
+         all kext approvals on the next boot.  This subcommand can only be used
+         in Recovery Mode.  This command can be used to recover the system from
+         a kext that causes a kernel panic.  After calling trigger-panic-medic,
+         all previously installed kexts will prompt the user to re-approve them
+         when they are loaded or installed.
+
+       • configure-boot: Configure a custom boot object policy.  This command
+         can be used to install a custom mach-o file from which the system will
+         boot.  In order to install custom boot objects, you must first enter
+         Medium Security by using the Startup Disk utility in Recovery Mode.
+         Setting a custom boot object will further lower the system security to
+         Permissive Security, and you will be prompted to confirm this action.
+
+         -c, —custom-boot-object
+                The mach-o that the booter will load and start.  The file can be
+                optionally compressed and wrapped in an img4.
+
+         -C, —compress
+                Compress the custom boot object
+
+         -v, —volume
+                Install the custom boot object for the specified volume
+
+OPTIONS
+   GLOBAL OPTIONS
+       The following options are global to most kmutil subcommands.
+
+       -a, —arch
+              Specify the architecture to use for the extensions or collections
+              specified.  Defaults to the current running architecture.
+
+       -V, —variant-suffix
+              Specify a variant, i.e., development, debug, or kasan, of
+              extensions or collections to prefer instead of the release
+              defaults.
+
+       -z, —no-authentication
+              Disable staging and validation of extensions when performing an
+              action.
+
+       -v, —verbose
+              Enable verbose output.
+
+       -r, —repository
+              Paths to directories containing extensions.  If -R is specified,
+              the volume root will be automatically prepended.
+
+       -R, —volume-root
+              Specify the target volume to operate on.  Defaults to /.
+
+   FILTERING OPTIONS
+       The following options can be used in certain kmutil commands for
+       filtering its input or output.
+
+       -p, —bundle-path
+              Include the bundle specified at this path in the results.  Return
+              an error if not found.
+
+       -b, —bundle-identifier
+              Search for, and/or include this identifier in the results.  Return
+              an error if not found.
+
+       —optional-identifier
+              Search for, and/or include this identifier in the results, if
+              possible.
+
+       —elide-identifier
+              Do not include this identifier in the results.
+
+       -f, —filter
+              Specify a filter, in predicate syntax, which must match against
+              properties of an extension to be included in the input or output.
+              This argument can be overridden by other arguments for specifying
+              and including extensions.
+
+       -F, —filter-all
+              Specify a filter, in predicate syntax, which must match against
+              properties of an extension to be included in the input or output.
+              This argument can not be overridden by other arguments for
+              specifying and including extensions.
+
+       For more information on predicate filter syntax, see the predicate
+       programming guide available in the Apple developer documentation.
+
+   COLLECTION OPTIONS
+       The following options can be used to specify paths and options for
+       handling kext collections.  If left unspecified, collection paths will
+       default to the default paths for the system kext collections.
+
+       -B, —boot-path
+              The path to the boot kext collection.
+
+       -S, —system-path
+              The path to the system kext collection.
+
+       -A, —aux-path
+              The path to the auxiliary kext collection.
+
+       -M, —allow-missing-collections
+              Recover gracefully, where applicable, if a collection is missing.
+
+EXAMPLES
+       Inspect the contents of system kext collections:
+
+
+              $ kmutil inspect -v --show-mach-header -B /System/Library/KernelCollections/BootKernelExtensions.kc
+              $ kmutil inspect --show-fileset-entries --bundle-identifier com.apple.kernel
+
+
+       Load and unload kexts:
+
+
+              $ kmutil load -b com.apple.filesystems.apfs
+              $ kmutil load -p /Library/Extensions/foo.kext
+              $ kmutil unload -p /System/Library/Extensions/apfs.kext
+
+
+       Show load information about kexts:
+
+
+              $ kmutil showloaded --show-mach-headers --bundle-identifier com.example.foo
+              $ kmutil showloaded --show-kernel --collection boot
+              $ kmutil showloaded --show unloaded --filter "'CFBundleVersion' == '15.2.13'"
+
+
+       Find dependencies of kexts:
+
+
+              $ kmutil libraries -p /Library/Extensions/foo.kext --xml | pbcopy
+
+
+       Create custom kext collections:
+
+
+              $ kmutil -n boot -B myboot.kc -k mykernel --elide-identifier com.apple.filesystems.apfs
+
+              $ kmutil -n boot sys -B myboot.kc -S mysys.kc -V debug
+
+              $ kmutil -n boot -B myboot.kc -k mykernel
+              $ kmutil -n sys -B myboot.kc -S mysys.kc -F "'OSBundleRequired' == 'Safe Boot'" -s stripkexts
+
+              $ kmutil -n aux -r /Library/Extensions -L
+
+
+DIAGNOSTICS
+       kmutil exits with a zero status on success.  On error, kmutil prints an
+       error message and then exits with a non-zero status.
+
+       Well known exit codes:
+
+       • 3 : kmutil failed because the kext is missing when trying to unload it.
+
+       • 27 : kmutil failed because user approval is required.
+
+       • 28 : kmutil failed because a reboot is required.
+
+COMPLETIONS
+       For frequent users, kmutil can generate a shell completion script by
+       invoking:
+
+
+              $ kmutil --generate-completion-script <shell>
+
+
+       This option supports zsh(1), bash(1), and fish.  If no shell is
+       specified, then a completion script will be generated for the current
+       running shell.
+
+   SEE ALSO
+       kernelmanagerd(8)
+
+
+

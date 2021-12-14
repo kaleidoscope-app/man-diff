@@ -1,0 +1,28 @@
+notifyd(8)                   System Manager's Manual                  notifyd(8)
+
+NAME
+     notifyd – notification server
+
+SYNOPSIS
+     notifyd [-d] [-log_file path] [-shm_pages npages]
+
+DESCRIPTION
+     notifyd is the server for the Mac OS X notification system described in
+     notify(3).  The server is started automatically by launchd during system
+     startup.
+
+     The -d option causes notifyd to log debugging messages to a log file.
+     Messages are not logged to ASL to avoid potential deadlocks, since the ASL
+     system makes use of the notify(3) system.
+
+     The default log file is /var/log/notifyd.log.  An alternate log file path
+     may be specified following the -log_file flag.
+
+     The -shm_pages npages option sets the number of shared memory pages used
+     for passive notification.  The default is one page.  If a value of zero is
+     specified, shared memory is disabled and passive notifications are
+     performed using IPC between the client and the server.
+
+SEE ALSO
+     notify(3).
+

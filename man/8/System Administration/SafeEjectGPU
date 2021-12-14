@@ -1,0 +1,153 @@
+SafeEjectGPU(8)              System Manager's Manual             SafeEjectGPU(8)
+
+NAME
+     SafeEjectGPU – Facilitate safe eject/disconnect of eGPU(s) from system
+
+SYNOPSIS
+     SafeEjectGPU [gpuid <gpuid>] [gpuids <gpuid1>,<gpuid2>,...] [gpus] [apps]
+                  [status] [Eject] [Initiate] [Relaunch] [Finalize] [Cancel]
+                  [RelaunchPID <PID>] ...
+
+DESCRIPTION
+     The SafeEjectGPU command is used to prepare for safe eject/disconnect of
+     eGPUs from the system.  This involves interacting with apps to migrate off
+     of ejecting eGPU(s), and triggering the eject itself.  This tool can also
+     be used to view what GPUs are attached to the system, their eject status,
+     and what apps hold references to each.
+
+     A list of commands and their descriptions - note that commands affecting
+     state are capitalized, and that multiple (including repeated) commands can
+     occupy the same command line:
+
+     gpus               Lists attributes of GPUs currently attached to system
+                        (gpuid, vendor/model, flags)
+
+     gpuid <gpuid>      Specifies which GPU(s) subsequent commands apply to.
+                        The default (0x0000) means all eGPUs.  See output of
+                        gpus command for valid <gpuid> values (of the form
+                        0x7005) to use.
+
+     gpuids <gpuid1>,...
+                        Comma seperated list of GPU(s) for the app to select
+                        from. See output of gpus command for valid <gpuid>
+                        values (of the form 0x7005) to use.
+
+     apps               Lists apps holding references to specified GPU - and app
+                        attributes/properties like PID, RPID, USER, PROCESS,
+                        APIS (Metal, GL/CL, GVA), BUNDLE_IDENTIFIER, PATH,
+                        GPUEjectPolicy and GPUSelectionPolicy where specified.
+
+     status             Shows eject state of specified eGPU(s) (Present,
+                        Initiated, Finalized).
+
+     Eject              Performs the full Eject sequence ( Initiate + Relaunch +
+                        Finalize ) of specified GPU(s).
+
+     Initiate           Initiates eject of specified eGPU(s).  These eGPUs are
+                        temporarily hidden from API instantiations.
+
+     Relaunch           Interacts with apps that hold references to specified
+                        eGPU(s) - to facilitate migration to remaining GPUs.
+
+     Finalize           Finalizes eject of specified eGPU(s) - must be
+                        physically unplugged before they can be used again.
+
+     Cancel             Cancels initiated eject of specified GPU(s) - instead of
+                        Finalized.
+
+     RelaunchPID <PID>  Apply relaunch stimulus to one particular PID - for app
+                        relaunch stimulus testing.
+
+     RelaunchPIDOnGPU <PID>
+                        Apply relaunch stimulus to one particular PID with set
+                        of limited GPUs to select from, use gpuids to limit the
+                        GPUs seen by an app.
+
+     LaunchOnGPU <path>
+                        Launch application from given bundle path with set of
+                        limited GPUs, use gpuids to limit the GPUs seen by an
+                        app. If the instance of an app is already running, this
+                        command has no effect.
+
+EXAMPLES
+     $ SafeEjectGPU gpus
+     List eGPUs.  Output is useful for cut-n-paste of example specified gpuid
+     values used below $ SafeEjectGPU gpus apps status
+     List all eGPUs and Apps on all eGPUs along with eject status of all eGPUs
+
+     $ SafeEjectGPU Eject
+     Perform full Eject sequence on all eGPUs
+
+     $ SafeEjectGPU gpuid 0x7005 Eject
+     Perform full Eject sequence on specified eGPU
+
+     $ SafeEjectGPU gpus apps gpuid 0x7153 apps
+     Lists all eGPUs and apps on all eGPUs and on integrated GPU as well
+
+     $ SafeEjectGPU Initiate RelaunchPID 12345 Cancel
+     Hide eGPUs and send relaunch stimulus to PID without doing full eject
+
+     $ SafeEjectGPU gpuids 0x7005,0x7153 RelaunchPIDOnGPU <pid>
+     Limits GPU selection for PID to either eGPU or Integrated GPU on relaunch
+
+     $ SafeEjectGPU gpuids 0x7005 LaunchOnGPU /Applications/Calculator.app
+     Launches calculator app on specified eGPU
+
+
+PLIST PROPERTIES
+     The following properties are generally inferred.  Some values can be
+     specified in the app's Info.plist.  They affect eGPU eject and API
+     selection behaviors.  Generally, these properties won't need to be
+     specified:
+
+     GPUEjectPolicy
+             Inferred/Settable GPUEjectPolicy values for dealing with apps that
+             needs to drop references to ejecting eGPU.  Establisehd in app
+             bundle's Info.plist.  Possible values:
+
+             relaunch   Send AppKit quit-with-save event followed by open-with-
+                        restore (relaunch app using alternate GPU(s)).
+
+             wait       Just wait for GPU references to drop (without sending
+                        events or signals).
+
+             kill       Use sigKill to force app exit (for apps that will
+                        relaunch via launchd - using alternate GPU(s)).
+
+             ignore     Ignore - necessary for some internal GPU/display
+                        components - working to eliminate its use.
+
+             Inferred-Only GPUEjectPolicy values (you can't specify these
+             values, but you'll see them as defaulted/inferred policies in apps
+             output):
+
+             wrelaunch  Wait momentarily for processing of Metal GPU change
+                        notifications before resorting to relaunch
+                         (as necessary).
+
+             jrelaunch  Just relaunch
+                         without waiting (since OpenGL/OpenCL are in use).
+
+             rwait      When a process is subordinate to another, "responsible",
+                        process (see RPID column), Eject actions apply to the
+                        responsible process, who in turn deals with subordinates
+                        to eliminate their ejecting eGPU references.
+
+     GPUSelectionPolicy
+              Settable values that affect instantiation of Metal and OpenGL/CL
+              contexts (wrt eGPU use).  Established in app bundle's Info.plist.
+              Possible values:
+
+              avoidRemovable   Avoid creation of MTLCommandQueues, and OpenGL/CL
+                               contexts on eGPUs.
+
+              preferRemovable  Prefer creation of MTLCommandQueues, and
+                               OpenGL/CL contexts on eGPUs.
+
+SEE ALSO
+     plist(5) sudo(8) launchd(8)
+
+HISTORY
+     The command line SafeEjectGPU tool first appeared in the 10.13.4 release of
+     Mac OS X.
+

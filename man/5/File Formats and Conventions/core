@@ -1,0 +1,44 @@
+CORE(5)                        File Formats Manual                       CORE(5)
+
+NAME
+     core – memory image file format
+
+SYNOPSIS
+     #include <sys/param.h>
+
+DESCRIPTION
+     A small number of signals which cause abnormal termination of a process
+     also cause a record of the process's in-core state to be written to disk
+     for later examination by one of the available debuggers.  (See
+     sigaction(2).) This memory image is written to a file named by default
+     core.pid, where pid is the process ID of the process, in the /cores
+     directory, provided the terminated process had write permission in the
+     directory, and the directory existed.
+
+     The maximum size of a core file is limited by setrlimit(2).  Files which
+     would be larger than the limit are not created.
+
+     The core file consists of the Mach-O(5) header as  described in the
+     ⟨mach-o/loader.h⟩ file.  The remainder of the core file consists of various
+     sections described in the Mach-O(5) header.
+
+NOTE
+     Core dumps are disabled by default under Darwin/Mac OS X.  To re-enable
+     core dumps, a privileged user must do one of the following
+
+     * Edit /etc/launchd.conf or $HOME/.launchd.conf and add a line specifying
+     the limit limit core unlimited
+
+     * A privileged user can also enable cores with launchctl limit core
+     unlimited
+
+     * A privileged user can also enable core files by using ulimit(1) or
+     limit(1) depending upon the shell.
+
+SEE ALSO
+     gdb(1), setrlimit(2), sigaction(2), Mach-O(5), launchd.conf(5),
+     launchd.plist(5), sysctl(8)
+
+HISTORY
+     A core file format appeared in Version 6 AT&T UNIX.
+

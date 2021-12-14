@@ -1,0 +1,97 @@
+idebug(n)                                                              idebug(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       idebug - Interactive debugging environment in TkCon
+
+SYNOPSIS
+       idebug body ?level?
+
+       idebug break ?id?
+
+       idebug {echo ?id?} ?args?
+
+       idebug id ?id?
+
+       idebug off
+
+       idebug on ?id?
+
+       idebug {puts ?id?} args
+
+       idebug show type ?level? ?VERBOSE?
+
+       idebug trace ?level?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The idebug command provides an interactive debugging environment for
+       procedures via TkCon.  You can place idebug break commands into your
+       procedure to create breakpoints.  It will pop up the TkCon console and
+       put you into a "debugging" mode.  The body, show & trace methods are
+       intended for internal use only.  This procedure works for minimal
+       debugging sessions.  Comments are encouraged.
+
+       idebug body ?level?
+              Prints out the body of the command (if it is a procedure) at the
+              specified level.  level defaults to the current level.
+
+       idebug break ?id?
+              Creates a breakpoint within a procedure.  This will only trigger
+              if idebug is on and the id matches the pattern.  If so, TkCon will
+              pop to the front with the prompt changed to an idebug prompt.  You
+              are given the basic ability to observe the call stack an query/set
+              variables or execute Tcl commands at any level.  A separate
+              history is maintained in debugging mode.  To see the special
+              commands available at the debug prompt, type ? and hit return.
+
+       idebug {echo ?id?} ?args?
+              Behaves just like echo, but only triggers when idebug is on.  You
+              can specify an optional id to further restrict triggering.  If no
+              id is specified, it defaults to the name of the command in which
+              the call was made.
+
+       idebug id ?id?
+              Query or set the idebug id.  This id is used by other idebug
+              methods to determine if they should trigger or not.  The idebug id
+              can be a glob pattern and defaults to *.
+
+       idebug off
+              Turns idebug off.
+
+       idebug on ?id?
+              Turns idebug on.  If id is specified, it sets the id to it.
+
+       idebug {puts ?id?} args
+              Behaves just like puts, but only triggers when idebug is on.  You
+              can specify an optional id to further restrict triggering.  If no
+              id is specified, it defaults to the name of the command in which
+              the call was made.
+
+       idebug show type ?level? ?VERBOSE?
+              type must be one of vars, locals or globals.  This method will
+              output the variables/locals/globals present in a particular level.
+              If VERBOSE is added, then it actually dumps out the values as
+              well.  level defaults to the level in which this method was
+              called.
+
+       idebug trace ?level?
+              Prints out the stack trace from the specified level up to the top
+              level.  level defaults to the current level.
+
+SEE ALSO
+       dump(n), observe(n), tkcon(1), tkcon(n), tkconrc(5)
+
+KEYWORDS
+       Tk, console, debug
+
+COPYRIGHT
+       Copyright (c) Jeffrey Hobbs <jeff at hobbs.org>
+
+
+
+

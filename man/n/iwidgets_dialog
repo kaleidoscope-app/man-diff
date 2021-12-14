@@ -1,0 +1,122 @@
+iwidgets::dialog(1)              [incr Widgets]              iwidgets::dialog(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::dialog - Create and manipulate a dialog widget
+
+SYNOPSIS
+       iwidgets::dialog pathName ?options?
+
+INHERITANCE
+       itk::Toplevel <- iwidgets::Shell <- iwidgets::Dialogshell <-
+       iwidgets::Dialog
+
+STANDARD OPTIONS
+       background      cursor         foreground
+
+       See the "options" manual entry for details on the standard options.
+
+INHERITED OPTIONS
+       buttonBoxPadX   buttonBoxPadY  buttonBoxPos    padX
+       padY            separator      thickness
+
+       See the "dialogshell" manual entry for details on the above inherited
+       options.
+
+       height          master         modality        width
+
+       See the "shell" manual entry for details on the above inherited options.
+
+       title
+
+       See the "Toplevel" manual entry for details on the above inherited
+       options.
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::dialog command creates a dialog box providing standard
+       buttons and a child site for use in derived classes.  The buttons include
+       ok, apply, cancel, and help.  Methods and Options exist to configure the
+       buttons and their containing box.
+
+
+METHODS
+       The iwidgets::dialog command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for dialog widgets:
+
+INHERITED METHODS
+       add             buttonconfigure                defaulthide
+       index           insert         invoke          show
+
+       See the "buttonbox" manual entry for details on the above inherited
+       methods.
+
+       childsite
+
+       See the "dialogshell" manual entry for details on the above inherited
+       methods.
+
+       activate        center         deactivate
+
+       See the "shell" manual entry for details on the above inherited methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::dialog command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::dialog command.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::dialog .d -modality global
+               .d buttonconfigure OK -command {puts OK; .d deactivate 1}
+               .d buttonconfigure Apply -command {puts Apply}
+               .d buttonconfigure Cancel -command {puts Cancel; .d deactivate 0}
+               .d buttonconfigure Help -command {puts Help}
+
+               listbox [.d childsite].lb -relief sunken
+               pack [.d childsite].lb -expand yes -fill both
+
+               if {[.d activate]} {
+                   puts "Exit via OK button"
+               } else {
+                   puts "Exit via Cancel button"
+               }
+
+
+AUTHOR
+       Mark L. Ulferts
+
+       Bret A. Schuhmacher
+
+KEYWORDS
+       dialog, dialogshell, shell, widget
+
+
+

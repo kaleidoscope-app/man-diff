@@ -1,0 +1,75 @@
+vwait(n)                      Tcl Built-In Commands                     vwait(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       vwait - Process events until a variable is written
+
+SYNOPSIS
+       vwait varName
+________________________________________________________________________________
+
+
+DESCRIPTION
+       This command enters the Tcl event loop to process events, blocking the
+       application if no events are ready.  It continues processing events until
+       some event handler sets the value of variable varName.  Once varName has
+       been set, the vwait command will return as soon as the event handler that
+       modified varName completes.  varName must be globally scoped (either with
+       a call to global for the varName, or with the full namespace path
+       specification).
+
+       In some cases the vwait command may not return immediately after varName
+       is set.  This can happen if the event handler that sets varName does not
+       complete immediately.  For example, if an event handler sets varName and
+       then itself calls vwait to wait for a different variable, then it may not
+       return for a long time.  During this time the top-level vwait is blocked
+       waiting for the event handler to complete, so it cannot return either.
+
+EXAMPLES
+       Run the event-loop continually until some event calls exit.  (You can use
+       any variable not mentioned elsewhere, but the name forever reminds you at
+       a glance of the intent.)
+              vwait forever
+
+       Wait five seconds for a connection to a server socket, otherwise close
+       the socket and continue running the script:
+              # Initialise the state
+              after 5000 set state timeout
+              set server [socket -server accept 12345]
+              proc accept {args} {
+                 global state connectionInfo
+                 set state accepted
+                 set connectionInfo $args
+              }
+
+              # Wait for something to happen
+              vwait state
+
+              # Clean up events that could have happened
+              close $server
+              after cancel set state timeout
+
+              # Do something based on how the vwait finished...
+              switch $state {
+                 timeout {
+                    puts "no connection on port 12345"
+                 }
+                 accepted {
+                    puts "connection: $connectionInfo"
+                    puts [lindex $connectionInfo 0] "Hello there!"
+                 }
+              }
+
+
+SEE ALSO
+       global(n), update(n)
+
+
+KEYWORDS
+       event, variable, wait
+
+
+

@@ -1,0 +1,87 @@
+lpinfo(8)                          Apple Inc.                          lpinfo(8)
+
+
+
+NAME
+       lpinfo - show available devices or drivers (deprecated)
+
+SYNOPSIS
+       lpinfo [ -E ] [ -h server[:port] ] [ -l ] [ --device-id device-id-string
+       ] [ --exclude-schemes scheme-list ] [ --include-schemes scheme-list ] [
+       --language locale ] [ --make-and-model name ] [ --product name ] -m
+       lpinfo [ -E ] [ -h server[:port] ] [ -l ] [ --exclude-schemes scheme-list
+       ] [ --include-schemes scheme-list ] [ --timeout seconds ] -v
+
+DESCRIPTION
+       lpinfo lists the available devices or drivers known to the CUPS server.
+       The first form (-m) lists the available drivers, while the second form
+       (-v) lists the available devices.
+
+OPTIONS
+       lpinfo accepts the following options:
+
+       -E   Forces encryption when connecting to the server.
+
+       -h server[:port]
+            Selects an alternate server.
+
+       -l   Shows a "long" listing of devices or drivers.
+
+       --device-id device-id-string
+            Specifies the IEEE-1284 device ID to match when listing drivers with
+            the -m option.
+
+       --exclude-schemes scheme-list
+            Specifies a comma-delimited list of device or PPD schemes that
+            should be excluded from the results.  Static PPD files use the
+            "file" scheme.
+
+       --include-schemes scheme-list
+            Specifies a comma-delimited list of device or PPD schemes that
+            should be included in the results.  Static PPD files use the "file"
+            scheme.
+
+       --language locale
+            Specifies the language to match when listing drivers with the -m
+            option.
+
+       --make-and-model name
+            Specifies the make and model to match when listing drivers with the
+            -m option.
+
+       --product name
+            Specifies the product to match when listing drivers with the -m
+            option.
+
+       --timeout seconds
+            Specifies the timeout when listing devices with the -v option.
+
+CONFORMING TO
+       The lpinfo command is unique to CUPS.
+
+EXAMPLES
+       List all devices:
+
+           lpinfo -v
+
+       List all drivers:
+
+           lpinfo -m
+
+       List drivers matching "HP LaserJet":
+
+           lpinfo --make-and-model "HP LaserJet" -m
+
+NOTES
+       CUPS printer drivers and backends are deprecated and will no longer be
+       supported in a future feature release of CUPS.  Printers that do not
+       support IPP can be supported using applications such as ippeveprinter(1).
+
+SEE ALSO
+       lpadmin(8), CUPS Online Help (http://localhost:631/help)
+
+COPYRIGHT
+       Copyright © 2007-2019 by Apple Inc.
+
+
+

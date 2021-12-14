@@ -1,0 +1,78 @@
+NEWFS_EXFAT(8)               System Manager's Manual              NEWFS_EXFAT(8)
+
+NAME
+     newfs_exfat – construct a new ExFAT file system
+
+SYNOPSIS
+     newfs_exfat [-N] [-R] [-I volume-serial-number] [-S bytes-per-sector]
+                 [-a sectors-per-FAT] [-b bytes-per-cluster]
+                 [-c sectors-per-cluster] [-n number-of-FATs] [-s total-sectors]
+                 [-v volume-name] special
+
+DESCRIPTION
+     The newfs_exfat utility creates an ExFAT file system on device special.  If
+     the -R option is not given, and the device is already formatted as ExFAT,
+     it will preserve the partition offset, bytes per cluster, FAT offset and
+     size, number of FATs, offset to start of clusters, number of clusters,
+     volume serial number, and volume name (label).  If a volume name was
+     specified via the -v option, that name is used instead of the volume's
+     previous name.
+
+     The options are as follow:
+
+     -N      Don't create a file system: just print out parameters.
+
+     -R      Do not check whether the device is currently formatted as ExFAT.
+             Always derive the partition offset, bytes per cluster, FAT offset
+             and size, and offset to start of clusters based on the device type
+             and size.
+
+     -I volume-serial-number
+             Volume ID, a 32-bit integer.
+
+     -S bytes-per-sector
+             Number of bytes per sector.  Acceptable values are powers of 2 in
+             the range 512 through 4096.
+
+     -a sectors-per-FAT
+             Number of sectors per FAT.
+
+     -b bytes-per-cluster
+             File system block size (bytes per cluster).  Acceptable values are
+             powers of 2 in the range 512 through 33554432.
+
+     -c sectors-per-cluster
+             Sectors per cluster.  Acceptable values are powers of 2 in the
+             range 1 through 65536.
+
+     -n number-of-FATs
+             Number of FATs.  Acceptable values are 1 or 2.  The default is 1.
+             Using any value other than 1 is discouraged, and may be
+             incompatible with other devices.
+
+     -s total-sectors
+             The total number of sectors in the device.
+
+     -v volume-name
+             Volume name (label).  The name will be converted to UTF-16, and
+             must be no longer than 11 UTF-16 characters.  ASCII control
+             characters and some punctuation characters are not allowed (similar
+             to DOS 8.3-style names).  NOTE: The volume name may be an empty
+             (zero-length) string.
+
+EXAMPLES
+           newfs_exfat /dev/disk0s1
+     Create a file system, using default parameters (or existing ExFAT layout),
+     on /dev/rdisk0s1.
+           newfs_exfat -v Hello disk2s1
+     Create a file system with the name "Hello" on /dev/rdisk2s1.
+
+SEE ALSO
+     mount_exfat(8), fsck_exfat(8)
+
+DIAGNOSTICS
+     Exit status is 0 on success and 1 on error.
+
+HISTORY
+     The newfs_exfat command appeared in Mac OS X 10.6.3.
+

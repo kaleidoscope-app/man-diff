@@ -1,0 +1,50 @@
+MOUNT_APFS(8)                System Manager's Manual               MOUNT_APFS(8)
+
+NAME
+     mount_apfs – mount an APFS volume
+
+SYNOPSIS
+     mount_apfs [-o options] [-u user] [-g group] special directory
+     mount_apfs [-o options] -s snapshot pathname directory
+
+DESCRIPTION
+     The mount_apfs command attaches the APFS volume indicated by the device
+     special to the global file system namespace at the location indicated by
+     directory.  This command is normally executed by diskarbitrationd(8) or
+     mount(8) at boot time.
+
+     The special parameter should be the path to an APFS pseudo disk device
+     node, such as /dev/disk0s2s1 (which is a volume inside the container
+     /dev/disk0s2), which can also be specified as simply disk0s2s1.
+
+     The options are as follows:
+
+     -o options    Options passed to mount(2) are specified with the -o option
+                   followed by a comma separated string of options.  See the
+                   mount(8) man page for possible options and their meanings.
+                   All listed options are currently supported except for the
+                   ``force, sync and [no]async'' options.
+
+     -u user       Set the owner of the files in the file system to user.  The
+                   default owner is the owner of the directory on which the file
+                   system is being mounted.  The user may be a user-name, or a
+                   numeric value.
+
+     -g group      Set the group of the files in the file system to group.  The
+                   default group is the group of the directory on which the file
+                   system is being mounted.  The group may be a group-name, or a
+                   numeric value.
+
+     -s snapshot   The name of the snapshot to mount.  In this usage pathname is
+                   the mounted root directory of the base volume containing the
+                   snapshot.
+
+EXIT STATUS
+     The mount_apfs utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     mount(2), unmount(2), fstab(5), mount(8), umount(8)
+
+HISTORY
+     The mount_apfs utility first appeared in OS X 10.12.
+

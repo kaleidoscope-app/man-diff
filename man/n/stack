@@ -1,0 +1,124 @@
+struct::stack(n)               Tcl Data Structures              struct::stack(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       struct::stack - Create and manipulate stack objects
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require struct::stack  ?1.5.1?
+
+       stackName option ?arg arg ...?
+
+       stackName clear
+
+       stackName destroy
+
+       stackName get
+
+       stackName getr
+
+       stackName peek ?count?
+
+       stackName peekr ?count?
+
+       stackName trim ?newsize?
+
+       stackName trim* ?newsize?
+
+       stackName pop ?count?
+
+       stackName push item ?item...?
+
+       stackName size
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The ::struct namespace contains a commands for processing finite stacks.
+
+       It exports a single command, ::struct::stack. All functionality provided
+       here can be reached through a subcommand of this command.
+
+       Note: As of version 1.3.3 of this package a critcl based C implementation
+       is available. This implementation however requires Tcl 8.4 to run.
+
+       The ::struct::stack command creates a new stack object with an associated
+       global Tcl command whose name is stackName.  This command may be used to
+       invoke various operations on the stack.  It has the following general
+       form:
+
+       stackName option ?arg arg ...?
+              Option and the args determine the exact behavior of the command.
+              The following commands are possible for stack objects:
+
+       stackName clear
+              Remove all items from the stack.
+
+       stackName destroy
+              Destroy the stack, including its storage space and associated
+              command.
+
+       stackName get
+              Returns the whole contents of the stack as a list, without
+              removing them from the stack.
+
+       stackName getr
+              A variant of get, which returns the contents in reversed order.
+
+       stackName peek ?count?
+              Return the top count items of the stack, without removing them
+              from the stack.  If count is not specified, it defaults to 1.  If
+              count is 1, the result is a simple string; otherwise, it is a
+              list.  If specified, count must be greater than or equal to 1.  If
+              there are not enoughs items on the stack to fulfull the request,
+              this command will throw an error.
+
+       stackName peekr ?count?
+              A variant of peek, which returns the items in reversed order.
+
+       stackName trim ?newsize?
+              Shrinks the stack to contain at most newsize elements and returns
+              a list containing the elements which were removed. Nothing is done
+              if the stack is already at the specified size, or smaller. In that
+              case the result is the empty list.
+
+       stackName trim* ?newsize?
+              A variant of trim which performs the shrinking, but does not
+              return the removed elements.
+
+       stackName pop ?count?
+              Return the top count items of the stack, and remove them from the
+              stack.  If count is not specified, it defaults to 1.  If count is
+              1, the result is a simple string; otherwise, it is a list.  If
+              specified, count must be greater than or equal to 1.  If there are
+              not enoughs items on the stack to fulfull the request, this
+              command will throw an error.
+
+       stackName push item ?item...?
+              Push the item or items specified onto the stack.  If more than one
+              item is given, they will be pushed in the order they are listed.
+
+       stackName size
+              Return the number of items on the stack.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category struct ::
+       stack of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       graph, matrix, queue, tree
+
+CATEGORY
+       Data structures
+
+
+

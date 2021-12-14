@@ -1,0 +1,222 @@
+iwidgets::scrolledcanvas(1)      [incr Widgets]      iwidgets::scrolledcanvas(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::scrolledcanvas - Create and manipulate scrolled canvas widgets
+
+SYNOPSIS
+       iwidgets::scrolledcanvas pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Scrolledwidget <-
+       iwidgets::Scrolledcanvas
+
+STANDARD OPTIONS
+
+       activeBackground    background         borderWidth       cursor
+       exportSelection     font               foreground        highlightColor
+       highlightThickness  insertBorderWidth  insertOffTime     insertOnTime
+       insertWidth         relief             selectBackground  selectBorderWidth
+       selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       closeEnough     confine        scrollRegion    xScrollIncrement
+       yScrollIncrement
+
+       See the "canvas" widget manual entry for details on the above associated
+       options.
+
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" widget manual entry for details on the above
+       associated options.
+
+INHERITED OPTIONS
+       disabledForeground             labelBitmap     labelFontlabelImage
+       labelMargin     labelPos       labelText       labelVariable
+       state           sticky
+
+       See the "labeledwidget" class manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           autoMargin
+       Class:          AutoMargin
+       Command-Line Switch:           -automargin
+
+              Specifies the autoresize extra margin to reserve.  This option is
+              only effective with autoresize turned on.  The default is 10.
+
+       Name:           autoResize
+       Class:          AutoResize
+       Command-Line Switch:           -autoresize
+
+              Automatically adjusts the scrolled region to be the bounding box
+              covering all the items in the canvas following the execution of
+              any method which creates or destroys items.  Thus, as new items
+              are added, the scrollbars adjust accordingly.
+
+       Name:           height
+       Class:          Height
+       Command-Line Switch:           -height
+
+              Specifies the height of the scrolled canvas widget in any of the
+              forms acceptable to Tk_GetPixels.  The default height is 30
+              pixels.
+
+       Name:           hscrollMode
+       Class:          ScrollMode
+       Command-Line Switch:           -hscrollmode
+
+              Specifies the the display mode to be used for the horizontal
+              scrollbar: static, dynamic, or none.  In static mode, the scroll
+              bar is displayed at all times.  Dynamic mode displays the scroll
+              bar as required, and none disables the scroll bar display.  The
+              default is static.
+
+       Name:           sbWidth
+       Class:          Width
+       Command-Line Switch:           -sbwidth
+
+              Specifies the width of the scrollbar in any of the forms
+              acceptable to Tk_GetPixels.  The default width is 15 pixels..
+
+       Name:           scrollMargin
+       Class:          ScrollMargin
+       Command-Line Switch:           -scrollmargin
+
+              Specifies the distance between the canvas and scrollbar in any of
+              the forms acceptable to Tk_GetPixels.  The default is 3 pixels.
+
+       Name:           textBackground
+       Class:          Background
+       Command-Line Switch -textbackground
+
+              Specifies the background color for the canvas.  This allows the
+              background within the canvas to be different from the normal
+              background color.
+
+       Name:           vscrollMode
+       Class:          ScrollMode
+       Command-Line Switch:           -vscrollmode
+
+              Specifies the the display mode to be used for the vertical
+              scrollbar: static, dynamic, or none.  In static mode, the scroll
+              bar is displayed at all times.  Dynamic mode displays the scroll
+              bar as required, and none disables the scroll bar display.  The
+              default is static.
+
+       Name:           width
+       Class:          Width
+       Command-Line Switch:           -width
+
+              Specifies the width of the scrolled canvas widget in any of the
+              forms acceptable to Tk_GetPixels.  The default height is 30
+              pixels.
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::scrolledcanvas command creates a scrolled canvas with
+       additional options to manage horizontal and vertical scrollbars.  This
+       includes options to control which scrollbars are displayed and the
+       method, i.e. statically or dynamically.
+
+
+METHODS
+       The iwidgets::scrolledcanvas command creates a new Tcl command whose name
+       is pathName.  This command may be used to invoke various operations on
+       the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for scrolledcanvas widgets:
+
+ASSOCIATED METHODS
+       addtag          bbox           bind            canvasx
+       canvasy         coords         create          dchars
+       delete          dtag           find            focus
+       gettags         icursor        index           insert
+       itemconfigure   lower          move            postscript
+       raise           scale          scan            select
+       type            xview          yview
+
+       See the "canvas" manual entry for details on the associated methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::scrolledcanvas command.
+
+       pathName childsite
+              Returns the child site widget path name.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::scrolledcanvas
+              command.
+
+       pathName justify direction
+              Justifies the canvas contents via the scroll bars in one of four
+              directions: left, right, top, or bottom.
+
+
+COMPONENTS
+       Name:           canvas
+       Class:          Canvas
+
+              The canvas component is the canvas widget.  See the "canvas"
+              widget manual entry for details on the canvas component item.
+
+       Name:           horizsb
+       Class:          Scrollbar
+
+              The horizsb component is the horizontal scroll bar.  See the
+              "ScrollBar" widget manual entry for details on the horizsb
+              component item.
+
+       Name:           vertsb
+       Class:          Scrollbar
+
+              The vertsb component is the vertical scroll bar.  See the
+              "ScrollBar" widget manual entry for details on the vertsb
+              component item.
+
+
+EXAMPLE
+
+                package require Iwidgets 4.0
+                iwidgets::scrolledcanvas .sc
+
+                .sc create rectangle 100 100 400 400 -fill red
+                .sc create rectangle 300 300 600 600 -fill green
+                .sc create rectangle 200 200 500 500 -fill blue
+
+                pack .sc -padx 10 -pady 10 -fill both -expand yes
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       scrolledcanvas, canvas, widget
+
+
+

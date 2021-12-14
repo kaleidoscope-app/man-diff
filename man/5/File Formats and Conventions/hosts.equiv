@@ -1,0 +1,82 @@
+HOSTS.EQUIV(5)                 File Formats Manual                HOSTS.EQUIV(5)
+
+NAME
+     hosts.equiv, .rhosts – trusted remote hosts and host-user pairs
+
+DESCRIPTION
+     The hosts.equiv and .rhosts files list hosts and users which are
+     ``trusted'' by the local host when a connection is made via rlogind(8),
+     rshd(8), or any other server that uses ruserok(3).  This mechanism bypasses
+     password checks, and is required for access via rsh(1).
+
+     Each line of these files has the format:
+
+           hostname [username]
+
+     The hostname may be specified as a host name (typically a fully qualified
+     host name in a DNS environment) or address, +@netgroup (from which only the
+     host names are checked), or a ``+'' wildcard (allow all hosts).
+
+     The username, if specified, may be given as a user name on the remote host,
+     +@netgroup (from which only the user names are checked), or a ``+''
+     wildcard (allow all remote users).
+
+     If a username is specified, only that user from the specified host may
+     login to the local machine.  If a username is not specified, any user may
+     login with the same user name.
+
+EXAMPLES
+     somehost
+           A common usage:  users on somehost may login to the local host as the
+           same user name.
+     somehost username
+           The user username on somehost may login to the local host.  If
+           specified in /etc/hosts.equiv, the user may login with only the same
+           user name.
+     +@anetgroup username
+           The user username may login to the local host from any machine listed
+           in the netgroup anetgroup.
+     +
+     + +
+           Two severe security hazards.  In the first case, allows a user on any
+           machine to login to the local host as the same user name.  In the
+           second case, allows any user on any machine to login to the local
+           host (as any user, if in /etc/hosts.equiv).
+
+WARNINGS
+     The username checks provided by this mechanism are not secure, as the
+     remote user name is received by the server unchecked for validity.
+     Therefore this mechanism should only be used in an environment where all
+     hosts are completely trusted.
+
+     A numeric host address instead of a host name can help security
+     considerations somewhat; the address is then used directly by iruserok(3).
+
+     When a username (or netgroup, or +) is specified in /etc/hosts.equiv, that
+     user (or group of users, or all users, respectively) may login to the local
+     host as any local user.  Usernames in /etc/hosts.equiv should therefore be
+     used with extreme caution, or not at all.
+
+     A .rhosts file must be owned by the user whose home directory it resides
+     in, and must be writable only by that user.
+
+     Logins as root only check root's .rhosts file; the /etc/hosts.equiv file is
+     not checked for security.  Access permitted through root's .rhosts file is
+     typically only for rsh(1), as root must still login on the console for an
+     interactive login such as rlogin(1).
+
+FILES
+     /etc/hosts.equiv  Global trusted host-user pairs list
+     ~/.rhosts         Per-user trusted host-user pairs list
+
+SEE ALSO
+     rcp(1), rlogin(1), rsh(1), rcmd(3), ruserok(3), netgroup(5)
+
+HISTORY
+     The .rhosts file format appeared in 4.2BSD.
+
+BUGS
+     The ruserok(3) implementation currently skips negative entries (preceded
+     with a ``-'' sign) and does not treat them as ``short-circuit'' negative
+     entries.
+

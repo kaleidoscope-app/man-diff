@@ -1,0 +1,79 @@
+FSCK_EXFAT(8)                System Manager's Manual               FSCK_EXFAT(8)
+
+NAME
+     fsck_exfat – Verify and repair ExFAT file systems.
+
+SYNOPSIS
+     fsck_exfat -q device ...
+     fsck_exfat [-f] [-p] [-y | -n] [-g | -x] [-d] device ...
+
+DESCRIPTION
+     The fsck_exfat utility verifies and repairs ExFAT file systems.
+
+     The first form of fsck_exfat quickly checks the specified file systems to
+     determine whether they were cleanly unmounted.
+
+     The second form of fsck_exfat checks the specified file systems and tries
+     to repair all detected problems, requesting confirmation before making any
+     changes.  The default behavior is to always ask for confirmation of each
+     change.  Use the -n or -y options to override this default behavior.
+
+     The device parameter(s) should be a path to a "raw" disk device (a
+     character special device), such as /dev/rdisk1s1.  If you specify a "non-
+     raw" path (a block special device) such as /dev/disk1s1, or just the disk
+     name such as disk1s1, they will automatically be converted to the
+     corresponding raw disk device (/dev/rdisk1s1).
+
+     The options are as follows:
+
+           -q      Causes fsck_exfat to quickly check whether the volume was
+                   unmounted cleanly.  If the volume was unmounted cleanly, then
+                   the exit status is 0.  If the volume was not unmounted
+                   cleanly, then the exit status will be non-zero.  In either
+                   case, a message is printed to standard output describing
+                   whether the volume was clean or dirty.
+
+           -f      This option is ignored by fsck_exfat and is present only for
+                   compatibility with programs that check other file system
+                   types for consistency.
+
+           -p      Preen the specified file systems.  This option is ignored by
+                   fsck_exfat and is present only for compatibility with
+                   programs that check other file system types for consistency.
+
+           -y      Causes fsck_exfat to assume yes as the answer to all
+                   questions.  It will attempt to repair all problems that are
+                   found.
+
+           -n      Causes fsck_exfat to assume no as the answer to all
+                   questions.  The device will be opened read-only, and no
+                   repairs will be made.
+
+           -g      Causes fsck_exfat to produce its output in GUI-compatible
+                   form.  Each message is printed as a tuple containing the kind
+                   of message, the message string, and number of parameters to
+                   the message string.  Any parameters to the message string are
+                   printed on subsequent lines.  The message string uses NSLog-
+                   like substitutions.  This output format is used by
+                   applications such as Disk Utility.
+
+           -x      Causes fsck_exfat to produce its output in an XML-like form.
+                   Each message is printed as a plist(5) containing a message
+                   type, verbosity, message number, and message string.  The
+                   message string uses NSLog-like substitutions.  For message
+                   strings that contain parameters, an array of dictionaries is
+                   output.  This output format is used by applications such as
+                   Disk Utility.  It may be used by other kinds of applications
+                   which wish to parse the output of fsck_exfat.
+
+           -d      Causes fsck_exfat to produce extra debugging output.  This
+                   generally contains additional details about problems found.
+                   When writing bug reports for fsck_exfat, it is usually
+                   helpful to include the output generated from this option.
+
+SEE ALSO
+     mount_exfat(8), fsck(8)
+
+HISTORY
+     The fsck_exfat utility first appeared in Mac OS X 10.6.3.
+

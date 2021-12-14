@@ -1,0 +1,46 @@
+SLAPD-LDIF(5)                  File Formats Manual                 SLAPD-LDIF(5)
+
+
+
+NAME
+       slapd-ldif - LDIF backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The LDIF backend to slapd(8) is a basic storage backend that stores
+       entries in text files in LDIF format, and exploits the filesystem to
+       create the tree structure of the database.  It is intended as a cheap,
+       low performance easy to use backend, and it is exploited by higher-level
+       internal structures to provide a permanent storage.
+
+CONFIGURATION
+       These slapd.conf options apply to the LDIF backend database.  That is,
+       they must follow a "database ldif" line and come before any subsequent
+       "backend" or "database" lines.  Other database options are described in
+       the slapd.conf(5) manual page.
+
+       directory <dir>
+              Specify the directory where the database tree starts.  The
+              directory must exist and grant appropriate permissions (rwx) to
+              the identity slapd is running with.
+
+ACCESS CONTROL
+       The LDIF backend does not honor any of the access control semantics
+       described in slapd.access(5).  Only read (=r) access to the entry pseudo-
+       attribute and to the other attribute values of the entries returned by
+       the search operation is honored, which is performed by the frontend.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5), slapd(8), ldif(5).
+
+AUTHOR
+       Eric Stokes
+
+
+

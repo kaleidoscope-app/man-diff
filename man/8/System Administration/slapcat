@@ -1,0 +1,130 @@
+SLAPCAT(8C)                                                          SLAPCAT(8C)
+
+
+
+NAME
+       slapcat - SLAPD database to LDIF utility
+
+SYNOPSIS
+       /usr/sbin/slapcat [-afilter] [-bsuffix] [-c] [-ddebug-level]
+       [-fslapd.conf] [-Fconfdir] [-g] [-HURI] [-lldif-file] [-ndbnum]
+       [-ooption[=value]] [-ssubtree-dn] [-v]
+
+DESCRIPTION
+       Slapcat is used to generate an LDAP Directory Interchange Format (LDIF)
+       output based upon the contents of a slapd(8) database.  It opens the
+       given database determined by the database number or suffix and writes the
+       corresponding LDIF to standard output or the specified file.  Databases
+       configured as subordinate of this one are also output, unless -g is
+       specified.
+
+       The entry records are presented in database order, not superior first
+       order.  The entry records will include all (user and operational)
+       attributes stored in the database.  The entry records will not include
+       dynamically generated attributes (such as subschemaSubentry).
+
+       The output of slapcat is intended to be used as input to slapadd(8).  The
+       output of slapcat cannot generally be used as input to ldapadd(1) or
+       other LDAP clients without first editing the output.  This editing would
+       normally include reordering the records into superior first order and
+       removing no-user-modification operational attributes.
+
+OPTIONS
+       -a_filter
+              Only dump entries matching the asserted filter.  For example
+
+              slapcat -a \
+                  "(!(entryDN:dnSubtreeMatch:=ou=People,dc=example,dc=com))"
+
+              will dump all but the "ou=People,dc=example,dc=com" subtree of the
+              "dc=example,dc=com" database.  Deprecated; use -H
+              ldap:///???(filter) instead.
+
+       -b_suffix
+              Use the specified suffix to determine which database to generate
+              output for.  The -b cannot be used in conjunction with the -n
+              option.
+
+       -c     Enable continue (ignore errors) mode.  Multiple occorrences of -c
+              make slapcat(8) try harder.
+
+       -d_debug-level
+              Enable debugging messages as defined by the specified debug-level;
+              see slapd(8) for details.
+
+       -f_slapd.conf
+              Specify an alternative slapd.conf(5) file.
+
+       -F_confdir
+              specify a config directory.  If both -f and -F are specified, the
+              config file will be read and converted to config directory format
+              and written to the specified directory.  If neither option is
+              specified, an attempt to read the default config directory will be
+              made before trying to use the default config file. If a valid
+              config directory exists then the default config file is ignored.
+
+       -g     disable subordinate gluing.  Only the specified database will be
+              processed, and not its glued subordinates (if any).
+
+       -H  URI
+              use dn, scope and filter from URI to only handle matching entries.
+
+       -l_ldif-file
+              Write LDIF to specified file instead of standard output.
+
+       -n_dbnum
+              Generate output for the dbnum-th database listed in the
+              configuration file. The config database slapd-config(5), is always
+              the first database, so use -n 0 to select it.
+
+              The -n cannot be used in conjunction with the -b option.
+
+       -o_option[=value]
+              Specify an option with a(n optional) value.  Possible generic
+              options/values are:
+
+                     syslog=<subsystems>  (see `-s' in slapd(8))
+                     syslog-level=<level> (see `-S' in slapd(8))
+                     syslog-user=<user>   (see `-l' in slapd(8))
+
+                     ldif-wrap={no|<n>}
+
+       n is the number of columns allowed for the LDIF output
+       (n equal to 0 uses the default, corresponding to 76).
+       Use no for no wrap.
+
+       -s_subtree-dn
+              Only dump entries in the subtree specified by this DN.
+              Implies -b subtree-dn if no
+              -b
+              or
+              -n
+              option is given.
+              Deprecated; use -H ldap:///subtree-dn instead.
+
+       -v     Enable verbose mode.
+
+LIMITATIONS
+       For some backend types, your slapd(8) should not be running (at least,
+       not in read-write mode) when you do this to ensure consistency of the
+       database. It is always safe to run slapcat with the slapd-bdb(5),
+       slapd-hdb(5), and slapd-null(5) backends.
+
+EXAMPLES
+       To make a text backup of your SLAPD database and put it in a file called
+       ldif, give the command:
+
+            /usr/sbin/slapcat -l ldif
+
+SEE ALSO
+       ldap(3), ldif(5), slapadd(8), ldapadd(1), slapd(8)
+
+       "OpenLDAP Administrator's Guide" (http://www.OpenLDAP.org/doc/admin/)
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

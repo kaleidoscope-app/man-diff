@@ -1,0 +1,111 @@
+SNCONFIG_IMPEXP(8)           System Manager's Manual          SNCONFIG_IMPEXP(8)
+
+
+
+NAME
+       snconfig_impexp - Xsan Configuration Import/Export Tool
+
+SYNOPSIS
+       snconfig_impexp action [options]
+
+DESCRIPTION
+       The snconfig_impexp command allows machine configuration of some of the
+       various configuration files that Xsan uses.  Current values can be
+       returned in JSON format via stdout.  A JSON object can be passed to stdin
+       to cause the tool to update the configuration.  All this is done as
+       directed by the actions described below.
+
+       In almost all cases, a JSON object is written to stdout.  It will have
+       keys describing the success or failure of the requested action.  The
+       return_code key is zero if the action succeeded or one if the action
+       failed.  If the action failed, an error key will be present describing
+       the problem.  On a non-fatal error, a warnings key will be present.
+       These keys will be ignored in a JSON object passed to snconfig_impexp.
+
+       When snconfig_impexp modifies files, it first places backup-ups of the
+       files into the
+       /System/Library/Filesystems/acfs.fs/Contents/config_history directory.
+
+ACTIONS
+       -R     This action causes snconfig_impexp to read various Xsan
+              configuration files and return their contents in a JSON object
+              written to stdout.
+
+       -W     This action takes a JSON object read from stdin, parses it, and
+              writes its contents into the appropriate configuration files.  The
+              format of the JSON object is the same as that returned by the -R
+              action.  All top-level keys (other than the
+              snconfig_impexp_version key), are optional.  If a top-level key is
+              present, the key's values are written to the appropriate
+              configuration files, replacing anything that was there.  If a top-
+              level key is not present, then no changes are made to the
+              configuration represent by the key.  After all configuration
+              changes are made, the current state is returned exactly as if -R
+              was specified.
+
+OPTIONS
+       -h     This option causes snconfig_impexp to print a friendly help
+              message and exit.  This is the only output which is not in JSON
+              format.
+
+       -v     Format JSON output in a human-readable fashion.
+
+EXIT VALUES
+       snconfig_impexp will return 0 on success and non-zero on failure.
+
+EXAMPLES
+       A fully-populated output of snconfig_impexp looks like:
+
+          # snconfig_impexp -vR
+          {
+              "snconfig_impexp_version": 1,
+              "nss_coordinators": [
+                  {
+                      "ip": "10.11.12.13"
+                  },
+                  {
+                      "ip": "10.11.12.14",
+                      "cluster": "cluster12",
+                      "addom": "my_addom"
+                  },
+                  {
+                      "ip": "192.168.20.5",
+                      "masklen": 29
+                  }
+              ],
+              "cluster": {
+                  "default_cluster": "cluster12",
+                  "default_addom": "my_addom"
+              },
+              "fsms": [
+                  {
+                      "fsname": "snfs1"
+                  },
+                  {
+                      "fsname": "snfs2"
+                  },
+                  {
+                      "fsname": "snfs3",
+                      "cluster": "cluster12",
+                      "addom": "my_addom",
+                      "priority": 100
+                  }
+              ],
+              "return_code": 0
+          }
+
+       An unsuccessful run (because it was run as a non-privileged user) looks
+       like:
+
+          # snconfig_impexp -R | snconfig_impexp -vW
+          {
+              "snconfig_impexp_version": 1,
+              "return_code": 1,
+              "error": "nss_coordinators: error opening file '/usr/cvfs/config/fsnameservers-15229-1494358067': Permission denied"
+          }
+
+SEE ALSO
+       fsmcluster(4), fsmlist(4), fsnameservers(4)
+
+
+

@@ -1,0 +1,34 @@
+pam_smartcard(8)             System Manager's Manual            pam_smartcard(8)
+
+NAME
+     pam_smartcard – Smartcard PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_smartcard [options]
+
+DESCRIPTION
+     The Smartcard PAM module supports authentication function class.  In terms
+     of the function-class parameter, this is “auth.”
+
+   The Smartcard Authentication Module
+     This module permits or denies users based on smartcard authentication
+     support in the Open Directory database, and the presence of an appropriate
+     smartcard in the reader attached to the local machine. When a card is
+     locked, the user is asked to unlock it with his PIN.
+
+   The following options may be passed to this account management module:
+     no_check_shell
+             Continues evaluation even if user's shell is not valid. Normally,
+             users with a shell like /usr/bin/false are considered as disabled.
+
+     no_ignore
+             Return failure when an appropriate smartcard is not present.
+
+EXAMPLE
+
+     Adding the following line on the top of the /etc/pam.d/sudo enables smartcard support for sudo:
+             auth   sufficient     pam_smartcard.so
+
+SEE ALSO
+     pam.conf(5), pam(8) SmartCardServices(7)
+

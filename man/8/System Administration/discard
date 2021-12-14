@@ -1,0 +1,124 @@
+DISCARD(8)                   System Manager's Manual                  DISCARD(8)
+
+
+
+
+NAME
+       discard - Postfix discard mail delivery agent
+
+SYNOPSIS
+       discard [generic Postfix daemon options]
+
+DESCRIPTION
+       The Postfix discard(8) delivery agent processes delivery requests from
+       the queue manager. Each request specifies a queue file, a sender address,
+       a next-hop destination that is treated as the reason for discarding the
+       mail, and recipient information.  The reason may be prefixed with an RFC
+       3463-compatible detail code.  This program expects to be run from the
+       master(8) process manager.
+
+       The discard(8) delivery agent pretends to deliver all recipients in the
+       delivery request, logs the "next-hop" destination as the reason for
+       discarding the mail, updates the queue file, and either marks recipients
+       as finished or informs the queue manager that delivery should be tried
+       again at a later time.
+
+       Delivery status reports are sent to the trace(8) daemon as appropriate.
+
+SECURITY
+       The discard(8) mailer is not security-sensitive. It does not talk to the
+       network, and can be run chrooted at fixed low privilege.
+
+STANDARDS
+       RFC 3463 (Enhanced Status Codes)
+
+DIAGNOSTICS
+       Problems and transactions are logged to syslogd(8).
+
+       Depending on the setting of the notify_classes parameter, the postmaster
+       is notified of bounces and of other trouble.
+
+CONFIGURATION PARAMETERS
+       Changes to main.cf are picked up automatically as discard(8) processes
+       run for only a limited amount of time. Use the command "postfix reload"
+       to speed up a change.
+
+       The text below provides only a parameter summary. See postconf(5) for
+       more details including examples.
+
+       config_directory (see 'postconf -d' output)
+              The default location of the Postfix main.cf and master.cf
+              configuration files.
+
+       daemon_timeout (18000s)
+              How much time a Postfix daemon process may take to handle a
+              request before it is terminated by a built-in watchdog timer.
+
+       delay_logging_resolution_limit (2)
+              The maximal number of digits after the decimal point when logging
+              sub-second delay values.
+
+       double_bounce_sender (double-bounce)
+              The sender address of postmaster notifications that are generated
+              by the mail system.
+
+       ipc_timeout (3600s)
+              The time limit for sending or receiving information over an
+              internal communication channel.
+
+       max_idle (100s)
+              The maximum amount of time that an idle Postfix daemon process
+              waits for an incoming connection before terminating voluntarily.
+
+       max_use (100)
+              The maximal number of incoming connections that a Postfix daemon
+              process will service before terminating voluntarily.
+
+       process_id (read-only)
+              The process ID of a Postfix command or daemon process.
+
+       process_name (read-only)
+              The process name of a Postfix command or daemon process.
+
+       queue_directory (see 'postconf -d' output)
+              The location of the Postfix top-level queue directory.
+
+       syslog_facility (mail)
+              The syslog facility of Postfix logging.
+
+       syslog_name (see 'postconf -d' output)
+              A prefix that is prepended to the process name in syslog records,
+              so that, for example, "smtpd" becomes "prefix/smtpd".
+
+SEE ALSO
+       qmgr(8), queue manager
+       bounce(8), delivery status reports
+       error(8), Postfix error delivery agent
+       postconf(5), configuration parameters
+       master(5), generic daemon options
+       master(8), process manager
+       syslogd(8), system logging
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+HISTORY
+       This service was introduced with Postfix version 2.2.
+
+AUTHOR(S)
+       Victor Duchovni
+       Morgan Stanley
+
+       Based on code by:
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

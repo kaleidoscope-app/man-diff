@@ -1,0 +1,90 @@
+scopedobject(1)                  [incr Widgets]                  scopedobject(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       scopedobject - Create and manipulate a scoped
+
+SYNOPSIS
+       scopedobject objName ?options?
+
+INHERITANCE
+       None
+
+STANDARD OPTIONS
+       Name:     enterscopecommand:
+       Command-Line Switch:     -enterscopecommand
+
+              Specifies a Tcl command to invoke when an object enters scope
+              (i.e. when it is created..). The default is {}.
+
+       Name:     enterscopecommand:
+       Command-Line Switch:     -enterscopecommand
+
+              Specifies a Tcl command to invoke when an object exits scope (i.e.
+              when it is deleted..). The default is {}.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The scopedobject command creates a base class for defining Itcl classes
+       which posses scoped behavior like Tcl variables.  The objects are only
+       accessible within the procedure in which they are instantiated and are
+       deleted when the procedure returns.  This class was designed to be a
+       general purpose base class for supporting scoped incr Tcl classes.  The
+       options include the execute a Tcl script command when an object enters
+       and exits its scope.
+
+METHODS
+       The scopedobject command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       object.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for scopedobject objects:
+
+OBJECT-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              scopedobject command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the object.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName.  If option is specified with no
+              value, then the command returns a list describing the one named
+              option (this list will be identical to the corresponding sublist
+              of the value returned if no option is specified).  If one or more
+              option-value pairs are specified, then the command modifies the
+              given objects option(s) to have the given value(s);  in this case
+              the command returns an empty string.  Option may have any of the
+              values accepted by the scopedobject command.
+
+
+EXAMPLE
+              The scopedobject was primarily meant to be a base class.  The
+              following is an example of usage without inheritance:
+
+
+                proc scopedobject_demo {} {
+                  iwidgets::scopedobject #auto         -exitscopecommand {puts "enter scopedobject_demo"}         -exitscopecommand {puts "exit scopedobject_demo"}
+                }
+
+                scopedobject_demo
+
+
+
+AUTHOR
+       John A. Tucker
+
+KEYWORDS
+       scopedobject, object
+
+
+

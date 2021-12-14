@@ -1,0 +1,104 @@
+ASLMANAGER(8)                System Manager's Manual               ASLMANAGER(8)
+
+NAME
+     aslmanager – Apple System Log data life-cycle manager
+
+SYNOPSIS
+     aslmanager [-s store_dir] [-a [archive_dir]] [-ttl days] [-store_ttl days]
+                [-module_ttl days] [-size max_size] [-asldb] [-module [name]]
+                [-checkpoint] [-d [level]] [-dd [level]]
+
+DESCRIPTION
+     aslmanager manages rotated files and ASL data written by the syslogd
+     server.  It is started automatically at various times by syslogd.  It may
+     also be invoked from the command line by the superuser (root).  It manages
+     the life-cycle of data in the ASL database, rotated log files, and ASL
+     directory data stores.  Configuration information for aslmanager comes from
+     the /etc/asl.conf configuration file, any ASL output module configuration
+     files in the /etc/asl directory, and from command-line options that may be
+     specified to override some settings found in the configuration files.  In
+     normal operation, it first checks the ASL database in /var/log/asl, then it
+     checks the files and directories specified by /etc/asl.conf and each ASL
+     output module.
+
+     If the -asldb flag is specified, then only the ASL database will be
+     processed.
+
+     If the -module flag is specified, then the ASL database will not be
+     processed.  All ASL output modules, or a single module if name is
+     specified, will be processed.
+
+     If -checkpoint is specified, then aslmanager will signal syslogd to
+     checkpoint files for all modules, or for a single named module, before
+     processing.
+
+     The -d flag causes aslmanager to print debug messages tracing it's actions
+     as they are performed.  An integer value (1, 2, or 3) may follow the -d
+     flag.  Higher values cause more fine-grained messages to be printed.  The
+     default value is 1.  The -dd flag directs aslmanager to do a “dry run”.
+     Debug messages are printed as with -d, but no actions are actually
+     performed.  An optional debug level may follow the -dd flag.
+
+   ASL DATABASE MANAGEMENT
+     aslmanager scans the ASL database in /var/log/asl, or some other path
+     specified by the setting of the “store_path” parameter in asl.conf, or by
+     the path supplied following the -s flag.  Data files that are older than
+     the time-to-live for the database are either archived or removed.  Files
+     that contain messages with explicit expire times are removed or archived
+     monthly after all their contents expire.  The default 7 day time-to-live
+     value may be overridden by the setting of the “store_ttl” parameter in
+     asl.conf or by supplying a value following the -store_ttl flag or the -ttl
+     flag (which overrides the time-to-live for both the ASL database and for
+     all ASL modules).  A time-to-live value of zero allows files to remain in
+     the store with no time limit.
+
+     A maximum size for the entire database is provided by the setting of the
+     “max_store_size” parameter in asl.conf, or as a value following the -size
+     flag.  This will cause aslmanager to archive (if enabled) and remove files
+     to keep the database size below the specified limit.  The default value is
+     150000000 bytes.  A value of zero means the size is unlimited.  An
+     unlimited size specification should be used with great caution, since a
+     runaway process could quickly fill all available disk space.  Files are
+     removed in order starting from oldest to newest.  Files with the same date
+     are removed in standard lexicographic sort order by file name.
+
+     Files are either removed entirely or copied to an archive directory.  If
+     the -a flag is specified with no argument, files are copied to the
+     /var/log/asl.archive directory.  An alternate directory path may be
+     specified following the -a flag.  The archive parameter setting in asl.conf
+     enables or disables archiving.  The archive parameter requires a value of
+     "1" to enable archiving, or a value of "0" to disable it.  An option
+     archive directory path may follow the "0" or "1".
+
+   ASL OUTPUT MODULE MANAGEMENT
+     For each ASL output module, or a single module specified as an argument
+     following -module, aslmanager first locates all checkpoint files produced
+     by syslogd for that module.  aslmanager checks all ASL directory data
+     stores and all rotated log files - those with a “rotate” option in the
+     module's configuration rules.  Checkpoint files are renamed if necessary to
+     conform to the naming style specified for the file by a “style” option in
+     the module's configuration file.  aslmanager will compress the file if
+     directed by a “compress” option, and it will move the file to a destination
+     directory if a “dest” option is specified for the file.  Following this,
+     aslmanager will delete expired files.  The time-to-live for files is 7 days
+     by default, but may be specified using the “ttl” option for the file in the
+     module's configuration rules.  If -module_ttl or -ttl are specified command
+     line, then value specified as an argument is used as a time-to-live
+     instead.  -module_ttl specifies time-to-live for module processing.  -ttl
+     specifies time-to-live for both the ASL database and for modules.
+
+     Finally, if the “all_max” option is specified for the output file,
+     aslmanager checks the total size of all the rotated versions, and will
+     delete them, (oldest first) to limit the total size as specified by
+     “all_max”.  When processing ASL directory data stores, aslmanager will
+     similarly delete data files after the expiry of their time-to-live, and
+     will delete data files (oldest first) to limit the total size as specified
+     by “all_max”.
+
+SEE ALSO
+     syslogd(8), syslog(1), asl(3), asl.conf(5), syslog(3).
+
+HISTORY
+     The aslmanager utility appeared in Mac OS X 10.6.  Support for log file and
+     ASL directory life-cycle management was added in OS X 10.9.
+

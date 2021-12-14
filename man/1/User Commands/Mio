@@ -1,0 +1,257 @@
+Mio(1)                       General Commands Manual                      Mio(1)
+
+
+
+NAME
+       Mio - Multi-stream streaming I/O test
+
+SYNOPSIS
+       Mio [options] filename [filename...]
+
+DESCRIPTION
+       Mio is a utility that can be used to measure the I/O performance, in
+       terms of bandwidth, of a system, I/O infrastructure, disk subsystem, disk
+       device and/or file system.  Mio uses pthreads to asynchronously queue
+       requests to a stream or streams.
+
+       Each file name specified on the command line corresponds to a stream.
+       The -q option defaults to 2 as described below, and specifies the number
+       of asynchronous read or write requests that are queued to each stream.  A
+       file name can represent a regular file, or a block or character device
+       (see NOTES).  By default, Mio will issue read requests, with a -w option
+       required for writes.
+
+       Upon completion, Mio will print a summary of I/O performance for each
+       stream as well as the aggregate performance off all streams.  Because the
+       aggregate performance is the performance of all streams over the test run
+       time, it may not reflect the sum of the individual streams.
+
+
+OPTIONS
+       -?     Display usage.
+
+       -b buffer_size
+              Specify the I/O buffer size to use.  This value represents the
+              size of each I/O request in bytes.  The default buffer size value
+              is 1048576 bytes.  Optionally, a single letter suffix can
+              represent bytes in units.  Mio single letter unit suffixes are as
+              follows.
+
+                 k    KB   10^3              1,000
+                 m    MB   10^6          1,000,000
+                 b    GB   10^9      1,000,000,000
+                 K    KiB  2^10              1,024
+                 M    MiB  2^20          1,048,576
+                 B    GiB  2^30      1,073,741,824
+
+       -B     Do buffered I/O.  By default, Mio will open files for direct I/O.
+              See NOTES below for more information on direct I/O.
+
+       -c     Create the file(s).  This is useful and necessary for regular
+              files, as they must be created before they can be read or written.
+              The -c option is valid only when specified with the -w option.
+
+       -d[dd] Run in debug mode. The more "d's" specified, the more debug
+              information is printed.
+
+       -e csv_file
+              Write results to the specified .csv file; one that can be read by
+              Microsoft Excel or other spreadsheet application. Data is appended
+              to the specified csv file which must exist.  See the -E option.
+
+       -E csv_file
+              Create and write results to the specified .csv file. A .csv file,
+              (comma separated value) is a file that can be consumed by a
+              spreadsheet application like Microsoft Excel.  The maximum number
+              of streams that can be recorded in a .csv file is limited to 16
+              unless the -u option is specified.
+
+       -f     Fsync on close.  The default is no fsync.
+
+       -I file_offset_increment
+              Set the file offset increment for each I/O.  For example, when set
+              to zero, we repetitively do I/O to the same file location.  The
+              default is to use the buffer size.  An Mio single letter unit
+              suffix may be specified.
+
+       -n nios
+              Specifies the number of I/O requests.  The default is 1024.
+
+       -O file_offset
+              Start the I/O at the given file offset.  An Mio single letter unit
+              suffix may be specified.  The default starting file offset for a
+              regular file is zero.  The default starting file offset for a
+              block device is two times the I/O buffer size.  This allows
+              writing to a block device without destroying StorNext labels
+              (writing to the block device will, however, destroy the file
+              system).
+
+       -p     Preallocate the file using the StorNext CvApi_VerifyAlloc API
+              call.  The file size will correspond to the number of I/Os times
+              the buffer size.  This option is supported only for regular files
+              on a StorNext file system.
+
+       -q queue_depth
+              Queue the specified number of I/O requests on each stream.  The
+              default is 2.  The maximum is currently 256.
+
+       -r rtios
+              Set realtime mode by setting the number of I/O's per second to the
+              specified value.  Realtime mode is available only for regular
+              files on the StorNext file system.  An Mio single letter unit
+              suffix may be specified.
+
+       -R     Record I/O response times. Mio will record the I/O response time
+              for each I/O request and increment a counter in the corresponding
+              response time bucket.  I/O response time buckets are then printed
+              for each stream along with the transfer rate summary.
+
+       -s     Preallocate the file using the specified stripe group only.  If
+              allocation can't be satisfied on the specified stripe group, the
+              preallocation call fails.  This option is only effective if used
+              in conjunction with the -p option.  This option is supported only
+              for regular files on a StorNext file system.
+
+       -S seconds
+              Run the test for the maximum number of seconds specified.  This
+              only has an effect as a maximum, in that, if the test has not
+              completed the specified number of requests after the specified
+              time.
+
+       -t total_data
+              Terminate the test after the specified amount of data has been
+              moved rather than a given number of requests.  This option is not
+              compatible with the -n option.  An Mio single letter unit suffix
+              may be specified.
+
+       -T tag string
+              Specify a tag string that will be written to the output. An
+              additional line containing the specified tag string will be
+              written in the test summary.  If the -E option is specified, the
+              tag string will also be written to the .csv file.
+
+       -u     Specify that the unlimited streams format be used for csv files.
+              Each stream's data is written to a new line in the file allowing
+              for greater than 16 streams.
+
+       -w     Specify that writes are done.  A regular file must exist, or the
+              -c option must be specified to create the file.  The default is to
+              read.
+
+       -W write_mask
+              The specified write mask will result in writes on streams where
+              bits are set and reads on streams where bits are clear.  The write
+              mask may be specified in hexadecimal, octal, or decimal but is
+              limited to 64 bits, hence 64 streams.  The -W option is
+              incompatible with the -c option and all files must exist.
+
+EXAMPLES
+       Create and issue the default number of writes to four files/streams:
+
+          per1-# Mio -cw /jhb/f0 /jhb/f1 /jhb/f2 /jhb/f3
+          Mio: Timing 4 stream(s) of 1024 x 1M direct writes queued 2 deep
+              stream[0]:           f0: write  1073.74 MBytes @   256.44 MBytes/Second
+              stream[1]:           f1: write  1073.74 MBytes @   228.43 MBytes/Second
+              stream[2]:           f2: write  1073.74 MBytes @   265.04 MBytes/Second
+              stream[3]:           f3: write  1073.74 MBytes @   242.18 MBytes/Second
+          Mio: Aggregate:  4294.97 Mbytes @ 913.72 MBytes/Second
+
+       Issue the default number of reads to the four previously created files:
+
+          per1-# Mio /jhb/f0 /jhb/f1 /jhb/f2 /jhb/f3
+          Mio: Timing 4 stream(s) of 1024 x 1M direct reads queued 2 deep
+              stream[0]:           f0: read   1073.74 MBytes @  1329.16 MBytes/Second
+              stream[1]:           f1: read   1073.74 MBytes @  1334.83 MBytes/Second
+              stream[2]:           f2: read   1073.74 MBytes @  1316.28 MBytes/Second
+              stream[3]:           f3: read   1073.74 MBytes @  1329.92 MBytes/Second
+          Mio: Aggregate:  4294.97 Mbytes @ 5265.12 MBytes/Second
+
+       Issue the default number of reads to two block devices:
+
+          per1-# Mio /dev/sdd /dev/sdf
+          Mio: Timing 2 stream(s) of 1024 x 1M direct reads queued 2 deep
+              stream[0]:          sdd: read   1073.74 MBytes @   408.38 MBytes/Second
+              stream[1]:          sdf: read   1073.74 MBytes @   407.78 MBytes/Second
+          Mio: Aggregate:  2147.48 Mbytes @ 815.57 MBytes/Second
+
+       Create and do 10000 writes to four files via four streams:
+
+          per1-# Mio -cw -n10000 /jhb/f0 /jhb/f1 /jhb/f2 /jhb/f3
+          Mio: Timing 4 stream(s) of 10000 x 1M direct writes queued 2 deep
+              stream[0]:           f0: write 10485.76 MBytes @   488.97 MBytes/Second
+              stream[1]:           f1: write 10485.76 MBytes @   448.84 MBytes/Second
+              stream[2]:           f2: write 10485.76 MBytes @   458.36 MBytes/Second
+              stream[3]:           f3: write 10485.76 MBytes @   497.57 MBytes/Second
+          Mio: Aggregate:  41943.04 Mbytes @ 1795.35 MBytes/Second
+
+       Issue 10000 reads, queued 8 deep to four streams:
+
+          per1-# Mio -q8 -n10000 /jhb/f0 /jhb/f1 /jhb/f2 /jhb/f3
+          Mio: Timing 4 stream(s) of 10000 x 1M direct reads queued 8 deep
+              stream[0]:           f0: read  10485.76 MBytes @   898.16 MBytes/Second
+              stream[1]:           f1: read  10485.76 MBytes @  1075.04 MBytes/Second
+              stream[2]:           f2: read  10485.76 MBytes @  1050.13 MBytes/Second
+              stream[3]:           f3: read  10485.76 MBytes @   869.96 MBytes/Second
+          Mio: Aggregate:  41943.04 Mbytes @ 3479.83 MBytes/Second
+
+       Issue 240 x 12746752 reads to four streams and "tag" the summary:
+
+          per1-# Mio -b12746752 -n240 -T full_aperture_2K /jhb/f0 /jhb/f1 /jhb/f2 /jhb/f3
+          Mio: full_aperture_2K
+          Mio: Timing 4 stream(s) of 240 x 12448K direct reads queued 2 deep
+              stream[0]:           f0: read   3059.22 MBytes @   884.50 MBytes/Second
+              stream[1]:           f1: read   3059.22 MBytes @   726.70 MBytes/Second
+              stream[2]:           f2: read   3059.22 MBytes @   808.67 MBytes/Second
+              stream[3]:           f3: read   3059.22 MBytes @   656.74 MBytes/Second
+          Mio: Aggregate:  12236.88 Mbytes @ 2626.95 MBytes/Second
+
+       Issue 10000 reads to four streams and report the response times:
+
+          per1-# Mio -R -n10000 /jhb/f0 /jhb/f1 /jhb/f2 /jhb/f3
+          Mio: Timing 4 stream(s) of 10000 x 1M direct reads queued 2 deep
+              stream[0]:           f0: read  10485.76 MBytes @   536.02 MBytes/Second
+              stream[1]:           f1: read  10485.76 MBytes @   688.96 MBytes/Second
+              stream[2]:           f2: read  10485.76 MBytes @   856.74 MBytes/Second
+              stream[3]:           f3: read  10485.76 MBytes @   841.03 MBytes/Second
+          Mio: Aggregate:  41943.04 Mbytes @ 2144.08 MBytes/Second
+
+          I/O response time buckets:      0ms    5ms    10ms    20ms    50ms   100ms   500ms
+              stream[0]:           f0:     7632    1459     768     137       4       0       0
+              stream[1]:           f1:     8570     928     395     103       4       0       0
+              stream[2]:           f2:     9240     491     197      68       4       0       0
+              stream[3]:           f3:     9196     494     234      76       0       0       0
+
+NOTES
+       Writing to a device that contains data can result in data loss.  Do not
+       write to drives that contain any useful information.
+
+       Character devices - Some platforms have character device representations
+       of disk devices and/or disk partitions that support read/write and some
+       do not.
+
+       Direct I/O - Direct I/O is not supported on all platforms, although it is
+       pretty well tested on Linux and Windows.  Direct I/O support for specific
+       files on other platforms is schizophrenic at best, and may not be
+       supported on a particular file system, block device, character special
+       device, or without appropriate mount options.
+
+       Windows - Mio on Windows can be used from either a cygwin environment or
+       a DOS shell environment.  File names are specified using the drive letter
+       format.  Use of a leading slash is recommended to avoid interpretation of
+       the path based on the last relative location in that drive.  A Windows
+       physical drive is specified using the \\.\ notation.  For example,
+       PhysicalDrive9 is specified as \\.\PhysicalDrive9.
+
+       The Windows cygwin environment requires escaping the backslash resulting
+       in 4 backslashes, period, 2 backslashes.  Failure to escape the backslash
+       cygwin can cause writing to the root directory as the name is changed to
+       \.PhysicalDrive9.
+
+FILES
+       /System/Library/Filesystems/acfs.fs/Contents/bin/Mio
+
+SEE ALSO
+       cvfs(8)
+
+
+

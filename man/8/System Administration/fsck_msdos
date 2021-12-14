@@ -1,0 +1,60 @@
+FSCK_MSDOS(8)                System Manager's Manual               FSCK_MSDOS(8)
+
+NAME
+     fsck_msdos – DOS/Windows (FAT) file system consistency check
+
+SYNOPSIS
+     fsck_msdos -q special ...
+     fsck_msdos -p [-f] special ...
+     fsck_msdos [-fny] special ...
+
+DESCRIPTION
+     The fsck_msdos utility verifies and repairs FAT file systems (more commonly
+     known as DOS file systems).
+
+     The first form of fsck_msdos quickly checks the specified file systems to
+     determine whether they were cleanly unmounted.
+
+     The second form of fsck_msdos preens the specified file systems.  It is
+     normally started by fsck(8) run from /etc/rc.boot during automatic reboot,
+     when a FAT file system is detected.  When preening file systems, fsck_msdos
+     will fix common inconsistencies non-interactively.  If more serious
+     problems are found, fsck_msdos does not try to fix them, indicates that it
+     was not successful, and exits.
+
+     The third form of fsck_msdos checks the specified file systems and tries to
+     repair all detected inconsistencies, requesting confirmation before making
+     any changes.  The default behavior is to always ask for confirmation of
+     each change.  Use the -n or -y options to override this default behavior.
+
+     The options are as follows:
+
+           -q      Causes fsck_msdos to quickly check whether the volume was
+                   unmounted cleanly.  If the volume was unmounted cleanly, then
+                   the exit status is 0.  If the volume was not unmounted
+                   cleanly, then the exit status will be non-zero.  In either
+                   case, a message is printed to standard output describing
+                   whether the volume was clean or dirty.
+
+           -f      This option is ignored by fsck_msdos and is present only for
+                   compatibility with programs that check other file system
+                   types for consistency.
+
+           -n      Causes fsck_msdos to assume no as the answer to all operator
+                   questions, except “CONTINUE?”.
+
+           -p      Preen the specified file systems.
+
+           -y      Causes fsck_msdos to assume yes as the answer to all operator
+                   questions.
+
+EXIT VALUES
+     fsck_msdos exits with a value of 0 when the filesystem is clean (or has
+     been repaired), and 8 otherwise.
+
+SEE ALSO
+     fsck(8)
+
+BUGS
+     fsck_msdos is still under construction.
+

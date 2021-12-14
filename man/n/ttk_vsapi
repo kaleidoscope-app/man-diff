@@ -1,0 +1,98 @@
+ttk_vsapi(n)                    Tk Themed Widget                    ttk_vsapi(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       ttk_vsapi - Define a Microsoft Visual Styles element
+
+SYNOPSIS
+       ttk::style element create name vsapi className partId ?stateMap?
+       ?options?
+________________________________________________________________________________
+
+DESCRIPTION
+       The vsapi element factory creates a new element in the current theme
+       whose visual appearance is drawn using the Microsoft Visual Styles API
+       which is reponsible for the themed styles on Windows XP and Vista. This
+       factory permits any of the Visual Styles parts to be declared as ttk
+       elements that can then be included in a style layout to modify the
+       appearance of ttk widgets.
+
+       className and partId are required parameters and specify the Visual
+       Styles class and part as given in the Microsoft documentation. The
+       stateMap may be provided to map ttk states to Visual Styles API states
+       (see STATE MAP).
+
+OPTIONS
+       Valid options are:
+
+       -padding padding
+              Specify the element's interior padding.  padding is a list of up
+              to four integers specifying the left, top, right and bottom
+              padding quantities respectively.  This option may not be mixed
+              with any other options.
+
+       -margins padding
+              Specifies the elements exterior padding.  padding is a list of up
+              to four integers specifying the left, top, right and bottom
+              padding quantities respectively.  This option may not be mixed
+              with any other options.
+
+       -width width
+              Specifies the height for the element. If this option is set then
+              the Visual Styles API will not be queried for the recommended size
+              or the part. If this option is set then -height should also be
+              set. The -width and -height options cannot be mixed with the
+              -padding or -margins options.
+
+       -height height
+              Specifies the height of the element. See the comments for -width.
+
+STATE MAP
+       The stateMap parameter is a list of ttk states and the corresponding
+       Visual Styles API state value.  This permits the element appearence to
+       respond to changes in the widget state such as becoming active or being
+       pressed. The list should be as described for the ttk::style map command
+       but note that the last pair in the list should be the default state and
+       is typically and empty list and 1. Unfortunately all the Visual Styles
+       parts have different state values and these must be looked up either in
+       the Microsoft documentation or more likely in the header files. The
+       original header to use was tmschema.h but in more recent versions of the
+       Windows Development Kit this is vssym32.h.
+
+       If no stateMap parameter is given there is an implicit default map of {{}
+       1}
+
+EXAMPLE
+       Create a correctly themed close button by changing the layout of a
+       ttk::button(n). This uses the WINDOW part WP_SMALLCLOSEBUTTON and as
+       documented the states CBS_DISABLED, CBS_HOT, CBS_NORMAL and CBS_PUSHED
+       are mapped from ttk states.
+              ttk::style element create smallclose vsapi WINDOW 19 \
+                  {disabled 4 pressed 3 active 2 {} 1}
+              ttk::style layout CloseButton {CloseButton.smallclose -sticky news}
+              pack [ttk::button .close -style CloseButton]
+
+       Change the appearence of a ttk::checkbutton(n) to use the Explorer pin
+       part EBP_HEADERPIN.
+              ttk::style element create pin vsapi EXPLORERBAR 3 {
+                  {pressed !selected} 3
+                  {active !selected} 2
+                  {pressed selected} 6
+                  {active selected} 5
+                  {selected} 4
+                  {} 1
+              }
+              ttk::style layout Explorer.Pin {Explorer.Pin.pin -sticky news}
+              pack [ttk::checkbutton .pin -style Explorer.Pin]
+
+SEE ALSO
+       ttk::intro(n), ttk::widget(n), ttk::style(n), ttk_image(n)
+
+KEYWORDS
+       style, theme, appearance, windows
+
+
+

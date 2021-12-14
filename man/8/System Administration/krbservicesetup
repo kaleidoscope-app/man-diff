@@ -1,0 +1,121 @@
+krbservicesetup(8)           System Manager's Manual          krbservicesetup(8)
+
+NAME
+     krbservicesetup – Kerberos – Open Directory Single Sign On
+
+SYNOPSIS
+     krbservicesetup [-r REALM] -a admin_name [-p password] [-t keytab]
+                     [-f setup_file] [service_type service_principal]
+
+DESCRIPTION
+     krbservicesetup is used by sso_util to configure Kerberized services on the
+     current host. It uses kadmin to add service principals to the KDC database
+     and create the krb5.keytab file. And then edits/creates the config files of
+     the given service to use the proper service principal.  krbservicesetup
+     knows how to configure the FTP, AFP, POP, IMAP, SMTP and SSH services
+     shipped by Apple in Mac OS X 10.3 krbservicesetup takes either a
+     service_type, service_principal pair or a plist file with a list of
+     services to configure. The plist file also allows more control over the
+     options used when creating the principals.
+
+     krbservicesetup arguments:
+
+     -x       Use kadmin.local instead of kadmin.
+
+     -r REALM
+              The Kerberos realm of the server
+
+     -a admin_name
+              Name of an administrator with priveleges to add principals to the
+              KDC
+
+     -p password
+              Password for the above user
+
+     -t keytab
+              The path of the keytab file to write
+
+     -f setup_file
+              The path of the plist file containing the list of services to be
+              configured
+
+     service_type service_principal
+              A single service to configure
+
+     The service_types understood by krbservicesetup are:
+
+     afp      Apple Filing Protocol
+
+     ftp      File Transfer Protocol
+
+     imap     IMAP mail protocol
+
+     pop      POP mail protocol
+
+     smtp     SMTP mail protocol
+
+     ssh      Secure Shell
+
+     The plist file format used by krbservicesetup consists of a couple of
+     optional boolean flag items and an array of dictionaries representing the
+     services to be configured.
+
+     noConfig - Boolean
+              Flag indicating that just the service principals should be created
+              in the KDC
+
+     configOnly - Boolean
+              Flag indicating that the services need to be configured
+
+     Services - array of dictionaries
+              Array of service dictionaries to be configured
+
+              serviceType - string
+                       Type of the service (see above for definitions)
+
+              servicePrincipal - string
+                       Kerberos principal name for the service
+
+              option - Boolean
+                       Options passed on to the add_princ command within kadmin
+                       If the boolean value is true, the option passed to kadmin
+                       is the option name with a '+' prepended. If the value is
+                       false a '-' is prepended
+
+              option - string
+                       Options passed on to the add_princ command within kadmin
+                       If the key is foo and the string value is bar then the
+                       option passed in the add_princ command is "-foo bar"
+
+     The options for the add_princ command are detailed in the man page for
+     kadmin Some of the possibly options are restricted specifically the pw and
+     needchange commands are ignored. Every service principal is generated with
+     the randkey option.
+
+FILES
+     /etc/krb5.keytab               The file where Kerberos stores the service
+                                    principals for the services on this host
+
+DIAGNOSTICS
+     You can add -v debug_level to the krbservicesetup command. Debug level 1
+     provides status information, higher levels add progressivly more levels of
+     detail.
+
+EXAMPLES
+     It is better to use the configure command in sso_util to configure multiple
+     services. Here is an example of using krbservicesetup to configure a FTP
+     server in the realm FOO.ORG
+
+     krbservicesetup -r FOO.ORG -a admin -p password ftp
+     ftp/myhost.foo.org@FOO.ORG
+
+     (the above should be all on one line)
+
+NOTES
+     The krbservicesetup tool is used by the Apple Single Sign On system to set
+     up Kerberized services integrated with the rest of the Single Sign On
+     components.
+
+SEE ALSO
+     kadmin(8), kdcsetup(8), sso_util(8)
+

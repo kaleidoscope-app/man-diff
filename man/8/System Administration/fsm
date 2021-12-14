@@ -1,0 +1,74 @@
+FSM(8)                       System Manager's Manual                      FSM(8)
+
+
+
+NAME
+       fsm - Xsan File System Manager
+
+SYNOPSIS
+       fsm [volume_name [cluster_admin]_[host_name]]
+
+DESCRIPTION
+       The fsm is the server daemon that manages a Xsan Volume The File System
+       Manager (FSM) manages the volume's name space, allocations, and metadata
+       coherency. It is also used for I/O bandwidth and storage pool management
+       functions. The default Xsan volume name is default, and the default host
+       name is the system's hostname as found by the gethostname(2) library
+       call.
+
+       The optional cluster_admin argument has the syntax:
+
+              @cluster_name/admin_domain
+
+       The @ distinguishes the cluster_admin argument from the host_name
+       argument.
+
+       Multiple FSM processes may co-exist on one system, as long as they have
+       unique volume names. The volume name is used by the mount(8) command,
+       along with the hostname separated by a colon (:). For example, if an FSM
+       process was started on host fsmhost and the volume name was declared
+       projecta and the mount point was /usr/clips, then the mount command would
+       be:
+
+           mount -t acfs fsmhost:projecta /usr/clips
+
+       This process runs in the background and is started at boot time. It is
+       enabled or disabled via chkconfig(8) or init.d(7) using the cvfs key
+       word.
+
+       To start multiple FSM daemons (therefore multiple volumes) on a single
+       system the fsmlist file must be created to describe which FSM daemons to
+       start. See fsmpm(8) and fsmlist(4) for details.
+
+ENVIRONMENT
+       FSM_KEEP_ALIVE_TIME
+              This variable can be used to change the rate that the FSM process
+              sends a keep alive message to each connected client.  The value is
+              in seconds, with a default of 5 seconds.  It can be set between 1
+              and 7200 seconds (2 hours).
+
+              Note:  This variable is not intended for general use, and should
+                     only be used when recommended by Apple Support.
+
+       FSM_KEEP_ALIVE_TIMEOUT
+              This variable can be used to change the timeout value that the FSM
+              process uses after sending a keep alive to a client.  The value is
+              in seconds, with a default of 3 seconds.  It can be set between 1
+              and 30 seconds.  Note that there are other factors that are also
+              considered by the FSM process before timing out a client, so the
+              actual timeout may be somewhat longer.
+
+              Note:  This variable is not intended for general use, and should
+                     only be used when recommended by Apple Support.
+
+FILES
+       /Library/Preferences/Xsan/*.cfg
+       /Library/Preferences/Xsan/fsmlist
+       /Library/Preferences/Xsan/license.dat
+       /Library/Logs/Xsan/data/<volume_name>/config_history/*.cfg.<TIMESTAMP>
+
+SEE ALSO
+       cvfs(8), snfs_config(5), fsmlist(4), fsmpm(8), fstab(5), mount(8)
+
+
+

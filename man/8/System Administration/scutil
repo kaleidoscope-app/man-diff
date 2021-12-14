@@ -1,0 +1,146 @@
+SCUTIL(8)                    System Manager's Manual                   SCUTIL(8)
+
+NAME
+     scutil – Manage system configuration parameters
+
+SYNOPSIS
+     scutil
+     scutil --prefs [preference-file]
+     scutil -r [-W] { nodename | address | local-address remote-address }
+     scutil -w dynamic-store-key [-t timeout]
+     scutil --get pref
+     scutil --set pref [newval]
+     scutil --dns
+     scutil --proxy
+     scutil --nc nc-arguments
+
+DESCRIPTION
+     Invoked with no options, scutil provides a command line interface to the
+     "dynamic store" data maintained by configd(8).  Interaction with this data
+     (using the SystemConfiguration.framework SCDynamicStore APIs) is handled
+     with a set of commands read from standard input.  A list of the available
+     commands is available by entering the help directive.
+
+     The --prefs option provides a command line interface to the [raw] stored
+     preference data.  Interaction with this data (using the
+     SystemConfiguration.framework SCPreferences APIs) is handled with a set of
+     commands read from standard input.  A list of the available commands is
+     availble by entering the help directive.
+
+     The -r option provides a means of checking the network reachability of a
+     host, an IP address, or a pair of local and remote IP addresses.  Network
+     "reachability" is a term that indicates whether network communication is
+     possible between the current host and the specified host.
+
+     The -w option provides a means of checking for (and optionally waiting for
+     the creation of or posting of a notification to) a dynamic store key.
+
+     The --get and --set options provide a means of reporting and updating a
+     select group of persistent system preferences.
+
+     The --dns option reports the current DNS configuration.  The first listed
+     resolver(5) configuration is considered to be the "default" configuration.
+     Additional "supplemental" configurations follow.  Those containing a
+     "domain" name will be used for queries matching the specified domain.
+     Those without will be used as a "default" configuration in addition to the
+     first listed.
+
+     The --proxy option reports the current system proxy configuration.
+
+     The --nc option provides a set of commands for monitoring and interacting
+     with VPN connections.  Use --nc help for a full list of commands.
+
+OPTIONS
+     -r [-W] { nodename | address | local-address remote-address }
+         Check the network reachability of the specified host name, IP address,
+         or a pair of local and remote IP addresses.  One or more of the
+         following strings will be reported to standard output.
+
+         Not Reachable         The specified nodename/address cannot be reached
+                               using the current network configuration.
+
+         Reachable             The specified nodename/address can be reached
+                               using the current network configuration.
+
+         Transient Connection  The specified nodename/address can be reached via
+                               a transient (e.g. PPP) connection.
+
+         Connection Required   The specified nodename/address can be reached
+                               using the current network configuration but a
+                               connection must first be established.  As an
+                               example, this status would be returned for a
+                               dialup connection that was not currently active
+                               but could handle network traffic for the target
+                               system.
+
+         Connection Automatic  The specified nodename/address can be reached
+                               using the current network configuration but a
+                               connection must first be established.  Any
+                               traffic directed to the specified name/address
+                               will initiate the connection.
+
+         Local Address         The specified nodename/address is one associated
+                               with a network interface on the system.
+
+         Directly Reachable Addresss
+                               Network traffic to the specified nodename/address
+                               will not go through a gateway but is routed
+                               directly to one of the interfaces on the system.
+
+         The reachability can also be monitored by specifying the -W (watch)
+         option.  This will result in the current status being reported as well
+         as the status when/if the network configuration changes.
+
+         A zero exit status will be returned when the reachability status is
+         reported correctly.  A non-zero exit status will be returned if errors
+         are detected with an error reported to standard error.
+
+     -w dynamic-store-key [-t timeout]
+         Check if the specified key exists in the "dynamic store" data
+         maintained by configd(8).  If present, scutil will return with a zero
+         exit status.  If not present, scutil will wait for the specified time
+         for data to be associated with or a notification to be posted using the
+         key.  A non-zero exit status will be returned if the key was not
+         created/posted within the specified time.
+
+         scutil will wait indefinitely if a timeout of 0 seconds is specified.
+         The default timeout is 15 seconds.
+
+     --get pref
+         Retrieves the specified preference.  The current value will be reported
+         on standard output.
+
+         Supported preferences include:
+
+               ComputerName   The user-friendly name for the system.
+
+               LocalHostName  The local (Bonjour) host name.
+
+               HostName       The name associated with hostname(1) and
+                              gethostname(3).
+
+     --set pref [newval]
+         Updates the specified preference with the new value.  If the new value
+         is not specified on the command line then it will be read from standard
+         input.
+
+         Supported preferences include: ComputerName LocalHostName HostName
+
+         The --set option requires super-user access.
+
+     --dns
+         Reports the current DNS configuration.
+
+     --proxy
+         Reports the current proxy configuration.
+
+     --nc nc-arguments
+         Provides a set of commands for monitoring and interacting with VPN
+         connections. Use --nc help for a full list of commands.
+
+SEE ALSO
+     configd(8)
+
+HISTORY
+     The scutil command appeared in Mac OS X Public Beta.
+

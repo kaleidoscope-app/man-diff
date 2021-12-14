@@ -1,0 +1,63 @@
+find(n)                            [incr Tcl]                            find(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       find - search for classes and objects
+
+SYNOPSIS
+       itcl::find option ?arg arg ...?
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The find command is used to find classes and objects that are available
+       in the current interpreter.  Classes and objects are reported first in
+       the active namespace, then in all other namespaces in the interpreter.
+
+       The option argument determines what action is carried out by the command.
+       The legal options (which may be abbreviated) are:
+
+       find classes ?pattern?
+              Returns a list of [incr Tcl] classes.  Classes in the current
+              namespace are listed first, followed by classes in all other
+              namespaces in the interpreter.  If the optional pattern is
+              specified, then the reported names are compared using the rules of
+              the "string match" command, and only matching names are reported.
+
+              If a class resides in the current namespace context, this command
+              reports its simple name--without any qualifiers.  However, if the
+              pattern contains :: qualifiers, or if the class resides in another
+              context, this command reports its fully-qualified name.
+              Therefore, you can use the following command to obtain a list
+              where all names are fully-qualified:
+              itcl::find classes ::*
+
+       find objects ?pattern? ?-class className? ?-isa className?
+              Returns a list of [incr Tcl] objects.  Objects in the current
+              namespace are listed first, followed by objects in all other
+              namespaces in the interpreter.  If the optional pattern is
+              specified, then the reported names are compared using the rules of
+              the "string match" command, and only matching names are reported.
+              If the optional "-class" parameter is specified, this list is
+              restricted to objects whose most-specific class is className.  If
+              the optional "-isa" parameter is specified, this list is further
+              restricted to objects having the given className anywhere in their
+              heritage.
+
+              If an object resides in the current namespace context, this
+              command reports its simple name--without any qualifiers.  However,
+              if the pattern contains :: qualifiers, or if the object resides in
+              another context, this command reports its fully-qualified name.
+              Therefore, you can use the following command to obtain a list
+              where all names are fully-qualified:
+              itcl::find objects ::*
+
+
+KEYWORDS
+       class, object, search, import
+
+
+

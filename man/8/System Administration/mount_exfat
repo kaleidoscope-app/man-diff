@@ -1,0 +1,54 @@
+MOUNT_EXFAT(8)               System Manager's Manual              MOUNT_EXFAT(8)
+
+NAME
+     mount_exfat – mount an ExFAT file system
+
+SYNOPSIS
+     mount_exfat [-o options] [-u uid] [-g gid] [-m mask] device directory
+
+DESCRIPTION
+     The mount_exfat command mounts the ExFAT filesystem from the device device
+     onto the directory given by directory.  This command is normally invoked by
+     diskarbitrationd(8) as the result of detecting a device with a file system
+     recognized as ExFAT.  It can also be invoked indirectly by executing the
+     mount(8) command with the -t exfat option.
+
+     The options are as follows:
+
+     -o options
+             Use the specified mount options, as described in mount(8).
+
+     -u uid  Set the owner of the files in the file system to uid.  The default
+             owner is the owner of the directory on which the file system is
+             being mounted.
+
+     -g gid  Set the group of the files in the file system to gid.  The default
+             group is the group of the directory on which the file system is
+             being mounted.
+
+     -m mask
+             Specify the maximum file permissions for files in the file system.
+             (For example, a mask of 755 specifies that, by default, the owner
+             should have read, write, and execute permissions for files, but
+             others should only have read and execute permissions.  See chmod(1)
+             for more information about octal file modes.)  Only the nine low-
+             order bits of mask are used.  The default mask is taken from the
+             directory on which the file system is being mounted.
+
+     If none of the -u, -g, or -m options are given, the volume will be mounted
+     with the MNT_UNKNOWNPERMISSIONS flag (equivalent to the -o noowners
+     option).
+
+     If the device is internal and not removable, the volume will be mounted
+     with the MNT_ASYNC flag (equivalent to the -o async option) by default.
+     That default can be overridden with the -o noasync option.  When mounted
+     with the -o noasync option, metadata updates are synced to disk frequently
+     (by default, 50ms after the system call that changed the metadata returns
+     to its caller).
+
+SEE ALSO
+     fsck_exfat(8), exfat.util(8), mount(2), unmount(2), fstab(5), mount(8)
+
+HISTORY
+     The mount_exfat utility first appeared in Mac OS X 10.6.3.
+

@@ -1,0 +1,156 @@
+struct::disjointset(n)         Tcl Data Structures        struct::disjointset(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       struct::disjointset - Disjoint set data structure
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require struct::disjointset  ?1.0?
+
+       ::struct::disjointset disjointsetName
+
+       disjointsetName option ?arg arg ...?
+
+       disjointsetName add-partition elements
+
+       disjointsetName partitions
+
+       disjointsetName num-partitions
+
+       disjointsetName equal a b
+
+       disjointsetName merge a b
+
+       disjointsetName find e
+
+       disjointsetName destroy
+
+________________________________________________________________________________
+
+DESCRIPTION
+       This package provides disjoint sets. An alternative name for this kind of
+       structure is merge-find.
+
+       Normally when dealing with sets and their elements the question is "Is
+       this element E contained in this set S?", with both E and S known.
+
+       Here the question is "Which of several sets contains the element E?".
+       I.e. while the element is known, the set is not, and we wish to find it
+       quickly. It is not quite the inverse of the original question, but close.
+       Another operation which is often wanted is that of quickly merging two
+       sets into one, with the result still fast for finding elements. Hence the
+       alternative term merge-find for this.
+
+       Why now is this named a disjoint-set ?  Because another way of describing
+       the whole situation is that we have
+
+       •      a finite set S, containing
+
+       •      a number of elements E, split into
+
+       •      a set of partitions P. The latter term applies, because the
+              intersection of each pair P, P' of partitions is empty, with the
+              union of all partitions covering the whole set.
+
+       •      An alternative name for the partitions would be equvalence
+              classes, and all elements in the same class are considered as
+              equal.
+
+       Here is a pictorial representation of the concepts listed above:
+
+            +-----------------+ The outer lines are the boundaries of the set S.
+            |           /     | The inner regions delineated by the skewed lines
+            |  *       /   *  | are the partitions P. The *'s denote the elements
+            |      *  / \     | E in the set, each in a single partition, their
+            |*       /   \    | equivalence class.
+            |       /  *  \   |
+            |      / *   /    |
+            | *   /\  * /     |
+            |    /  \  /      |
+            |   /    \/  *    |
+            |  / *    \       |
+            | /     *  \      |
+            +-----------------+
+
+
+       For more information see
+       http://en.wikipedia.org/wiki/Disjoint_set_data_structure.
+
+API
+       The package exports a single command, ::struct::disjointset. All
+       functionality provided here can be reached through a subcommand of this
+       command.
+
+       ::struct::disjointset disjointsetName
+              Creates a new disjoint set object with an associated global Tcl
+              command whose name is disjointsetName. This command may be used to
+              invoke various operations on the disjointset. It has the following
+              general form:
+
+              disjointsetName option ?arg arg ...?
+                     The option and the args determine the exact behavior of the
+                     command. The following commands are possible for
+                     disjointset objects:
+
+       disjointsetName add-partition elements
+              Creates a new partition in specified disjoint set, and fills it
+              with the values found in the set of elements. The command
+              maintains the integrity of the disjoint set, i.e. it verifies that
+              none of the elements are already part of the disjoint set and
+              throws an error otherwise.
+
+              The result of the command is the empty string.
+
+       disjointsetName partitions
+              Returns the set of partitions the named disjoint set currently
+              consists of.
+
+       disjointsetName num-partitions
+              Returns the number of partitions the named disjoint set currently
+              consists of.
+
+       disjointsetName equal a b
+              Determines if the two elements a and b of the disjoint set belong
+              to the same partition. The result of the method is a boolean
+              value, True if the two elements are contained in the same
+              partition, and False otherwise.
+
+              An error will be thrown if either a or b are not elements of the
+              disjoint set.
+
+       disjointsetName merge a b
+              Determines the partitions the elements a and b are contained in
+              and merges them into a single partition.  If the two elements were
+              already contained in the same partition nothing will change.
+
+              The result of the method is the empty string.
+
+       disjointsetName find e
+              Returns the partition of the disjoint set which contains the
+              element e.
+
+       disjointsetName destroy
+              Destroys the disjoint set object and all associated memory.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category struct ::
+       disjointset of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       disjoint set, equivalence class, find, merge find, partition, partitioned
+       set, union
+
+CATEGORY
+       Data structures
+
+
+

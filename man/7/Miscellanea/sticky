@@ -1,0 +1,30 @@
+STICKY(7)               Miscellaneous Information Manual               STICKY(7)
+
+NAME
+     sticky – sticky text and append-only directories
+
+DESCRIPTION
+     A special file mode, called the sticky bit (mode S_ISVTX), is used to
+     indicate special treatment for directories.  It is ignored for regular
+     files.  See chmod(2) or the file <sys/stat.h> for an explanation of file
+     modes.
+
+STICKY DIRECTORIES
+     A directory whose `sticky bit' is set becomes an append-only directory, or,
+     more accurately, a directory in which the deletion of files is restricted.
+     A file in a sticky directory may only be removed or renamed by a user if
+     the user has write permission for the directory and the user is the owner
+     of the file, the owner of the directory, or the super-user.  This feature
+     is usefully applied to directories such as /tmp which must be publicly
+     writable but should deny users the license to arbitrarily delete or rename
+     each others' files.
+
+     Any user may create a sticky directory.  See chmod(1) for details about
+     modifying file modes.
+
+HISTORY
+     A sticky command appeared in Version 32V AT&T UNIX.
+
+BUGS
+     Neither open(2) nor mkdir(2) will create a file with the sticky bit set.
+

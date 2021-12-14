@@ -1,0 +1,128 @@
+SLAPD-MDB(5)                   File Formats Manual                  SLAPD-MDB(5)
+
+
+
+NAME
+       slapd-mdb - Memory-Mapped DB backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The mdb backend to slapd(8) uses OpenLDAP's own Memory-Mapped DB (MDB)
+       library to store data.  It relies completely on the underlying operating
+       system for memory management and does no caching of its own.
+
+       The mdb backend is similar to the hdb backend in that it uses a
+       hierarchical database layout which supports subtree renames. It is both
+       more space-efficient and more execution-efficient than the bdb backend,
+       while being overall much simpler to manage.
+
+CONFIGURATION
+       These slapd.conf options apply to the mdb backend database.  That is,
+       they must follow a "database mdb" line and come before any subsequent
+       "backend" or "database" lines.  Other database options are described in
+       the slapd.conf(5) manual page.
+
+       checkpoint_<kbyte>_<min>
+              Specify the frequency for flushing the database disk buffers.
+              This setting is only needed if the dbnosync option is used.  The
+              checkpoint will occur if either <kbyte> data has been written or
+              <min> minutes have passed since the last checkpoint.  Both
+              arguments default to zero, in which case they are ignored. When
+              the <min> argument is non-zero, an internal task will run every
+              <min> minutes to perform the checkpoint.  Note: currently the
+              <kbyte> setting is unimplemented.
+
+       dbnosync
+              Specify that on-disk database contents should not be immediately
+              synchronized with in memory changes.  Enabling this option may
+              improve performance at the expense of data security. In
+              particular, if the operating system crashes before changes are
+              flushed, some number of transactions may be lost.  By default, a
+              full data flush/sync is performed when each transaction is
+              committed.
+
+       directory_<directory>
+              Specify the directory where the MDB files containing this database
+              and associated indexes live.  A separate directory must be
+              specified for each database.  The default is
+              /var/db/openldap/openldap-data.
+
+       index {<attrlist>|default} [pres,eq,approx,sub,<special>]
+              Specify the indexes to maintain for the given attribute (or list
+              of attributes).  Some attributes only support a subset of indexes.
+              If only an <attr> is given, the indices specified for default are
+              maintained.  Note that setting a default does not imply that all
+              attributes will be indexed. Also, for best performance, an eq
+              index should always be configured for the objectClass attribute.
+
+              A number of special index parameters may be specified.  The index
+              type sub can be decomposed into subinitial, subany, and subfinal
+              indices.  The special type nolang may be specified to disallow use
+              of this index by language subtypes.  The special type nosubtypes
+              may be specified to disallow use of this index by named subtypes.
+              Note: changing index settings in slapd.conf(5) requires rebuilding
+              indices, see slapindex(8); changing index settings dynamically by
+              LDAPModifying "cn=config" automatically causes rebuilding of the
+              indices online in a background task.
+
+       maxreaders_<integer>
+              Specify the maximum number of threads that may have concurrent
+              read access to the database. Tools such as slapcat count as a
+              single thread, in addition to threads in any active slapd
+              processes. The default is 126.
+
+       maxsize_<bytes>
+              Specify the maximum size of the database in bytes. A memory map of
+              this size is allocated at startup time and the database will not
+              be allowed to grow beyond this size. The default is 10485760
+              bytes. This setting may be changed upward if the configured limit
+              needs to be increased.
+
+              Note: It is important to set this to as large a value as possible,
+              (relative to anticipated growth of the actual data over time)
+              since growing the size later may not be practical when the system
+              is under heavy load.
+
+       mode_<integer>
+              Specify the file protection mode that newly created database files
+              should have.  The default is 0600.
+
+       searchstack_<depth>
+              Specify the depth of the stack used for search filter evaluation.
+              Search filters are evaluated on a stack to accommodate nested AND
+              / OR clauses. An individual stack is assigned to each server
+              thread.  The depth of the stack determines how complex a filter
+              can be evaluated without requiring any additional memory
+              allocation. Filters that are nested deeper than the search stack
+              depth will cause a separate stack to be allocated for that
+              particular search operation. These allocations can have a major
+              negative impact on server performance, but specifying too much
+              stack will also consume a great deal of memory.  Each search stack
+              uses 512K bytes per level. The default stack depth is 16, thus 8MB
+              per thread is used.
+
+ACCESS CONTROL
+       The mdb backend honors access control semantics as indicated in
+       slapd.access(5).
+
+NOTES
+       This is an early release; the database file format or other
+       characteristics may change incompatibly in future releases.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd-config(5), slapd(8), slapadd(8), slapcat(8),
+       slapindex(8), OpenLDAP MDB documentation.
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.  Written by Howard Chu.
+
+
+

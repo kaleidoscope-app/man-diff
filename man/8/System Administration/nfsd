@@ -1,0 +1,184 @@
+NFSD(8)                      System Manager's Manual                     NFSD(8)
+
+NAME
+     nfsd – NFS server daemon
+
+SYNOPSIS
+     nfsd [command]
+     nfsd [-F exports_file] checkexports
+     nfsd [-NRrtuv] [-F exports_file] [-n num_servers] [-p nfsport]
+          [-P mountport] [command]
+
+DESCRIPTION
+     nfsd runs on an NFS server machine to service NFS and MOUNT protocol
+     requests from NFS client machines.  In order for a machine to act as an NFS
+     server an NFS exports file, /etc/exports, must exist and the nfsd service
+     must be enabled.
+
+     nfsd listens for NFS service requests at the port indicated in the NFS
+     server specification (2049) and the mountd thread listens for MOUNT service
+     requests at an available port registered with portmap(8).
+
+     For more information on the NFS and MOUNT protocols see Network File System
+     Protocol Specification, RFC1094 and NFS: Network File System Version 3
+     Protocol Specification.
+
+     The nfsd daemon is a multi-threaded process that includes a number of
+     threads processing NFS requests, a thread to accept new socket connections
+     and a thread that processes NFS MOUNT protocol requests.
+
+     When nfsd is started, it loads the export host addresses and options into
+     the kernel using the nfssvc(2) system call.  After changing the list of
+     exports (either directly or indirectly via a change in netgroup
+     membership), a hangup signal should be sent to the daemon to get it to
+     reload the export information.  This can be accomplished with the update
+     command described below.
+
+     Any errors encountered while processing the export entries will be logged
+     via syslog(3).
+
+     nfsd is normally launched by launchd(8); however, the nfsd command may also
+     be used to manipulate the service using the following commands:
+
+     enable   Enables the nfsd service.
+
+     disable  Disables the nfsd service.
+
+     start    Starts the nfsd service.  Note: if the service is disabled it will
+              not be restarted on reboot.  Use the enable command to make the
+              change permanent.
+
+     stop     Stops the nfsd service.  Note: if the service is enabled it will
+              be restarted on reboot.  Use the disable command to make the
+              change permanent.
+
+     restart  Restarts the nfsd service (by stopping the service - it will
+              restart automatically if the /etc/exports file exists).
+
+     update   Sends a SIGHUP to the running nfsd daemon to cause it to update
+              its configuration.
+
+     status   Displays whether the nfsd service is enabled and whether the nfsd
+              daemon is currently running.
+
+     checkexports
+              Checks the exports file and reports any errors (to stderr).  Note
+              that this can be useful to verify the validity of an alternate
+              exports file (using the -F option below) prior to putting the
+              changes in place and updating nfsd.
+
+     verbose [up|down]+
+              Sends USR1 and/or USR2 signal(s) to the running nfsd daemon to
+              cause it to increase and/or decrease its logging level.  (See
+              below for details about nfsd's logging).
+
+     Logging is performed via syslog(3) using the LOG_DAEMON facility.  By
+     default, only messages up to priority LOG_WARNING are logged.  Setting the
+     verbose level to one will add LOG_NOTICE messages which includes logging
+     failed mount attempts.  A verbose level of two will increase the log level
+     to LOG_INFO which includes logging successful mount attempts.  A log level
+     of three or more will add LOG_DEBUG messages and cause increasing amounts
+     of debug information to be logged.  The debug information exposes lots of
+     information about nfsd's inner workings which is typically only useful to
+     developers.  Note: the syslog(8) configuration may need to be adjusted in
+     order to see the increased verbosity.
+
+     The nfsd utility exits 0 on success, and >0 if an error occurs.  When given
+     the status command, it exits 0 if the service is enabled, and 1 if the
+     service is disabled.
+
+     The following is a list of command line options that are available.
+     However, since nfsd is normally started by launchd(8), configuration of
+     these options should be controlled using the equivalent settings in the NFS
+     configuration file (see nfs.conf(5)).
+
+     -F exports_file
+             The exports_file argument specifies an alternate location for the
+             exports file (useful with the checkexports command).
+
+     -N      Allow non-root mount requests to be served.  This should only be
+             specified if there are clients that require it.
+
+     -P #    Specifies which port to use for the MOUNT service.
+
+     -R      Allow mount RPCs requests for regular files to be served.  Although
+             this seems to violate the mount protocol specification, some
+             diskless workstations do mount requests for their swapfiles and
+             expect them to be regular files.  Since a regular file cannot be
+             specified in /etc/exports, the -alldirs option will need to be used
+             on the export in which the swap files reside.
+
+     -n #    Specifies how many NFS server threads to create.
+
+     -p #    Specifies which port to use for the NFS service (instead of the
+             default of 2049).
+
+     -r      Register the NFS service with portmap(8).  This option can be used
+             to re-register the NFS services if the portmap server is restarted.
+             This option is equivalent to the update command.
+
+     -t      Serve TCP NFS clients.  Note: only TCP will be used if no other
+             options are specified.
+
+     -u      Serve UDP NFS clients.  Note: only UDP will be used if no other
+             options are specified.
+
+     -v      Increase nfsd's logging level by one (may be used multiple times).
+
+CONFIGURATION
+     Unless otherwise specified, eight NFS server threads are started and both
+     UDP and TCP transports are supported.
+
+     A server should run enough threads to handle the maximum level of
+     concurrency from its clients.
+
+     See nfs.conf(5) for a list of tunable parameters.
+
+NOTES
+     The exports list displayed via showmount(8) may contain additional
+     information about the status of each export.  This information is reported
+     as entries in the export's group list.
+
+     If an export is currently unavailable, the group list will begin with the
+     entry "<offline>" (or "<offline*>" if it is unavailable to some but not all
+     clients exported to).
+
+     If an export allows non-default security mechanisms, the group list will
+     contain an entry indicating what security mechanisms are allowed.  For
+     example: "<krb5:sys>".  The mechanisms are listed in no particular order
+     and may not be available to all clients.
+
+     If an export is available to all clients, the group list is usually empty.
+     But if additional status information is returned in the group list, then
+     the list will also contain an explicit "(Everyone)" entry to indicate that
+     the export is available to all clients.
+
+     If nfsd does not have read access to an export, mount would fail with
+     "Permission denied" and checkexports command would report the following
+     error:
+           sandbox_check failed. nfsd has no read access to <path>
+     This could be resolved by granting nfsd "Full Disk Access" under "Privacy"
+     tab of the "Security & Privacy" preference in the "System Preferences"
+     followed by restart of nfsd service.
+
+FILES
+     /etc/exports           The list of exported filesystems.
+     /var/run/nfsd.pid      The pid of the currently running nfsd.
+     /var/run/mountd.pid    The pid of the currently running mountd (provided
+                            for backwards compatibility with scripts that may
+                            HUP mountd to update exports).
+     /var/run/mountdtab     The current list of outstanding mounts served.
+     /var/run/mountdexptab  Information about exported file systems and
+                            directories (UUIDs, handles, ...).
+     /System/Library/LaunchDaemons/com.apple.nfsd.plist
+                            The nfsd service's property list file for
+                            launchd(8).
+
+SEE ALSO
+     exports(5), nfs.conf(5), showmount(8), nfsstat(1), nfssvc(2), portmap(8),
+     rpc.rquotad(8), launchd(8)
+
+HISTORY
+     The nfsd and mountd utilities first appeared in 4.4BSD.  mountd
+     functionality was merged into nfsd in Darwin 9.
+

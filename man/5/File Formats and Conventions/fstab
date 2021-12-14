@@ -1,0 +1,114 @@
+FSTAB(5)                       File Formats Manual                      FSTAB(5)
+
+NAME
+     fstab – static information about the filesystems
+
+SYNOPSIS
+     #include <fstab.h>
+
+DESCRIPTION
+     The file fstab contains descriptive information about the various file
+     systems.  fstab is only read by programs, and not written; it is the duty
+     of the system administrator to properly create and maintain this file,
+     using the vifs(8) command.  Each filesystem is described on a separate
+     line; fields on each line are separated by tabs or spaces.  The order of
+     records in fstab is important because diskarbitrationd(8), fsck(8),
+     mount(8), and umount(8) sequentially iterate through fstab doing their
+     thing.
+
+     The first field, (fs_spec), describes the block special device, the local
+     filesystem, or the remote filesystem to be mounted.  The diskarbitrationd
+     program supports the identification of a local filesystem uniquely by its
+     UUID or by its volume name, irrespective of hardware configuration and of
+     hardware parallelism, using the constructs ``UUID'' and ``LABEL''.  For
+     APFS volumes, this field should never be the block special device as it is
+     not constant. Only the constructs ``UUID'' and ``LABEL'' should be used.
+
+     The second field, (fs_file), describes the mount point for the filesystem.
+     For swap partitions, this field should be specified as ``none''.
+
+     The third field, (fs_vfstype), describes the type of the filesystem.  The
+     system currently supports different filesystem types, including the
+     following:
+
+           apfs    APFS is the Mac OS X default filesystem since version 10.13
+                   (High Sierra).
+
+           hfs     HFS+ is the previous Mac OS X default filesystem.
+
+           nfs     a Sun Microsystems compatible ``Network File System''
+
+           msdos   a DOS compatible filesystem
+
+           cd9660  a CD-ROM filesystem (as per ISO 9660)
+
+           fdesc   an implementation of /dev/fd
+
+           union   a translucent filesystem
+
+     The fourth field, (fs_mntops), describes the mount options associated with
+     the filesystem.  It is formatted as a comma separated list of options.  It
+     contains at least the type of mount (see fs_type below) plus any additional
+     options appropriate to the filesystem type.
+
+     The option ``auto'' can be used in the ``noauto'' form to cause a file
+     system not to be mounted automatically (with ``mount -a'', or system boot
+     time).
+
+     The type of the mount is extracted from the fs_mntops field and stored
+     separately in the fs_type field (it is not deleted from the fs_mntops
+     field).  If fs_type is ``rw'' or ``ro'' then the filesystem whose name is
+     given in the fs_file field is normally mounted read-write or read-only on
+     the specified special file.  If fs_type is ``sw'' then the special file is
+     made available as a piece of swap space by the swapon(8) command at the end
+     of the system reboot procedure.  The fields other than fs_spec and fs_type
+     are unused.  If fs_type is specified as ``xx'' the entry is ignored.  This
+     is useful to show disk partitions which are currently unused.
+
+     The fifth field, (fs_freq), is used for these filesystems by the dump(8)
+     command to determine which filesystems need to be dumped.  If the fifth
+     field is not present, a value of zero is returned and dump will assume that
+     the filesystem does not need to be dumped.
+
+     The sixth field, (fs_passno), is used by the fsck(8) program to determine
+     the order in which filesystem checks are done at reboot time.  The root
+     filesystem should be specified with a fs_passno of 1, and other filesystems
+     should have a fs_passno of 2.  Filesystems within a drive will be checked
+     sequentially, but filesystems on different drives will be checked at the
+     same time to utilize parallelism available in the hardware.  If the sixth
+     field is not present or zero, a value of zero is returned and fsck will
+     assume that the filesystem does not need to be checked.
+
+     #define FSTAB_RW        "rw"    /* read-write device */
+     #define FSTAB_RO        "ro"    /* read-only device */
+     #define FSTAB_SW        "sw"    /* swap device */
+     #define FSTAB_XX        "xx"    /* ignore totally */
+
+     struct fstab {
+             char    *fs_spec;       /* block special device name */
+             char    *fs_file;       /* filesystem path prefix */
+             char    *fs_vfstype;    /* type of filesystem */
+             char    *fs_mntops;     /* comma separated mount options */
+             char    *fs_type;       /* rw, ro, sw, or xx */
+             int     fs_freq;        /* dump frequency, in days */
+             int     fs_passno;      /* pass number on parallel fsck */
+     };
+
+     The proper way to read records from fstab is to use the routines
+     getfsent(3), getfsspec(3), getfstype(3), and getfsfile(3).
+
+EXAMPLES
+     UUID=2A1B02AD-467D-403A-8CCD-B87E50AD3DA2 none    apfs  rw
+     UUID=DF000C7E-AE0C-3B15-B730-DFD2EF15CB91 /export apfs  ro
+     UUID=FAB060E9-79F7-33FF-BE85-E1D3ABD3EDEA none    hfs   rw,noauto
+     LABEL=The\040Volume\040Name\040Is\040This none    msdos ro
+
+FILES
+     /etc/fstab  The file fstab resides in /etc.
+
+SEE ALSO
+     getfsent(3), diskarbitrationd(8)
+
+HISTORY
+     The fstab file format appeared in 4.0BSD.
+

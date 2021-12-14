@@ -1,0 +1,34 @@
+pam_mount(8)                 System Manager's Manual                pam_mount(8)
+
+NAME
+     pam_mount – Home Folder Mounting PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_mount [options]
+
+DESCRIPTION
+     The Home Folder Mounting PAM module supports the authentication and session
+     management function classes.  In terms of the function-class parameter,
+     these are “auth” and “session” respectively.
+
+   The Home Folder Mounting Authentication Module
+     The Home Folder Mounting authentication module reads the mount
+     authenticator from the PAM authentication context and caches it in the PAM
+     environment.  The Home Folder Mounting Session Management Module must be
+     used in conjunction with this module to remove the authenticator from the
+     PAM environment.
+
+   The Home Folder Mounting Session Management Module
+     The Home Folder Mounting session management module copies the mount
+     authenticator from the PAM environment, removes it from the PAM
+     environment, and uses its copy to mount the user's home folder if the
+     user's OpenDirectory record indicates that an AFP, SMB, NFS or FileVault
+     home folder is to be used.
+
+     When the session is closed, the Home Folder Mounting session management
+     module unmounts the user's home folder if it was mounted by this module
+     when the session was opened.
+
+SEE ALSO
+     pam.conf(5), pam(8), DirectoryService(8)
+

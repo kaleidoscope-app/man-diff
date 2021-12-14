@@ -1,0 +1,112 @@
+app-sso(1)                   General Commands Manual                  app-sso(1)
+
+NAME
+     app-sso – A tool used to control and get information about the Kerberos SSO
+     extension.
+
+SYNOPSIS
+     app-sso [command]
+
+             Commands:
+                   -a, --authenticate REALM [options ...]
+                         -u, --username USERNAME
+                         -f, --force
+                         -q, --quiet
+                   -d, --logout REALM
+                   -c, --changepassword REALM
+                   -l, --listrealms
+                   -i, --realminfo REALM
+                         -v, --verbose
+                   -i, --sitecode REALM
+                         -v, --verbose
+                   -r, --reset REALM
+                   -k, --keychainoption REALM
+                   -j, --json REALM
+                   -h, --help REALM
+
+
+DESCRIPTION
+     app-sso is used to control and get information about the Kerberos Single
+     Sign-on (SSO) extension via the command line. The Kerberos SSO extension
+     simplifies using Kerberos authentication with an Active Directory based
+     Kerberos realm. It also allows the user to use Active Directory specific
+     functions such as password changes and password expiration notifications.
+
+     Note that app-sso cannot be used to completely configure the Kerberos SSO
+     extension. Configuring the Kerberos SSO extension requires a user approved
+     MDM enrollment, as well as an MDM solution that can build and deliver an
+     appropriately configured Extensible SSO configuration profile payload. See
+     your MDM vendor's documentation for additional information.
+
+COMMANDS
+     -a, --authenticate REALM
+              Display the login dialog for the specified realm, or if the user
+              has already configured the Kerberos SSO extension, acquire a new
+              credential. Returns success upon acquiring a new credential or if
+              the user already has a valid credential.
+
+              -u, --username
+                       The username for authentication. The user will not be
+                       able to change this username on the login screen.
+
+              -f, --force
+                       Display the login screen even if the user is already
+                       authenticated.
+
+              -q, --quiet
+                       Suppress the information that is normally printed after
+                       authentication.
+
+     -d, --logout REALM
+              Logs out any user logged into the specified realm.
+
+     -c, --changepassword REALM
+              Displays the "Change Password" dialog for the specified realm.
+
+     -l, --listrealms
+              Prints the list of configured realms.
+
+     -i, --realminfo REALM
+              Print information about the currently configured realm. This
+              includes information such as the current site code, network home
+              directory and date the user's password expires.
+
+              -v, --verbose
+                       Print the complete site code cache in the results.
+
+     -s, --sitecode REALM
+              Perform a site lookup for the specified realm.
+
+              -v, --verbose
+                       Print the complete site code cache in the results.
+
+     -r, --reset [REALM]
+              Reset the cache for the specified realm. If a realm isn't
+              specified, reset caches for all realms.
+
+     -k, --keychainoption REALM
+              Resets the "login automatically" option for the specified realm.
+
+     -p, --proceedusersetup REALM
+              Allow user setup to proceed if you are using "delayUserSetup" in
+              your configuration profile.
+
+     -t, --sharedsettings REALM
+              Prints the kerberos settings that are shared with other processes
+              for the specified realm. For diagnostic purposes only, not
+              intended for scripting.
+
+     -j, --json
+              Format the output of this command as JSON instead of property list
+              format.
+
+     -h, --help
+              Print a synopsis of the above document.
+
+EXAMPLES
+     Print infomation about the PRETENDCO.COM realm:
+              app-sso -i PRETENDCO.COM
+
+     Authenticate to the PRETENDCO.COM realm as jappleseed:
+              app-sso -a PRETENDCO.COM -u jappleseed
+

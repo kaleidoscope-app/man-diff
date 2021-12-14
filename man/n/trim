@@ -1,0 +1,90 @@
+textutil::trim(n)  Text and string utilities, macro processing textutil::trim(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       textutil::trim - Procedures to trim strings
+
+SYNOPSIS
+       package require Tcl  8.2
+
+       package require textutil::trim  ?0.7?
+
+       ::textutil::trim::trim string ?regexp?
+
+       ::textutil::trim::trimleft string ?regexp?
+
+       ::textutil::trim::trimright string ?regexp?
+
+       ::textutil::trim::trimPrefix string prefix
+
+       ::textutil::trim::trimEmptyHeading string
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The package textutil::trim provides commands that trim strings using
+       arbitrary regular expressions.
+
+       The complete set of procedures is described below.
+
+       ::textutil::trim::trim string ?regexp?
+              Remove in string any leading and trailing substring according to
+              the regular expression regexp and return the result as a new
+              string.  This is done for all lines in the string, that is any
+              substring between 2 newline chars, or between the beginning of the
+              string and a newline, or between a newline and the end of the
+              string, or, if the string contain no newline, between the
+              beginning and the end of the string.  The regular expression
+              regexp defaults to "[ \\t]+".
+
+       ::textutil::trim::trimleft string ?regexp?
+              Remove in string any leading substring according to the regular
+              expression regexp and return the result as a new string. This
+              apply on any line in the string, that is any substring between 2
+              newline chars, or between the beginning of the string and a
+              newline, or between a newline and the end of the string, or, if
+              the string contain no newline, between the beginning and the end
+              of the string.  The regular expression regexp defaults to "[
+              \\t]+".
+
+       ::textutil::trim::trimright string ?regexp?
+              Remove in string any trailing substring according to the regular
+              expression regexp and return the result as a new string. This
+              apply on any line in the string, that is any substring between 2
+              newline chars, or between the beginning of the string and a
+              newline, or between a newline and the end of the string, or, if
+              the string contain no newline, between the beginning and the end
+              of the string.  The regular expression regexp defaults to "[
+              \\t]+".
+
+       ::textutil::trim::trimPrefix string prefix
+              Removes the prefix from the beginning of string and returns the
+              result. The string is left unchanged if it doesn't have prefix at
+              its beginning.
+
+       ::textutil::trim::trimEmptyHeading string
+              Looks for empty lines (including lines consisting of only
+              whitespace) at the beginning of the string and removes it. The
+              modified string is returned as the result of the command.
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category textutil of
+       the Tcllib SF Trackers [http://sourceforge.net/tracker/?group_id=12883].
+       Please also report any ideas for enhancements you may have for either
+       package and/or documentation.
+
+SEE ALSO
+       regexp(n), split(n), string(n)
+
+KEYWORDS
+       prefix, regular expression, string, trimming
+
+CATEGORY
+       Text processing
+
+
+

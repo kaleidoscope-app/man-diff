@@ -1,0 +1,104 @@
+LSBOM(8)                     System Manager's Manual                    LSBOM(8)
+
+
+
+
+NAME
+     lsbom – list contents of a bom file
+
+SYNOPSIS
+     lsbom [-b] [-c] [-d] [-f] [-l] [-m] [-s] [-x] [--arch archVal]
+           [-p parameters] bom ...
+     lsbom -h | --help
+
+DESCRIPTION
+     The lsbom command interprets the contents of binary bom (bom(5)) files. For
+     each file in a bom, lsbom prints the file path and/or requested
+     information.
+
+     If no options are given, lsbom will display the output formatted such that
+     each line contains the path of the entry, its mode (octal), and its
+     UID/GID. There are slight differences in the output for plain files,
+     directories, symbolic links, and device files as follows:
+
+     plain files     the UID/GID is followed by the file size and a 32-bit CRC
+                     checksum of the file's contents.
+
+     symbolic links  the UID/GID is followed by the size and checksum of the
+                     link path, and the link path itself.
+
+     device files    the UID/GID file number is followed by the device number.
+
+     The -p option can be used to specify a user-defined format for lsbom's
+     output. The format string consists of one or more characters described
+     below where each character represents a data type. Data types will be
+     separated by tab characters, and each line will end with a newline
+     character. One can use this mechanism to create output similar to the ls(1)
+     command.
+
+     The options are:
+
+     -h              print full usage
+
+     -b              list block devices
+
+     -c              list character devices
+
+     -d              list directories
+
+     -f              list files
+
+     -l              list symbolic links
+
+     -m              print modified times (for plain files only)
+
+     -s              print only the path of each file
+
+     -x              suppress modes for directories and symlinks
+
+     --arch archVal  when displaying plain files that represent Universal Mach-O
+                     binaries, print the size and checksum of the file contents
+                     for the specified archVal (either "ppc", "ppc64", or
+                     "i386")
+
+     -p parameters   print only some of the results Note: each option can only
+                     be used once:
+                           c       32-bit checksum
+                           f       file name
+                           F       file name with quotes (i.e. "/mach_kernel")
+                           g       group id
+                           G       group name
+                           m       file mode (permissions)
+                           M       symbolic file mode (i.e. "dr-xr-xr-x" )
+                           s       file size
+                           S       formatted size
+                           t       mod time
+                           T       formatted mod time
+                           u       user id
+                           U       user name
+                           /       user id/group id
+                           ?       user name/group name
+
+EXAMPLES
+     lsbom bomfile           list the contents of bomfile
+
+     lsbom -s bomfile        list only the paths of the contents of the bomfile
+
+     lsbom -f -l bomfile     list the plain files and symbolic links of the
+                             bomfiles (but not directories or devices)
+
+     lsbom -p MUGsf bomfiles
+                             list the contents of bomfile displaying only the
+                             files' modes, user name, group name, size, and
+                             filename
+
+SEE ALSO
+     bom(5), ditto(8), mkbom(8), pkgutil(1)
+
+HISTORY
+     The lsbom command appeared in NeXTSTEP as a tool to browse the contents of
+     bom files used during installation.
+
+     The -p flag appeared in Mac OS X 10.1 in an attempt to make lsbom's output
+     more convenient for human beings.
+

@@ -1,0 +1,24 @@
+pam_nologin(8)               System Manager's Manual              pam_nologin(8)
+
+NAME
+     pam_nologin – No Login PAM module
+
+SYNOPSIS
+     [service-name] function-class control-flag pam_nologin [options]
+
+DESCRIPTION
+     The No Login PAM module supports the account management function class.  In
+     terms of the function-class parameter, this is the “account” class.
+
+     The No Login authentication module always returns success for the
+     superuser, and returns success for all other users if the file /etc/nologin
+     does not exist.  If /etc/nologin does exist, then its contents are echoed
+     to non-superusers before failure is returned.
+
+FILES
+     /etc/nologin
+             A message to denied users.
+
+SEE ALSO
+     nologin(8), pam.conf(5), pam(8), pwpolicy(8)
+

@@ -1,0 +1,165 @@
+SLAPD-SHELL(5)                 File Formats Manual                SLAPD-SHELL(5)
+
+
+
+NAME
+       slapd-shell - Shell backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The Shell backend to slapd(8) executes external programs to implement
+       operations, and is designed to make it easy to tie an existing database
+       to the slapd front-end.
+
+       This backend is primarily intended to be used in prototypes.
+
+WARNING
+       The abandon shell command has been removed since OpenLDAP 2.1.
+
+CONFIGURATION
+       These slapd.conf options apply to the SHELL backend database.  That is,
+       they must follow a "database shell" line and come before any subsequent
+       "backend" or "database" lines.  Other database options are described in
+       the slapd.conf(5) manual page.
+
+       These options specify the pathname and arguments of the program to
+       execute in response to the given LDAP operation.  Each option is followed
+       by the input lines that the program receives:
+
+       add <pathname> <argument>...
+              ADD
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              <entry in LDIF format>
+
+       bind <pathname> <argument>...
+              BIND
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              dn: <DN>
+              method: <method number>
+              credlen: <length of <credentials>>
+              cred: <credentials>
+
+       compare <pathname> <argument>...
+              COMPARE
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              dn: <DN>
+              <attribute>: <value>
+
+       delete <pathname> <argument>...
+              DELETE
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              dn: <DN>
+
+       modify <pathname> <argument>...
+              MODIFY
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              dn: <DN>
+              <repeat {
+                  <"add"/"delete"/"replace">: <attribute>
+                  <repeat { <attribute>: <value> }>
+                  -
+              }>
+
+       modrdn <pathname> <argument>...
+              MODRDN
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              dn: <DN>
+              newrdn: <new RDN>
+              deleteoldrdn: <0 or 1>
+              <if new superior is specified: "newSuperior: <DN>">
+
+       search <pathname> <argument>...
+              SEARCH
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              base: <base DN>
+              scope: <0-2, see ldap.h>
+              deref: <0-3, see ldap.h>
+              sizelimit: <size limit>
+              timelimit: <time limit>
+              filter: <filter>
+              attrsonly: <0 or 1>
+              attrs: <"all" or space-separated attribute list>
+
+       unbind <pathname> <argument>...
+              UNBIND
+              msgid: <message id>
+              <repeat { "suffix:" <database suffix DN> }>
+              dn: <bound DN>
+
+       Note that you need only supply configuration lines for those commands you
+       want the backend to handle.  Operations for which a command is not
+       supplied will be refused with an "unwilling to perform" error.
+
+       The search command should output the entries in LDIF format, each entry
+       followed by a blank line, and after these the RESULT below.
+
+       All commands except unbind should then output:
+              RESULT
+              code: <integer>
+              matched: <matched DN>
+              info: <text>
+       where only the RESULT line is mandatory.  Lines starting with `#' or
+       `DEBUG:' are ignored.
+
+ACCESS CONTROL
+       The shell backend does not honor all ACL semantics as described in
+       slapd.access(5).  In general, access to objects is checked by using a
+       dummy object that contains only the DN, so access rules that rely on the
+       contents of the object are not honored.  In detail:
+
+       The add operation does not require write (=w) access to the children
+       pseudo-attribute of the parent entry.
+
+       The bind operation requires auth (=x) access to the entry pseudo-
+       attribute of the entry whose identity is being assessed; auth (=x) access
+       to the credentials is not checked, but rather delegated to the underlying
+       shell script.
+
+       The compare operation requires read (=r) access (FIXME: wouldn't compare
+       (=c) be a more appropriate choice?)  to the entry pseudo-attribute of the
+       object whose value is being asserted; compare (=c) access to the
+       attribute whose value is being asserted is not checked.
+
+       The delete operation does not require write (=w) access to the children
+       pseudo-attribute of the parent entry.
+
+       The modify operation requires write (=w) access to the entry pseudo-
+       attribute; write (=w) access to the specific attributes that are modified
+       is not checked.
+
+       The modrdn operation does not require write (=w) access to the children
+       pseudo-attribute of the parent entry, nor to that of the new parent, if
+       different; write (=w) access to the distinguished values of the naming
+       attributes is not checked.
+
+       The search operation does not require search (=s) access to the entry
+       pseudo_attribute of the searchBase; search (=s) access to the attributes
+       and values used in the filter is not checked.
+
+
+EXAMPLE
+       There is an example search script in the slapd/back-shell/ directory in
+       the OpenLDAP source tree.
+
+LIMITATIONS
+       The shell backend does not support threaded environments.  When using the
+       shell backend, slapd(8) should be built --without-threads.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd(8), sh(1).
+
+
+

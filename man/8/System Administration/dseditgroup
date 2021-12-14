@@ -1,0 +1,222 @@
+dseditgroup(8)               System Manager's Manual              dseditgroup(8)
+
+NAME
+     dseditgroup – group record manipulation tool.
+
+SYNOPSIS
+     dseditgroup [options] [parameters] groupname
+
+                 options:
+                       -o operation   perform (read, create, delete, edit,
+                                      checkmember) operation with given
+                                      groupname
+                       -p             prompt for authentication password
+                       -q             disables interactive verification
+                       -v             verbose logging to stdout
+
+                 parameters:
+                       -m member      username to use for checkmember option
+                       -n nodename    directory node location of group record
+                       -u username    authenticate with admin username
+                       -P password    authentication password
+                       -a recordname  name of the record to add
+                       -d recordname  name of the record to delete
+                       -t recordtype  type of the record to add or delete
+                       -T grouptype   type of group to create or modify
+                       -L             maintain ComputerLists in parallel with
+                                      ComputerGroups
+                       -i gid         gid to add/replace
+                       -g guid        GUID to add/replace
+                       -S sid         SID to add/replace
+                       -r realname    realname to add/replace
+                       -k keyword     keyword to add
+                       -c comment     comment to add/replace
+                       -s timetolive  seconds to live to add/replace
+                       -f n | l       change the group's format - 'n' for the
+                                      new group format and 'l' for the legacy
+                                      group format
+
+
+DESCRIPTION
+     dseditgroup allows manipulation of a single named group record on either
+     the default local node or the specified DirectoryService node. For the
+     "read" operation the authentication search policy (/Search node) is
+     consulted. Default behaviour is presented below after a discussion of each
+     operation and the possible parameters.
+
+     Options and their descriptions:
+
+     -o operation
+              If "read" then the parameters of the specified groupname will be
+              displayed. This is the default option. The authentication search
+              policy (/Search node) will be used.
+
+              If "create" then create a group with the specified groupname on
+              either the default local node or the specified DirectoryService
+              node.
+
+              If "delete" then delete a group with the specified groupname on
+              either the default local node or the specified DirectoryService
+              node.
+
+              If "edit" then edit a group with the specified groupname on either
+              the default local node or the specified DirectoryService node.
+
+              If "checkmember" then check if the user specified with -m or
+              current logged in user is a member of the specified groupname. The
+              authentication search policy (/Search node) is used to find the
+              member. The specified node (defaults to the authentication search
+              policy) is used to find the group. If the specified node is not on
+              the authentication search policy the behaviour is undefined.
+
+     -p       You will be prompted for a password to use in conjunction with the
+              specified username.
+
+     -q       This disables interactive verification of replace or delete
+              operations.
+
+     -v       This enables the logging of the DirectoryService API calls and
+              their return codes.
+
+     Parameters and their descriptions:
+
+     -m member
+              The username of the account to verify group membership when using
+              -o checkmember
+
+     -n nodename
+              Directory Service node name such as /LDAPv3/ldap.company.com and
+              whose default value is the local node. "." can also be used to
+              specify the local node.
+
+     -u username
+              Username of a user that has administrative privileges on this
+              computer.
+
+     -P password
+              Password to use in conjunction with the specified username.  If
+              this is not specified, you will be prompted for a password.
+
+     -a recordname
+              The name of the record to be added to the group specified by
+              groupname. This name is related to the first record found on the
+              authentication search policy when a search is made with this
+              recordname and the given recordtype.
+
+     -d recordname
+              The name of the record to be deleted from the group specified by
+              groupname. This name is related to the first record found on the
+              authentication search policy when a search is made with this
+              recordname and the given recordtype.
+
+     -t recordtype
+              The type of the record to be added to or deleted from the group
+              specified by groupname. Valid values are user, computer, group, or
+              computergroup.
+
+     -T grouptype
+              The type of the group record to be created or modified as
+              specified by groupname. Valid values are group or computergroup.
+
+     -L       If used with computergroup will also maintain the computerlist if
+              it exists or create it if a computergroup is created.
+
+     -i gid   This is a group id. This will be automatically created if not
+              specified for a create.
+
+     -g guid  This is a text representation of an 128 bit id. This will be
+              automatically created if not specified for a create.
+
+     -r realname
+              This is a simple text string.
+
+     -k keyword
+              This is a simple text string.
+
+     -c comment
+              This is a simple text string.
+
+     -s timetolive
+              The number of seconds that this record is deemed valid as a cached
+              value. There will be no automatically created default value if not
+              specified for a create.
+
+DEFAULT BEHAVIOUR
+     dseditgroup mygroup
+
+     This simple version of the command will default to:
+
+     dseditgroup -o read -n . -u $USER mygroup
+
+     The output will be the parameters of the "mygroup" group record if the
+     shell user has read access to the local node's group record of name
+     "mygroup".
+
+EXAMPLES
+     dseditgroup extragroup
+
+     dseditgroup -o read extragroup
+
+                    The attributes of the group extragroup from the local node
+                    are displayed.
+
+     dseditgroup -o create -n /LDAPv3/ldap.company.com -u myusername -P
+              mypassword -r "Extra Group" -c "a nice comment" -s 3600 -k "some
+              keyword" extragroup
+
+                    The group extragroup is created from the node
+                    /LDAPv3/ldap.company.com with the realname, comment,
+                    timetolive (instead of default of 14400 = 4 hours), and
+                    keyword atttribute values given above if the user myusername
+                    has supplied a correct password and has write access.
+
+     dseditgroup -o delete -n /LDAPv3/ldap.company.com -u myusername -P
+              mypassword extragroup
+
+                    The group extragroup is deleted from the node
+                    /LDAPv3/ldap.company.com if the user myusername has supplied
+                    a correct password and has write access.
+
+     dseditgroup -o edit -n /LDAPv3/ldap.company.com -u myusername -p -a
+              username -t user extragroup
+
+                    The group extragroup from the node /LDAPv3/ldap.company.com
+                    will have the username added if the username is in a user
+                    record on the search policy and if the correct password is
+                    presented interactively for the user myusername which also
+                    need to have write access.
+
+     dseditgroup -o edit -n /LDAPv3/ldap.company.com -u myusername -P -a
+              mysubgroup -t group extragroup
+
+                    The group extragroup from the node /LDAPv3/ldap.company.com
+                    will have the mysubgroup added if the mysubgroup is in a
+                    group record on the search policy and if the user myusername
+                    has supplied a correct password and has write access.
+
+     dseditgroup -o edit -n /LDAPv3/ldap.company.com -u myusername -p -d
+              username -t user extragroup
+
+                    The group extragroup from the node /LDAPv3/ldap.company.com
+                    will have the username deleted if the correct password is
+                    presented interactively for the user myusername which also
+                    need to have write access.
+
+     dseditgroup -o checkmember extragroup
+
+                    Will write out a message specifying if the current user is a
+                    member of extragroup on the authentication search policy.
+
+     dseditgroup -o checkmember -n _. extragroup
+
+                    Will write out a message specifying if the current user is a
+                    member of extragroup on the local node.
+
+     dseditgroup -n /LDAPv3/ldap.company.com -o checkmember -m user extragroup
+
+                    Will write out a message specifying if user (found in
+                    /Search) is a member of extragroup on the specified node
+                    /LDAPv3/ldap.company.com. The specified node
+                    /LDAPv3/ldap.company.com needs to be on the authentication
+                    search policy for a valid answer.
+

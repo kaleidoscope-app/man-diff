@@ -1,0 +1,77 @@
+FSCK_CS(8)                   System Manager's Manual                  FSCK_CS(8)
+
+NAME
+     fsck_cs – verify and repair CoreStorage logical volume groups
+
+SYNOPSIS
+     fsck_cs -q device ...
+     fsck_cs -p device ...
+     fsck_cs [-y | -n] [-x | -g] [-l logfile] device ...
+
+DESCRIPTION
+     The fsck_cs utility verifies and repairs CoreStorage logical volume group
+     metadata.
+
+     The device parameter(s) should be path(s) to the "raw" (character special)
+     disk device(s) such as /dev/rdisk1s1 that constitute the CoreStorage
+     logical volume group.  If you specify a "non-raw" (block special) path such
+     as /dev/disk1s1, or just the disk name such as disk1s1, it will
+     automatically be converted to the corresponding raw disk device
+     (/dev/rdisk1s1).
+
+     The options are as follows:
+
+           -q      Performs a "quick" check and indicates if any corruptions
+                   were found via the exit status.  In this mode stale MLV
+                   segments are not checked, nor is proactive MLV mirror
+                   scrubbing performed.
+
+           -p      Operates in "preen" mode.  MLV mirror blocks are repaired
+                   where necessary.  Newer transactions may be invalidated to
+                   force a roll-back to an older, but consistent, filesystem
+                   state.
+
+           -y      Causes fsck_cs to assume "yes" as the answer to all
+                   questions.  In other words, always attempt to repair any
+                   errors that are found.
+
+           -n      Causes fsck_cs to assume "no" as the answer to all questions.
+                   In other words, never attempt to repair any errors that are
+                   found.
+
+           -x      Causes fsck_cs to produce its output in an XML-like (plist)
+                   format.  This option is used when another application with a
+                   graphical user interface (like OS X Disk Utility) is invoking
+                   the fsck_cs tool and processing the output.
+
+           -g      Causes fsck_cs to produce its output in GUI-compatible form.
+                   This is similar in usage to the -x option.
+
+           -l logfile
+                   Reproduce all console output, as well as additional status
+                   and error messages, to the specified file.
+
+     Alternatively device can be specified as the UUID of the CoreStorage
+     logical volume group or as the name of a CoreStorage-hosted logical volume
+     within that group, causing fsck_cs to derive the constituent raw device(s)
+     from the IORegistry.  In these cases you must indicate what object is being
+     supplied to identify the logical volume group:
+
+           --pv    the component CoreStorage physical volume(s) directly
+
+           --uuid  the CoreStorage logical volume group (as a UUID)
+
+           --lv    a CoreStorage logical volume (as a device name)
+
+DIAGNOSTICS
+     The fsck_cs utility exits with 0 if no corruption was detected or if all
+     corruptions were repaired, and with >0 if any unrepaired corruption
+     remains.
+
+BUGS
+     fsck_cs does not perform an exhaustive validation, nor is it able to fix
+     many of the inconsistencies that it does detect.
+
+HISTORY
+     The fsck_cs utility first appeared along with CoreStorage in OS X 10.7.0.
+

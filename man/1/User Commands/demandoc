@@ -1,0 +1,57 @@
+DEMANDOC(1)                  General Commands Manual                 DEMANDOC(1)
+
+NAME
+     demandoc – emit only text of UNIX manuals
+
+SYNOPSIS
+     demandoc [-w] [file ...]
+
+DESCRIPTION
+     The demandoc utility emits only the text portions of well-formed mdoc(7)
+     and man(7) UNIX manual files.
+
+     By default, demandoc parses standard input and outputs only text nodes,
+     preserving line and column position.  Escape sequences are omitted from the
+     output.
+
+     Its arguments are as follows:
+
+     -w      Output a word list.  This outputs each word of text on its own
+             line.  A "word", in this case, refers to whitespace-delimited terms
+             beginning with at least two letters and not consisting of any
+             escape sequences.  Words have their leading and trailing
+             punctuation (double-quotes, sentence punctuation, etc.) stripped.
+
+     file ...
+             The input files.
+
+     If a document is not well-formed, it is skipped.
+
+     The -i, -k, -m, and -p flags are silently discarded for calling
+     compatibility with the historical deroff.
+
+EXIT STATUS
+     The demandoc utility exits with one of the following values:
+
+     0       No errors occurred.
+     6       An operating system error occurred, for example memory exhaustion
+             or an error accessing input files.  Such errors cause demandoc to
+             exit at once, possibly in the middle of parsing or formatting a
+             file.  The output databases are corrupt and should be removed .
+
+EXAMPLES
+     The traditional usage of demandoc is for spell-checking manuals on BSD.
+     This is accomplished as follows (assuming British spelling):
+
+           $ demandoc -w file.1 | spell -b
+
+SEE ALSO
+     mandoc(1), man(7), mdoc(7)
+
+HISTORY
+     demandoc replaces the historical deroff utility for handling modern man(7)
+     and mdoc(7) documents.
+
+AUTHORS
+     The demandoc utility was written by Kristaps Dzonsons <kristaps@bsd.lv>.
+

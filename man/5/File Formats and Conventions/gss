@@ -1,0 +1,60 @@
+gss(5)                         File Formats Manual                        gss(5)
+
+NAME
+     gss – how to configure gss framework
+
+DESCRIPTION
+     The gss GSS.frameworks have several configuration domains, all can
+     configured with defaults(1).
+
+     Configuration can be stored both in the user's configuration (
+     ~/Library/Preferences) and system ( /Library/Preferences ).
+
+CONFIGURATION OPTIONS
+     Use gsstool(1) to list the supported options and their settings:
+           gsstool supported-mech --options
+
+     Common options are:
+
+     NTLM 'Force NTLMv1'
+             Force client to use NTLMv1
+
+     NTLM NTLMv1
+             Enable support for NTLMv1 in both client and server
+
+     NTLM NTLMv2
+             Enable support for NTLMv2 in both client and server
+
+     NTLM 'NTLM session key'
+             Require backends to support for NTLMv2 session key, Lion and
+             earlier dont support this.  Session keys is required for NTLM MIC
+             that stops reflection attacks.
+
+     NTLM 'AllowedHosts'
+             What hosts that NTLM is allowed to be used for. When there a host
+             that is not on the list, NTLM will not be used. File globbing is
+             used when matching and it's case insensitive.  When there is no
+             configuration, all hosts are allowed.
+
+             defaults write com.apple.GSS.NTLM AllowedHosts -array host.local '*.my.domain'
+
+NTLM options
+     If you want to disable NTLM support completely in both the acceptor
+     (server) and initiator (client), you need disable both NTLMv1 and NTLMv2,
+     and set their values to boolean false or 0.
+
+     defaults write com.apple.GSS.NTLM NTLMv1 -bool false
+     defaults write com.apple.GSS.NTLM NTLMv2 -bool false
+
+APPLE MAC OS X
+     You can use the defaults write command to change the options, for simple
+     boolean options, use this:
+           defaults write com.apple.GSS.NTLM NTLMv1 -bool false
+
+     You can also turn on debugging (output in syslog) using:
+           defaults write com.apple.GSS DebugLevel -int 10
+           open -a Console
+
+SEE ALSO
+     defaults(1), gss_mo(3), heimdal_debug(1)
+

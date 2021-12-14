@@ -1,0 +1,101 @@
+IOCLASSCOUNT(8)              System Manager's Manual             IOCLASSCOUNT(8)
+
+NAME
+     ioclasscount
+
+SYNOPSIS
+     ioclasscount [--track] [--leaks] [--maps=PID] [--site=SITE] [--reset]
+                  [--start] [--stop] [--exclude] [--size=BYTES]
+                  [--capsize=BYTES] [--tag=tag] [--zsize=BYTES] [classname]
+                  [...]
+
+DESCRIPTION
+     ioclasscount displays the instance counts of OSObject-based C++ classes in
+     the kernel, incremented by the number of direct subclasses that have an
+     instance count of at least 1.  For example, if IONetworkController is not
+     directly instantiated, but its direct subclass IOEthernetController has any
+     instances, then IONetworkController's instance count will be at least 1; if
+     another direct subclass such as IOFWController has any instances, then
+     IONetworkController's instance count will be at least 2; and so on.  (This
+     modification of instance counts prevents unloading of kexts defining
+     superclasses that have no instances, but whose subclasses in other kexts
+     have instances.)
+
+     If classes are specified, instance counts are printed as a comma-separated
+     list in the order specified.  If no classes are specified, instance counts
+     for all classes are printed, one per line of output and sorted by name.
+
+     This information is useful for tracking leaks.  Instance counts can also
+     found in the root of the IORegistry in the “IOKitDiagnostics” property.
+
+TRACKING
+     DEVELOPMENT or DEBUG kernels support collecting backtraces on
+     IOMemoryDescriptor mapping and wiring of memory, and, when running with
+     boot-arg io=0x00400000, on object allocation and calls to IOMalloc*.  With
+     boot-arg io=0x02400000, capturing backtraces is enabled at startup.
+
+     The following operands are available:
+
+     --start      Start capturing allocations.
+
+     --stop       Stop capturing allocations.
+
+     --reset      Reset any collected allocations.
+
+     --track      Display symbolicated allocation backtraces, with bytes
+                  allocated and number of calls accumulated per callsite,
+                  ordered by size.
+
+     --maps=pid   Display symbolicated backtraces for mappings created in the
+                  process with process id pid with bytes mapped and address,
+                  ordered by size. If pid is -1 all processes are displayed.
+
+     --site=site  When displaying backtraces, only those containing the string
+                  site are included. For example, site could be an address in
+                  the backtrace, a symbol name, or a module name.
+
+     --leaks      Display symbolicated allocation backtraces for potential
+                  leaks, with bytes allocated and number of calls accumulated
+                  per callsite, ordered by size. Leaks are detected by scanning
+                  kernel virtual memory for pointer references to an allocation;
+                  allocations with no references found are a potential leak.
+
+     --exclude    If names are given, apply the command to all tracking
+                  categories excluding these names.
+
+     --size=n     Only report accumulated sizes >= n bytes. The default is 1
+                  byte.
+
+     --capsize=n  Only capture allocations >= n bytes. The default is 1 byte.
+
+     --tag=tag    Only report allocations with the vm tag tag .
+
+     --zsize=n    Only report allocations in the kalloc zone of size n bytes.
+
+EXAMPLES
+     Display instance counts for IOPCIDevice and AppleTestPCI:
+
+     /usr/sbin/ioclasscount IOPCIDevice AppleTestPCI
+            IOPCIDevice = 2, AppleTestPCI = 1
+
+     Start collecting backtraces for everything:
+
+     /usr/sbin/ioclasscount --start
+
+     Display backtraces and allocation sizes for everything:
+
+     /usr/sbin/ioclasscount --track
+
+     Display all backtraces and allocation sizes collected for OSData &
+     OSSymbol:
+
+     /usr/sbin/ioclasscount --track OSData OSSymbol
+
+     Display all backtraces and allocation sizes collected except for OSSymbol,
+     IOMalloc*, IOMemoryDescriptor mapping and wiring (names from IOKitDebug.h):
+
+     /usr/sbin/ioclasscount --track --exclude OSSymbol IOMalloc IOWire
+
+SEE ALSO
+     ioalloccount(8), ioreg(8)
+

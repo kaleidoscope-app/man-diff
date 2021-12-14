@@ -1,0 +1,62 @@
+heimdal_debug(5)               File Formats Manual              heimdal_debug(5)
+
+NAME
+     heimdal_debug – how to turn on/off debugging for Kerberos tools
+
+DESCRIPTION
+     The heimdal_debug kerberos frameworks have several knobs for controlling
+     logging.  The different framework knobs are:
+
+     libkrb
+          The Kerberos library, some gss-api Kerberos output ends up here too
+
+     kcm  the kcm library (credentials cache, ntlm client)
+
+     kdc  the kerberos KDC output
+
+     digest-service
+          the digest service (ntlm server)
+
+CONFIGURATION FILE
+          [logging]
+                  <subsystem> = 0-/SYSLOG:
+     and watch syslog for logging information.
+
+APPLE MAC OS X
+     First turn up syslog debugging
+           sudo syslog -c 0 -d
+     then you can see the syslog output in Console.app or by running
+           syslog -w -k org.h5l.asl
+     To enable more extensive debugging logging for each subsystem, use the
+     following commands:
+
+           Kerberos Library
+                sudo defaults write /Library/Preferences/com.apple.Kerberos
+                logging -dict-add krb5 '0-/OSLOG:normal:'
+
+           digest-server
+                sudo defaults write /Library/Preferences/com.apple.Kerberos
+                logging -dict-add digest-service '0-/OSLOG:normal:'
+
+           kcm  sudo defaults write /Library/Preferences/com.apple.Kerberos
+                logging -dict-add kcm '0-/OSLOG:normal:'
+
+           kdc  sudo defaults write /Library/Preferences/com.apple.Kerberos
+                logging -dict-add kdc '0-/OSLOG:normal:'
+
+           MIT Kerberos Shim
+                defaults write com.apple.MITKerberosShim EnableDebugging -bool
+                true
+
+           GSS-API framework logging
+                sudo defaults write /Library/Preferences/com.apple.GSS
+                DebugLevel -int 10
+
+Other options on Mac OS X
+          Make the admin API pretend to the server even on client
+               sudo defaults write /Library/Preferences/com.apple.Kerberos
+               ForceHeimODServerMode -bool true
+
+SEE ALSO
+     gss(5), kerberos(8)
+

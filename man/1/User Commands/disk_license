@@ -1,0 +1,83 @@
+DISK_LICENSE(1)              General Commands Manual             DISK_LICENSE(1)
+
+
+
+NAME
+       disk_license - Disk License Tool
+
+SYNOPSIS
+       disk_license [-hHqrsvX] [-dn][-ffilename][-H][-Fformat]
+
+       disk_license [-idiskcatalog]
+
+DESCRIPTION
+       disk_license is used to interrogate disk drives, StorNext disk licenses
+       and the Quantum Disk Catalog.  It can report current disk licensing
+       status and create reports for manually requesting disk licenses on an
+       MDC.
+
+       All the disks in all of an MDC's file systems are categorized into
+       Quantum Branded, Quantum Certified, and Uncertified (all other) as
+       defined in the quantum_disk_catalog.dat database.
+
+       The Disk Usage licenses are free, but aid Quantum support in
+       understanding the usage and requirements of a site.
+
+OPTIONS
+       -c <filename>
+              Use catalog <filename> instead of the default disk-license-request
+              report file.
+
+       -C     Only print the Disk Catalog to standard out.
+
+       -d <n> Print additional details on a per-file-system basis.  Larger
+              values for <n> yield more details, up to a point.
+
+       -f <filename>
+              Send reports to the file <filename>.
+
+       -F format
+              Print the output in format <format>.  Supported formats are:
+              ascii, xml, and json.
+
+       -h     Print the command's usage message and quit.
+
+       -H     Display capacity values in human readable, terabyte values (only
+              for ASCII format).
+
+       -q     Quiet mode.  Suppress status messages to standard out.
+
+       -R <filename>
+              Input a Disk License Request report from <filename>.  This option
+              is not available on some platforms.
+
+       -r     Print a Disk License Request report to standard out.
+
+       -s     Print a Disk Usage Summary report to standard out.
+
+       -u     Update the XML file specified with the -R option to the current
+              version and format.
+
+       -v     Print additional internal details as the command collects the
+              information to categorize the MDC's disks.  Additional v options
+              increase the amount of detail.
+
+       -X     Update the default Disk License Request file.  When Disk Usage is
+              over licensed capacity, create a periodic RAS message.
+
+       -i diskcatalog
+              Import the specified disk catalog when it has a newer generation
+              number than the currently installed disk catalog.
+
+FILES
+       /Library/Preferences/Xsan/quantum_disk_catalog.dat
+       /Library/Preferences/Xsan/license.dat
+       /Library/Preferences/Xsan/*.cfg
+
+       Default Disk License Request report file:
+       /Library/Logs/Xsan/debug/quantum_disk_license_report.xml
+
+SEE ALSO
+
+
+

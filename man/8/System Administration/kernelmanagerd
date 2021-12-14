@@ -1,0 +1,47 @@
+KERNELMANAGERD(8)     KernelManagement daemon for managing kexts and collections
+
+
+
+DESCRIPTION
+       kernelmanagerd is the kernel extension server.  It runs as a standalone
+       launchd(8) daemon to handle requests from the kernel, and from other
+       user-space processes to load kernel extensions (kexts) if they are
+       available in a loaded kext collection (see kmutil(8)).  If a kext is
+       requested for load that is not yet available for loading, kernelmanagerd
+       will build the kext into the auxiliary kext collection for use on the
+       next reboot.  It is also responsible for launching driver extensions on
+       the system.
+
+       The KernelManagement utility kmutil(8) can interact with kernelmanagerd
+       for requesting loads and unloads of kernel extensions, and for querying
+       the daemon’s state.
+
+       kernelmanagerd watches the /Library/Extensions directory for changes, to
+       support installation and removal of kexts with installers.
+
+PATHS
+       /System/Library/KernelCollections
+              is the standard system repository of kext collections.
+
+       /System/Library/Extensions/
+              is the standard system repository of kernel extensions.
+
+       /Library/KernelCollections
+              is the directory containing the auxiliary kext collection.
+
+       /Library/Extensions/
+              is a writable repository of kernel extensions suitable for use as
+              an installer destination.
+
+       /System/Library/Frameworks/KernelManagement.framework/Resources/com.apple.kernelmanagement.plist
+              is a configuration file to modify the repositories and default
+              paths used by kernelmanagerd and kmutil(8).
+
+       /System/Library/LaunchDaemons/com.apple.kernelmanagerd.plist
+              is the path to the daemon’s launchd.plist(5).
+
+   SEE ALSO
+       kmutil(8)
+
+
+

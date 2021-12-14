@@ -1,0 +1,58 @@
+tokenadmin(8)                System Manager's Manual               tokenadmin(8)
+
+NAME
+     tokenadmin – Command-line interface to smartcards and other token-based
+     keychains
+
+SYNOPSIS
+     tokenadmin [-hqv] command [command_options] [command_args]
+
+DESCRIPTION
+     A command-line tool to administer smartcards and other token-based
+     keychains.
+
+OPTIONS
+     -h       With no arguments, shows a list of all commands.  If arguments are
+              provided, shows usage for each of the specified commands.  Same as
+              the help command.
+
+     -q       Makes tokenadmin less verbose.
+
+     -v       Makes tokenadmin more verbose.
+
+COMMANDS
+     Note: all commands other than help take the -h option to display help.
+
+     help            Shows all commands.
+
+     create-fv-user  -u short-name -l long-name [-p password]
+
+                     Creates a new FileVaulted user protected by the inserted
+                     smart card or token.
+
+                     Options:
+                     -u short-name
+                              Specify the short (i.e., login) name to be used
+                              for the account.
+                     -l long-name
+                              Specify the full name to be used for the account.
+                              If the full name contains spaces, the name must be
+                              enclosed by quotation marks.
+                     -p password
+                              Password for the user's login keychain (optional).
+
+EXAMPLE
+     tokenadmin create-fv-user -u fvtest3 -p foo -l "FV Test User 3"
+
+     Create a new FileVaulted user with short name "fvtest3" and full name "FV
+     Test User 3", with the new FileVault image being protected by the inserted
+     token. The password for the user's login keychain is "foo".  Note: after
+     creating this user with tokenadmin, you must run "sc_auth accept -u
+     fvtest3" or this user will not be able to log in.
+
+SEE ALSO
+     security(1), sc_auth(8), systemkeychain(8)
+
+NOTES
+     tokenadmin will eventually be merged into the security(1) command.
+

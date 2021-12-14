@@ -1,0 +1,213 @@
+CVPATHS(4)                    Device Drivers Manual                   CVPATHS(4)
+
+
+
+NAME
+       cvpaths - Xsan File System Disk Discovery Filter
+
+SYNOPSIS
+       /Library/Preferences/Xsan/cvpaths
+
+DESCRIPTION
+       The Xsan File System cvpaths file is an optional configuration file used
+       to control and/or override the normal behavior of scanning system
+       standard directory locations during the disk discovery phase that occurs
+       during a cvlabel run, or from the fsmpm at boot/initialization time.
+
+       Normally, the directories scanned look like /dev/disk2, for example.
+
+       If a cvpaths file exists in /Library/Preferences/Xsan, then the contents
+       of the cvpaths file will explicitly control which devices and/or
+       directories will be evaluated during disk discovery.  If the cvpaths file
+       is executable, then it will be executed expecting it to be a shell script
+       that will produce the cvpaths syntax on standard output, otherwise it
+       will simply be read as input.
+
+SYNTAX
+       The format rules for a line in the cvpaths file is:
+
+
+          Any line beginning with "#" is considered a comment line.
+
+          Any token beginning with "#" is considered to be a comment up to the
+          end of the line.
+
+          Blank/empty lines are ignored.
+
+          A keyword=value syntax is used.
+
+          Groups of related keyword phrases can span multiple lines.
+
+       Note, the parser capability is limited, and does not allow for any white
+       space around the equal ("=") operator, although white space, and commas,
+       are tolerated in all other places.
+
+       There are several keywords:
+
+               directory=
+               device=
+               usage=
+               hba=
+               lun=
+               capacity=
+               geometry=
+               verify=
+               blockdev
+
+       The directory=path directives do not require any of the other keywords.
+
+       The directory specified by the directory=path directive will be traversed
+       in a manner similar to the default disk discovery scan mechanism.
+
+
+       A device=path directive begins a group of keywords related to the device
+       located at path.
+
+       for example:
+
+            device=/dev/rdsk/c2t39d0s2
+
+       would describe exactly one disk/raid device to be scanned during disk
+       discovery.
+
+       The device path is the character special device name.
+
+       The following example describes the normal default behavior on a Windows
+       system:
+
+               device=PhysicalDrive0
+               ...
+               device=PhysicalDriveN
+
+       Where N is the number of the last physical drive accessible by the
+       Windows system.
+
+
+       NOTE!  Enumerating specific device paths presumes that the same disk/raid
+              will always appear in the host system's hardware/device graph with
+              the same exact name.
+
+              In most cases, this can only be accomplished by utilizing
+              persistent binding methods related to the specific disk driver
+              package.
+
+       A verify=labelname keyword may be used to verify that the device located
+       at path contains the Xsan label labelname, for example:
+
+            device=/dev/rdsk/c2t39d0s2 verify=CvfsDisk9
+
+       The device named must describe a device path that describes the entire
+       disk.
+
+       For example, on Linux systems, you should use /dev/sdc rather than
+       /dev/sdc1.
+
+
+       Normally, Xsan determines from the raid controller whether a path should
+       be considered Active, or Passive.
+
+       The usage=[Active|Passive] keyword may be used to override the normal
+       determination of Active or Passive path usage.  The default mode is
+       Active.
+
+
+       The capacity=sectors keyword may be used to override the normal
+       determination of the number of sectors supported by the device.
+
+
+       The geometry=cyl/tpc/spt/bps keyword may be used to override the normal
+       determination of the physical geometry of the device where:
+
+
+              cyl        is the total # of cylinders
+              tpc        is the # of tracks per cylinder
+              spt        is the # of sectors per track
+              bps        is the # of bytes per sector
+
+       Certain device drivers use non-conventional names, or, do not support
+       standard methods of HBA & LUN identification.
+
+       If the device driver name, (e.g. /dev/rdsk/emcpowera1) does not follow
+       the host system's convention of providing HBA & LUN information, then the
+       hba=# and lun=# keywords may be used to provide that information.
+
+       For example:
+
+       device=/dev/emcpower3 verify=CvfsDisk_30 usage=Active hba=6 lun=2
+
+       would configure a Linux device driver path externalized as
+       /dev/emcpower3, assigning the HBA id of 6, and LUN # 2.
+
+       This line could also be written as:
+
+
+          device=/dev/emcpower3, verify=CvfsDisk_30, usage=Active, hba=6, lun=2
+
+          -or-
+
+          device=/dev/emcpower3
+                         verify=CvfsDisk_30,
+                         usage=Active,
+                         hba=6,
+                         lun=2
+
+       The HBA id is used by the multi-path code to collect devices together
+       according to which host HBA is used for access.
+
+       The actual value of the number is not critical, what is important is that
+       all disks/raids configured through a specific host HBA should be assigned
+       a consistent number that is unique to that host HBA path.
+
+       The LUN number is important if the raid controller is one of the
+       controllers recognized by Xsan as capable of Automatic Volume Transfer,
+       and Active/Passive path declaration.  The LUN # is used to index into
+       specific raid controller mode pages.  A Linux example, providing HBA &
+       LUN information:
+
+          device=/dev/emcpowerf    hba=4     lun=2     verify=CvfsDisk_30
+          device=/dev/emcpowerg    hba=4     lun=3     verify=CvfsDisk_31
+
+       Generally, a SCSI interface is required for StorNext.  On linux, however,
+       some devices with only a block device interface can be used.  The keyword
+       blockdev can be added to a line to force the block device interface to be
+       used instead of the raw SCSI interface.
+
+          device=/dev/vgca0_vha1 blockdev
+
+       For linux, StorNext also supports ram disk devices.  Ram disk devices use
+       the block interface but have additional special handling requirements.  A
+       linux ram disk device can only be used as a local disk.  Because it
+       cannot be shared, a linux ram disk device may only be useful as a
+       metadata device.  Because the data in a ramdisk is not persistent across
+       boots, a linux ram disk may only have practical application for
+       development.
+
+       A linux ram disk is identified by its path name starting with /dev/ram.
+       The following example shows two ways to configure a linux ram disk.
+
+          device=/dev/ram0
+
+          -or-
+
+          wildcard=/dev/ram*
+
+       Linux also supports Ceph Rados block devices and XEN virtual disks, XEN
+       virtual disks are the presentation used by Amazon Elastic Block Storage
+       (EBS).  Note that EBS volumes are not shareable and can only be accessed
+       from a single EC2 instance at once.  Ceph Rados block devices can in
+       theory be shared between hosts if configured without caching.
+
+       Ceph devices are recognized based on the device special file starting
+       with /dev/rdb.  XEN virtual disks are recognized by the name /dev/xvd.
+       As with ram devices the device or wildcard specifiers can be used to
+       include them in the device scan.
+
+FILES
+       /Library/Preferences/Xsan/cvpaths
+       /System/Library/Filesystems/acfs.fs/Contents/examples/cvpaths.example
+
+SEE ALSO
+       cvfs(8), snfs_config(5), fsm(8), fsmpm(8)
+
+
+

@@ -1,0 +1,179 @@
+iwidgets::fileselectiondialog(1)                                  [incr Widgets]
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::fileselectiondialog - Create and manipulate a file selection
+       dialog widget
+
+SYNOPSIS
+       iwidgets::fileselectiondialog pathName ?options?
+
+INHERITANCE
+       itk::Toplevel <- iwidgets::Shell <- iwidgets::Dialogshell <-
+       iwidgets::Dialog <- iwidgets::Fileselectiondialog
+
+STANDARD OPTIONS
+
+       activeBackground   background         borderWidth         cursor
+       foreground         highlightColor     highlightThickness  insertBackground
+       insertBorderWidth  insertOffTime      insertOnTime        insertWidth
+       selectBackground   selectBorderWidth  selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       textBackground  textFont
+
+       See the "entryfield" widget manual entry for details on the above
+       associated options.
+
+       childSitePos    directory      dirsLabel       dirSearchCommand
+       dirsOn          filesLabel     filesLabelOn    fileSearchCommand
+       filesOn         fileType       filterLabel     filterOn
+       invalid         mask           noMatchString   selectionLabel
+       selectionOn
+
+       See the "fileselectionbox" widget manual entry for details on the above
+       associated options.
+
+       labelFont
+
+       See the "labeledwidget" widget manual entry for details on the above
+       associated options.
+
+       textBackground  textFont
+
+       See the "scrolledlistbox" widget manual entry for details on the above
+       associated options.
+
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" widget class manual entry for details on the above
+       associated options.
+
+
+INHERITED OPTIONS
+       buttonBoxPadX   buttonBoxPadY  buttonBoxPos    padX
+       padY            separator      thickness
+
+       See the "dialogshell" widget manual entry for details on the above
+       inherited options.
+
+       height          master         modality        width
+
+       See the "shell" widget manual entry for details on the above inherited
+       options.
+
+       title
+
+       See the "Toplevel" widget  manual entry for details on the above
+       inherited options.
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::fileselectiondialog command creates a file selection dialog
+       similar to the OSF/Motif standard composite widget.  The
+       fileselectiondialog is derived from the Dialog class and is composed of a
+       FileSelectionBox with attributes set to manipulate the dialog buttons.
+
+
+METHODS
+       The iwidgets::fileselectiondialog command creates a new Tcl command whose
+       name is pathName.  This command may be used to invoke various operations
+       on the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for fileselectiondialog widgets:
+
+ASSOCIATED METHODS
+       get             childsite      filter
+
+       See the "fileselectionbox" class manual entry for details on the
+       associated methods.
+
+INHERITED METHODS
+       add             buttonconfigure                defaulthide
+       insert          invoke         show
+
+       See the "buttonbox" widget manual entry for details on the above
+       inherited methods.
+
+       activate        center         deactivate
+
+       See the "shell" widget manual entry for details on the above inherited
+       methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::fileselectiondialog command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::fileselectiondialog
+              command.
+
+
+COMPONENTS
+       Name:           fsb
+       Class:          Fileselectionbox
+
+              The fsb component is the file selection box for the file selection
+              dialog.  See the "fileselectionbox" widget manual entry for
+              details on the fsb component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               #
+               # Non-modal example
+               #
+               proc okCallback {} {
+                   puts "You selected [.nmfsd get]"
+                   .nmfsd deactivate
+               }
+
+               iwidgets::fileselectiondialog .nmfsd -title Non-Modal
+               .nmfsd buttonconfigure OK -command okCallback
+
+               .nmfsd activate
+
+               #
+               # Modal example
+               #
+               iwidgets::fileselectiondialog .mfsd -modality application
+               .mfsd center
+
+               if {[.mfsd activate]} {
+                   puts "You selected [.mfsd get]"
+               } else {
+                   puts "You cancelled the dialog"
+               }
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       fileselectiondialog, fileselectionbox, dialog, dialogshell, shell, widget
+
+
+

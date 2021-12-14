@@ -1,0 +1,264 @@
+math::complexnumbers(n)         Tcl Math Library         math::complexnumbers(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       math::complexnumbers - Straightforward complex number package
+
+SYNOPSIS
+       package require Tcl  8.3
+
+       package require math::complexnumbers  ?1.0.2?
+
+       ::math::complexnumbers::+ z1 z2
+
+       ::math::complexnumbers::- z1 z2
+
+       ::math::complexnumbers::* z1 z2
+
+       ::math::complexnumbers::/ z1 z2
+
+       ::math::complexnumbers::conj z1
+
+       ::math::complexnumbers::real z1
+
+       ::math::complexnumbers::imag z1
+
+       ::math::complexnumbers::mod z1
+
+       ::math::complexnumbers::arg z1
+
+       ::math::complexnumbers::complex real imag
+
+       ::math::complexnumbers::tostring z1
+
+       ::math::complexnumbers::exp z1
+
+       ::math::complexnumbers::sin z1
+
+       ::math::complexnumbers::cos z1
+
+       ::math::complexnumbers::tan z1
+
+       ::math::complexnumbers::log z1
+
+       ::math::complexnumbers::sqrt z1
+
+       ::math::complexnumbers::pow z1 z2
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The mathematical module complexnumbers provides a straightforward
+       implementation of complex numbers in pure Tcl. The philosophy is that the
+       user knows he or she is dealing with complex numbers in an abstract way
+       and wants as high a performance as can be had within the limitations of
+       an interpreted language.
+
+       Therefore the procedures defined in this package assume that the
+       arguments are valid (representations of) "complex numbers", that is,
+       lists of two numbers defining the real and imaginary part of a complex
+       number (though this is a mere detail: rely on the complex command to
+       construct a valid number.)
+
+       Most procedures implement the basic arithmetic operations or elementary
+       functions whereas several others convert to and from different
+       representations:
+
+
+           set z [complex 0 1]
+           puts "z = [tostring $z]"
+           puts "z**2 = [* $z $z]
+
+       would result in:
+
+           z = i
+           z**2 = -1
+
+
+AVAILABLE PROCEDURES
+       The package implements all or most basic operations and elementary
+       functions.
+
+       The arithmetic operations are:
+
+       ::math::complexnumbers::+ z1 z2
+              Add the two arguments and return the resulting complex number
+
+              complex z1 (in)
+                     First argument in the summation
+
+              complex z2 (in)
+                     Second argument in the summation
+
+
+       ::math::complexnumbers::- z1 z2
+              Subtract the second argument from the first and return the
+              resulting complex number. If there is only one argument, the
+              opposite of z1 is returned (i.e. -z1)
+
+              complex z1 (in)
+                     First argument in the subtraction
+
+              complex z2 (in)
+                     Second argument in the subtraction (optional)
+
+
+       ::math::complexnumbers::* z1 z2
+              Multiply the two arguments and return the resulting complex number
+
+              complex z1 (in)
+                     First argument in the multiplication
+
+              complex z2 (in)
+                     Second argument in the multiplication
+
+
+       ::math::complexnumbers::/ z1 z2
+              Divide the first argument by the second and return the resulting
+              complex number
+
+              complex z1 (in)
+                     First argument (numerator) in the division
+
+              complex z2 (in)
+                     Second argument (denominator) in the division
+
+
+       ::math::complexnumbers::conj z1
+              Return the conjugate of the given complex number
+
+              complex z1 (in)
+                     Complex number in question
+
+
+       Conversion/inquiry procedures:
+
+       ::math::complexnumbers::real z1
+              Return the real part of the given complex number
+
+              complex z1 (in)
+                     Complex number in question
+
+
+       ::math::complexnumbers::imag z1
+              Return the imaginary part of the given complex number
+
+              complex z1 (in)
+                     Complex number in question
+
+
+       ::math::complexnumbers::mod z1
+              Return the modulus of the given complex number
+
+              complex z1 (in)
+                     Complex number in question
+
+
+       ::math::complexnumbers::arg z1
+              Return the argument ("angle" in radians) of the given complex
+              number
+
+              complex z1 (in)
+                     Complex number in question
+
+
+       ::math::complexnumbers::complex real imag
+              Construct the complex number "real + imag*i" and return it
+
+              float real (in)
+                     The real part of the new complex number
+
+              float imag (in)
+                     The imaginary part of the new complex number
+
+
+       ::math::complexnumbers::tostring z1
+              Convert the complex number to the form "real + imag*i" and return
+              the string
+
+              float complex (in)
+                     The complex number to be converted
+
+
+       Elementary functions:
+
+       ::math::complexnumbers::exp z1
+              Calculate the exponential for the given complex argument and
+              return the result
+
+              complex z1 (in)
+                     The complex argument for the function
+
+
+       ::math::complexnumbers::sin z1
+              Calculate the sine function for the given complex argument and
+              return the result
+
+              complex z1 (in)
+                     The complex argument for the function
+
+
+       ::math::complexnumbers::cos z1
+              Calculate the cosine function for the given complex argument and
+              return the result
+
+              complex z1 (in)
+                     The complex argument for the function
+
+
+       ::math::complexnumbers::tan z1
+              Calculate the tangent function for the given complex argument and
+              return the result
+
+              complex z1 (in)
+                     The complex argument for the function
+
+
+       ::math::complexnumbers::log z1
+              Calculate the (principle value of the) logarithm for the given
+              complex argument and return the result
+
+              complex z1 (in)
+                     The complex argument for the function
+
+
+       ::math::complexnumbers::sqrt z1
+              Calculate the (principle value of the) square root for the given
+              complex argument and return the result
+
+              complex z1 (in)
+                     The complex argument for the function
+
+
+       ::math::complexnumbers::pow z1 z2
+              Calculate "z1 to the power of z2" and return the result
+
+              complex z1 (in)
+                     The complex number to be raised to a power
+
+              complex z2 (in)
+                     The complex power to be used
+
+BUGS, IDEAS, FEEDBACK
+       This document, and the package it describes, will undoubtedly contain
+       bugs and other problems.  Please report such in the category math ::
+       complexnumbers of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.
+
+KEYWORDS
+       complex numbers, math
+
+CATEGORY
+       Mathematics
+
+COPYRIGHT
+       Copyright (c) 2004 Arjen Markus <arjenmarkus@users.sourceforge.net>
+
+
+
+

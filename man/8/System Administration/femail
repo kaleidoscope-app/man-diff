@@ -1,0 +1,55 @@
+FEMAIL(8)                    System Manager's Manual                   FEMAIL(8)
+
+NAME
+     femail – accept mail on behalf of a real MTA
+
+SYNOPSIS
+     femail [-46tv] [-f from] [-F name] [address ...]
+
+DESCRIPTION
+     femail is intended to be used on servers that do not run a real MTA or
+     inside chroot(8) environments.  It features a sendmail(8)-compatible
+     command line interface and forwards mail via SMTP to the host given in the
+     config file, an environment variable or localhost.
+
+     The options are as follows:
+
+     -4        Only use IPv4.
+
+     -6        Only use IPv6.
+
+     -F name   Set the sender's name to name.
+
+     -f from   Set the sender address to from.  Normally, femail tries to parse
+               the sender from the message, and uses login@hostname if that is
+               not present.
+
+     -t        Read recipients from the message given on stdin, in addition to
+               the recipients given on the command line.
+
+     -v        Enable verbose operation.
+
+CONFIG FILE
+     The config file, /etc/femail.conf, consists of simple name=value pairs.
+     The supported settings are as follows:
+
+     smtphost  Specify the server femail should send the messages to.
+
+     smtpport  Specify the port femail uses on smtphost to send the messages.
+               Default is 25.
+
+     myname    The hostname femail uses.  Defaults to the machine's hostname.
+
+ENVIRONMENT
+     SMTPHOST         Forward mail to the given host instead of the local host.
+                      Only consulted when not set in the config file.
+
+     SMTPPORT         Connect to the given port instead of 25.  Only consulted
+                      when not set in the config file.
+
+SEE ALSO
+     mail(1), sendmail(8)
+
+AUTHORS
+     femail was written by Henning Brauer.
+

@@ -1,0 +1,63 @@
+AMT(8)                       System Manager's Manual                      AMT(8)
+
+NAME
+     amt – Abstract Machine Test Utility
+
+SYNOPSIS (NOW DEPRECATED)
+     amt [-m] [-p] [-q] [-s]
+
+DESCRIPTION
+     The amt utility is used to verify that the low level functions necessary to
+     enforce requirements of the Controlled Access Protection Profile (CAPP) are
+     working correctly.
+
+     The amt utility must be executed with sufficient privileges and performs
+     the following tests:
+
+     Memory Read and Write
+             This test allocates between 5% to 10% of physical memory and writes
+             data to it, then reads the memory back to ensure the values written
+             remain unchanged.
+
+     Memory Separation and Protection
+             This test ensures that user space programs cannot read and write to
+             areas of memory that is protected or is not shared.
+
+     Privileged Instructions
+             This test ensures that the enforcement of the property that
+             privileged instructions should only be in supervisor mode is still
+             in effect.  The set of privileged instructions tested to confirm
+             this is architecture dependent.
+
+     The options are as follows:
+
+     -m      Skip the memory test.
+
+     -p      Skip the privileged instructions test.
+
+     -q      Suppress the screen output.
+
+     -s      Skip the memory separation and protection test.
+
+EXIT CODES
+     <0      An error occured in executing the tests.
+
+     =0      All the tests passed.
+
+     >0      The number of tests that failed or were skipped.
+
+NOTES
+     The overall result (pass or fail) is logged in the audit trail and system
+     log.  The auditd(8) daemon must already be running for the results to be
+     stored in the audit trail file.
+
+     One of the above test may be skipped without getting a negative result.  A
+     test is skipped either with one of the above command-line options or
+     automatically if there is not a test compatiable with the Target Of
+     Evaluation (TOE). The audit administrator may want to perform the memory
+     test only on startup since it can have large negative impact on the system
+     performance.
+
+SEE ALSO
+     audit(2) auditd(8) syslog(3) syslogd(8)
+

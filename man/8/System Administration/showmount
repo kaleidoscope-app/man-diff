@@ -1,0 +1,38 @@
+SHOWMOUNT(8)                 System Manager's Manual                SHOWMOUNT(8)
+
+NAME
+     showmount – show remote NFS mounts on host
+
+SYNOPSIS
+     showmount [-Ae36] [-a | -d] [host]
+
+DESCRIPTION
+     showmount shows status information about the NFS server on host.  By
+     default it prints the names of all hosts that have NFS file systems mounted
+     on the host. See NFS: Network File System Protocol Specification, RFC 1094,
+     Appendix A, and NFS: Network File System Version 3 Protocol Specification,
+     Appendix I, for a detailed description of the protocol.
+
+     -A      Search for NFS servers advertised via Bonjour.
+
+     -a      List all mount points in the form: host:dirpath
+
+     -d      List directory paths of mount points instead of hosts.
+
+     -e      Show the host's exports list.
+
+     -3      Use mount protocol Version 3, compatible with NFS Version 3.
+
+     -6      Use only IPv6 addresses to contact servers.
+
+SEE ALSO
+     mount(1), mountd(8), nfsd(8), mDNSResponder(8)
+
+BUGS
+     The mount daemon running on the server only has an idea of the actual
+     mounts, since the NFS server is stateless.  showmount will only display the
+     information as accurately as the mount daemon reports it.
+
+HISTORY
+     The showmount utility first appeared in 4.4BSD.
+

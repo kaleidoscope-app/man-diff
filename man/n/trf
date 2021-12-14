@@ -1,0 +1,132 @@
+trf-intro(n)                                                        trf-intro(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       trf-intro - Introduction to Trf
+
+SYNOPSIS
+       package require Tcl  ?8.2?
+
+       package require Trf  ?2.1.4?
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The package Trf provides a number of commands which take data and
+       transform them in various ways.
+
+BACKGROUND
+       The implementation of Trf began as proof-of-concept of the validity and
+       usefulness of the "stacked channel" patches to the core. These patches
+       allow the writing of extensions to the generic I/O system of the core
+       which are able to intercept all read/write operations on designated
+       channels, thus giving it the ability to transform the data flowing
+       through these channels as desired.
+
+       This allows things like transparent encryption, compression, charset
+       recoding, etc.
+
+       Since version 8.2 of the tcl core the aforementioned patches are part of
+       the tcl core itself, changing the status of trf from "extension requiring
+       core patches" to "normal extension".
+
+       Other packages built upon either the stackd channels directly, or Trf
+       are:
+
+       [1]    TrfCrypt, by myself, contains various encryption systems
+
+       [2]    TLS, an SSL/TLS implementation by Matt Newman.
+
+       [3]    Tcl MIME by Marshall Rose.
+
+API
+       The commands provide by trf can be placed into the three categories
+       listed below. Note that all commands are added to the global namespace.
+
+       Encodings
+              The encoding commands either take some data and return the same
+              data in encoded form, or take encoded data and return a decoded
+              result.
+
+              [1]    oct
+
+              [2]    hex
+
+              [3]    oct
+
+              [4]    base64
+
+              [5]    uuencode
+
+              [6]    ascii85
+
+              [7]    otp_words
+
+              [8]    quoted-printable
+
+
+       Message Digests
+              The second category are message digests in general, simple ones
+              like crc, and cryptographically strong algorithms like md5.
+
+              [1]    crc-zlib
+
+              [2]    crc
+
+              [3]    adler
+
+              [4]    md2
+
+              [5]    md5
+
+              [6]    md5_otp
+
+              [7]    sha
+
+              [8]    sha1
+
+              [9]    sha1_otp
+
+              [10]   haval
+
+              [11]   ripemd-160
+
+              [12]   ripemd-128
+
+
+       Miscellaneous
+              At last a number of commands not readily placed into categories
+              providing password crypting, general transformations, data
+              compression, error correction and others.
+
+              [1]    crypt
+
+              [2]    md5crypt
+
+              [3]    transform
+
+              [4]    rs_ecc
+
+              [5]    zip
+
+              [6]    bz2
+
+              [7]    unstack
+
+SEE ALSO
+       adler, ascii85, base64, bz2, crc, crc-zlib, crypt, haval, hex, md2, md5,
+       md5_otp, md5crypt, oct, otp_words, quoted-printable, ripemd-128,
+       ripemd-160, rs_ecc, sha, sha1, sha1_otp, transform, uuencode, zip
+
+KEYWORDS
+       compression, encoding, error correction, message digest, transformation
+
+COPYRIGHT
+       Copyright (c) 1996-2003, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

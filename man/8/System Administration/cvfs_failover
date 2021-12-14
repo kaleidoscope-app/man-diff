@@ -1,0 +1,126 @@
+CVFS_FAILOVER(8)             System Manager's Manual            CVFS_FAILOVER(8)
+
+
+
+NAME
+       Xsan Volume Failover  - How To Configure and Operate
+
+DESCRIPTION
+       The Xsan File System uses a single File System Manager (FSM) process per
+       file system to manage metadata.  Since this is a single point of failure,
+       the ability to configure an additional hot-standby FSM is supported.
+       This redundant configuration is called High Availability (HA).  An HA
+       cluster comprises two identically configured server-class computers
+       operating as metadata controllers (MDC).  Either MDC in an HA cluster can
+       serve as the primary MDC for the purposes of configuring the cluster and
+       for running the processes that provide the Stornext Storage Manager
+       (SNSM) features.  The alternate MDC is called secondary.
+
+       All SNSM HA clusters must have one (HaShared) unmanaged Stornext file
+       system dedicated to configuration and operational data that is shared
+       between the MDCs.  The MDC running the active HaShared FSM is the primary
+       MDC by definition.  The primary MDC runs the active FSMs for all the
+       managed file systems (HaManaged), as well as the HaShared file system,
+       and it runs all the management processes together on one MDC.  In the
+       event that an HaManaged FSM process fails, another FSM process for that
+       file system will be started and activated on the primary.  There are no
+       redundant FSM processes on the secondary MDC for HaManaged file systems.
+       Non-managed file systems (HaUnmanaged) can be active on either MDC.
+       There is a redundant standby FSM ready to take control through the
+       activation protocol for each HaUnmanaged file system.
+
+       HA cluster configurations guard against data corruption that could occur
+       from both MDCs simultaneously writing metadata or management data by
+       resetting one of the MDCs when failure conditions are detected.  HA
+       resets allow the alternate MDC to operate without risk of corruption from
+       multiple writers.  HA reset is also known as Shoot Myself in the Head
+       (SMITH) for the way that resets are triggered autonomously.  HA resets
+       occur when an active FSM fails to update the arbitration control block
+       (ARB) for a file system, which prevents the standby from attempting a
+       takeover, but also fails to relinquish control.  HA reset also occurs
+       when the active HaShared FSM stops unless the file system is unmounted on
+       the local server, which ensures that management processes will only run
+       on a single MDC.
+
+       There are three major system components that participate in a failover
+       situation. First, there is the FSM Port Mapper daemon, fsmpm(8).  This
+       daemon resolves the TCP access ports to the server of the volume. Along
+       with this daemon is the Node Status Server daemon (NSS). This daemon
+       monitors the health of the communication network and the File System
+       Services.  The third component is the FSM that is responsible for the
+       file system metadata.
+
+       Whenever a file system driver requests the location of a file system
+       server, the NSS initiates a quorum vote to decide which of the FSMs that
+       are standing by should activate. The vote is based on an optional
+       priority specified in the FSM host configuration list, fsmlist(4), and
+       the connectivity each server has to its clients.  When an elected FSM is
+       given the green light, it initiates a failover protocol that uses an
+       arbitration block on disk (ARB) to take control of metadata operations.
+       The activating server brands the volume by writing to ARB block,
+       essentially taking ownership of it. It then re-checks the brand twice to
+       make sure another server has not raced to this point. If all is correct,
+       it lets the server take over. The new server re-plays the volume journal
+       and publishes its port address to the local FSM Port Mapper.  Once these
+       steps are taken, clients attempting connection will recover their
+       operations with the new server.
+
+SITE PLANNING
+       In order to correctly configure a failover capable Xsan system, there are
+       a number of things to consider. First, hardware connectivity must be
+       planned. It is recommended that servers have redundant network
+       connections.  In order to failover, the metadata must reside on shareable
+       storage.
+
+CONFIGURATION
+       This section will show how to set up a Xsan configuration in a way that
+       will support failover.
+
+       File System Name Server Configuration
+              The fsnameservers(4) files should have two hosts described that
+              could manage the File System Name Services.  This is required to
+              ensure that the name service, and therefore the NSS voting
+              capabilities, do not have a single point of failure. It is
+              recommended that these server machines also be named as the name
+              servers.  It is important to note that the fsnameservers list be
+              consistent and accurate on all of the participating SAN clients.
+              Otherwise some clients may not correctly acquire access to the
+              volume. In other words, be sure to replicate the fsnameservers
+              list across all Xsan clients.
+
+       FSM List
+              Each line in the FSM list file fsmlist(4) describes a single
+              volume name.  An entry in this file directs the fsmpm process to
+              start an fsm process with a configuration file of the same name.
+
+       Volume Configuration
+              GUI supported configuration is done by completely configuring a
+              single MDC, and then the configuration is copied to the other MDC
+              through the HaShared file system.  By-hand configurations must be
+              exactly the same on both MDCs.
+
+       License Files
+              License files must also be distributed to each system that may be
+              a server.
+
+OPERATION
+       Once all the servers are up and running they can be managed using the
+       normal cvadmin(8) command. The active servers will be shown with an
+       asterisk (*) before it. Server priorities are shown inside brackets.  DO
+       NOT start managed FSMs on the secondary server by hand as this violates
+       the management requirement for running all of them on a single MDC.  When
+       a managed FSM will not start reliably, a failover can be forced by the
+       snhamgr command on the primary MDC as follows:
+
+          snhamgr force smith
+
+FILES
+       /Library/Preferences/Xsan/license.dat
+       /Library/Preferences/Xsan/fsmlist
+       /Library/Preferences/Xsan/fsnameservers
+
+SEE ALSO
+       cvadmin(8), snfs_config(5), cvfsck(8), fsnameservers(4), fsm(8), fsmpm(8)
+
+
+

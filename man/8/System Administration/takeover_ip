@@ -1,0 +1,39 @@
+TAKEOVER_IP(8)               System Manager's Manual              TAKEOVER_IP(8)
+
+
+
+NAME
+       takeover_ip - broadcast virtual IP information for Xsan
+
+SYNOPSIS
+       /System/Library/Filesystems/acfs.fs/Contents/lib/takeover_ip
+              -d_device_name -m_mac_address -i_ipv4_ip
+
+DESCRIPTION
+       takeover_ip provides a mechanism for sending a gratuitous arp reply when
+       the secondary node in an HA pair takes over as primary and activates the
+       configured virtual IPs (VIPs).
+
+       This is typically used by the startup/shutdown scripts, not by an
+       administrator.  Only use when recommended by Apple Support.
+
+FLAGS
+       -h     Display help
+
+       -d device_name
+              The device name of the network interface the VIP is on
+
+       -m mac_address
+              Mac address of network device the VIP is on
+
+       -i ipv4_ip
+              IPv4 address for VIP
+
+FILES
+       /Library/Preferences/Xsan/ha_vip.txt
+
+SEE ALSO
+       cvfs(8), vip_control(8), cnvt2ha.sh(8)
+
+
+

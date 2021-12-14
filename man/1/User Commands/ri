@@ -1,0 +1,156 @@
+RI(1)                 1 (ruby programmer's reference guide)                RI(1)
+
+NAME
+     ri – Ruby API reference front end
+
+SYNOPSIS
+     ri [-ahilTv] [-d DIRNAME] [-f FORMAT] [-w WIDTH] [--[no-]pager]
+        [--server[=PORT]] [--[no-]list-doc-dirs] [--no-standard-docs]
+        [--[no-]{system|site|gems|home}] [--[no-]profile] [--dump=CACHE]
+        [name ...]
+
+DESCRIPTION
+     ri is a command-line front end for the Ruby API reference.  You can search
+     and read the API reference for classes and methods with ri.
+
+     ri is a part of Ruby.
+
+     name can be:
+
+           Class | Module | Module::Class
+           Class::method | Class#method | Class.method | method
+           gem_name: | gem_name:README | gem_name:History
+
+     All class names may be abbreviated to their minimum unambiguous form.  If a
+     name is ambiguous, all valid options will be listed.
+
+     A ‘.’ matches either class or instance methods, while #method matches only
+     instance and ::method matches only class methods.
+
+     README and other files may be displayed by prefixing them with the gem name
+     they're contained in.  If the gem name is followed by a ‘:’ all files in
+     the gem will be shown.  The file name extension may be omitted where it is
+     unambiguous.
+
+     For example:
+
+           ri Fil
+           ri File
+           ri File.new
+           ri zip
+           ri rdoc:README
+
+     Note that shell quoting or escaping may be required for method names
+     containing punctuation:
+
+           ri 'Array.[]'
+           ri compact\!
+
+     To see the default directories ri will search, run:
+
+           ri --list-doc-dirs
+
+     Specifying the --system, --site, --home, --gems, or --doc-dir options will
+     limit ri to searching only the specified directories.
+
+     ri options may be set in the RI environment variable.
+
+     The ri pager can be set with the RI_PAGER environment variable or the PAGER
+     environment variable.
+
+OPTIONS
+     -i
+     --[no-]interactive
+                    In interactive mode you can repeatedly look up methods with
+                    autocomplete.
+
+     -a
+     --[no-]all     Show all documentation for a class or module.
+
+     -l
+     --[no-]list    List classes ri knows about.
+
+     --[no-]pager   Send output to a pager, rather than directly to stdout.
+
+     -T             Synonym for --no-pager.
+
+     -w WIDTH
+     --width=WIDTH  Set the width of the output.
+
+     --server[=PORT]
+                    Run RDoc server on the given port.  The default port
+                    is 8214.
+
+     -f FORMAT
+     --format=FORMAT
+                    Use the selected formatter.  The default formatter is bs for
+                    paged output and ansi otherwise.  Valid formatters are:
+                    ansi, bs, markdown, rdoc.
+
+     -h
+     --help         Show help and exit.
+
+     -v
+     --version      Output version information and exit.
+
+     Data source options:
+
+     --[no-]list-doc-dirs
+                    List the directories from which ri will source documentation
+                    on stdout and exit.
+
+     -d DIRNAME
+     --doc-dir=DIRNAME
+                    List of directories from which to source documentation in
+                    addition to the standard directories.  May be repeated.
+
+     --no-standard-docs
+                    Do not include documentation from the Ruby standard library,
+                    site_lib, installed gems, or ~/.rdoc.  Use with --doc-dir.
+
+     --[no-]system  Include documentation from Ruby's standard library.
+                    Defaults to true.
+
+     --[no-]site    Include documentation from libraries installed in site_lib.
+                    Defaults to true.
+
+     --[no-]gems    Include documentation from RubyGems.  Defaults to true.
+
+     --[no-]home    Include documentation stored in ~/.rdoc.  Defaults to true.
+
+     Debug options:
+
+     --[no-]profile
+                    Run with the Ruby profiler.
+
+     --dump=CACHE   Dump data from an ri cache or data file.
+
+ENVIRONMENT
+     RI           Options to prepend to those specified on the command-line.
+
+     RI_PAGER
+     PAGER        Pager program to use for displaying.
+
+     HOME
+     USERPROFILE
+     HOMEPATH     Path to the user's home directory.
+
+FILES
+     ~/.rdoc      Path for ri data in the user's home directory.
+
+SEE ALSO
+     ruby(1), rdoc(1), gem(1)
+
+REPORTING BUGS
+     •   Security vulnerabilities should be reported via an email to
+         security@ruby-lang.org.  Reported problems will be published after
+         being fixed.
+
+     •   Other bugs and feature requests can be reported via the Ruby Issue
+         Tracking System (https://bugs.ruby-lang.org/).  Do not report security
+         vulnerabilities via this system because it publishes the
+         vulnerabilities immediately.
+
+AUTHORS
+     Written by Dave Thomas ⟨dave@pragmaticprogrammer.com⟩.
+

@@ -1,0 +1,65 @@
+uuxqt(8)                     System Manager's Manual                    uuxqt(8)
+
+
+
+NAME
+       uuxqt - UUCP execution daemon
+
+SYNOPSIS
+       uuxqt [ options ]
+
+DESCRIPTION
+       The uuxqt daemon executes commands requested by uux (1) from either the
+       local system or from remote systems.  It is started automatically by the
+       uucico (8) daemon (unless uucico (8) is given the -q or --nouuxqt
+       option).
+
+       There is normally no need to run this command, since it will be invoked
+       by uucico (8).  However, it can be used to provide greater control over
+       the processing of the work queue.
+
+       Multiple invocations of uuxqt may be run at once, as controlled by the
+       max-uuxqts configuration command.
+
+OPTIONS
+       The following options may be given to uuxqt.
+
+       -c command, --command command
+            Only execute requests for the specified command.  For example:
+                 uuxqt --command rmail
+
+       -s system, --system system
+            Only execute requests originating from the specified system.
+
+       -x type, --debug type
+            Turn on particular debugging types.  The following types are
+            recognized: abnormal, chat, handshake, uucp-proto, proto, port,
+            config, spooldir, execute, incoming, outgoing.  Only abnormal,
+            config, spooldir and execute are meaningful for uuxqt.
+
+            Multiple types may be given, separated by commas, and the --debug
+            option may appear multiple times.  A number may also be given, which
+            will turn on that many types from the foregoing list; for example,
+            --debug 2 is equivalent to --debug abnormal,chat.
+
+            The debugging output is sent to the debugging file, which may be
+            printed using uulog -D.
+
+       -I file, --config
+            Set configuration file to use.  This option may not be available,
+            depending upon how uuxqt was compiled.
+
+       -v, --version
+            Report version information and exit.
+
+       --help
+            Print a help message and exit.
+
+SEE ALSO
+       uucp(1), uux(1), uucico(8)
+
+AUTHOR
+       Ian Lance Taylor (ian@airs.com)
+
+
+

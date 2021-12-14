@@ -1,0 +1,67 @@
+SYSTEM_PROFILER(8)           System Manager's Manual          SYSTEM_PROFILER(8)
+
+NAME
+     system_profiler – reports system hardware and software configuration.
+
+SYNOPSIS
+     system_profiler [-usage]
+     system_profiler [-listDataTypes]
+     system_profiler [-xml] dataType1 ... dataTypeN
+     system_profiler [-xml] [-detailLevel level]
+     system_profiler [-json] dataType1 ... dataTypeN
+     system_profiler [-json] [-detailLevel level]
+
+DESCRIPTION
+     system_profiler reports on the hardware and software configuration of the
+     system.  It can generate plain text reports or XML reports which can be
+     opened with System Information.app, or JSON reports
+
+     Progress and error messages are printed to stderr while actual report data
+     is printed to stdout.  Redirect stderr to /dev/null to suppress progress
+     and error messages.
+
+     The following options are available:
+
+     -xml                Generates a report in XML format.  If the XML report is
+                         redirected to a file with a ".spx" suffix that file can
+                         be opened with System Information.app.
+
+     -json               Generates a report in JSON format.
+
+     -listDataTypes      Lists the available datatypes.
+
+     -detailLevel level  Specifies the level of detail for the report:
+
+                         mini          report with no personal information
+
+                         basic         basic hardware and network information
+
+                         full          all available information
+
+     -timeout            Specifies the maximum time to wait in seconds for
+                         results.  If some information is not available within
+                         the specified time limit then an incomplete or partial
+                         report will be generated.  The default timeout is 180
+                         seconds.  Specifying a timeout of 0 means no timeout.
+
+     -usage              Prints usage info and examples.
+
+EXAMPLES
+     system_profiler
+       Generates a text report with the standard detail level.
+
+     system_profiler -detailLevel mini
+       Generates a short report containing no personal information.
+
+     system_profiler -listDataTypes
+       Shows a list of the available data types.
+
+     system_profiler SPSoftwareDataType SPNetworkDataType
+       Generates a text report containing only software and network data.
+
+     system_profiler -xml > MyReport.spx
+       Creates a XML file which can be opened by System Profiler.app
+
+AUTHORS
+     Apple Inc.
+

@@ -1,0 +1,105 @@
+CAL(1)                       General Commands Manual                      CAL(1)
+
+NAME
+     cal, ncal – displays a calendar and the date of Easter
+
+SYNOPSIS
+     cal [-3hjy] [-A number] [-B number] [[month] year]
+     cal [-3hj] [-A number] [-B number] -m month [year]
+     ncal [-3hjJpwy] [-A number] [-B number] [-s country_code] [[month] year]
+     ncal [-3hJeo] [-A number] [-B number] [year]
+     ncal [-CN] [-H yyyy-mm-dd] [-d yyyy-mm]
+
+DESCRIPTION
+     The cal utility displays a simple calendar in traditional format and ncal
+     offers an alternative layout, more options and the date of Easter.  The new
+     format is a little cramped but it makes a year fit on a 25x80 terminal.  If
+     arguments are not specified, the current month is displayed.
+
+     The options are as follows:
+
+     -h      Turns off highlighting of today.
+
+     -J      Display Julian Calendar, if combined with the -e option, display
+             date of Easter according to the Julian Calendar.
+
+     -e      Display date of Easter (for western churches).
+
+     -j      Display Julian days (days one-based, numbered from January 1).
+
+     -m month
+             Display the specified month.  If month is specified as a decimal
+             number, it may be followed by the letter ‘f’ or ‘p’ to indicate the
+             following or preceding month of that number, respectively.
+
+     -o      Display date of Orthodox Easter (Greek and Russian Orthodox
+             Churches).
+
+     -p      Print the country codes and switching days from Julian to Gregorian
+             Calendar as they are assumed by ncal.  The country code as
+             determined from the local environment is marked with an asterisk.
+
+     -s country_code
+             Assume the switch from Julian to Gregorian Calendar at the date
+             associated with the country_code.  If not specified, ncal tries to
+             guess the switch date from the local environment or falls back to
+             September 2, 1752.  This was when Great Britain and her colonies
+             switched to the Gregorian Calendar.
+
+     -w      Print the number of the week below each week column.
+
+     -y      Display a calendar for the specified year.
+
+     -3      Display the previous, current and next month surrounding today.
+
+     -A number
+             Display the number of months after the current month.
+
+     -B number
+             Display the number of months before the current month.
+
+     -C      Switch to cal mode.
+
+     -N      Switch to ncal mode.
+
+     -d yyyy-mm
+             Use yyyy-mm as the current date (for debugging of date selection).
+
+     -H yyyy-mm-dd
+             Use yyyy-mm-dd as the current date (for debugging of highlighting).
+
+     A single parameter specifies the year (1–9999) to be displayed; note the
+     year must be fully specified: “cal 89” will not display a calendar for
+     1989.  Two parameters denote the month and year; the month is either a
+     number between 1 and 12, or a full or abbreviated name as specified by the
+     current locale.  Month and year default to those of the current system
+     clock and time zone (so “cal -m 8” will display a calendar for the month of
+     August in the current year).
+
+     Not all options can be used together. For example “-3 -A 2 -B 3 -y -m 7”
+     would mean: show me the three months around the seventh month, three before
+     that, two after that and the whole year.  ncal will warn about these
+     combinations.
+
+     A year starts on January 1.
+
+     Highlighting of dates is disabled if stdout is not a tty.
+
+SEE ALSO
+     calendar(3), strftime(3)
+
+HISTORY
+     A cal command appeared in Version 5 AT&T UNIX.  The ncal command appeared
+     in FreeBSD 2.2.6.
+
+AUTHORS
+     The ncal command and manual were written by Wolfgang Helbig
+     <helbig@FreeBSD.org>.
+
+BUGS
+     The assignment of Julian–Gregorian switching dates to country codes is
+     historically naive for many countries.
+
+     Not all options are compatible and using them in different orders will give
+     varying results.
+

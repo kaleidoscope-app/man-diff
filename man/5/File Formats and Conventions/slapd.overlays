@@ -1,0 +1,113 @@
+SLAPD.OVERLAYS(5)              File Formats Manual             SLAPD.OVERLAYS(5)
+
+
+
+NAME
+       slapd.overlays - overlays for slapd, the stand-alone LDAP daemon
+
+DESCRIPTION
+       The slapd(8) daemon can use a variety of different overlays to alter or
+       extend the normal behavior of a database backend.  Overlays may be
+       compiled statically into slapd, or when module support is enabled, they
+       may be dynamically loaded. Most of the overlays are only allowed to be
+       configured on individual databases, but some may also be configured
+       globally.
+
+       Configuration options for each overlay are documented separately in the
+       corresponding slapo-<overlay>(5) manual pages.
+
+       accesslog
+              Access Logging.  This overlay can record accesses to a given
+              backend database on another database.
+
+       auditlog
+              Audit Logging.  This overlay records changes on a given backend
+              database to an LDIF log file.  By default it is not built.
+
+       chain  Chaining.  This overlay allows automatic referral chasing when a
+              referral would have been returned, either when configured by the
+              server or when requested by the client.
+
+       constraint
+              Constraint.  This overlay enforces a regular expression constraint
+              on all values of specified attributes. It is used to enforce a
+              more rigorous syntax when the underlying attribute syntax is too
+              general.
+
+       dds    Dynamic Directory Services.  This overlay supports dynamic
+              objects, which have a limited life after which they expire and are
+              automatically deleted.
+
+       dyngroup
+              Dynamic Group.  This is a demo overlay which extends the Compare
+              operation to detect members of a dynamic group.  It has no effect
+              on any other operations.
+
+       dynlist
+              Dynamic List.  This overlay allows expansion of dynamic groups and
+              more.
+
+       pcache Proxycache.  This overlay allows caching of LDAP search requests
+              in a local database.  It is most often used with the slapd-ldap(5)
+              or slapd-meta(5) backends.
+
+       ppolicy
+              Password Policy.  This overlay provides a variety of password
+              control mechanisms, e.g. password aging, password reuse and
+              duplication control, mandatory password resets, etc.
+
+       refint Referential Integrity.  This overlay can be used with a backend
+              database such as slapd-bdb(5) to maintain the cohesiveness of a
+              schema which utilizes reference attributes.
+
+       retcode
+              Return Code.  This overlay is useful to test the behavior of
+              clients when server-generated erroneous and/or unusual responses
+              occur.
+
+       rwm    Rewrite/remap.  This overlay is experimental.  It performs basic
+              DN/data rewrite and objectClass/attributeType mapping.
+
+       syncprov
+              Syncrepl Provider.  This overlay implements the provider-side
+              support for syncrepl replication, including persistent search
+              functionality.
+
+       translucent
+              Translucent Proxy.  This overlay can be used with a backend
+              database such as slapd-bdb(5) to create a "translucent proxy".
+              Content of entries retrieved from a remote LDAP server can be
+              partially overridden by the database.
+
+       unique Attribute Uniqueness.  This overlay can be used with a backend
+              database such as slapd-bdb(5) to enforce the uniqueness of some or
+              all attributes within a subtree.
+
+       valsort
+              Value Sorting.  This overlay can be used to enforce a specific
+              order for the values of an attribute when it is returned in a
+              search.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+       /etc/openldap/slapd.d
+              default slapd configuration directory
+
+SEE ALSO
+       ldap(3), slapo-accesslog(5), slapo-auditlog(5), slapo-chain(5),
+       slapo-constraint(5), slapo-dds(5), slapo-dyngroup(5), slapo-dynlist(5),
+       slapo-pcache(5), slapo-ppolicy(5), slapo-refint(5), slapo-retcode(5),
+       slapo-rwm(5), slapo-syncprov(5), slapo-translucent(5), slapo-unique(5).
+       slapo-valsort(5).  slapd-config(5), slapd.conf(5), slapd.backends(5),
+       slapd(8).  "OpenLDAP Administrator's Guide"
+       (http://www.OpenLDAP.org/doc/admin/)
+
+ACKNOWLEDGEMENTS
+       OpenLDAP Software is developed and maintained by The OpenLDAP Project
+       <http://www.openldap.org/>.  OpenLDAP Software is derived from University
+       of Michigan LDAP 3.3 Release.
+
+
+

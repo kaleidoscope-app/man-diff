@@ -1,0 +1,42 @@
+MOUNT_TMPFS(8)               System Manager's Manual              MOUNT_TMPFS(8)
+
+NAME
+     mount_tmpfs – mount a tmpfs volume
+
+SYNOPSIS
+     mount_tmpfs [-o options] [-i | -e] [-n max_nodes] [-s max_mem_size]
+                 directory
+
+DESCRIPTION
+     The mount_tmpfs command creates a new tmpfs (in-memory file system) volume
+     and attaches it to the global file system namespace at the location
+     indicated by directory.
+
+     The options are as follows:
+
+     -o options        Options passed to mount(2) are specified with the -o
+                       option followed by a comma separated string of options.
+                       See the mount(8) man page for possible options and their
+                       meanings.
+
+     -i                Make the volume case-insensitive (default).
+
+     -e                Make the volume case-sensitive.
+
+     -n max_nodes      Set the maximum number of nodes available to the file
+                       system to max_nodes.
+
+     -s max_mem_size   Set the maximum total file system size to max_mem_size
+                       bytes, unless suffixed with one of k, m, g, or t, which
+                       denote kilobyte, megabyte, gigabyte and terabyte
+                       respectively.
+
+DIAGNOSTICS
+     The mount_tmpfs utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     mount(2), unmount(2), mount(8), umount(8)
+
+HISTORY
+     The mount_tmpfs utility first appeared in OS X 10.16.
+

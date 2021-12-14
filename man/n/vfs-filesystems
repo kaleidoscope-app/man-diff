@@ -1,0 +1,111 @@
+vfs-filesystems(n)                                            vfs-filesystems(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       vfs-filesystems - Filesystems provided by tclvfs
+
+SYNOPSIS
+       package require Tcl  8.4
+
+       package require vfs  ?1.2.1?
+
+       package require vfs::zip  ?1.0?
+
+       package require vfs::mk4  ?1.6?
+
+       package require vfs::tar  ?0.9?
+
+       package require vfs::ftp  ?1.0?
+
+       package require vfs::ns  ?1.0?
+
+       package require vfs::webdav  ?0.1?
+
+       package require vfs::http  ?0.5?
+
+       package require vfs::urltype  ?1.0?
+
+       vfs::zip::Mount path to
+
+       vfs::mk4::Mount path to
+
+       vfs::tar::Mount path to
+
+       vfs::ftp::Mount path to
+
+       vfs::ns::Mount path to
+
+       vfs::webdav::Mount path to
+
+       vfs::http::Mount path to
+
+       vfs::urltype::Mount path to
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The package vfs provides not only the means to implement a virtual
+       filesystem at the tcl level, but also a number of ready to be used
+       filesystems as well.
+
+       Each of these filesystem exists as its own package, and can be accessed
+       through package require vfs::NAME.  The whole set of these virtual
+       filesystems is known informally as ´vfslib'.
+
+SUPPORTED VFS TYPES
+       Currently supported are ftp, tar, http, zip, mk4, ns, and webdav.  In
+       addition there is the ability to mount any 'urltype' as a new directory,
+       provided an appropriate vfs is supported.  This means that you can treat
+       urls based on the schemes ftp://, http:// and file:// as files.  To do
+       this, simply evaluate the command vfs::urltype::Mount ftp for example.
+       Any access inside the new volume will result in an attempt to require a
+       package through package require vfs::${type}, which must therefore exist,
+       or errors will be thrown.  If a filesystem is loaded, use the associated
+       command listed below to mount a source for that filesystem as a tcl
+       directory.
+
+       vfs::zip::Mount path to
+              Mount the zip file path as directory to.
+
+       vfs::mk4::Mount path to
+              Mount the metakit database file file path as directory to.
+
+       vfs::tar::Mount path to
+              Mount the tar file path as directory to.
+
+       vfs::ftp::Mount path to
+              Mount the ftp url path as directory to.
+
+       vfs::ns::Mount path to
+              Mount the tcl namespace path as directory to.
+
+       vfs::webdav::Mount path to
+              Mount the webdav url path as directory to.
+
+       vfs::http::Mount path to
+              Mount the http url path as directory to.
+
+       vfs::urltype::Mount path to
+              Mount the url path, of type urltype as directory to.
+
+LIMITATIONS
+       Most of the vfs types listed above have not been very well debugged as
+       yet.  Please test them!
+
+SEE ALSO
+       vfs, vfs-fsapi
+
+KEYWORDS
+       file, filesystem, ftp, http, metakit, namespace, tar, vfs, vfslib,
+       webdav, zip
+
+COPYRIGHT
+       Copyright (c) 2001-2003 Vince Darley <vincentdarley@users.sourceforge.net>
+       Copyright (c) 2003 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

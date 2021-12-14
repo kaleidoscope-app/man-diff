@@ -1,0 +1,565 @@
+iwidgets::hierarchy(1)           [incr Widgets]           iwidgets::hierarchy(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::hierarchy - Create and manipulate a hierarchy widget
+
+SYNOPSIS
+       iwidgets::hierarchy pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Labeledwidget <- iwidgets::Scrolledwidget <-
+       iwidgets::Hierarchy
+
+STANDARD OPTIONS
+
+       activeBackground    activeForeground    background        borderWidth
+       cursor              disabledForeground  foreground        highlightColor
+       highlightThickness  relief              selectBackground  selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+       activeRelief    elementBorderWidth             jumptroughColor
+
+       See the "scrollbar" widget manual entry for details on the above
+       associated options.
+
+       spacing1        spacing2       spacing3        tabs
+
+       See the "text" widget manual entry for details on the above associated
+       options.
+
+INHERITED OPTIONS
+       labelBitmap     labelFont      labelImage      labelMargin
+       labelPos        labelText      labelVariable   sticky
+
+       See the "labeledwidget" class manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           alwaysQuery
+       Class:          AlwaysQuery
+       Command-Line Switch:           -alwaysquery
+
+              Boolean flag which tells the hierarchy widget weather or not each
+              refresh of the display should be via a new query using the command
+              value of the -querycommand option or use the values previous found
+              the last time the query was made.  The default is no.
+
+       Name:           closedIcon
+       Class:          Icon
+       Command-Line Switch:           -closedicon
+
+              Specifies the name of an existing closed icon image to be used in
+              the hierarchy before those nodes that are collapsed.  Should one
+              not be provided, then a folder icon will be generated, pixmap if
+              possible, bitmap otherwise.
+
+       Name:           dblClickCommand
+       Class:          Command
+       Command-Line Switch:           -dblclickcommand
+
+              Specifies a command to be executed upon user double clicking via
+              mouse button one of the text label of an entry. If this command
+              contains "%n", it is replaced with the name of the selected node.
+              Should it contain "%s" then a boolean indicator of the node's
+              current selection status is substituted.
+
+       Name:           expanded
+       Class:          Expanded
+       Command-Line Switch:           -expanded
+
+              When true, the hierarchy will be completely expanded when it is
+              first displayed.  A fresh display can be triggered by resetting
+              the -querycommand option.  The default is false.
+
+       Name:           filter
+       Class:          Filter
+       Command-Line Switch:           -filter
+
+              When true only the branch nodes and selected items are displayed.
+              This gives a compact view of important items.  The default is
+              false.
+
+       Name:           height
+       Class:          Height
+       Command-Line Switch:           -height
+
+              Specifies the height of the hierarchy as an entire unit.  The
+              value may be specified in any of the forms acceptable to
+              Tk_GetPixels.  Any additional space needed to display the other
+              components such as labels, margins, and scrollbars force the
+              hierarchy to be compressed.  A value of zero along with the same
+              value for the width causes the value given for the visibleitems
+              option to be applied which administers geometry constraints in a
+              different manner.  The default height is zero.
+
+       Name:           iconCommand
+       Class:          Command
+       Command-Line Switch:           -iconcommand
+
+              Specifies a command to be executed upon user selection via mouse
+              button one of any additional icons given in the values returned by
+              the command associated with the -querycommand option.  If this
+              command contains "%n", it is replaced with the name of the node
+              the icon belongs to.  Should it contain "%i" then the icon name is
+              substituted.
+
+       Name:           iconDblCommand
+       Class:          Command
+       Command-Line Switch:           -icondblcommand
+
+              Specifies a command to be executed upon user double clicking via
+              mouse button one of the icon of an entry. If this command contains
+              "%n", it is replaced with the name of the node the icon belongs
+              to. Should it contain "%i" then the icon name is substituted.
+
+       Name:           imageCommand
+       Class:          Command
+       Command-Line Switch:           -imagecommand
+
+              Specifies a command to be executed upon user selecting an image of
+              an entry.  If this command contains "%n", it is replaced with the
+              name of the selected node. Should it contain "%s" then a boolean
+              indicator of the node's current selection status is substituted.
+
+       Name:           imageDblCommand
+       Class:          Command
+       Command-Line Switch:           -imagedblcommand
+
+              Specifies a command to be executed upon user double clicking via
+              mouse button one of the image of an entry. If this command
+              contains "%n", it is replaced with the name of the node the icon
+              belongs to. Should it contain "%i" then the icon name is
+              substituted.
+
+       Name:           imageMenuLoadCommand
+       Class:          Command
+       Command-Line Switch:           -imagemenuloadcommand
+
+              Specifies a command to be executed upon user selection via mouse
+              button three, on the image or icon, that will dynamically load the
+              itemMenu for the widget.
+
+       Name:           markBackground
+       Class:          Foreground
+       Command-Line Switch:           -markbackground
+
+              Specifies the background color to use when displaying marked
+              nodes.
+
+       Name:           markForeground
+       Class:          Background
+       Command-Line Switch:           -markforeground
+
+              Specifies the foreground color to use when displaying marked
+              nodes.
+
+       Name:           menuCursor
+       Class:          Cursor
+       Command-Line Switch:           -menucursor
+
+              Specifies the mouse cursor to be used for the item and background
+              menus.  The value may have any of the forms accept able to
+              Tk_GetCursor.
+
+       Name:           nodeIcon
+       Class:          Icon
+       Command-Line Switch:           -nodeicon
+
+              Specifies the name of an existing node icon image to be used in
+              the hierarchy before those nodes that are leafs.  Should one not
+              be provided, then a dog-eared page icon will be generated, pixmap
+              if possible, bitmap otherwise.
+
+       Name:           openIcon
+       Class:          Icon
+       Command-Line Switch:           -openicon
+
+              Specifies the name of an existing open icon image to be used in
+              the hierarchy before those nodes that are expanded.  Should one
+              not be provided, then an open folder icon will be generated,
+              pixmap if possible, bitmap otherwise.
+
+       Name:           queryCommand
+       Class:          Command
+       Command-Line Switch:           -querycommand
+
+              Specifies the command executed to query the contents of each node.
+              If this command contains "%n", it is replaced with the name of the
+              desired node.  In its simpilest form it should return the children
+              of the given node as a list which will be depicted in the display.
+              Since the names of the children are used as tags in the underlying
+              text widget, each child must be unique in the hierarchy.  Due to
+              the unique requirement, the nodes shall be reffered to as uids or
+              uid in the singular sense.  The format of returned list is
+
+                {uid [uid ...]}
+
+                where uid is a unique id and primary key for the hierarchy entry
+
+              Should the unique requirement pose a problem, the list returned
+              can take on another more extended form which enables the
+              association of text to be displayed with the uids.  The uid must
+              still be unique, but the text does not have to obey the unique
+              rule.  In addition, the format also allows the specification of
+              additional tags to be used on the same entry in the hierarchy as
+              the uid and additional icons to be displayed just before the node.
+              The tags and icons are considered to be the property of the user
+              in that the hierarchy widget will not depend on any of their
+              values.  The extended format is
+
+                {{uid [text [tags [icons]]]} {uid [text [tags [icons]]]} ...}
+
+                where uid is a unique id and primary key for the hierarchy entry
+                      text is the text to be displayed for this uid
+                      tags is a list of user tags to be applied to the entry
+                      icons is a list of icons to be displayed in front of the
+              text
+
+              The hierarchy widget does a look ahead from each node to determine
+              if the node has a children.  This can be cost some performace with
+              large hierarchies.  User's can avoid this by providing a hint in
+              the user tags.  A tag of "leaf" or "branch" tells the hierarchy
+              widget the information it needs to know thereby avoiding the look
+              ahead operation.
+
+       Name:           hscrollMode
+       Class:          ScrollMode
+       Command-Line Switch:           -hscrollmode
+
+              Specifies the the display mode to be used for the horizontal
+              scrollbar: static, dynamic, or none.  In static mode, the scroll
+              bar is displayed at all times.  Dynamic mode displays the scroll
+              bar as required, and none disables the scroll bar display.  The
+              default is static.
+
+       Name:           sbWidth
+       Class:          Width
+       Command-Line Switch:           -sbwidth
+
+              Specifies the width of the scrollbar in any of the forms
+              acceptable to Tk_GetPixels.
+
+       Name:           scrollMargin
+       Class:          Margin
+       Command-Line Switch:           -scrollmargin
+
+              Specifies the distance between the text portion of the hierarchy
+              and the scrollbars in any of the forms acceptable to Tk_GetPixels.
+              The default is 3 pixels.
+
+       Name:           selectCommand
+       Class:          Command
+       Command-Line Switch:           -selectcommand
+
+              Specifies a Tcl command to be evaluated when you select a node in
+              the hierarchy via left mouse click.  If "%n" is included in the
+              command, it is substituted with the node name.  Similarly, "%s" is
+              substituted with the node's current selection status: 1 for
+              selected, 0 otherwise.
+
+       Name:           textBackground Class:          Background Command-Line
+       Switch:         -textbackground
+
+              Specifies the background color for the text portion of the
+              hierarchy in any of the forms acceptable to Tk_GetColor.
+
+       Name:           textFont
+       Class:          Font
+       Command-Line Switch:           -textfont
+
+              Specifies the font to be used in the text portion of the
+              hierarchy.
+
+       Name:           textMenuLoadCommand
+       Class:          Command
+       Command-Line Switch:           -textmenuloadcommand
+
+              Specifies a command to be executed upon user selection via mouse
+              button three, that will dynamically load the itemMenu for the
+              widget.
+
+       Name:           visibleitems
+       Class:          VisibleItems
+       Command-Line Switch:           -visibleitems
+
+              Specifies the widthxheight in characters and lines for the
+              hierarchy.  This option is only administered if the width and
+              height options are both set to zero, otherwise they take
+              precedence.  The default value is 80x24.  With the visibleitems
+              option engaged, geometry constraints are maintained only on the
+              text portion of the hierarchy.  The size of the other components
+              such as labels, margins, and scroll bars, are additive and
+              independent, effecting the overall size of the hierarchy.  In
+              contrast, should the width and height options have non zero
+              values, they are applied to the hierarchy as a whole.  The
+              hierarchy is compressed or expanded to maintain the geometry
+              constraints.
+
+       Name:           vscrollMode
+       Class:          ScrollMode
+       Command-Line Switch:           -vscrollmode
+
+              Specifies the the display mode to be used for the vertical
+              scrollbar: static, dynamic, or none.  In static mode, the scroll
+              bar is displayed at all times.  Dynamic mode displays the scroll
+              bar as required, and none disables the scroll bar display.  The
+              default is static.
+
+       Name:           width
+       Class:          Width
+       Command-Line Switch:           -width
+
+              Specifies the width of the hierarchy as an entire unit.  The value
+              may be specified in any of the forms acceptable to Tk_GetPixels.
+              Any additional space needed to display the other components such
+              as labels, margins, and scrollbars force the text portion of the
+              hierarchy to be compressed.  A value of zero along with the same
+              value for the height causes the value given for the visibleitems
+              option to be applied which administers geometry constraints in a
+              different manner.  The default width is zero.
+
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::hierarchy command creates a hierarchical data view widget.
+       It allows the graphical management of a a list of nodes that can be
+       expanded or collapsed.  Individual nodes can be highlighted.  Clicking
+       with the right mouse button on any item brings up a special item menu.
+       Clicking on the background area brings up a different popup menu.
+       Options exist to provide user control over the loading of the nodes and
+       actions associated with node selection.  Since the hierarchy is based on
+       the scrolledtext widget, it includes options to control the method in
+       which the scrollbars are displayed, i.e. statically or  dynamically.
+       Options also exist for adding a label to the hierarchy and controlling
+       its position.
+
+
+METHODS
+       The iwidgets::hierarchy command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for hierarchy widgets:
+
+ASSOCIATED METHODS
+       bbox            compare        debug           delete
+       dlineinfo       dump           get             index
+       insert          scan           search          see
+       tag             window         xview           yview
+
+       See the "text" manual entry for details on the standard methods.
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::hierarchy command.
+
+       pathName clear
+              Removes all items from the hierarchy display including all tags
+              and icons.  The display will remain empty until the -filter or
+              -querycommand options are set.
+
+       pathName collapse uid
+              Collapses the hierarchy beneath the node with the specified unique
+              id by one level.  Since this can take a moment for large
+              hierarchies, the cursor will be changed to a watch during the
+              collapse.  Also, if any of the nodes beneath the node being
+              collapsed are selected, their status is changed to unselected.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::hierarchy command.
+
+       pathName current
+              Returns the tags for the node that was most recently selected by
+              the right mouse button when the item menu was posted.  Usually
+              used by the code in the item menu to figure out what item is being
+              manipulated.
+
+       pathName draw ?when?
+              Performs a complete redraw of the entire hierarchy.  When may be
+              either -now or -eventually where the latter means the draw can be
+              performed after idle.
+
+       pathName expand uid
+              Expands the hierarchy beneath the node with the specified unique
+              id by one level.  Since this can take a moment for large
+              hierarchies, the cursor will be changed to a watch during the
+              expansion.
+
+       pathName expanded uid
+              Returns the current state of expansion for the node with the
+              specified unique id.
+
+       pathName expState
+              Returns a list of all expanded nodes in the tree.
+
+       pathName mark option ?arg arg ...?
+              This command is used to manipulate marks which is quite similar to
+              selection, adding a secondary means of hilighting an item in the
+              hierarchy.  The exact behavior of the command depends on the
+              option argument that follows the mark argument.  The following
+              forms of the command are currently supported:
+
+              pathName mark clear
+                     Clears all the currently marked nodes in the hierarchy.
+
+              pathName mark add uid ?uid uid ...?
+                     Marks the nodes with the specified uids in the hierarchy
+                     using the -markbackground and -markforeground options and
+                     without affecting the mark state of any other nodes that
+                     were already marked.
+
+              pathName mark remove uid ?uid uid ...?
+                     Unmarks the nodes with the specified uids in the hierarchy
+                     without affecting the mark state of any other nodes that
+                     were already marked.
+
+              pathName mark get
+                     Returns a list of the unique ids that are currently marked.
+
+       pathName refresh uid
+              Performs a redraw of a specific node that has the given uid.  If
+              the node is not currently visible or in other words already drawn
+              on the text, then no action is taken.
+
+       pathName prune uid
+              Removes the node specified by the given uid from the hierarchy.
+              Should the node have children, then all of its children will be
+              removed as well.
+
+       pathName selection option ?arg arg ...?
+              This command is used to manipulate the selection of nodes in the
+              hierarchy.  The exact behavior of the command depends on the
+              option argument that follows the selection argument.  The
+              following forms of the command are currently supported:
+
+              pathName selection clear
+                     Clears all the currently selected nodes in the hierarchy.
+
+              pathName selection add uid ?uid uid ...?
+                     Selects the nodes with the specified uids in the hierarchy
+                     using the -selectionbackground and -selectionforeground
+                     options and without affecting the selection state of any
+                     other nodes that were already selected.
+
+              pathName selection remove uid ?uid uid ...?
+                     Deselects the nodes with the specified uids in the
+                     hierarchy without affecting the selection state of any
+                     other nodes that were already selected.
+
+              pathName selection get
+                     Returns a list of the unique ids that are currently
+                     selected.
+       A nodes selection status is also dependent on it being visible.  If a
+       node is selected and its parent is then collapsed making the selected
+       node not visible, then its selection status is changed to unselected.
+
+       pathName toggle uid
+              Toggles the hierarchy beneath the node with the specified unique
+              id.  If the hierarchy is currently expanded, then it is collapsed,
+              and vice-versa.
+
+
+COMPONENTS
+       Name:           list
+       Class:          Text
+
+              The list component is the text widget in which the hierarchy is
+              displayed.  See the "text" widget manual entry for details on the
+              text component item.
+
+       Name:           bgMenu
+       Class:          Menu
+
+              The bgMenu component is the popup menu which is displayed upon
+              pressing the right mouse button in the background, i.e. not over a
+              specific node.  Menu items can be added along with their commands
+              via the component command.  See the "menu" widget manual entry for
+              details on the bgMenu component item.
+
+       Name:           horizsb
+       Class:          Scrollbar
+
+              The horizsb component is the horizontal scroll bar.  See the
+              "scrollbar" widget manual entry for details on the horizsb
+              component item.
+
+       Name:           itemMenu
+       Class:          Menu
+
+              The itemMenu component is the popup menu which is displayed upon
+              selection of a hierarchy node with the right mouse button.  Menu
+              items can be added along with their commands via the component
+              command.  See the "menu" widget manual entry for details on the
+              itemMenu component item.
+
+       Name:           vertsb
+       Class:          Scrollbar
+
+              The vertsb component is the vertical scroll bar.  See the
+              "scrollbar" widget manual entry for details on the vertsb
+              component item.
+
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              proc get_files {file} {
+                  global env
+
+                  if {$file == ""} {
+                      set dir $env(HOME)
+                  } else {
+                      set dir $file
+                  }
+
+                  if {[catch {cd $dir}] != 0} {
+                      return ""
+                  }
+
+                  set rlist ""
+
+                  foreach file [lsort [glob -nocomplain *]] {
+                      lappend rlist [list [file join $dir $file] $file]
+                  }
+
+                  return $rlist
+              }
+
+              iwidgets::hierarchy .h -querycommand "get_files %n" -visibleitems 30x15     -labeltext $env(HOME)
+              pack .h -side left -expand yes -fill both
+
+
+AUTHOR
+       Mark L. Ulferts
+
+       Michael J. McLennan
+
+KEYWORDS
+       hierarchy, text, widget
+
+
+

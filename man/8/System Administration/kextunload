@@ -1,0 +1,107 @@
+KEXTUNLOAD(8)                System Manager's Manual               KEXTUNLOAD(8)
+
+NAME
+     kextunload – terminate driver I/O Kit driver instances and unload kernel
+     extensions (kexts)
+
+SYNOPSIS
+     kextunload [options] [--] [kext ...]
+
+DEPRECATED
+     The kextunload utility has been deprecated.  Please use the kmutil(8)
+     equivalent: kmutil unload.
+
+DESCRIPTION
+     The kextunload program is used to terminate and unregister I/O Kit objects
+     associated with a kernel extension (kext) and to unload the code and
+     personalities for that kext.  kextunload must run with superuser
+     privileges.
+
+     If another loaded kext has a dependency on the kext being unloaded, the
+     unload will fail.  You can determine whether a kext has dependents using
+     the kextstat(8) tool.
+
+     kextunload is a formal interface for unloading kexts in the Darwin OS and
+     in macOS.  Software and installers can rely on its presence and invoke it
+     in order to unload kexts.  Note that long options are present as of Mac OS
+     X 10.6 (Snow Leopard).
+
+     The arguments and options are:
+
+     kext     Unload the loaded kext whose bundle identifier matches the
+              CFBundleIdentifier of kext.  All instances of IOService subclasses
+              defined by the loaded kext and in the IOService plane of the I/O
+              Registry are terminated; the kext is checked to make sure no
+              instances of its libkern C++ classes remain; the kext's C++ static
+              destructores and module stop routine are invoked; then the kext's
+              executable and IOKitPersonalities are unloaded from the kernel.
+              Failure at any stage prevents kext unload.
+
+     -b identifier, -bundle-id identifier
+              Unload executable and IOKitPersonalities (as described immediately
+              above) for the kext whose CFBundleIdentifier is identifier.
+
+     -c classname, -class classname
+              Terminate all instances of class classname that are in the
+              IOService plane of the I/O Registry, if possible, but do not
+              unload the defining kext or its IOKitPersonalities.  New load
+              requests for devices that were driven by these terminated
+              instances may result in the same class being instantiated at any
+              time.
+
+     -h, -help
+              Print a help message describing each option flag and exit with a
+              success result, regardless of any other options on the command
+              line.
+
+     -m identifier
+              Same as -b (remains for backward compatibility).
+
+     -p, -personalities-only
+              Terminate services and remove personalities only; do not unload
+              kexts.
+
+     -q, -quiet
+              Quiet mode; print no informational or error messages.
+
+     -v [0-6 | 0x####], -verbose [0-6 | 0x####]
+              Verbose mode; print information about program operation.  Higher
+              levels of verbosity include all lower levels.  By default
+              kextunload prints only warnings and errors.  You can specify a
+              level from 0-6, or a hexadecimal log specification (as described
+              in kext_logging(8)). The levels of verbose output are:
+
+              0            Print only errors (that is, suppress warnings); see
+                           also -quiet.
+
+              1 (or none)  Print basic information about program operation.
+
+              2            Prints information about unload stages.
+
+              3            Prints information about removal of personalities.
+
+              4            Prints information about module stop functions and
+                           C++ class destruction.
+
+              5            Prints detailed information internal operations such
+                           as bookkeping.
+
+              6            Identical to level 5 for kextunload.
+
+              Unlike in other kext tools, the -verbose flag in kextunload
+              applies to all kexts (that is, it turns on hexadecimal bit 0x8 by
+              default).  See kext_logging(8) for more information on verbose
+              logging.
+
+DIAGNOSTICS
+     kextunload exits with a zero status upon success, or prints an error
+     message and exits with a nonzero status upon failure.
+
+BUGS
+     Many single-letter options are inconsistent in meaning with (or directly
+     contradictory to) the same letter options in other kext tools.
+
+SEE ALSO
+     kmutil(8), kernelmanagerd(8), kextcache(8), kextd(8), kextload(8),
+     kextstat(8), kext_logging(8)
+

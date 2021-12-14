@@ -1,0 +1,599 @@
+SLAPD-SQL(5)                   File Formats Manual                  SLAPD-SQL(5)
+
+
+
+NAME
+       slapd-sql - SQL backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The primary purpose of this slapd(8) backend is to PRESENT information
+       stored in some RDBMS as an LDAP subtree without any programming (some SQL
+       and maybe stored procedures can't be considered programming, anyway ;).
+
+       That is, for example, when you (some ISP) have account information you
+       use in an RDBMS, and want to use modern solutions that expect such
+       information in LDAP (to authenticate users, make email lookups etc.).  Or
+       you want to synchronize or distribute information between different
+       sites/applications that use RDBMSes and/or LDAP.  Or whatever else...
+
+       It is NOT designed as a general-purpose backend that uses RDBMS instead
+       of BerkeleyDB (as the standard BDB backend does), though it can be used
+       as such with several limitations.  You can take a look at
+       http://www.openldap.org/faq/index.cgi?file=378 (OpenLDAP
+       FAQ-O-Matic/General LDAP FAQ/Directories vs. conventional databases) to
+       find out more on this point.
+
+       The idea (detailed below) is to use some meta-information to translate
+       LDAP queries to SQL queries, leaving relational schema untouched, so that
+       old applications can continue using it without any modifications.  This
+       allows SQL and LDAP applications to inter-operate without replication,
+       and exchange data as needed.
+
+       The SQL backend is designed to be tunable to virtually any relational
+       schema without having to change source (through that meta-information
+       mentioned).  Also, it uses ODBC to connect to RDBMSes, and is highly
+       configurable for SQL dialects RDBMSes may use, so it may be used for
+       integration and distribution of data on different RDBMSes, OSes, hosts
+       etc., in other words, in highly heterogeneous environment.
+
+       This backend is experimental.
+
+CONFIGURATION
+       These slapd.conf options apply to the SQL backend database, which means
+       that they must follow a "database sql" line and come before any
+       subsequent "backend" or "database" lines.  Other database options not
+       specific to this backend are described in the slapd.conf(5) manual page.
+
+DATA SOURCE CONFIGURATION
+       dbname <datasource name>
+              The name of the ODBC datasource to use.
+
+       dbhost <hostname>
+       dbpasswd <password>
+       dbuser <username>
+              The three above options are generally unneeded, because this
+              information is taken from the datasource specified by the dbname
+              directive.  They allow to override datasource settings.  Also,
+              several RDBMS' drivers tend to require explicit passing of
+              user/password, even if those are given in datasource (Note: dbhost
+              is currently ignored).
+
+SCOPING CONFIGURATION
+       These options specify SQL query templates for scoping searches.
+
+
+       subtree_cond <SQL expression>
+              Specifies a where-clause template used to form a subtree search
+              condition (dn="(.+,)?<dn>$").  It may differ from one SQL dialect
+              to another (see samples).  By default, it is constructed based on
+              the knowledge about how to normalize DN values (e.g.
+              "<upper_func>(ldap_entries.dn) LIKE CONCAT('%',?)"); see
+              upper_func, upper_needs_cast, concat_pattern and strcast_func in
+              "HELPER CONFIGURATION" for details.
+
+
+       children_cond <SQL expression>
+              Specifies a where-clause template used to form a children search
+              condition (dn=".+,<dn>$").  It may differ from one SQL dialect to
+              another (see samples).  By default, it is constructed based on the
+              knowledge about how to normalize DN values (e.g.
+              "<upper_func>(ldap_entries.dn) LIKE CONCAT('%,',?)"); see
+              upper_func, upper_needs_cast, concat_pattern and strcast_func in
+              "HELPER CONFIGURATION" for details.
+
+
+       use_subtree_shortcut { YES | no }
+              Do not use the subtree condition when the searchBase is the
+              database suffix, and the scope is subtree; rather collect all
+              entries.
+
+
+STATEMENT CONFIGURATION
+       These options specify SQL query templates for loading schema mapping
+       meta-information, adding and deleting entries to ldap_entries, etc.  All
+       these and subtree_cond should have the given default values.  For the
+       current value it is recommended to look at the sources, or in the log
+       output when slapd starts with "-d 5" or greater.  Note that the parameter
+       number and order must not be changed.
+
+
+       oc_query <SQL expression>
+              The query that is used to collect the objectClass mapping data
+              from table ldap_oc_mappings; see "METAINFORMATION USED" for
+              details.  The default is "SELECT id, name, keytbl, keycol,
+              create_proc, delete_proc, expect_return FROM ldap_oc_mappings".
+
+
+       at_query <SQL expression>
+              The query that is used to collect the attributeType mapping data
+              from table ldap_attr_mappings; see "METAINFORMATION USED" for
+              details.  The default is "SELECT name, sel_expr, from_tbls,
+              join_where, add_proc, delete_proc, param_order, expect_return FROM
+              ldap_attr_mappings WHERE oc_map_id=?".
+
+
+       id_query <SQL expression>
+              The query that is used to map a DN to an entry in table
+              ldap_entries; see "METAINFORMATION USED" for details.  The default
+              is "SELECT id,keyval,oc_map_id,dn FROM ldap_entries WHERE <DN
+              match expr>", where <DN match expr> is constructed based on the
+              knowledge about how to normalize DN values (e.g. "dn=?" if no
+              means to uppercase strings are available; typically,
+              "<upper_func>(dn)=?" is used); see upper_func, upper_needs_cast,
+              concat_pattern and strcast_func in "HELPER CONFIGURATION" for
+              details.
+
+
+       insentry_stmt <SQL expression>
+              The statement that is used to insert a new entry in table
+              ldap_entries; see "METAINFORMATION USED" for details.  The default
+              is "INSERT INTO ldap_entries (dn, oc_map_id, parent, keyval)
+              VALUES (?, ?, ?, ?)".
+
+
+       delentry_stmt <SQL expression>
+              The statement that is used to delete an existing entry from table
+              ldap_entries; see "METAINFORMATION USED" for details.  The default
+              is "DELETE FROM ldap_entries WHERE id=?".
+
+
+       delobjclasses_stmt <SQL expression>
+              The statement that is used to delete an existing entry's ID from
+              table ldap_objclasses; see "METAINFORMATION USED" for details.
+              The default is "DELETE FROM ldap_entry_objclasses WHERE
+              entry_id=?".
+
+
+HELPER CONFIGURATION
+       These statements are used to modify the default behavior of the backend
+       according to issues of the dialect of the RDBMS.  The first options
+       essentially refer to string and DN normalization when building filters.
+       LDAP normalization is more than upper- (or lower-)casing everything;
+       however, as a reasonable trade-off, for case-sensitive RDBMSes the
+       backend can be instructed to uppercase strings and DNs by providing the
+       upper_func directive.  Some RDBMSes, to use functions on arbitrary data
+       types, e.g. string constants, requires a cast, which is triggered by the
+       upper_needs_cast directive.  If required, a string cast function can be
+       provided as well, by using the strcast_func directive.  Finally, a custom
+       string concatenation pattern may be required; it is provided by the
+       concat_pattern directive.
+
+
+       upper_func <SQL function name>
+              Specifies the name of a function that converts a given value to
+              uppercase.  This is used for case insensitive matching when the
+              RDBMS is case sensitive.  It may differ from one SQL dialect to
+              another (e.g. UCASE, UPPER or whatever; see samples).  By default,
+              none is used, i.e. strings are not uppercased, so matches may be
+              case sensitive.
+
+
+       upper_needs_cast { NO | yes }
+              Set this directive to yes if upper_func needs an explicit cast
+              when applied to literal strings.  A cast in the form CAST (<arg>
+              AS VARCHAR(<max DN length>)) is used, where <max DN length> is
+              builtin in back-sql; see macro BACKSQL_MAX_DN_LEN (currently 255;
+              note that slapd's builtin limit, in macro SLAP_LDAPDN_MAXLEN, is
+              set to 8192).  This is experimental and may change in future
+              releases.
+
+
+       strcast_func <SQL function name>
+              Specifies the name of a function that converts a given value to a
+              string for appropriate ordering.  This is used in "SELECT
+              DISTINCT" statements for strongly typed RDBMSes with little
+              implicit casting (like PostgreSQL), when a literal string is
+              specified.  This is experimental and may change in future
+              releases.
+
+
+       concat_pattern <pattern>
+              This statement defines the pattern that is used to concatenate
+              strings.  The pattern MUST contain two question marks, '?', that
+              will be replaced by the two strings that must be concatenated.
+              The default value is CONCAT(?,?); a form that is known to be
+              highly portable (IBM db2, PostgreSQL) is ?||?, but an explicit
+              cast may be required when operating on literal strings: CAST(?||?
+              AS VARCHAR(<length>)).  On some RDBMSes (IBM db2, MSSQL) the form
+              ?+?  is known to work as well.  Carefully check the documentation
+              of your RDBMS or stay with the examples for supported ones.  This
+              is experimental and may change in future releases.
+
+
+       aliasing_keyword <string>
+              Define the aliasing keyword.  Some RDBMSes use the word "AS" (the
+              default), others don't use any.
+
+
+       aliasing_quote <string>
+              Define the quoting char of the aliasing keyword.  Some RDBMSes
+              don't require any (the default), others may require single or
+              double quotes.
+
+
+       has_ldapinfo_dn_ru { NO | yes }
+              Explicitly inform the backend whether the dn_ru column (DN in
+              reverse uppercased form) is present in table ldap_entries.
+              Overrides automatic check (this is required, for instance, by
+              PostgreSQL/unixODBC).  This is experimental and may change in
+              future releases.
+
+
+       fail_if_no_mapping { NO | yes }
+              When set to yes it forces attribute write operations to fail if no
+              appropriate mapping between LDAP attributes and SQL data is
+              available.  The default behavior is to ignore those changes that
+              cannot be mapped.  It has no impact on objectClass mapping, i.e.
+              if the structuralObjectClass of an entry cannot be mapped to SQL
+              by looking up its name in ldap_oc_mappings, an add operation will
+              fail regardless of the fail_if_no_mapping switch; see section
+              "METAINFORMATION USED" for details.  This is experimental and may
+              change in future releases.
+
+
+       allow_orphans { NO | yes }
+              When set to yes orphaned entries (i.e. without the parent entry in
+              the database) can be added.  This option should be used with care,
+              possibly in conjunction with some special rule on the RDBMS side
+              that dynamically creates the missing parent.
+
+
+       baseObject [ <filename> ]
+              Instructs the database to create and manage an in-memory
+              baseObject entry instead of looking for one in the RDBMS.  If the
+              (optional) <filename> argument is given, the entry is read from
+              that file in LDIF(5) format; otherwise, an entry with objectClass
+              extensibleObject is created based on the contents of the RDN of
+              the baseObject.  This is particularly useful when ldap_entries
+              information is stored in a view rather than in a table, and union
+              is not supported for views, so that the view can only specify one
+              rule to compute the entry structure for one objectClass.  This
+              topic is discussed further in section "METAINFORMATION USED".
+              This is experimental and may change in future releases.
+
+
+       create_needs_select { NO | yes }
+              Instructs the database whether or not entry creation in table
+              ldap_entries needs a subsequent select to collect the
+              automatically assigned ID, instead of being returned by a stored
+              procedure.
+
+
+       fetch_attrs <attrlist>
+       fetch_all_attrs { NO | yes }
+              The first statement allows to provide a list of attributes that
+              must always be fetched in addition to those requested by any
+              specific operation, because they are required for the proper usage
+              of the backend.  For instance, all attributes used in ACLs should
+              be listed here.  The second statement is a shortcut to require all
+              attributes to be always loaded.  Note that the dynamically
+              generated attributes, e.g. hasSubordinates, entryDN and other
+              implementation dependent attributes are NOT generated at this
+              point, for consistency with the rest of slapd.  This may change in
+              the future.
+
+
+       check_schema { YES | no }
+              Instructs the database to check schema adherence of entries after
+              modifications, and structural objectClass chain when entries are
+              built.  By default it is set to yes.
+
+
+       sqllayer <name> [...]
+              Loads the layer <name> onto a stack of helpers that are used to
+              map DNs from LDAP to SQL representation and vice-versa.
+              Subsequent args are passed to the layer configuration routine.
+              This is highly experimental and should be used with extreme care.
+              The API of the layers is not frozen yet, so it is unpublished.
+
+
+       autocommit { NO | yes }
+              Activates autocommit; by default, it is off.
+
+
+METAINFORMATION USED
+       Almost everything mentioned later is illustrated in examples located in
+       the servers/slapd/back-sql/rdbms_depend/ directory in the OpenLDAP source
+       tree, and contains scripts for generating sample database for Oracle, MS
+       SQL Server, mySQL and more (including PostgreSQL and IBM db2).
+
+       The first thing that one must arrange is what set of LDAP object classes
+       can present your RDBMS information.
+
+       The easiest way is to create an objectClass for each entity you had in
+       ER-diagram when designing your relational schema.  Any relational schema,
+       no matter how normalized it is, was designed after some model of your
+       application's domain (for instance, accounts, services etc. in ISP), and
+       is used in terms of its entities, not just tables of normalized schema.
+       It means that for every attribute of every such instance there is an
+       effective SQL query that loads its values.
+
+       Also you might want your object classes to conform to some of the
+       standard schemas like inetOrgPerson etc.
+
+       Nevertheless, when you think it out, we must define a way to translate
+       LDAP operation requests to (a series of) SQL queries.  Let us deal with
+       the SEARCH operation.
+
+       Example: Let's suppose that we store information about persons working in
+       our organization in two tables:
+
+         PERSONS              PHONES
+         ----------           -------------
+         id integer           id integer
+         first_name varchar   pers_id integer references persons(id)
+         last_name varchar    phone
+         middle_name varchar
+         ...
+
+       (PHONES contains telephone numbers associated with persons).  A person
+       can have several numbers, then PHONES contains several records with
+       corresponding pers_id, or no numbers (and no records in PHONES with such
+       pers_id).  An LDAP objectclass to present such information could look
+       like this:
+
+         person
+         -------
+         MUST cn
+         MAY telephoneNumber $ firstName $ lastName
+         ...
+
+       To fetch all values for cn attribute given person ID, we construct the
+       query:
+
+         SELECT CONCAT(persons.first_name,' ',persons.last_name)
+             AS cn FROM persons WHERE persons.id=?
+
+       for telephoneNumber we can use:
+
+         SELECT phones.phone AS telephoneNumber FROM persons,phones
+             WHERE persons.id=phones.pers_id AND persons.id=?
+
+       If we wanted to service LDAP requests with filters like
+       (telephoneNumber=123*), we would construct something like:
+
+         SELECT ... FROM persons,phones
+             WHERE persons.id=phones.pers_id
+                 AND persons.id=?
+                 AND phones.phone like '%1%2%3%'
+
+       (note how the telephoneNumber match is expanded in multiple wildcards to
+       account for interspersed ininfluential chars like spaces, dashes and so;
+       this occurs by design because telephoneNumber is defined after a
+       specially recognized syntax).  So, if we had information about what
+       tables contain values for each attribute, how to join these tables and
+       arrange these values, we could try to automatically generate such
+       statements, and translate search filters to SQL WHERE clauses.
+
+       To store such information, we add three more tables to our schema and
+       fill it with data (see samples):
+
+         ldap_oc_mappings (some columns are not listed for clarity)
+         ---------------
+         id=1
+         name="person"
+         keytbl="persons"
+         keycol="id"
+
+       This table defines a mapping between objectclass (its name held in the
+       "name" column), and a table that holds the primary key for corresponding
+       entities.  For instance, in our example, the person entity, which we are
+       trying to present as "person" objectclass, resides in two tables (persons
+       and phones), and is identified by the persons.id column (that we will
+       call the primary key for this entity).  Keytbl and keycol thus contain
+       "persons" (name of the table), and "id" (name of the column).
+
+         ldap_attr_mappings (some columns are not listed for clarity)
+         -----------
+         id=1
+         oc_map_id=1
+         name="cn"
+         sel_expr="CONCAT(persons.first_name,' ',persons.last_name)"
+         from_tbls="persons"
+         join_where=NULL
+         ************
+         id=<n>
+         oc_map_id=1
+         name="telephoneNumber"
+         sel_expr="phones.phone"
+         from_tbls="persons,phones"
+         join_where="phones.pers_id=persons.id"
+
+       This table defines mappings between LDAP attributes and SQL queries that
+       load their values.  Note that, unlike LDAP schema, these are not
+       attribute types - the attribute "cn" for "person" objectclass can have
+       its values in different tables than "cn" for some other objectclass, so
+       attribute mappings depend on objectclass mappings (unlike attribute types
+       in LDAP schema, which are indifferent to objectclasses).  Thus, we have
+       oc_map_id column with link to oc_mappings table.
+
+       Now we cut the SQL query that loads values for a given attribute into 3
+       parts.  First goes into sel_expr column - this is the expression we had
+       between SELECT and FROM keywords, which defines WHAT to load.  Next is
+       table list - text between FROM and WHERE keywords.  It may contain
+       aliases for convenience (see examples).  The last is part of the where
+       clause, which (if it exists at all) expresses the condition for joining
+       the table containing values with the table containing the primary key
+       (foreign key equality and such).  If values are in the same table as the
+       primary key, then this column is left NULL (as for cn attribute above).
+
+       Having this information in parts, we are able to not only construct
+       queries that load attribute values by id of entry (for this we could
+       store SQL query as a whole), but to construct queries that load id's of
+       objects that correspond to a given search filter (or at least part of
+       it).  See below for examples.
+
+         ldap_entries
+         ------------
+         id=1
+         dn=<dn you choose>
+         oc_map_id=...
+         parent=<parent record id>
+         keyval=<value of primary key>
+
+       This table defines mappings between DNs of entries in your LDAP tree, and
+       values of primary keys for corresponding relational data.  It has
+       recursive structure (parent column references id column of the same
+       table), which allows you to add any tree structure(s) to your flat
+       relational data.  Having id of objectclass mapping, we can determine
+       table and column for primary key, and keyval stores value of it, thus
+       defining the exact tuple corresponding to the LDAP entry with this DN.
+
+       Note that such design (see exact SQL table creation query) implies one
+       important constraint - the key must be an integer.  But all that I know
+       about well-designed schemas makes me think that it's not very narrow ;)
+       If anyone needs support for different types for keys - he may want to
+       write a patch, and submit it to OpenLDAP ITS, then I'll include it.
+
+       Also, several users complained that they don't really need very
+       structured trees, and they don't want to update one more table every time
+       they add or delete an instance in the relational schema.  Those people
+       can use a view instead of a real table for ldap_entries, something like
+       this (by Robin Elfrink):
+
+         CREATE VIEW ldap_entries (id, dn, oc_map_id, parent, keyval)
+             AS
+                 SELECT 0, UPPER('o=MyCompany,c=NL'),
+                     3, 0, 'baseObject' FROM unixusers WHERE userid='root'
+             UNION
+                 SELECT (1000000000+userid),
+                     UPPER(CONCAT(CONCAT('cn=',gecos),',o=MyCompany,c=NL')),
+                     1, 0, userid FROM unixusers
+             UNION
+                 SELECT (2000000000+groupnummer),
+                     UPPER(CONCAT(CONCAT('cn=',groupnaam),',o=MyCompany,c=NL')),
+                     2, 0, groupnummer FROM groups;
+
+
+       If your RDBMS does not support unions in views, only one objectClass can
+       be mapped in ldap_entries, and the baseObject cannot be created; in this
+       case, see the baseObject directive for a possible workaround.
+
+
+TYPICAL SQL BACKEND OPERATION
+       Having meta-information loaded, the SQL backend uses these tables to
+       determine a set of primary keys of candidates (depending on search scope
+       and filter).  It tries to do it for each objectclass registered in
+       ldap_objclasses.
+
+       Example: for our query with filter (telephoneNumber=123*) we would get
+       the following query generated (which loads candidate IDs)
+
+         SELECT ldap_entries.id,persons.id, 'person' AS objectClass,
+                ldap_entries.dn AS dn
+           FROM ldap_entries,persons,phones
+          WHERE persons.id=ldap_entries.keyval
+            AND ldap_entries.objclass=?
+            AND ldap_entries.parent=?
+            AND phones.pers_id=persons.id
+            AND (phones.phone LIKE '%1%2%3%')
+
+       (for ONELEVEL search) or "... AND dn=?" (for BASE search) or "... AND dn
+       LIKE '%?'" (for SUBTREE)
+
+       Then, for each candidate, we load the requested attributes using per-
+       attribute queries like
+
+         SELECT phones.phone AS telephoneNumber
+           FROM persons,phones
+          WHERE persons.id=? AND phones.pers_id=persons.id
+
+       Then, we use test_filter() from the frontend API to test the entry for a
+       full LDAP search filter match (since we cannot effectively make sense of
+       SYNTAX of corresponding LDAP schema attribute, we translate the filter
+       into the most relaxed SQL condition to filter candidates), and send it to
+       the user.
+
+       ADD, DELETE, MODIFY and MODRDN operations are also performed on per-
+       attribute meta-information (add_proc etc.).  In those fields one can
+       specify an SQL statement or stored procedure call which can add, or
+       delete given values of a given attribute, using the given entry keyval
+       (see examples -- mostly PostgreSQL, ORACLE and MSSQL - since as of this
+       writing there are no stored procs in MySQL).
+
+       We just add more columns to ldap_oc_mappings and ldap_attr_mappings,
+       holding statements to execute (like create_proc, add_proc, del_proc
+       etc.), and flags governing the order of parameters passed to those
+       statements.  Please see samples to find out what are the parameters
+       passed, and other information on this matter - they are self-explanatory
+       for those familiar with the concepts expressed above.
+
+COMMON TECHNIQUES
+       First of all, let's recall that among other major differences to the
+       complete LDAP data model, the above illustrated concept does not directly
+       support such features as multiple objectclasses per entry, and referrals.
+       Fortunately, they are easy to adopt in this scheme.  The SQL backend
+       requires that one more table is added to the schema:
+       ldap_entry_objectclasses(entry_id,oc_name).
+
+       That table contains any number of objectclass names that corresponding
+       entries will possess, in addition to that mentioned in mapping.  The SQL
+       backend automatically adds attribute mapping for the "objectclass"
+       attribute to each objectclass mapping that loads values from this table.
+       So, you may, for instance, have a mapping for inetOrgPerson, and use it
+       for queries for "person" objectclass...
+
+       Referrals used to be implemented in a loose manner by adding an extra
+       table that allowed any entry to host a "ref" attribute, along with a
+       "referral" extra objectClass in table ldap_entry_objclasses.  In the
+       current implementation, referrals are treated like any other user-defined
+       schema, since "referral" is a structural objectclass.  The suggested
+       practice is to define a "referral" entry in ldap_oc_mappings, holding a
+       naming attribute, e.g. "ou" or "cn", a "ref" attribute, containing the
+       url; in case multiple referrals per entry are needed, a separate table
+       for urls can be created, where urls are mapped to the respective entries.
+       The use of the naming attribute usually requires to add an
+       "extensibleObject" value to ldap_entry_objclasses.
+
+
+CAVEATS
+       As previously stated, this backend should not be considered a replacement
+       of other data storage backends, but rather a gateway to existing RDBMS
+       storages that need to be published in LDAP form.
+
+       The hasSubordintes operational attribute is honored by back-sql in search
+       results and in compare operations; it is partially honored also in
+       filtering.  Owing to design limitations, a (brain-dead?) filter of the
+       form (!(hasSubordinates=TRUE)) will give no results instead of returning
+       all the leaf entries, because it actually expands into ... AND NOT (1=1).
+       If you need to find all the leaf entries, please use
+       (hasSubordinates=FALSE) instead.
+
+       A directoryString value of the form "__First___Last_" (where underscores
+       mean spaces, ASCII 0x20 char) corresponds to its prettified counterpart
+       "First_Last"; this is not currently honored by back-sql if non-prettified
+       data is written via RDBMS; when non-prettified data is written through
+       back-sql, the prettified values are actually used instead.
+
+
+BUGS
+       When the ldap_entry_objclasses table is empty, filters on the objectClass
+       attribute erroneously result in no candidates.  A workaround consists in
+       adding at least one row to that table, no matter if valid or not.
+
+
+PROXY CACHE OVERLAY
+       The proxy cache overlay allows caching of LDAP search requests (queries)
+       in a local database.  See slapo-pcache(5) for details.
+
+EXAMPLES
+       There are example SQL modules in the slapd/back-sql/rdbms_depend/
+       directory in the OpenLDAP source tree.
+
+ACCESS CONTROL
+       The sql backend honors access control semantics as indicated in
+       slapd.access(5) (including the disclose access privilege when enabled at
+       compile time).
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       slapd.conf(5), slapd(8).
+
+
+

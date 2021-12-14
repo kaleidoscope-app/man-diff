@@ -1,0 +1,73 @@
+disklabel(8)                 System Manager's Manual                disklabel(8)
+
+NAME
+     disklabel – manipulate and query an Apple Label disk label
+
+SYNOPSIS
+     disklabel -create disk-device [-msize=size] [property=value] [...]
+     disklabel -status disk-device
+     disklabel -properties disk-device [property[=value]] [...]
+     disklabel -destroy disk-device
+
+DESCRIPTION
+     The disklabel utility manipulates ``Apple Label'' partition metadata.
+     ``Apple Label'' partitions allow for a disk device to have a consistent
+     name, ownership, and permissions across reboots, even though uses a dynamic
+     pseudofilesystem for /dev.
+
+     The ``Apple Label'' partition uses a set of metadata (as a plist) in a
+     reserved area of the partition.  This metadata describes the owner, name,
+     and so forth.
+
+     When -create is used, the -msize argument can specify the size of metadata
+     area; the default is 128Kbytes.  The default size unit is bytes, but the
+     following suffixes may be used to multiply by the given factor: ``b''
+     (512), ``k'' (1024), ``m'' (1048576), and ``g'' (1073741824).
+
+     Although any key-value pair can be specified for the properties, certain
+     keys are used by the system:
+
+     owner-uid   The user (as either a string or numeric value) to own the
+                 device.
+
+     owner-gid   The group (as either a string or numeric value) associated with
+                 the device.
+
+     owner-mode  The permissions (as a numeric value) for the device.
+
+     dev-name    The name for the device.
+
+     If the owner-uid and owner-gid properties are given as strings, the
+     disklabel utility will attempt to look up the names (as users or groups, as
+     appropriate), and will store the numeric values in the metadata.  If it
+     cannot find the names, and the values are not given as numbers, it will
+     print an error, and not store the key/value pairs in the metadata.
+
+     The owner-mode property may be given in decimal, or in octal by using a
+     preceding ``0'' (e.g., ``0666'').
+
+     Any property may be forced to be treated as a string by enclosing it in
+     double-quotation marks; bear in mind that shell escapes will probably be
+     necessary in this sitation.
+
+     The -properties directive can print out all keys (if no arguments are
+     given), a requested set of keys (if a list of key names is given), or can
+     modify (or add) keys (if a key-value pairs are given).
+
+     disklabel also maintains a checksum of the metadata; the -status directive
+     verifies this checksum.
+
+EXAMPLES
+     The following example will create a device with 1MByte of metadata area,
+     owned by fred, with a device name of fred, and be writable by fred:
+
+           disklabel -create /dev/rdisk1s1 -msize=1M owner-uid=fred
+           dev-name=fred owner-mode=0644
+
+     The following example will then print out the key-value pairs from the
+     above:
+           disklabel -properties /dev/rdisk1s1
+
+SEE ALSO
+     pdisk(8)
+

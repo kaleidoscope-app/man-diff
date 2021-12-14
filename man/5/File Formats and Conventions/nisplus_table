@@ -1,0 +1,86 @@
+NISPLUS_TABLE(5)               File Formats Manual              NISPLUS_TABLE(5)
+
+
+
+
+NAME
+       nisplus_table - Postfix NIS+ client
+
+SYNOPSIS
+       postmap -q "string" "nisplus:[name=%s];name.name."
+
+       postmap -q - "nisplus:[name=%s];name.name." <inputfile
+
+DESCRIPTION
+       The Postfix mail system uses optional lookup tables.  These tables are
+       usually in dbm or db format.  Alternatively, lookup tables can be
+       specified as NIS+ databases.
+
+       To find out what types of lookup tables your Postfix system supports use
+       the "postconf -m" command.
+
+       To test Postfix NIS+ lookup tables, use the "postmap -q" command as
+       described in the SYNOPSIS above.
+
+QUERY SYNTAX
+       Most of the NIS+ query is specified via the NIS+ map name. The general
+       format of a Postfix NIS+ map name is as follows:
+
+           nisplus:[name=%s];name.name.name.:column
+
+       Postfix NIS+ map names differ from what one normally would use with
+       commands such as niscat:
+
+       •      With each NIS+ table lookup, "%s" is replaced by a version of the
+              lookup string.  There can be only one "%s" instance in a Postfix
+              NIS+ map name.
+
+       •      Postfix NIS+ map names use ";" instead of ",", because the latter
+              character is special in the Postfix main.cf file.  Postfix
+              replaces ";" characters in the map name by "," before making NIS+
+              queries.
+
+       •      The ":column" part in the NIS+ map name is not part of the actual
+              NIS+ query. Instead, it specifies the number of the table column
+              that provides the lookup result. When no ":column" is specified
+              the first column (1) is used.
+
+EXAMPLE
+       A NIS+ aliases map might be queried as follows:
+
+           alias_maps = dbm:/etc/mail/aliases,
+               nisplus:[alias=%s];mail_aliases.org_dir.$mydomain.:1
+
+       This queries the local aliases file before the NIS+ file.
+
+SEE ALSO
+       postmap(1), Postfix lookup table manager
+
+README FILES
+       Use "postconf readme_directory" or "postconf html_directory" to locate
+       this information.
+       DATABASE_README, Postfix lookup table overview
+
+LICENSE
+       The Secure Mailer license must be distributed with this software.
+
+AUTHOR(S)
+       Geoff Gibbs
+       UK-HGMP-RC
+       Hinxton
+       Cambridge
+       CB10 1SB, UK
+
+       Adopted and adapted by:
+       Wietse Venema
+       IBM T.J. Watson Research
+       P.O. Box 704
+       Yorktown Heights, NY 10598, USA
+
+       Wietse Venema
+       Google, Inc.
+       111 8th Avenue
+       New York, NY 10011, USA
+
+
+

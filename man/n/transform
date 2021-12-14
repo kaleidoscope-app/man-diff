@@ -1,0 +1,252 @@
+transform(n)                                                        transform(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       transform - Tcl level transformations
+
+SYNOPSIS
+       package require Tcl  ?8.2?
+
+       package require Trf  ?2.1.4?
+
+       transform ?options...? ?data?
+
+       callback operation data
+
+________________________________________________________________________________
+
+DESCRIPTION
+       The command transform reflects the API for a stack channel transformation
+       into the tcl level, thus enabling the writing of transformations in tcl.
+
+       transform ?options...? ?data?
+
+              -mode read|write
+                     This option is accepted by the command if and only if it is
+                     used in immediate mode.  See section IMMEDIATE versus
+                     ATTACHED for an explanation of the term.
+
+                     The argument value specifies whether to run the read or the
+                     write part of the transformation specified via option
+                     -command on the immediate data.
+
+                     Beyond the argument values listed above all unique
+                     abbreviations are recognized too.
+
+              -command cmd
+                     This option has to be present and is always understood. Its
+                     argument is a command prefix. This command prefix will be
+                     called by internally whenever some operation of the
+                     transformation has to be executed. An empty cmd is not
+                     allowed.
+
+                     The exact nature of the various possible calls and their
+                     expected results is described later, in section CALLBACK
+                     API.
+
+              -attach channel
+                     The presence/absence of this option determines the main
+                     operation mode of the transformation.
+
+                     If present the transformation will be stacked onto the
+                     channel whose handle was given to the option and run in
+                     attached mode. More about this in section IMMEDIATE versus
+                     ATTACHED.
+
+                     If the option is absent the transformation is used in
+                     immediate mode and the options listed below are recognized.
+                     More about this in section IMMEDIATE versus ATTACHED.
+
+              -in channel
+                     This options is legal if and only if the transformation is
+                     used in immediate mode. It provides the handle of the
+                     channel the data to transform has to be read from.
+
+                     If the transformation is in immediate mode and this option
+                     is absent the data to transform is expected as the last
+                     argument to the transformation.
+
+              -out channel
+                     This options is legal if and only if the transformation is
+                     used in immediate mode. It provides the handle of the
+                     channel the generated transformation result is written to.
+
+                     If the transformation is in immediate mode and this option
+                     is absent the generated data is returned as the result of
+                     the command itself.
+
+IMMEDIATE VERSUS ATTACHED
+       The transformation distinguishes between two main ways of using it. These
+       are the immediate and attached operation modes.
+
+       For the attached mode the option -attach is used to associate the
+       transformation with an existing channel. During the execution of the
+       command no transformation is performed, instead the channel is changed in
+       such a way, that from then on all data written to or read from it passes
+       through the transformation and is modified by it according to the
+       definition above.  This attachment can be revoked by executing the
+       command unstack for the chosen channel. This is the only way to do this
+       at the Tcl level.
+
+       In the second mode, which can be detected by the absence of option
+       -attach, the transformation immediately takes data from either its
+       commandline or a channel, transforms it, and returns the result either as
+       result of the command, or writes it into a channel.  The mode is named
+       after the immediate nature of its execution.
+
+       Where the data is taken from, and delivered to, is governed by the
+       presence and absence of the options -in and -out.  It should be noted
+       that this ability to immediately read from and/or write to a channel is
+       an historic artifact which was introduced at the beginning of Trf's life
+       when Tcl version 7.6 was current as this and earlier versions have
+       trouble to deal with \0 characters embedded into either input or output.
+
+CALLBACK API
+       Here we describe the API of the callback command implementing the actual
+       transformation.
+
+       callback operation data
+              The callback is always called with two arguments, first an
+              operation code followed by data. The latter will be empty for some
+              operations.
+
+              The known operations are listed below, together with an
+              explanation of the arguments, what is expected of them, and how
+              their results are handled.
+
+              create/write
+                     When called data is empty. The result of the call is
+                     ignored.
+
+                     This is the first operation executed for the write side of
+                     the transformation. It has to initialize the internals of
+                     this part of the transformation and ready it for future
+                     calls.
+
+              delete/write
+                     When called data is empty. The result of the call is
+                     ignored.
+
+                     This is the last operation executed for the write side of
+                     the transformation. It has to shutdown the internals of
+                     this part of the transformation and release any resources
+                     which were acquired over the lifetime of the
+                     transformation.
+
+              write  The operation is called whenever data is written to the
+                     channel.
+
+                     At the time of the call the argument data will contain the
+                     bytes to transform. The result of the call is taken as the
+                     result of the transformation and handed to the next stage
+                     down in the stack of transformation associated with the
+                     channel.
+
+                     This operation has to transform the contents of data, using
+                     whatever data was left over from the last call of the
+                     operation. The transformation is allowed to buffer
+                     incomplete data.
+
+              flush/write
+                     When called data is empty. The operation has to transform
+                     any incomplete data it has buffered internally on the write
+                     side. The result of the call is taken as the result of the
+                     transformation and handed to the next stage down in the
+                     stack of transformation associated with the channel.
+
+              clear/write
+                     When called data is empty. The result of the call is
+                     ignored.
+
+                     The write side of the transformation has to clear its
+                     internal buffers. This operation is called when the user
+                     seeks on the channel, thus invalidating any incomplete
+                     transformation.
+
+              create/read
+                     When called data is empty. The result of the call is
+                     ignored.
+
+                     This is the first operation executed for the read side of
+                     the transformation. It has to initialize the internals of
+                     this part of the transformation and ready it for future
+                     calls.
+
+              delete/read
+                     When called data is empty. The result of the call is
+                     ignored.
+
+                     This is the last operation executed for the write side of
+                     the transformation. It has to shutdown the internals of
+                     this part of the transformation and release any resources
+                     which were acquired over the lifetime of the
+                     transformation.
+
+              read   The operation is called whenever data is read from the
+                     channel.
+
+                     At the time of the call the argument data will contain the
+                     bytes to transform. The result of the call is taken as the
+                     result of the transformation and posted to the next stage
+                     up in the stack of transformation associated with the
+                     channel.
+
+                     This operation has to transform the contents of data, using
+                     whatever data was left over from the last call of the
+                     operation. The transformation is allowed to buffer
+                     incomplete data.
+
+              flush/read
+                     When called data is empty. The operation has to transform
+                     any incomplete data it has buffered internally on the read
+                     side. The result of the call is taken as the result of the
+                     transformation and posted to the next stage up in the stack
+                     of transformation associated with the channel.
+
+              clear/read
+                     When called data is empty. The result of the call is
+                     ignored.
+
+                     The read side of the transformation has to clear its
+                     internal buffers. This operation is called when the user
+                     seeks on the channel, thus invalidating any incomplete
+                     transformation.
+
+              query/maxRead
+                     When called data is empty. The result of the call is
+                     interpreted as integer number. This operation is used by
+                     the generic layer to determine if the transformation
+                     establishes a limit on the number of bytes it (the generic
+                     layer) is allowed read from the transformations lower in
+                     the stack. A negative result unsets any limit.
+
+                     This has to be used if a transformation employs some kind
+                     of end-of-data marker. We cannot allow the generic layer to
+                     overshoot this marker because any data read after it cannot
+                     be stuffed back into the core buffers, causing the I/O
+                     system to loose data if the transformation is unstacked
+                     after it recognized the end of its data. This is a
+                     limitation of the I/O system in the tcl core.
+
+                     Returning a positive value will cause the I/O system to
+                     slow down, but also ensures that no data is lost.
+
+                     Two examples for such transformations are the data
+                     decompressors for zip and bz2. They use the C-level
+                     equivalent of this operation to prevent the overshooting.
+
+SEE ALSO
+       trf-intro
+
+KEYWORDS
+       general transform
+
+COPYRIGHT
+       Copyright (c) 1996-2003, Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+

@@ -1,0 +1,105 @@
+TFTPD(8)                     System Manager's Manual                    TFTPD(8)
+
+NAME
+     tftpd – DARPA Internet Trivial File Transfer Protocol server
+
+SYNOPSIS
+     tftpd [-d] [-g group] [-i] [-l] [-n] [-s directory] [-u user]
+           [directory ...]
+
+DESCRIPTION
+     tftpd is a server which supports the DARPA Trivial File Transfer Protocol.
+     The TFTP server operates at the port indicated in the ‘tftp’ service
+     description; see services(5).  This server should not be started manually;
+     instead, it should be run using launchd(8) using the plist
+     /System/Library/LaunchDaemons/tftp.plist.  It may be started using the
+     launchctl(1) load command; refer to the documentation for that utility for
+     more information.
+
+     The use of tftp(1) does not require an account or password on the remote
+     system.  Due to the lack of authentication information, tftpd will allow
+     only publicly readable files to be accessed.  Filenames beginning in
+     ``../'' or containing ``/../'' are not allowed.  Files may be written to
+     only if they already exist and are publicly writable.
+
+     Note that this extends the concept of "public" to include all users on all
+     hosts that can be reached through the network; this may not be appropriate
+     on all systems, and its implications should be considered before enabling
+     tftp service.  The server should have the user ID with the lowest possible
+     privilege.
+
+     Access to files may be restricted by invoking tftpd with a list of
+     directories by including up to 20 pathnames as server program arguments in
+     /System/Library/LaunchDaemons/tftp.plist.  In this case access is
+     restricted to files whose names are prefixed by the one of the given
+     directories.  The given directories are also treated as a search path for
+     relative filename requests.
+
+     The options are:
+
+     -d         Enable verbose debugging messages to syslogd(8).
+
+     -g group   Change gid to that of group on startup.  If this isn't
+                specified, the gid is set to that of the user specified with -u.
+
+     -i         Enable insecure mode, no realpath(3).
+
+     -l         Logs all requests using syslog(3).
+
+     -n         Suppresses negative acknowledgement of requests for nonexistent
+                relative filenames.
+
+     -s directory
+                tftpd will chroot(2) to directory on startup.  This is
+                recommended for security reasons (so that files other than those
+                in the /tftpboot directory aren't accessible).  If the remote
+                host passes the directory name as part of the file name to
+                transfer, you may have to create a symbolic link from ‘tftpboot’
+                to ‘.’ under /tftpboot.
+
+     -u user    Change uid to that of user on startup.  If -u isn't given, user
+                defaults to “nobody”.  If -g isn't also given, change the gid to
+                that of user as well.
+
+SEE ALSO
+     tftp(1), launchd(8), launchctl(1), launchd.plist(5)
+
+     The TFTP Protocol (Revision 2), RFC, 1350, July 1992.
+
+     TFTP Option Extension, RFC, 2347, May 1998.
+
+     TFTP Blocksize Option, RFC, 2348, May 1998.
+
+     TFTP Timeout Interval and Transfer Size Options, RFC, 2349, May 1998.
+
+HISTORY
+     The tftpd command appeared in 4.2BSD.
+
+     The -s flag appeared in NetBSD 1.0.
+
+     The -g and -u flags appeared in NetBSD 1.4.
+
+     IPv6 support was implemented by WIDE/KAME project in 1999.
+
+     TFTP options were implemented by Wasabi Systems, Inc., in 2003, and first
+     appeared in NetBSD 2.0 .
+
+BUGS
+     Files larger than 33488896 octets (65535 blocks) cannot be transferred
+     without client and server supporting blocksize negotiation (RFCs 2347 and
+     2348).
+
+     Many tftp clients will not transfer files over 16744448 octets (32767
+     blocks).
+
+SECURITY CONSIDERATIONS
+     You are strongly advised to set up tftpd using the -s flag in conjunction
+     with the name of the directory that contains the files that tftpd will
+     serve to remote hosts (e.g., /tftpboot).  This ensures that only the files
+     that should be served to remote hosts can be accessed by them.
+
+     Because there is no user-login or validation within the TFTP protocol, the
+     remote site will probably have some sort of file-access restrictions in
+     place.  The exact methods are specific to each site and therefore difficult
+     to document here.
+

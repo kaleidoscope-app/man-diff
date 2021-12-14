@@ -1,0 +1,1122 @@
+DTRACE(1)                    General Commands Manual                   DTRACE(1)
+
+NAME
+     dtrace – dynamic tracing compiler and tracing utility
+
+SYNOPSIS
+     dtrace [-aACeFhHlqSvVwZ] [-b bufsz] [-c cmd] [-D name [=value]] [-I path]
+            [-L path] [-o output] [-s script] [-U name] [-x arg[=value]]
+            [-p pid] [-P provider [[predicate] action]]
+            [-m [provider:] module [[predicate] action]]
+            [-f [[provider:] module:] function [[predicate] action]]
+            [-n [[[provider:] module:] function:] name [[predicate] action]]
+            [-i probe-id [[predicate] action]] [-W pname]
+
+DESCRIPTION
+     DTrace is a comprehensive dynamic tracing framework ported from Solaris.
+     DTrace provides a powerful infrastructure that permits administrators,
+     developers, and service personnel to concisely answer arbitrary questions
+     about the behavior of the operating system and user programs.
+
+     The dtrace command provides a generic interface to the essential services
+     provided by the DTrace facility, including:
+
+           •   Options that list the set of probes and providers currently
+               published by DTrace
+
+           •   Options that enable probes directly using any of the probe
+               description specifiers (provider, module, function, name)
+
+           •   Options that run the D compiler and compile one or more D program
+               files or programs written directly on the command line
+
+           •   Options that generate anonymous tracing programs
+
+           •   Options that generate program stability reports
+
+           •   Options that modify DTrace tracing and buffering behavior and
+               enable additional D compiler features
+
+     You can use dtrace to create D scripts by using it in a shebang declaration
+     to create an interpreter file.  You can also use dtrace to attempt to
+     compile D programs and determine their properties without actually enabling
+     traces using the -e option.
+
+OPTIONS
+     The arguments accepted by the -P, -m, -f, -n, and -i options can include an
+     optional D language predicate enclosed in slashes and an optional D
+     language action statement list enclosed in braces.  D program code
+     specified on the command line must be appropriately quoted to avoid
+     interpretation of meta-characters by the shell.
+
+     The following options are supported:
+
+     -arch=value
+             Set dtrace target data model.  See arch(1) for a list of currently
+             supported architectures.
+
+     -a      Claim anonymous tracing state and display the traced data.  You can
+             combine the -a option with the -e option to force dtrace to exit
+             immediately after consuming the anonymous tracing state rather than
+             continuing to wait for new data.
+
+     -A      Generate directives for anonymous (at boot) tracing and store them
+             to NVRAM.  This option constructs a set of dtrace configuration
+             file directives to enable the specified probes for anonymous
+             tracing and then exits.  See also -a
+
+     -b bufsz
+             Set the principal trace buffer size to bufsz.  The trace buffer
+             size can include any of the size suffixes k, m, g, or t.  If the
+             buffer space cannot be allocated, dtrace attempts to reduce the
+             buffer size or exit depending on the setting of the bufresize
+             property.
+
+     -c cmd  Run the specified command cmd and exit upon its completion.  If
+             more than one -c option is present on the command line, dtrace
+             exits when all commands have exited, reporting the exit status for
+             each child process as it terminates.  The process ID of the first
+             command is made available to any D programs specified on the
+             command line or using the -s option through the $target macro
+             variable.
+
+     -C      Run the C preprocessor in clang(1) over D programs before compiling
+             them.  You can pass options to the C preprocessor using the -D, -U,
+             -I, and -H options.
+
+     -D name [=value]
+             Define name when invoking clang(1) (enabled using the -C option).
+             If you specify an additional value, the name is assigned the
+             corresponding value.  This option passes the -D option to each
+             clang(1) invocation.
+
+     -e      Exit after compiling any requests and consuming anonymous tracing
+             state (-a option) but prior to enabling any probes.  You can
+             combine this option with the -a option to print anonymous tracing
+             data and exit.  You can also combine this option with D compiler
+             options.  This combination verifies that the programs compile
+             without actually executing them and enabling the corresponding
+             instrumentation.
+
+     -f [[provider:] module:] function [[predicate] action]
+             Specify function name to trace or list (-l option).  The
+             corresponding argument can include any of the probe description
+             forms provider:module:function, module:function, or function.
+             Unspecified probe description fields are left blank and match any
+             probes regardless of the values in those fields.  If no qualifiers
+             other than function are specified in the description, all probes
+             with the corresponding function are matched.  The -f argument can
+             be suffixed with an optional D probe clause.  You can specify more
+             than one -f option on the command line at a time.
+
+     -F      Coalesce trace output by identifying function entry and return.
+             Function entry probe reports are indented and their output is
+             prefixed with ‘->’.  Function return probe reports are unindented
+             and their output is prefixed with ‘<-’.  System call entry probe
+             reports are indented and their output is prefixed with ‘=>’.
+             System call return probe reports are unindented and their output is
+             prefixed with ‘<=’.
+
+     -h      Generate a header file containing macros that correspond to probes
+             in the specified provider definitions.  If the -o option is
+             present, the header file is saved using the pathname specified as
+             the argument for that option.  If the -o option is not present and
+             the DTrace program is contained within a file whose name is
+             filename.d, then the header file is saved using the name
+             filename.h.
+
+     -H      Print the pathnames of included files when invoking clang(1)
+             (enabled using the -C option).  This option passes the -H option to
+             each clang(1) invocation, causing it to display the list of
+             pathnames, one for each line, to standard error.
+
+     -i probe-id [[predicate] action]
+             Specify probe identifier (probe-id) to trace or list (l option).
+             You can specify probe IDs using decimal integers as shown by
+             `dtrace -l`.  The -i argument can be suffixed with an optional D
+             probe clause.  You can specify more than one -i option at a time.
+
+     -I path
+             Add the specified directory path to the search path for #include
+             files when invoking clang(1) (enabled using the -C option).  This
+             option passes the -I option to each clang(1) invocation.  The
+             specified path is inserted into the search path ahead of the
+             default directory list.
+
+     -l      List probes instead of enabling them.  If the -l option is
+             specified, dtrace produces a report of the probes matching the
+             descriptions given using the -P, -m, -f, -n, -i, and -s options.
+             If none of these options are specified, this option lists all
+             probes.
+
+     -L path
+             Add the specified directory path to the search path for DTrace
+             libraries.  DTrace libraries are used to contain common definitions
+             that can be used when writing D programs.  The specified path is
+             added after the default library search path.
+
+     -m [provider:] module [[predicate] action]
+             Specify module name to trace or list (-l option).  The
+             corresponding argument can include any of the probe description
+             forms provider:module or module.  Unspecified probe description
+             fields are left blank and match any probes regardless of the values
+             in those fields.  If no qualifiers other than module are specified
+             in the description, all probes with a corresponding module are
+             matched.  The -m argument can be suffixed with an optional D probe
+             clause.  More than one -m option can be specified on the command
+             line at a time.
+
+     -n [[[provider:] module:] function:] name [[predicate] action]
+             Specify probe name to trace or list (-l option).  The corresponding
+             argument can include any of the probe description forms
+             provider:module:function:name, module:function:name, function:name,
+             or name.  Unspecified probe description fields are left blank and
+             match any probes regardless of the values in those fields.  If no
+             qualifiers other than name are specified in the description, all
+             probes with a corresponding name are matched.  The -n argument can
+             be suffixed with an optional D probe clause.  More than one -n
+             option can be specified on the command line at a time.
+
+     -o output
+             Specify the output file for the -l options, or for the traced data
+             itself.  The default output file is d.out.
+
+     -p pid  Grab the specified process-ID pid, cache its symbol tables, and
+             exit upon its completion.  If more than one -p option is present on
+             the command line, dtrace exits when all commands have exited,
+             reporting the exit status for each process as it terminates.  The
+             first process-ID is made available to any D programs specified on
+             the command line or using the -s option through the $target macro
+             variable.
+
+     -P provider [[predicate] action]
+             Specify provider name to trace or list (-l option).  The remaining
+             probe description fields module, function, and name are left blank
+             and match any probes regardless of the values in those fields.  The
+             -P argument can be suffixed with an optional D probe clause.  You
+             can specify more than one -P option on the command line at a time.
+
+     -q      Set quiet mode.  dtrace suppresses messages such as the number of
+             probes matched by the specified options and D programs and does not
+             print column headers, the CPU ID, the probe ID, or insert newlines
+             into the output.  Only data traced and formatted by D program
+             statements such as ‘dtrace()’ and ‘printf()’ is displayed to
+             standard output.
+
+     -s script
+             Compile the specified D program source file.  If the -e option is
+             present, the program is compiled but instrumentation is not
+             enabled.  If the -l option is present, the program is compiled and
+             the set of probes matched by it is listed, but instrumentation is
+             not enabled.
+
+             If none of -e, -l or -A are present, the instrumentation specified
+             by the D program is enabled and tracing begins.
+
+     -S      Show D compiler intermediate code.  The D compiler produces a
+             report of the intermediate code generated for each D program to
+             standard error.
+
+     -U name
+             Undefine the specified name when invoking clang(1) (enabled using
+             the -C option).  This option passes the -U option to each clang(1)
+             invocation.
+
+     -v      Print an interface stability report for a specified D program or
+             listed probes.  If probes are being listed with -l, report on each
+             probe's description, arguments, and argument types (if available).
+
+     -V      Report the highest D programming interface version supported by
+             dtrace.  The version information is printed to standard output and
+             the dtrace command exits.
+
+     -w      Permit destructive actions in D programs.  Without -w, dtrace will
+             not permit the compilation or enabling of a D program that contains
+             destructive actions.  Even with -w, destructive actions are not
+             allowed if System Integrity Protection is enabled.  See csrutil(8).
+
+     -W pname
+             Wait for the process named pname to launch.  Once it has launched,
+             compile and enable the provided D script.  Upon exit of the
+             process, dtrace exits.  If more than one -W option is present on
+             the command line, dtrace will stop each process immediately after
+             it launches, start tracing when all processes have launched, and
+             exit after all processes have exited.  Only the first-specified
+             process's PID will be available to D programs through the $target
+             macro variable.  Using this option automatically activates the -Z
+             option.
+
+     -x arg[=value]
+             Enable or modify a DTrace runtime option or D compiler option.
+             Boolean options are enabled by specifying their name.  Options with
+             values are set by separating the option name and value with an
+             equals sign (=).  See EXTRA OPTIONS for the exhaustive list of
+             options.
+
+     -Z      Permit probe descriptions that match zero probes.  If the -Z option
+             is not specified, dtrace reports an error and exits if any probe
+             descriptions specified in D program files (-s option) or on the
+             command line (-P, -m, -f, -n, or -i options) contain descriptions
+             that do not match any known probes.
+
+OPERANDS
+     Zero or more additional arguments may be specified on the dtrace command
+     line to define a set of macro variables ($1, $2, and so on) to be used in
+     any D programs specified using the -s option or on the command-line.
+
+C++ MANGLED NAMES
+     By default, dtrace uses the demangled names of C++ symbols. You can tell
+     dtrace to use the mangled symbol names by passing -xmangled to the command.
+
+OBJECTIVE-C PROVIDER
+     The Objective-C provider is similar to the pid provider, and allows
+     instrumentation of Objective-C classes and methods.  Objective-C probe
+     specifiers use the following format:
+
+     objcpid:[class-name[(category-name)]]:[[+|-]method-name]:[name]
+
+     pid     The id number of the process.
+
+     class-name
+             The name of the Objective-C class.
+
+     category-name
+             The name of the category within the Objective-C class.
+
+     method-name
+             The name of the Objective-C method.
+
+     name    The name of the probe, ‘entry’, ‘return’, or an integer instruction
+             offset within the method.
+
+OBJECTIVE-C PROVIDER EXAMPLES
+     objc123:NSString:-*:entry
+             Every instance method of class NSString in process 123.
+
+     objc123:NSString(*)::entry
+             Every method on every category of class NSString in process 123.
+
+     objc123:NSString(foo):+*:entry
+             Every class method in NSString's foo category in process 123.
+
+     objc123::-*:entry
+             Every instance method in every class and category in process 123.
+
+     objc123:NSString(foo):-dealloc:entry
+             The dealloc method in the foo category of class NSString in process
+             123.
+
+     objc123::method?with?many?colons?:entry
+             The method method:with:many:colons: in every class in process 123.
+             (A ?  wildcard must be used to match colon characters inside of
+             Objective-C method names, as they would otherwise be parsed as the
+             provider field separators.)
+
+BUILDING CODE CONTAINING USDT PROBES
+     The process of adding USDT probes to code is slightly different than
+     documented in the Solaris Dynamic Tracing Guide.  The steps for adding
+     probes are as follows:
+
+     1.   Name the provider and specify its probes, using the following form:
+
+          provider Example {
+                  probe increment(int);
+          };
+
+          This defines the Example provider with one probe, increment, that
+          takes a single int argument.  Providers can define multiple probes and
+          probes can take multiple arguments.
+
+     2.   Process the provider description into a header file.
+
+          The provider description must be converted into a form usable by
+          ObjC/C/C++ code.  The dtrace command should be invoked with the -h
+          option to do this.
+
+          dtrace -h -s exampleProvider.d
+
+          This will generate a header file named exampleProvider.h
+
+     3.   Add probe invocations to the application.
+
+          For each probe defined in the provider, the provider.h file will
+          contain two macros.  The naming is as follows:
+
+          PROVIDER_PROBENAME()
+          PROVIDER_PROBENAME_ENABLED()
+
+          In the Example provider, the increment probe becomes:
+
+          EXAMPLE_INCREMENT()
+          EXAMPLE_INCREMENT_ENABLED()
+
+          Place a macro invocation in the code at each site to be traced.  If
+          the arguments passed to a probe are expensive to calculate, you may
+          guard the probe placement like this:
+
+          if (EXAMPLE_INCREMENT_ENABLED()) {
+                  argument = /* Expensive argument calculation code here */;
+                  EXAMPLE_INCREMENT(argument);
+          };
+
+          The if test will only succeed when the increment probe is active.
+
+     4.   Compile and link your program normally.  No additional compiler or
+          linker flags are required.
+
+EXTRA OPTIONS
+     These options can be set by either passing them to -x or be set in dtrace
+     scripts using #pragma D option=value.
+
+   Compile-time options
+     amin=attributes
+             Set the values for the minimum stability attributes for D program
+             execution.  attributes is a tuple of the form
+             name-stability/data-stability/dependency-class.  Valid interface
+             and data stability attribute values are:
+
+                   •   Internal: interfaces to dtrace implementation details.
+                       These interfaces might change between minor releases.
+
+                   •   Private: interfaces to undocumented operating system
+                       implementation details.  Might change between minor
+                       releases.
+
+                   •   Obsolete: interfaces to currently-supported features
+                       which are scheduled to be removed in a future release.
+
+                   •   External: interfaces to features not controlled by the
+                       operating system vendor.
+
+                   •   Unstable: interfaces which may change without warning.
+
+                   •   Evolving: may become Standard or Stable but may still
+                       change in a future major release.
+
+                   •   Stable: Mature interface which should not change.
+
+                   •   Standard: Complies with an industry standard and will not
+                       change.
+
+     arch=value
+             Set the target data model.  See arch(1) for a list of currently
+             supported architectures.  Has the same effect as the -arch option.
+
+     argref  Ignore additional positional command-line arguments instead of
+             reporting an error.
+
+     core    After execution is complete, cause dtrace to call abort(3) instead
+             of exit(3).  On some systems, this will create a core dump.
+
+     cpp     Run the C preprocessor in clang(1) over D programs before compiling
+             them.  Has the same effect as the -C option.
+
+     cpphdrs
+             Specify the -H option to clang(1) to print the name of each header
+             file used.
+
+     cpppath=path
+             Sets the path of the clang(1) preprocessor
+
+     ctypes=path
+             Write out CTF definitions of all C types used in all programs at
+             the end of a D compilation run in path.
+
+     debug   Enable DTrace debug messages.
+
+     defaultargs
+             Allow references to unspecified macro arguments.  Use 0 as the
+             value for an unspecified argument.
+
+     define  Adds an implicit #define into the predefines buffer of the
+             preprocessor.  Has the same effect as the -D option.
+
+     disallow_dsym
+             Do not use dSYM files for userspace symbolication.
+
+     droptags
+             Prints drop tags, [DTRACE_DROP_$TYPE] values describing drop types,
+             to the drop tags handler (by default, to stderr).
+
+     empty   Allow compilation of empty D files.
+
+     encoding=[ascii|utf8]
+             Sets the encoding used for output.  utf8 will show Unicode block
+             elements for histograms.
+
+     errtags
+             Prefix default error message with error tags.
+
+     evaltime=[preinit|postinit]
+             Control when DTrace starts instrumenting a new process, before or
+             after library initializers have run.
+
+     incdir=value
+             Add the specified directory to the search path for includes files
+             in the preprocessor.
+
+     iregs=value
+             Size of the DIF (DTrace Intermediate Format) integer register set.
+             The default value is 8.
+
+     late=[dynamic|static]
+             Sets whether references to dynamic translators are allowed.
+
+     libdir=path
+             Add a library directory in the library search path.
+
+     mangled
+             Show mangled symbols for C++/Swift probes instead of demangled
+             symbols.
+
+     nolibs  Do not include D system libraries. Prevents access to dtrace system
+             library identifiers but speeds up DTrace launch.
+
+     nojtanalysis
+             Disable jump table analysis.  The default behavior of the pid
+             provider is to not provide ‘return’ or offset probes for functions
+             which appear to contain jump tables.  "Jump tables are often
+             generated for switch statements." Disabling jump table analysis can
+             lead to inappropriately placed probes, data corruption, or even
+             crashes in the target process.
+
+     noerror
+             Do not show error messages.
+
+     pgmax=value
+             Sets the maximum number of processes DTrace can grab at the same
+             time.  Default value is 8.
+
+     preallocate=value[k|m]
+             Preallocate memory in dtrace before running the script.
+
+     pspec   Interpret ambiguous specifiers as probe names.
+
+     setenv=name=value
+             Adds the variable name to the environment of launched processes, if
+             name does not already exists. If name does exist in the
+             environment, then its value is set to value
+
+     strip   Strip non-loadable sections from the D program.
+
+     tree=value
+             Bitmap to show the dtrace compiler parse tree at different stages
+             (1|2|4).
+
+     tregs=value
+             Size of the DIF tuple register set.  This controls the number of
+             arguments that can be passed to functions.  Default value is 8.
+
+     undef=value
+             Adds an implicit #undef value into the predefines buffer of the
+             preprocessor.
+
+     unsetenv=name
+             Delete the variable name from the environment of launched processes
+             if it exists.
+
+     verbose
+             Show D compiler intermediate code (DIFO).  The D compiler will
+             produce a report of the intermediate code generated for each D
+             program to stderr(4) Has the same effect as the -S option.
+
+     version
+             Request a specific version of the DTrace scripting language.  This
+             will disable all identifiers / translators / functions that are
+             from a newer version than the specified version.
+
+     zdefs   Permit probe descriptions that match zero probes.  Has the same
+             effect as the -Z option.
+
+   Run-time Options
+     aggsize=value [m|k]
+             Sets the aggregation buffer size in bytes, kibi or mebibytes.
+
+     bufsize=value[m|k]
+             Sets the principal trace buffer size.  Has the same effect as the
+             -b option.
+
+     buflimit=1-99
+             Threshold percentage of buffer size at which early buffer switches
+             will be done.  75% is the default.
+
+     bufpolicy=[ring|fill|switch]
+             Sets the buffer policy. The default buffer policy is switch.
+
+     bufresize=[auto|manual]
+             Sets whether the per-CPU buffer size can be halved when the kernel
+             cannot allocate enough memory.  Auto is the default value.
+
+     cleanrate=value[ns|us|ms|s|m|h|d|hz]
+             Cleaning rate for speculative buffers.
+
+     cpu=value
+             CPU on which to enable tracing.
+
+     destructive
+             Allow destructive actions.  Has the same effect as the -w option.
+
+     dynvarsize=value
+             Dynamic variable space size.
+
+     grabanon
+             Claim anonymous tracing state and display the trace data.  Has the
+             same effect as the -a option.
+
+     nspec=value
+             Number of speculative buffers.
+
+     specsize=value[k|m]
+             Speculation buffer size.
+
+     stackframes=value
+             Number of stack frames shown for kernel backtraces.
+
+     statusrate=value[ns|us|ms|s|m|h|d|hz]
+             Rate at which user space dtrace will poll the kernel for status.
+
+     strsize=maxStringSize
+             Maximum string size.
+
+     temporal=[true|false]
+             Sort events so that output is in time order. Defaults to true.
+
+     ustackframes=frameCount
+             Number of stack frames shown for userspace backtraces.
+
+   Dynamic Run-time Options
+     agghist=file ... [true|false]
+             Shows a histogram for all aggregations.
+
+     aggpack
+             Pack aggregations together, only showing one line per aggregation.
+
+     aggrate=value[us|ms|s|m|h|d|hz]
+             Sets the aggregation buffer retrieval rate.
+
+     aggsortkey
+             Sort aggregation by key order with ties broken by value.
+
+     aggsortkeypos=value
+             Position of the aggregate key on which the output is sorted.
+
+     aggsortpos=value
+             Position in the argument in the aggregate function on which the
+             output is sorted.
+
+     aggsortrev
+             Sort aggregations in reverse order.
+
+     aggzoom
+             Scales the height of bars in histograms in proportion of the bucket
+             of greatest value instead of the full height of the histogram.
+
+     flowindent
+             Indent function entry/returns with -> / <-. Has the same effect as
+             the -F option.
+
+     quiet   Output only explicitly traced data. Has the same effect as the -q
+             option.
+
+     rawbytes
+             Always print tracemem output in hexadecimal.
+
+     stackindent
+             Number of white space characters to use when indenting stack() or
+             ustack() output.
+
+     stacksymbols=frameCount[true|false]
+             Whether stack symbols are symbolicated or not. Defaults to true.
+
+     switchrate=value[ns|us|ms|s|m|h|d|hz]
+             Rate of principal buffer switching.
+
+SUPPORTED BUILT-IN VARIABLES
+     dtrace supplies the following built-in, read-only variables.
+
+     uint64_t arg0-arg9
+         Arguments of the current probe invocation represented as unsigned
+         64-bit integers.  In the ‘entry’ probe actions of the syscall,
+         mach_trap, fbt, and pid providers, these variables contain the traced
+         function's arguments.  In the ‘return’ probe actions of the fbt and pid
+         providers, arg0 contains the instruction offset (into the function)
+         from which the function returned and arg1 contains the function's
+         return value.  In the ‘return’ probe actions of the syscall and
+         mach_trap providers, both arg0 and arg1 are set to the function's
+         return value.  The profile and tick providers set arg1 to the address
+         of the instruction that was running when the action fired.
+
+     args[]
+         Typed arguments of the current probe, if available.  See -v.
+
+     uint64_t caller
+         The kernel address of the instruction that called the current function.
+         As DTrace actions are always called from kernel context, this variable
+         is non-zero even when probes are triggered from user space.
+
+     processorid_t cpu
+         Integer identifier of the logical CPU on which this probe action
+         triggered.
+
+     uint64_t cpucycles (Darwin-specific)
+         Number of CPU cycles elapsed on the current CPU.  See also vcycles.
+
+     uint64_t cpuinstrs (Darwin-specific)
+         Number of instructions "retired" by the current logical CPU, if
+         available.  This count excludes instructions speculatively issued by
+         the processor which didn't actually need to be executed.  See also
+         vinstrs.
+
+     thread_t curthread
+         Address of the OS thread structure corresponding to the thread which
+         triggered the current probe action.
+
+     user_addr_t dispatchqaddr (Darwin-specific)
+         If the probe action was triggered from a user space context which
+         included a dispatch queue, the address of that queue.
+
+     uint_t id
+         The current probe's unique identifier within the currently running OS,
+         as shown with -l.
+
+     uint_t epid
+         A unique identifier representing the current probe action's enablement
+         within the current D program.  An action can match multiple probes.
+
+     int errno
+         Error value returned by the last system call performed on the current
+         thread.
+
+     string execname
+         Current process name.
+
+     gid_t gid
+         Primary group ID of the current process.
+
+     uint_t ipl
+         Current interrupt level.  On Darwin, either 0 or 1.
+
+     uint64_t machtimestamp (Darwin-specific)
+         Current mach_absolute_time() timestamp.
+
+     uint64_t machctimestamp (Darwin-specific)
+         Current mach_continuous_time() timestamp.
+
+     pid_t pid
+         Process ID of the current process.
+
+     pid_t ppid
+         Parent process ID of the current process.
+
+     string probeprov, probemod, probefunc, probename
+         Respectively, the names of the current probe's provider, module,
+         function, and name.  See -n.
+
+     uint32_t stackdepth
+         Number of kernel-mode stack frames on the current thread.
+
+     id_t tid
+         Thread ID of the current thread.
+
+     uint64_t timestamp
+         Current value in nanoseconds from some system-wide fixed point in the
+         past.
+
+     uid_t uid
+         User ID of the current process.
+
+     uint64_t ucaller
+         The user space address from which the currently-running function was
+         called, or zero if the function was called from the kernel.
+
+     uint32_t ustackdepth
+         Number of user space stack frames on the current thread.
+
+     uint64_t uregs[]
+         The current thread's register values immediately prior to the last
+         transition from user to kernel execution.  /usr/lib/dtrace/regs*
+         provides constants for the indices of each register's value in the
+         array.
+
+     uint64_t vmregs[]
+         The current virtual machine registers if available.
+
+     uint64_t vcycles (Darwin-specific)
+         Number of CPU cycles elapsed while running the current thread.  This
+         value includes cycles elapsed while processing interrupts with this
+         thread.  See also cpucycles.
+
+     uint64_t vinstrs (Darwin-specific)
+         Number of instructions retired by the current thread, if available.
+         This value includes instructions retired while processing interrupts
+         with this thread.  See also cpuinstrs.
+
+     uint64_t vtimestamp
+         Time in nanoseconds that the current thread has spent running on any
+         CPU.
+
+     uint64_t walltimestamp
+         Current number of nanoseconds since the Unix Epoch (00:00 UTC January
+         1st, 1970).
+
+SUPPORTED SUBROUTINES
+     D subroutines can only effect internal D program state.  Many D subroutines
+     have no effects outside the current D program clause.
+
+     const char* arguments accept either D string objects or pointers to C
+     strings.  C strings are assumed to be terminated with a NUL (0) byte.
+     DTrace pointers refer to kernel virtual address space unless otherwise
+     indicated.
+
+     A number of DTrace's subroutines return scratch objects.  These scratch
+     objects are only valid for the current invocation of the immediately-
+     enclosing D program clause.
+
+     void* alloca(size_t* nbytes)
+         Create a new nbytes-sized scratch buffer.
+
+     string basename(const char* pathstr)
+         Copy the last ‘/’-delimited component of pathstr into a new scratch
+         string.
+
+     void bcopy(void* src, void* scratch, size_t size)
+         Copy size bytes from address src to the existing scratch buffer
+         scratch.
+
+     string cleanpath(const char* pathstr)
+         Copy a canonical representation of pathstr into a new scratch string.
+         The resulting string will not contain any unnecessary or redundant ‘./’
+         or ‘../’ substrings.
+
+     void* copyin(user_addr_t src, size_t size)
+         Copy size bytes from the current user space address src to a new
+         scratch buffer.
+
+     string copyinstr(user_addr_t src, [size_t maxchars])
+         Copy a NUL-terminated C string from the current user space address src
+         into a new scratch string. If maxchars is specified, it will limit the
+         total number of characters that can be copied.  If it is not specified,
+         the run-time option strsize will limit the maximum number of characters
+         copied.
+
+     void copyinto(user_addr_t src, size_t size, void *scratch)
+         Copy size bytes from the current user space address src to the existing
+         scratch buffer scratch.
+
+     string dirname(const char *pathstr)
+         Copy all but the last ‘/’-delimited component of pathstr into a new
+         scratch string.
+
+     major_t getmajor(dev_t dev)
+         Extract the major device number for dev.
+
+     minor_t getminor(dev_t dev)
+         Extract the minor device number for dev.
+
+     uint32_t htonl(uint32_t hostlong)
+         Convert hostlong from host byte order to network byte order.
+
+     uint64_t htonll(uint64_t hostlonglong)
+         Convert hostlonglong from host byte order to network byte order.
+
+     uint16_t htons(uint16_t hostshort)
+         Convert hostshort from host byte order to network byte order.
+
+     int index(const char* str, const char* searchstr, [int start])
+         Return the character offset of the first occurrence of searchstr within
+         str, optionally starting the search at character offset start.
+
+     int rindex(const char* str, const char* searchstr, [int start])
+         Return the character offset of the last occurrence of the C string
+         searchstr within str, optionally starting the reverse-search at
+         character offset start.
+
+     string inet_ntoa(uint32_t* addr)
+         Create a scratch string representing the IPv4 address pointed to by
+         addr in dotted-decimal notation.
+
+     string inet_ntoa6(struct in6_addr* addr)
+         Create a scratch string representing the IPv6 address pointed to by
+         addr in zero-compressed double-colon hexadecimal notation (specifically
+         RFC 1884 convention 2).
+
+     string inet_ntop(int addrfamily, void *addr)
+         Create a scratch string representing the IP address of type addrfamily
+         pointed to by addr.  Valid values for addrfamily are AF_INET and
+         AF_INET6.
+
+     string json(string payload, string selector)
+         Extract a single value represented by selector from a JSON object
+         stored in payload.  Element selectors support:
+
+               •   Simple strings for keys, for example key
+
+               •   dot-separated keys for nested objects, for example object.key
+
+               •   Array indexing, for example object.key[2].anotherkey
+
+     string lltostr(int64_t val, [int baseN])
+         Create a scratch string representing val in base baseN notation.
+
+     uint32_t ntohl(uint32_t netlong)
+         Convert netlong from network byte order to host byte order.
+
+     uint64_t ntohll(uint64_t netlonglong)
+         Convert netlonglong from network byte order to host byte order.
+
+     uint16_t ntohs(uint16_t netshort)
+         Convert netshort from network byte order to host byte order.
+
+     int progenyof(pid_t pid)
+         Return non-zero if the calling process has a chain of parent processes
+         leading to pid.
+
+     int rand()
+         Return a positive pseudo-random number.  It is easy to predict these
+         numbers so they should not be used for cryptographic purposes.
+
+     int speculation()
+         Create a speculative buffer for use with speculate(), returning the
+         buffer's identifier.  See also commit().
+
+     string strchr(const char* str, char c)
+         If str contains c, copy the characters starting at the first occurrence
+         of c and ending at the end of str into a new scratch string.  If c is
+         not present, return NULL.
+
+     void* strip(void *ptr, uint8_t key)
+         On platforms that support encoded pointers, strips the pointer
+         authentication bits from ptr to produce a valid pointer. Valid values
+         for key can be found in ptrauth.h.
+
+     string strrchr(const char* str, char c)
+         Like strchr(), but start from the last occurrence of c.
+
+     size_t strlen(const char* str)
+         Calculate the length of str in bytes.
+
+     string strjoin(const char* str1, const char* str2)
+         Concatenate str1 and str2 into a new scratch string.
+
+     int64_t strtoll(const char *str, [int base])
+         Converts str into a signed integer, interpreted as base base if
+         provided, at base 10 otherwise.
+
+     string strstr(const char* str, const char* prefix)
+         If str contains prefix, copy the characters from prefix to the end of
+         the string into a new scratch string.  If prefix is not present, return
+         NULL.
+
+     string strtok(const char* str, const char *delimchars)
+         Like strtok(3), split str into multiple substrings, splitting on any of
+         the characters in delimchars.  If the str is non-NULL, return the first
+         token.  If str is non-NULL, return the next token from the most
+         recently provided string.  delimchars can be changed in subsequent
+         calls.  If no characters from delimchars are present whatever portion
+         of str has not yet been tokenized, return NULL.
+
+     string substr(const char* str, int start, [int length])
+         Copy the characters in str from character offset start through the end
+         of the string into a new scratch string.  length can be used to limit
+         the number of characters copied to the new string.
+
+     string tolower(const char *str)
+         Copy str into a new scratch string, replacing all uppercase letters
+         with their lowercase equivalents.
+
+     uint64_t mtons(uint64_t time) (Darwin-specific)
+         Convert time from either machtimestamp or machctimestamp, into
+         nanoseconds.
+
+     string toupper(const char* str)
+         Copy str into a new scratch string, replacing all lowercase letters
+         with their uppercase equivalents.
+
+     void* vm_kernel_addrperm(void* addr) (Darwin-specific)
+         Calculate the unpermuted (or "unslid") address corresponding to the raw
+         kernel address addr.  By default, DTrace uses, traces, and prints raw
+         kernel addresses.  Unpermuted addresses will correspond with other
+         user-visible addresses such as those shown in kextstat(8).  With
+         default System Integrity Protection settings, D programs are not
+         permitted to access kernel address values or kernel memory contents.
+         csrutil(8) can be used to change the settings.
+
+SUPPORTED ACTIONS
+     DTrace actions allow a D program to interact with the running system.  The
+     most benign actions record data to a DTrace buffer.  Destructive actions
+     have effects on the system and must be enabled with -w.
+
+     void* pointers may refer to either D scratch buffers or kernel virtual
+     addresses.
+
+     void breakpoint() (destructive)
+         Stop the kernel and wait for a debugger.
+
+     void chill(int nsecs) (destructive)
+         Spin inside DTrace for the specified number of nanoseconds.  If this
+         action is asked to spin for more than 500ms out of every second of wall
+         clock time, an error will be reported.
+
+     void clear(@aggr)
+         Clear all values in @aggr.  The keys are retained.  See also trunc().
+
+     void commit(int specid)
+         Copy the contents of the speculative buffer specid to the main tracing
+         buffer.
+
+     void copyout(void *src, user_addr_t *dst, size_t size) (destructive)
+         Copy size bytes from the buffer src into the current address space
+         address dst.
+
+     void copyoutstr(void *src, user_addr_t *dst, size_t maxbytes) (destructive)
+         Copy a NUL-terminated C string from src to the current user address
+         space address dst, copying no more than maxbytes.
+
+     void discard(int specid)
+         Discard the speculative buffer specid.
+
+     void exit(int status)
+         Stop tracing, cause dtrace to print any final results, and exit with
+         status.
+
+     void freopen(const char* path) (destructive)
+         Open path and associate it with dtrace's standard output (closing any
+         previously-associated file).
+
+     void ftruncate()
+         Truncate dtrace's stdout.
+
+     void kdebug_trace(uint32_t debugid, [uint64_t arg1], [uint64_t arg2],
+         [uint64_t arg3], [uint64_t arg4])
+         (destructive, Darwin-specific)
+         Emit an event to kdebug trace; arguments are optional and default to
+         zero.  debugid is a four-part bit field definied in sys/kdebug.h.
+
+     void kdebug_trace_string(uint32_t debugid, uint64_t str_id, const char*
+         str)
+         (destructive, Darwin-specific)
+         Emit a string identified with str_id to kdebug trace.  debugid is the
+         same as for kdebug_trace().
+
+     _symaddr func(user_addr_t addr)
+         Print the symbol name corresponding to the kernel address addr.
+
+     _symaddr mod(user_addr_t addr)
+         Print the module name corresponding to the kernel address addr.
+
+     void normalize(@aggr, int factor)
+         When @aggr is traced, all of its values will be divided by factor.
+
+     void denormalize(@aggr)
+         Remove any normalization factor from @aggr.  Tracing this aggregation
+         will return the total counts.
+
+     void panic() (destructive)
+         Panic the kernel with a generic message.
+
+     void print(expression)
+         Pretty-print expression inculding types and internal data structure.  A
+         newline will be included.
+
+     void printa([Ft string format], @aggr)
+         Pretty-print @aggr.  format can refer to the aggregation's keys in
+         order.  The aggregation's value can be accessed with the flag ‘@’.  For
+         example, to print just aggregations values, one per line
+               printa("%@u\n", @a);
+
+     void printf(string format, ...)
+         Print a custom-formatted string like printf(3).
+
+     void raise(int signum) (destructive)
+         Send signum to the current process.
+
+     void setopt(const char* option, [const char* value])
+         Set a dynamic run-time option.  See Dynamic Run-time Options.
+
+     void speculate(int specid)
+         Set the speculative buffer specid as the destination for all further
+         tracing in the current D program clause.
+
+     stack stack([int nframes])
+         Record a kernel stack trace up to nframes deep.  If nframes is not
+         specified, record up to stackframes frames.  See also Run-time Options.
+
+     void stop() (destructive)
+         Stop the current user process.
+
+     void pidresume(pid_t pid) (destructive, Darwin-specific)
+         Resume the process specified by pid.  See also stop() and raise().
+
+     _symaddr sym(user_addr_t addr)
+         Print the symbol name for the kernel address addr.
+
+     void system(string program, ...) (destructive)
+         Spawn program with any provided arguments in the same environment as
+         dtrace.
+
+     void trace(expression)
+         Print expression.  No newline is emitted.
+
+     void tracemem(addr, size_t nbytes)
+         Print a hexidecimal representation of nbytes starting at the kernel
+         address addr.
+
+     void trunc(@aggr, [topn])
+         Discard keys and their corresponding values from @aggr, optionally
+         preserving the topn values and their corresponding keys.
+
+     _usymaddr uaddr(user_addr_t addr)
+         If available, pretty-print symbol information about the current user
+         space address addr.  This information will include applicable module,
+         function, and symbol names, as well as offsets into functions for code.
+         If not available or applicable, just print addr.
+
+     _usymaddr usym(user_addr_t addr)
+         If available, print the name of the symbol representing addr in the
+         current process's user address space.  Otherwise, print addr.
+
+     _usymaddr ufunc(user_addr_t addr)
+         If addr is within the boundaries of a known function in the current
+         user space process, print the name of the function.  Otherwise, print
+         addr.
+
+     _usymaddr umod(user_addr_t addr)
+         If addr is within the boundaries of a known module in the current user
+         space process, print the name of the module.  Otherwise, print addr.
+
+     stack ustack([int nframes])
+         Record a user stack trace up to nframes deep.  If nframes isn't
+         specified, record up to ustackframes frames.  See also Run-time
+         Options.
+
+EXIT STATUS
+     The following exit statuses are returned:
+
+     0       Successful completion.
+
+             For D program requests, an exit status of 0 indicates that programs
+             were successfully compiled, probes were successfully enabled, or
+             anonymous state was successfully retrieved.  dtrace returns 0 even
+             if the specified tracing requests encountered errors or drops.
+
+     1       An error occurred.
+
+             For D program requests, an exit status of 1 indicates that program
+             compilation failed or that the specified request could not be
+             satisfied.
+
+     2       Invalid command line options or arguments were specified.
+
+SEE ALSO
+     clang(1), bitesize.d(1m), cpuwalk.d(1m), csrutil(8), diskhits(1m),
+     dtruss(1m), errinfo(1m), execsnoop(1m), iofile.d(1m), iofileb.d(1m),
+     iopattern.d(1m), iopending.d(1m), iosnoop(1m), iotop(1m), kill.d(1m),
+     lastwords(1m), newproc.d(1m), opensnoop(1m)
+
+     How to Use Oracle Solaris DTrace from Oracle Solaris and OpenSolaris
+     System, Oracle Corporation, 2010, http://www.oracle.com/technetwork/server-
+     storage/solaris10/solaris-dtrace-wp-167895.pdf.
+
+     Solaris Dynamic Tracing Guide, Oracle Corporation, 2010,
+     http://docs.oracle.com/cd/E19253-01/817-6223/.
+

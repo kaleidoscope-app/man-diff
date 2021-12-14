@@ -1,0 +1,308 @@
+PING6(8)                     System Manager's Manual                    PING6(8)
+
+NAME
+     ping6 – send ICMPv6 ECHO_REQUEST packets to network hosts
+
+SYNOPSIS
+     ping6 [-CDdfHmnNoqtvwW] [-a addrtype] [-b bufsiz] [-B boundif] [-c count]
+           [-G sweepmaxsize[,sweepminsize[,sweepincrsize]]] [-g gateway]
+           [-G sweep] [-h hoplimit] [-I interface] [-i wait] [-k trafficclass]
+           [-K netservicetype] [-l preload] [-P policy] [-p pattern]
+           [-S sourceaddr] [-s packetsize] [-z tclass] [--apple-connect]
+           [--apple-time] [hops ...] host
+
+DESCRIPTION
+     The ping6 utility uses the ICMPv6 protocol's mandatory ICMP6_ECHO_REQUEST
+     datagram to elicit an ICMP6_ECHO_REPLY from a host or gateway.
+     ICMP6_ECHO_REQUEST datagrams (``pings'') have an IPv6 header, and ICMPv6
+     header formatted as documented in RFC2463.  The options are as follows:
+
+     -a addrtype
+             Generate ICMPv6 Node Information Node Addresses query, rather than
+             echo-request.  addrtype must be a string constructed of the
+             following characters.
+             a       requests unicast addresses from all of the responder's
+                     interfaces.  If the character is omitted, only those
+                     addresses which belong to the interface which has the
+                     responder's address are requests.
+             c       requests responder's IPv4-compatible and IPv4-mapped
+                     addresses.
+             g       requests responder's global-scope addresses.
+             s       requests responder's site-local addresses.
+             l       requests responder's link-local addresses.
+             A       requests responder's anycast addresses.  Without this
+                     character, the responder will return unicast addresses
+                     only.  With this character, the responder will return
+                     anycast addresses only.  Note that the specification does
+                     not specify how to get responder's anycast addresses.  This
+                     is an experimental option.
+
+     -b bufsiz
+             Set socket buffer size.
+
+     -B boundif
+             Bind the socket to interface This option is an Apple addition.
+             boundif for sending.
+
+     -C      Prohibit the socket from using the cellular network interface.
+
+     -c count
+             Stop after sending (and receiving) count ECHO_RESPONSE packets.  If
+             this option is specified in conjunction with ping sweeps, each
+             sweep will consist of count packets.
+
+     -D      Disable IPv6 fragmentation.
+
+     -d      Set the SO_DEBUG option on the socket being used.
+
+     -f      Flood ping.  Outputs packets as fast as they come back or one
+             hundred times per second, whichever is more.  For every
+             ECHO_REQUEST sent a period “.” is printed, while for every
+             ECHO_REPLY received a backspace is printed.  This provides a rapid
+             display of how many packets are being dropped.  Only the super-user
+             may use this option.  This can be very hard on a network and should
+             be used with caution.
+
+     -G sweepmaxsize[,sweepminsize[,sweepincrsize]]
+             sweepmaxsize specifies the maximum size of the payload when sending
+             sweeping pings and is required for sweeps.  sweepminsize specifies
+             the size of the payload to start with when sending sweeping pings
+             -- the default value is 0.  sweepincrsize specifies the number of
+             bytes to increment the size of the payload after each sweep when
+             sending sweeping pings -- the default value is 1.  This option is
+             an Apple addition.
+
+     -g gateway
+             Specifies to use gateway as the next hop to the destination.  The
+             gateway must be a neighbor of the sending node.
+
+     -H      Specifies to try reverse-lookup of IPv6 addresses.  The ping6
+             utility does not try reverse-lookup unless the option is specified.
+
+     -h hoplimit
+             Set the IPv6 hoplimit.
+
+     -I interface
+             Source packets with the given interface address.  This flag applies
+             if the ping destination is a multicast address, or link-local/site-
+             local unicast address.
+
+     -i wait
+             Wait wait seconds between sending each packet.  The default is to
+             wait for one second between each packet.  The wait time may be
+             fractional, but only the super-user may specify values less than
+             0.1 second.  This option is incompatible with the -f option.
+
+     -k trafficclass
+             Specifies the traffic class to use for sending ICMPv6 packets.  The
+             supported traffic classes are BK_SYS, BK, BE, RD, OAM, AV, RV, VI,
+             VO and CTL.  By default ping6 uses the control traffic class (CTL).
+             This option is an Apple addition.
+
+     -K netservicetype
+             Specifies the network service type to use for sending ICMPv6
+             packets.  The supported network service type are BK_SYS, BK, BE,
+             RV, AV, RD, OAM, VI, SIG and VO.  Note this overrides the default
+             traffic class (-k can still be specified after -K to use both).
+             This option is an Apple addition.
+
+     -l preload
+             If preload is specified, ping6 sends that many packets as fast as
+             possible before falling into its normal mode of behavior.  Only the
+             super-user may use this option.
+
+     -m      By default, ping6 asks the kernel to fragment packets to fit into
+             the minimum IPv6 MTU.  The -m option will suppress the behavior in
+             the following two levels: when the option is specified once, the
+             behavior will be disabled for unicast packets.  When the option is
+             more than once, it will be disabled for both unicast and multicast
+             packets.
+
+     -n      Numeric output only.  No attempt will be made to lookup symbolic
+             names from addresses in the reply.
+
+     -N      Probe node information multicast group (ff02::2:xxxx:xxxx).  host
+             must be string hostname of the target (must not be a numeric IPv6
+             address).  Node information multicast group will be computed based
+             on given host, and will be used as the final destination.  Since
+             node information multicast group is a link-local multicast group,
+             outgoing interface needs to be specified by -I option.
+
+     -o      Exit successfully after receiving one reply packet.
+
+     -p pattern
+             You may specify up to 16 “pad” bytes to fill out the packet you
+             send.  This is useful for diagnosing data-dependent problems in a
+             network.  For example, “-p ff” will cause the sent packet to be
+             filled with all ones.
+
+     -P policy
+             policy specifies IPsec policy to be used for the probe.
+
+     -q      Quiet output.  Nothing is displayed except the summary lines at
+             startup time and when finished.
+
+     -r      Audible.  Include a bell (ASCII 0x07) character in the output when
+             any packet is received.
+
+     -R      Audible.  Output a bell (ASCII 0x07) character when no packet is
+             received before the next packet is transmitted.  To cater for
+             round-trip times that are longer than the interval between
+             transmissions, further missing packets cause a bell only if the
+             maximum number of unreceived packets has increased.
+
+     -S sourceaddr
+             Specifies the source address of request packets.  The source
+             address must be one of the unicast addresses of the sending node,
+             and must be numeric.
+
+     -s packetsize
+             Specifies the number of data bytes to be sent.  The default is 56,
+             which translates into 64 ICMP data bytes when combined with the 8
+             bytes of ICMP header data.  You may need to specify -b as well to
+             extend socket buffer size.
+
+     -t      Generate ICMPv6 Node Information supported query types query,
+             rather than echo-request.  -s has no effect if -t is specified.
+
+     -v      Verbose output.  ICMP packets other than ECHO_RESPONSE that are
+             received are listed.
+
+     -w      Generate ICMPv6 Node Information DNS Name query, rather than echo-
+             request.  -s has no effect if -w is specified.
+
+     -W      Same as -w, but with old packet format based on 03 draft.  This
+             option is present for backward compatibility.  -s has no effect if
+             -w is specified.
+
+     -z tclass
+             Use the specified traffic class.
+
+     --apple-connect
+             Connects the socket to the destination address.  This option is an
+             Apple addition.
+
+     --apple-time
+             Prints the time a packet was received.  This option is an Apple
+             addition.
+
+     hops    IPv6 addresses for intermediate nodes, which will be put into type
+             0 routing header.
+
+     host    IPv6 address of the final destination node.
+
+     When using ping6 for fault isolation, it should first be run on the local
+     host, to verify that the local network interface is up and running.  Then,
+     hosts and gateways further and further away should be “pinged”.  Round-trip
+     times and packet loss statistics are computed.  If duplicate packets are
+     received, they are not included in the packet loss calculation, although
+     the round trip time of these packets is used in calculating the round-trip
+     time statistics.  When the specified number of packets have been sent (and
+     received) or if the program is terminated with a SIGINT, a brief summary is
+     displayed, showing the number of packets sent and received, and the
+     minimum, mean, maximum, and standard deviation of the round-trip times.
+
+     If ping6 receives a SIGINFO (see the status argument for stty(1)) signal,
+     the current number of packets sent and received, and the minimum, mean,
+     maximum, and standard deviation of the round-trip times will be written to
+     the standard output in the same format as the standard completion message.
+
+     This program is intended for use in network testing, measurement and
+     management.  Because of the load it can impose on the network, it is unwise
+     to use ping6 during normal operations or from automated scripts.
+
+DUPLICATE AND DAMAGED PACKETS
+     The ping6 utility will report duplicate and damaged packets.  Duplicate
+     packets should never occur when pinging a unicast address, and seem to be
+     caused by inappropriate link-level retransmissions.  Duplicates may occur
+     in many situations and are rarely (if ever) a good sign, although the
+     presence of low levels of duplicates may not always be cause for alarm.
+     Duplicates are expected when pinging a broadcast or multicast address,
+     since they are not really duplicates but replies from different hosts to
+     the same request.
+
+     Damaged packets are obviously serious cause for alarm and often indicate
+     broken hardware somewhere in the ping6 packet's path (in the network or in
+     the hosts).
+
+TRYING DIFFERENT DATA PATTERNS
+     The (inter)network layer should never treat packets differently depending
+     on the data contained in the data portion.  Unfortunately, data-dependent
+     problems have been known to sneak into networks and remain undetected for
+     long periods of time.  In many cases the particular pattern that will have
+     problems is something that does not have sufficient “transitions”, such as
+     all ones or all zeros, or a pattern right at the edge, such as almost all
+     zeros.  It is not necessarily enough to specify a data pattern of all zeros
+     (for example) on the command line because the pattern that is of interest
+     is at the data link level, and the relationship between what you type and
+     what the controllers transmit can be complicated.
+
+     This means that if you have a data-dependent problem you will probably have
+     to do a lot of testing to find it.  If you are lucky, you may manage to
+     find a file that either cannot be sent across your network or that takes
+     much longer to transfer than other similar length files.  You can then
+     examine this file for repeated patterns that you can test using the -p
+     option of ping6.
+
+EXIT STATUS
+     The ping6 utility returns 0 on success (the host is alive), 2 if the
+     transmission was successful but no responses were received, any other non-
+     zero value if the arguments are incorrect or another error has occurred.
+
+EXAMPLES
+     Normally, ping6 works just like ping(8) would work; the following will send
+     ICMPv6 echo request to dst.foo.com.
+
+           ping6 -n dst.foo.com
+
+     The following will probe hostnames for all nodes on the network link
+     attached to wi0 interface.  The address ff02::1 is named the link-local
+     all-node multicast address, and the packet would reach every node on the
+     network link.
+
+           ping6 -w ff02::1%wi0
+
+     The following will probe addresses assigned to the destination node,
+     dst.foo.com.
+
+           ping6 -a agl dst.foo.com
+
+SEE ALSO
+     netstat(1), icmp6(4), inet6(4), ip6(4), ifconfig(8), ping(8), routed(8),
+     traceroute(8), traceroute6(8)
+
+     A. Conta and S. Deering, Internet Control Message Protocol (ICMPv6) for the
+     Internet Protocol Version 6 (IPv6) Specification, RFC2463, December 1998.
+
+     Matt Crawford, IPv6 Node Information Queries, draft-ietf-ipngwg-icmp-name-
+     lookups-09.txt, May 2002, work in progress material.
+
+HISTORY
+     The ping(8) utility appeared in 4.3BSD.  The ping6 utility with IPv6
+     support first appeared in the WIDE Hydrangea IPv6 protocol stack kit.
+
+     IPv6 and IPsec support based on the KAME Project (http://www.kame.net/)
+     stack was initially integrated into FreeBSD 4.0.
+
+BUGS
+     The ping6 utility is intentionally separate from ping(8).
+
+     There have been many discussions on why we separate ping6 and ping(8).
+     Some people argued that it would be more convenient to uniform the ping
+     command for both IPv4 and IPv6.  The followings are an answer to the
+     request.
+
+     From a developer's point of view: since the underling raw sockets API is
+     totally different between IPv4 and IPv6, we would end up having two types
+     of code base.  There would actually be less benefit to uniform the two
+     commands into a single command from the developer's standpoint.
+
+     From an operator's point of view: unlike ordinary network applications like
+     remote login tools, we are usually aware of address family when using
+     network management tools.  We do not just want to know the reachability to
+     the host, but want to know the reachability to the host via a particular
+     network protocol such as IPv6.  Thus, even if we had a unified ping(8)
+     command for both IPv4 and IPv6, we would usually type a -6 or -4 option (or
+     something like those) to specify the particular address family.  This
+     essentially means that we have two different commands.
+

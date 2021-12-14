@@ -1,0 +1,145 @@
+netusage(1)                  General Commands Manual                 netusage(1)
+
+NAME
+     netusage – Display traffic usage statistics about the network
+
+SYNOPSIS
+     netusage [--help]
+     netusage commands [arguments ...]
+
+
+
+DESCRIPTION
+     The netusage program interfaces with symptomsd to display and manage
+     network traffic usage statistics.
+
+     As additional feature of this tool allows for looking up an application or
+     process name using a Mach-O UUID or a PID.
+
+NETWORK STATISTICS COMMANDS
+     The following commands are used to provide different representations of
+     network traffic usage statistics collected on the system.
+
+
+     --all-traffic [-p] [-r] [-n name] [-s sortorder] [-d importfile] [-e
+              exportfile] [--unitize] [--compact] [--interactive] [--interval
+              seconds]
+              Display a table listing the total ingress and egress network
+              traffic usage for each application or process categorized by
+              interface. A timestamp of when the first network traffic was
+              observed is also shown. By default, only applications will be
+              shown unless the -p flag is provided.
+
+
+              -p       Show a list that includes the combination of applications
+                       and processes.
+
+
+              -r       Force a database refresh before showing the list.
+
+
+              -n name  Only show the application or process matching name.
+
+
+              -s sortorder
+                       Sort the list according the following available sort
+                       orders:
+
+
+                       t        Sort by total network usage. (default)
+
+                       c        Sort by cellular interface usage.
+
+                       w        Sort by wi-fi interface usage.
+
+                       i        Sort by wired interface usage.
+
+                       a        Sort by awdl interface usage.
+
+                       e        Sort by expensive interface usage.
+
+
+              -d importfile
+                       Show a traffic usage comparison between the current
+                       values and the contents of the file at importfile.
+
+
+              -e exportfile
+                       Save the current traffic usage values into exportfile.
+
+
+              --unitize
+                       Show the table values in unitized format (eg. KB/MB/GB).
+
+
+              --compact
+                       When showing a traffic usage comparison, only list the
+                       entries whose values have changed.
+
+
+              --interactive
+                       Show a traffic usage table that periodically refresh and
+                       can be viewed interactively. When an update occurs, the
+                       usage value for the application or process that generated
+                       network traffic will appear emphasized. You can use the
+                       following commands to interact with the table.
+
+
+                       q        Quit
+
+                       p        Toggles the values between showing raw bytes and
+                                unitized format
+
+                       s        Change the sort order of the columns
+
+                       r        Redraw the screen
+
+                       h        Show help
+
+                       Arrow Keys
+                                Scroll the list
+
+
+              --interval seconds
+                       Set the periodic refresh interval to the specified number
+                       of seconds. The minimum value is 5 seconds, and the
+                       default interval is 15 seconds. (Only valid in
+                       interactive mode)
+
+
+MANAGEMENT COMMANDS
+     These commands are used to manage and reset the collected network traffic
+     usage statistics.
+
+
+
+     --reset-entry [-p] [-n name]
+              Reset the network traffic usage statistics stored for a single
+              entry. Use the -n flag (and optionally the -p flag) to specify the
+              name of the entry.
+
+              --unitize name
+                       Specify the name of the application to reset the network
+                       usage statistics.
+
+              -p       Specify a process name instead of an application name.
+
+
+     --reset-all
+              Reset the network traffic usage statistics for all the stored
+              entries.
+
+
+OTHER COMMANDS
+     These are optional utility commands that are available to look up
+     applications or processes.
+
+
+     --resolve-uuid uuid
+              Resolve the given mach-O uuid into an application identifier.
+
+
+     --resolve-pid pid
+              Resolve the given pid into an application identifier.
+
+

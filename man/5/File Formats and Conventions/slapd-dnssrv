@@ -1,0 +1,44 @@
+SLAPD-DNSSRV(5)                File Formats Manual               SLAPD-DNSSRV(5)
+
+
+
+NAME
+       slapd-dnssrv - DNS SRV referral backend to slapd
+
+SYNOPSIS
+       /etc/openldap/slapd.conf
+
+DESCRIPTION
+       The DNSSRV backend to slapd(8) serves up referrals based upon SRV
+       resource records held in the Domain Name System.
+
+       This backend is experimental.
+
+CONFIGURATION
+       The DNSSRV backend has no backend nor database specific options.  It is
+       configured simply by "database dnssrv" followed a suffix directive, e.g.
+       suffix "".
+
+ACCESS CONTROL
+       The dnssrv backend does not honor all ACL semantics as described in
+       slapd.access(5).  In fact, this backend only implements the search
+       operation when the manageDSAit control (RFC 3296) is used, otherwise for
+       every operation a referral, whenever appropriate, or an error is
+       returned.  Currently, there is no means to condition the returning of the
+       referral by means of ACLs; no access control is implemented, except for
+       read (=r) access to the returned entries, which is actually provided by
+       the frontend.  Note, however, that the information returned by this
+       backend is collected through the DNS, so it is public by definition.
+
+FILES
+       /etc/openldap/slapd.conf
+              default slapd configuration file
+
+SEE ALSO
+       "OpenLDAP Root Service - An experimental LDAP referral service" [RFC
+       3088],
+       "OpenLDAP LDAP Root Service" <http://www.openldap.org/faq/?file=393)>,
+       slapd.conf(5), slapd(8)
+
+
+

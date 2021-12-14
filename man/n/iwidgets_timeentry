@@ -1,0 +1,165 @@
+iwidgets::timeentry(1)           [incr Widgets]           iwidgets::timeentry(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::timeentry - Create and manipulate a timeentry widget
+
+SYNOPSIS
+       iwidgets::timeentry pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::LabeledWidget <- iwidgets::Timefield <-
+       iwidgets::Timeentry
+
+STANDARD OPTIONS
+
+       background  borderWidth     cursor              exportSelection
+       foreground  highlightColor  highlightThickness  insertBackground
+       justify     relief
+
+       See the "options" manual entry for details on the standard options.
+
+INHERITED OPTIONS
+       disabledForeground             labelBitmap     labelFontlabelImage
+       labelMargin     labelPos       labelText       labelVariable
+       state sticky
+
+       See the "labeledwidget" class manual entry for details on these inherited
+       options.
+
+       command         format         seconds         textBackground
+       textFont
+
+       See the "timefield" class manual entry for details on these inherited
+       options.
+
+ASSOCIATED OPTIONS
+       hourRadius      hourColor      minuteRadius    minuteColor
+       pivotRadius     pivotColor     secondRadius    secondColor
+       clockColor      clockStipple   tickColor       watchHeight
+       watchWidth
+
+       See the "watch" manual entry for details on the associated options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           closeText
+       Class:          Text
+       Command-Line Switch:           -closetext
+
+              Specifies the text to be displayed on the close button of the
+              watch popup.  The default is Close.
+
+       Name:           grab
+       Class:          Grab
+       Command-Line Switch:           -grab
+
+              Specifies the grab level, local or global, to be obtained before
+              bringing up the popup watch.  The default is global.  For more
+              information concerning grab levels, consult the documentation for
+              Tk's grab command.
+
+       Name:           icon
+       Class:          Icon
+       Command-Line Switch:           -icon
+
+              Specifies the watch icon image to be used in the timeentry.  This
+              image must have been created previously with the image create
+              command.  Should one not be provided, then one will be generated,
+              pixmap if possible, bitmap otherwise.
+
+       Name:           state
+       Class:          State
+       Command-Line Switch:           -state
+
+              Specifies the state of the widget which may be disabled or normal.
+              A disabled state prevents selection of the timefield or time icon
+              button.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::timeentry command creates a time entry field with a popup
+       watch by combining the timefield and watch widgets together.  This allows
+       a user to enter the time via the keyboard or by using the mouse and
+       selecting the watch icon which brings up a popup watch.
+
+
+
+METHODS
+       The iwidgets::timeentry command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for timeentry widgets:
+
+INHERITED METHODS
+       get             isvalid        show
+
+       See the "timefield" manual entry for details on the associated methods.
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::timeentry command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::timeentry command.
+
+
+COMPONENTS
+       Name:           label
+       Class:          Label
+
+              The label component provides a label component to used to identify
+              the time.  See the "label" widget manual entry for details on the
+              label component item.
+
+       Name:           iconbutton
+       Class:          Label
+
+              The iconbutton component provides a labelbutton component to act
+              as a lightweight button displaying the watch icon.  Upon pressing
+              the labelbutton, the watch appears.  See the "label" widget manual
+              entry for details on the labelbutton component item.
+
+       Name:           time
+       Class:          Entry
+
+              The time component provides the entry field for time input and
+              display.  See the "entry" widget manual entry for details on the
+              time component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               iwidgets::timeentry .te
+               pack .te
+
+
+AUTHOR
+       Mark L. Ulferts
+
+KEYWORDS
+       timeentry, widget
+
+
+

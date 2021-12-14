@@ -1,0 +1,230 @@
+iwidgets::canvasprintbox(1)      [incr Widgets]      iwidgets::canvasprintbox(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::canvasprintbox - Create and manipulate a canvas print box
+       widget
+
+SYNOPSIS
+       iwidgets::canvasprintbox pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::Canvasprintbox
+
+STANDARD OPTIONS
+
+       activeBackground  background           borderWidth      cursor
+       foreground        highlightBackground  highlightColor   highlightThickness
+       insertBackground  insertBorderWidth    insertOffTime    insertOnTime
+       insertWidth       relief               repeatDelay      repeatInterval
+       selectBackground  selectBorderWidth    selectForeground
+
+       See the "options" manual entry for details on the standard options.
+
+ASSOCIATED OPTIONS
+WIDGET-SPECIFIC OPTIONS
+       Name:           filename
+       Class:          FileName
+       Command-Line Switch:           -filename
+
+              The file to write the postscript output to (Only when output is
+              set to "file"). If posterizing is turned on and hpagecnt and/or
+              vpagecnt is more than 1, x.y is appended to the filename where x
+              is the horizontal page number and y the vertical page number.
+
+       Name:           hpagecnt
+       Class:          PageCnt
+       Command-Line Switch:           -hpagecnt
+
+              Is used in combination with posterize to determine over how many
+              pages the output should be distributed. This attribute specifies
+              how many pages should be used horizontaly.  Any change to this
+              attribute will automatically update the "stamp".  Defaults to 1.
+
+       Name:           orient
+       Class:          Orient
+       Command-Line Switch:           -orient
+
+              Determines the orientation of the output to the printer (or file).
+              It can take the value "portrait" or "landscape" (default). Changes
+              to this attribute will be reflected immediately in the "stamp".
+              Defaults to "landscape" but will be changed automaticaly to the
+              value deemed appropiate for the current canvas. Setting this
+              attribute when the canvasprintbox is first constructed (instead of
+              using the "configure" method) will turn off the auto adjustment of
+              this attribute.
+
+       Name:           output
+       Class:          Output
+       Command-Line Switch:           -output
+
+              Specifies where the postscript output should go: to the printer or
+              to a file. Can take on the values "printer" or "file".  The
+              corresponding entry-widget will reflect the contents of either the
+              printcmd attribute or the filename attribute.  Defaults to
+              "printer".
+
+       Name:           pageSize
+       Class:          PageSize
+       Command-Line Switch:           -pagesize
+
+              The pagesize the printer supports. Changes to this attribute will
+              be reflected immediately in the "stamp".  Defaults to "a4".
+
+       Name:           posterize
+       Class:          Posterize
+       Command-Line Switch:           -posterize
+
+              Indicates if posterizing is turned on or not. Posterizing the
+              output means that it is possible to distribute the output over
+              more than one page. This way it is possible to print a
+              canvas/region which is larger than the specified pagesize without
+              stretching. If used in combination with stretching it can be used
+              to "blow up" the contents of a canvas to as large as size as you
+              want (See attributes: hpagecnt and vpagecnt). Any change to this
+              attribute will automatically update the "stamp".  Defaults to 0.
+
+       Name:           printCmd
+       Class:          PrintCmd
+       Command-Line Switch:           -printcmd
+
+              The command to execute when printing the postscript output.  The
+              command will get the postscript directed to its standard input
+              (Only when output is set to "printer").  Defaults to "lpr".
+
+       Name:           printRegion
+       Class:          PrintRegion
+       Command-Line Switch:           -printregion
+
+              A list of four coordinates specifying which part of the canvas to
+              print.  An empty list means that the canvas' entire scrollregion
+              should be printed. Any change to this attribute will automatically
+              update the "stamp".  Defaults to an empty list.
+
+       Name:           stretch
+       Class:          Stretch
+       Command-Line Switch:           -stretch
+
+              Determines if the output should be stretched to fill the page (as
+              defined by the attribute pagesize) as large as possible. The
+              aspect-ratio of the output will be retained and the output will
+              never fall outside of the boundaries of the page.  Defaults to 0
+              but will be changed automaticaly to the value deemed appropiate
+              for the current canvas. Setting this attribute when the
+              canvasprintbox is first constructed (instead of using the
+              "configure" method) will turn off the auto adjustment of this
+              attribute.
+
+       Name:           vPageCnt
+       Class:          PageCnt
+       Command-Line Switch:           -vpagecnt
+
+              Is used in combination with "posterize" to determine over how many
+              pages the output should be distributed. This attribute specifies
+              how many pages should be used verticaly.  Any change to this
+              attribute will automatically update the "stamp".  Defaults to 1.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       Implements a print box for printing the contents of a canvas widget to a
+       printer or a file. It is possible to specify page orientation, the number
+       of pages to print the image on and if the output should be stretched to
+       fit the page. Options exist to control the appearance and actions of the
+       widget.
+
+
+METHODS
+       The iwidgets::canvasprintbox command creates a new Tcl command whose name
+       is pathName.  This command may be used to invoke various operations on
+       the widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for canvasprintbox widgets:
+
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::canvasprintbox command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::canvasprintbox
+              command.
+
+       pathName getoutput
+              Returns the value of the printercmd or filename option depending
+              on the current setting of output.
+
+       pathName print
+              Perfrom the actual printing of the canvas using the current
+              settings of all the attributes. Returns a boolean indicating
+              wether the printing was successful or not.
+
+       pathName refresh
+              Retrieves the current value for all edit fields and updates the
+              stamp accordingly. Is useful for Apply-buttons.
+
+       pathName setcanvas canvas
+              This is used to set the canvas that has to be printed.  A stamp-
+              sized copy will automatically be drawn to show how the output
+              would look with the current settings.
+
+       pathName stop
+              Stops the drawing of the "stamp". I'm currently unable to detect
+              when a Canvasprintbox gets destroyed or withdrawn. It's therefore
+              advised that you perform a stop before you do something like that.
+
+COMPONENTS
+       Name:           prtflentry
+       Class:          Entry
+
+              The prtflentry component is the entry field for user input of the
+              filename or printer command (depending on the value of output).
+
+       Name:           hpcnt
+       Class:          Entry
+
+              The hpcnt component is the entry field for user input of the
+              number of pages to use horizontaly when posterize is turned on.
+              Name:           vpcnt
+              Class:          Entry
+
+              The vpcnt component is the entry field for user input of the
+              number of pages to use verticaly when posterize is turned on.
+
+
+EXAMPLE
+
+              package require Iwidgets 4.0
+              iwidgets::canvasprintbox .fsb -orient landscape -stretch 1
+              pack .fsb -padx 10 -pady 10 -fill both -expand yes
+
+
+AUTHOR
+       Tako Schotanus
+
+       Tako.Schotanus@bouw.tno.nl
+
+KEYWORDS
+       canvasprintbox, widget
+
+
+

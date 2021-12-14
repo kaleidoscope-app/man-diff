@@ -1,0 +1,162 @@
+iwidgets::timefield(1)           [incr Widgets]           iwidgets::timefield(1)
+
+
+
+________________________________________________________________________________
+
+NAME
+       iwidgets::timefield - Create and manipulate a time field widget
+
+SYNOPSIS
+       iwidgets::timefield pathName ?options?
+
+INHERITANCE
+       itk::Widget <- iwidgets::LabeledWidget <- iwidgets::Timefield
+
+STANDARD OPTIONS
+
+       background  borderWidth     cursor              exportSelection
+       foreground  highlightColor  highlightThickness  insertBackground
+       justify     relief
+
+       See the "options" manual entry for details on the standard options.
+
+INHERITED OPTIONS
+       disabledForeground             labelBitmap     labelFontlabelImage
+       labelMargin     labelPos       labelText       labelVariable
+       state           sticky
+
+       See the "labeledwidget" class manual entry for details on the inherited
+       options.
+
+WIDGET-SPECIFIC OPTIONS
+       Name:           childSitePos
+       Class:          Position
+       Command-Line Switch:           -childsitepos
+
+              Specifies the position of the child site in the time field: n, s,
+              e, or w.  The default is e.
+
+       Name:           command
+       Class:          Command
+       Command-Line Switch:           -command
+
+              Specifies a Tcl command to be executed upon detection of a Return
+              key press event.
+
+       Name:           gmt
+       Class:          Gmt
+       Command-Line Switch:           -gmt
+
+              Determines whether the time is calculated relative to Greenwich
+              Mean Time. Accepts a boolean value. The default is no.
+
+              Name:           state Class:   State Command-Line Switch:-state
+
+              Specifies one of two states for the timefield: normal or disabled.
+              If the timefield is disabled then input is not accepted.  The
+              default is normal.
+
+       Name:           textBackground
+       Class:          Background
+       Command-Line Switch:           -textbackground
+
+              Background color for inside textual portion of the entry field.
+              The value may be given in any of the forms acceptable to
+              Tk_GetColor.
+
+       Name:           textFont
+       Class:          Font
+       Command-Line Switch:           -textfont
+
+              Name of font to use for display of text in timefield.  The value
+              may be given in any of the forms acceptable to Tk_GetFont.
+
+________________________________________________________________________________
+
+
+DESCRIPTION
+       The iwidgets::timefield command creates an enhanced text entry widget for
+       the purpose of time entry with various degrees of built-in intelligence.
+
+
+
+METHODS
+       The iwidgets::timefield command creates a new Tcl command whose name is
+       pathName.  This command may be used to invoke various operations on the
+       widget.  It has the following general form:
+
+              pathName option ?arg arg ...?
+
+       Option and the args determine the exact behavior of the command.  The
+       following commands are possible for timefield widgets:
+
+WIDGET-SPECIFIC METHODS
+       pathName cget option
+              Returns the current value of the configuration option given by
+              option.  Option may have any of the values accepted by the
+              iwidgets::timefield command.
+
+       pathName configure ?option? ?value option value ...?
+              Query or modify the configuration options of the widget.  If no
+              option is specified, returns a list describing all of the
+              available options for pathName (see Tk_ConfigureInfo for
+              information on the format of this list).  If option is specified
+              with no value, then the command returns a list describing the one
+              named option (this list will be identical to the corresponding
+              sublist of the value returned if no option is specified).  If one
+              or more option-value pairs are specified, then the command
+              modifies the given widget option(s) to have the given value(s);
+              in this case the command returns an empty string.  Option may have
+              any of the values accepted by the iwidgets::timefield command.
+
+       pathName get ?format?
+              Returns the current contents of the timefield in a format of
+              string or as an integer clock value using the -string and -clicks
+              format options respectively.  The default is by string.  Reference
+              the clock command for more information on obtaining times and
+              their formats.
+
+       pathName isvalid
+              Returns a boolean indication of the validity of the currently
+              displayed time value.  For example, 12:59:59 is valid whereas
+              25:59:59 is invalid.
+
+       pathName show time
+              Changes the currently displayed time to be that of the time
+              argument.  The time may be specified either as a string, an
+              integer clock value or the keyword "now" (the default).  Reference
+              the clock command for more information on obtaining times and
+              their formats.
+
+
+COMPONENTS
+       Name:           time
+       Class:          Entry
+
+              The time component provides the entry field for time input and
+              display.  See the "entry" widget manual entry for details on the
+              time component item.
+
+
+EXAMPLE
+
+               package require Iwidgets 4.0
+               proc returnCmd {} {
+                 puts [.tf get]
+               }
+
+               iwidgets::timefield .tf -command returnCmd
+               pack .tf -fill x -expand yes -padx 10 -pady 10
+
+
+AUTHOR
+       John A. Tucker
+
+       Mark L. Ulferts
+
+KEYWORDS
+       timefield, widget
+
+
+

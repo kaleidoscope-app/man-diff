@@ -1,0 +1,80 @@
+CVMKFILE(1)                  General Commands Manual                 CVMKFILE(1)
+
+
+
+NAME
+       cvmkfile - Create a pre-allocated file
+
+SYNOPSIS
+       cvmkfile [-eprswz] [-k key] size[k|m|g|t] filename
+
+DESCRIPTION
+       cvmkfile can be used to pre-allocate a file on the Xsan volume.  This is
+       useful and preferable when preparing a file for use in a real-time or
+       streaming environment as the entire file is represented in only one file
+       system extent. Additionally, a file can be placed onto a specific storage
+       pool by specifying the key value, which is used as the affinity locator.
+       See snfs_config(5) for more details about affinities.
+
+       WARNING: This will destroy all existing data for the specified file
+       unless the -e option is used.
+
+OPTIONS
+       -e     The -e option tells cvmkfile not to clobber an existing file, just
+              expand or verify the requested space.  The default behavior is to
+              unlink and re-create an existing file (see WARNING above).
+
+       -k key The -k key optionally tells the file system where to place the
+              data file.  If an Affinity Key is specified, the file is placed on
+              storage pools that are specified to support this key. If there is
+              no storage pool with the key specified, then the file is placed in
+              non-exclusive data pools. If there are no non-exclusive data
+              pools, then ENOSPC (no space) is returned.
+
+       -p     The -p option forces the allocation and any subsequent expansions
+              to be fitted "perfectly" as multiples of the PerfectFitSize
+              configuration parameter. The allocation extent will always line up
+              on and be a perfect multiple of the number of blocks specified in
+              PerfectFitSize.
+
+       -r     The -r option causes the file to be written with pseudo-random
+              data. This can take a significant amount of time.
+
+       -s     The -s option forces the allocation to line up on the beginning
+              block modulus of the storage pool. This can help performance in
+              situations where the I/O size perfectly spans the width of the
+              storage pool's disks.
+
+       -w     The -w option sets the file size to be equal to size.  Without
+              this option the blocks are allocated but the size is set to zero.
+              NOTE: Unless the -z option is used, the new file will contain
+              undefined data.  Using the -w option is not recommended unless
+              absolutely needed, and beware that it could cause some write
+              operations to become read-modify-write operations.
+
+       -z     The -z option causes the file to be physically zeroed out. This
+              can take a significant amount of time.
+
+       size[k|m|g|t]
+              The size argument specifies the number of bytes, kilobytes(k),
+              megabytes(m), gigabytes(g), terabytes(t) to allocate for the file.
+              Multiple extents will be allocated if there is insufficient
+              contiguous available space to satisfy the requested amount.  In
+              the event that there is not enough space to satisfy the request,
+              the file size will still reflect the requested size value if the
+              -w option is specified.
+
+       filename
+              The file to be created.
+
+EXAMPLES
+       Make a file of one gigabyte with zero length. Allocate it on a storage
+       pool that has specified the affinity key 6100_n8.
+
+          rock # cvmkfile -k 6100_n8 1g foobar
+
+SEE ALSO
+       snfs_config(5), cvmkdir(1)
+
+
+

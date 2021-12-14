@@ -1,0 +1,1350 @@
+SNFS_CONFIG(5)                 File Formats Manual                SNFS_CONFIG(5)
+
+
+
+NAME
+       snfs_config - Xsan Volume Configuration File
+
+SYNOPSIS
+       /Library/Preferences/Xsan/*.cfg
+
+DESCRIPTION
+       The Xsan Volume configuration file describes to the File System Manager
+       (FSM) the physical and logical layout of an individual volume.
+
+FORMAT OPTIONS
+       The Xsan Volume uses the XML format for the configuration file (see
+       snfs.cfgx.5).  This is supported on linux MDCs and is required when using
+       the Storage Manager web-based GUI. If the GUI is not used or not
+       available, the sncfgedit(8) utility should be used to create or change
+       the XML configuration file.
+
+       The old non-XML format (see snfs.cfg.5) used in previous versions of Xsan
+       is required on Windows MDCs and is valid on linux MDCs, but the Storage
+       Manager GUI will not recognize it.
+
+       Linux MDCs will automatically have their volume configuration files
+       converted to the XML format on upgrade, if necessary.  Old config files
+       will be retained in the
+       /Library/Logs/Xsan/data/<volume_name>/config_history directory.
+
+       When a volume system is created, the configuration file is stored in a
+       compressed format in the metadata.  Some Xsan components validate that if
+       the configuration file has changed, it is still valid for the operation
+       of that component.  The components that do this are: fsm(8),
+       cvupdatefs(1), and cvfsck(1).  If the configuration is invalid, the
+       component terminates.  If the configuration has changed and is valid, the
+       old configuration is saved in
+       /Library/Logs/Xsan/data/<volume_name>/config_history/*.cfg.<TIMESTAMP>
+       and the new one replaces the old one in metadata.
+
+       This manpage seeks to describe the configuration file in general.  Format
+       specific information can be found in snfs.cfgx.5 and snfs.cfg.5.
+
+GLOBAL VARIABLES
+       The file system configuration has several global variables that affect
+       the size, function and performance of the Xsan File System Manager (FSM).
+       (The FSM is the controlling program that tracks file allocation and
+       consistency across the multiple clients that have access to the volume
+       via a Storage Area Network.) The following global variables can be
+       modified.  cvupdatefs(8) to fail when a bitmap fragmentation threshold is
+       exceeded.  When that limit is exceeded, FSM memory usage and startup time
+       may be excessive under the older method.
+
+     • XML: affinityPreference <true/false>
+
+       Old: AffinityPreference <Yes|No>
+
+       The AffinityPreference variable instructs the FSM how to allocate space
+       to a file with an Affinity in low space conditions.  If space cannot be
+       allocated on a storage pool with a matching Affinity, the system normally
+       fails with ENOSPC.  This occurs even if the file system has remaining
+       space that could satisfy the allocation request.  If this variable is set
+       to true (Yes), instead of returning ENOSPC, the system attempts to
+       allocate space on another storage pool with an Affinity of 0.
+
+       With this preference mechanism, the file's Affinity is not changed so a
+       subsequent allocation request will still try to use the original Affinity
+       before retrying with an Affinity of 0.
+
+       The default value of false (No) retains the behavior of returning ENOSPC
+       instead of retrying the allocation request.
+
+     • XML: allocationStrategy <strategy>
+
+       Old: AllocationStrategy <strategy>
+
+       The AllocationStrategy variable selects a method for allocating new disk
+       file blocks in the volume.  There are three methods supported: Round,
+       Balance, and Fill.  These methods specify how, for each file, the
+       allocator chooses an initial storage pool to allocate blocks from, and
+       how the allocator chooses a new storage pool when it cannot honor an
+       allocation request from a file's current storage pool.
+
+       The default allocation strategy is Round.  Round means that when there
+       are multiple storage pools of similar classes (for example two storage
+       pools for non-exclusive data), the space allocator should alternate
+       (round robin) new files through the available storage pools.  Subsequent
+       allocation requests for any one file are directed to the same storage
+       pool.  If insufficient space is available in that storage pool, the
+       allocator will choose the next storage pool that can honor the allocation
+       request.
+
+       When the strategy is Balance, the available blocks of each storage pool
+       are analyzed, and the storage pool with the most total free blocks is
+       chosen.  Subsequent requests for the same file are directed to the same
+       storage pool.  If insufficient space is available in that storage pool,
+       the allocator will choose the storage pool with the most available space.
+
+       When the strategy is Fill, the allocator will initially choose the
+       storage pool that has the least amount of total free space.  After that
+       it will allocate from the same storage pool until the storage pool cannot
+       honor a request.  The allocator then reselects a storage pool using the
+       original criteria.
+
+       To use a strategy other than Round, the Allocation Session Reservation
+       feature must be disabled.
+
+     • XML: fileLockResyncTimeOut <value>
+
+       Old: BRLResyncTimeout <value>
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+     • XML: allocSessionReservationSize <value>
+
+       Old: AllocSessionReservationSize <value>
+
+       The Allocation Session Reservation (ASR) feature allows a file system to
+       benefit from optimized allocation behavior for certain rich media
+       streaming applications and most other workloads.  The feature also
+       focuses on reducing free space fragmentation.
+
+       By default, this feature is enabled with a 1GB, 1073741824, size.
+
+       An old, deprecated parameter, AllocSessionReservation, when set to yes
+       would use a 1 GB segment size with no rounding.  This old parameter is
+       now ignored but can generate some warnings.
+
+       allocSessionReservationSize allows you to specify the size this feature
+       should use when allocating segments for a session.  The value is
+       expressed in bytes so a value of 2147483648 is 2 GBs.  The value must be
+       a multiple of MBs.  The XML file format must be in bytes.  The old
+       configuration file format can use multipliers such as m for MBs or g for
+       GBs.  If the multiplier is omitted in the old configuration file, the
+       value is interpreted as bytes as in the XML format.
+
+       A value of 0 turns off this capability and falls back on the base
+       allocator.  When enabled, the value can range from 128 MB (134217728) to
+       1 TB (1099511627776).  (The largest value would indicate segments are 1
+       TB in size, which is extremely large.)  The feature starts with the
+       specified size and then may use rounding to better handle user's
+       requests.  See also InodeStripeWidth.
+
+       There are 3 session types: small, medium, and large.  The type is
+       determined by the file offset and requested allocation size.  Small
+       sessions are for sizes (offset+allocation size) smaller than 1MB.  Medium
+       sessions are for sizes 1MB through 1/10th of the
+       allocSessionReservationSize.  Large sessions are sizes bigger than
+       medium.
+
+       Here is another way to think of these three types: small sessions collect
+       or organize all small files into small session chunks; medium sessions
+       collect medium sized files by chunks using their parent directory; and
+       large files collect their own chunks and are allocated independently of
+       other files.
+
+       All sessions are client specific.  Multiple writers to the same directory
+       or large file on different clients will use different sessions.  Small
+       files from different clients use different chunks by client.
+
+       Small sessions use a smaller chunk size than the configured
+       allocSessionReservationSize.  The small chunk size is determined by
+       dividing the configured size by 32.  For 128 MB, the small chunk size is
+       4 MB.  For 1 GB, the small chunk size is 32 MBs.
+
+       Files can start using one session type and then move to another session
+       type.  If a file starts in a medium session and then becomes large, it
+       "reserves" the remainder of the session chunk it was using for itself.
+       After a session is reserved for a file, a new session segment will be
+       allocated for any other medium files in that directory.
+
+       When allocating subsequent pieces for a session, they are rotated around
+       to other stripe groups that can hold user data unless InodeStripeWidth is
+       set to 0.  When InodeStripeWidth is set, session chunks are rotated in a
+       similar fashion to InodeStripeWidth.  The direction of rotation is
+       determined by a combination of the session key and the index of the
+       client in the client table.  The session key is based on the inode number
+       so odd inodes will rotate in a different direction from even inodes.
+       Directory session keys are based on the inode number of the parent
+       directory.
+
+       If this capability is enabled, StripeAlignSize is forced to 0.  In fact,
+       all stripe alignment requests are disabled because they can cause
+       clipping and can lead to severe free-space fragmentation.
+
+       The old AllocSessionReservation parameter is deprecated and replaced by
+       allocSessionReservationSize.
+
+       If any of the following "special" allocation functions are detected,
+       allocSessionReservationSize is turned off for that allocation:
+       PerfectFit, MustFit, or Gapped files.
+
+       When this feature is enabled, AllocationStrategy must be set to Round. As
+       of StorNext 6, this is enforced when creating and modifying file systems.
+       If a file system was created using a prior version of StorNext and ASR
+       was enabled but AllocationStrategy was not set to Round, the FSM will
+       run. However, the AllocationStrategy will be treated as Round and a
+       warning will be issued whenever the configuration file is parsed.
+
+     • XML: bufferCacheSize <value>
+
+       Old: BufferCacheSize <value>
+
+       This variable defines how much memory to use in the FSM program for
+       general metadata information caching.  The amount of memory consumed is
+       up to 2 times the value specified but typically less.
+
+       Increasing this value can improve performance of many metadata operations
+       by performing a memory cache access to directory blocks, inode info and
+       other metadata info.  This is about 10 - 1000 times faster than
+       performing I/O.
+
+       There are two buffer caches: the L1 cache and the L2 cache.  If
+       bufferCacheSize is configured as 1G or smaller, only the L1 cache is
+       used.  If bufferCacheSize is configured greater than 1G, the first 512M
+       is used by the L1 cache and the remainder is used by the L2 cache.
+       Blocks may reside in both caches.  Blocks in the L2 cache are compressed
+       by about a factor of 2.4, allowing for better memory utilization.  For
+       example, if bufferCacheSize is set to a value of 8G, the FSM will
+       actually be able to cache about 7.5 * 2.4 = 18 G of metadata.  Depending
+       on the amount of RAM in the MDC and the number of allocated metadata
+       blocks, in some cases it may be possible to keep all used metadata in
+       cache which can dramatically improve performance for file system
+       scanning.  Cvfsck also uses the buffer cache and specifying a large
+       enough value of bufferCacheSize to cover all metadata will result in a
+       large speed increase.  The cvadmin "metadata" command can be used to
+       determine the value of bufferCacheSize required to cache all metadata.
+
+       Also see the useL2BufferCache configuration parameter.
+
+     • XML: caseInsensitive <true|false>
+
+       Old:
+
+
+
+       The caseInsensitive variable controls how the FSM reports case
+       sensitivity to clients. Windows clients are always case insensitive, Mac
+       clients default to case insensitive, but if the FSM is configured as case
+       sensitive then they will operate in case sensitive mode.  Linux clients
+       will follow the configuration variable, but can operate in case
+       insensitive mode on a case sensitive filesystem by using the
+       caseinsensitive mount option. Linux clients must be at the 5.4 release or
+       beyond to enable this behavior.
+
+       Note: You must stop the file system and run  cvupdatefs once the config
+       file has been updated in order to enable or disable case insensitive.
+       Clients must re-mount the file system to pick up the change.
+
+       When enabling case insensitive, it is also strongly recommended that
+       cvfsck -A be run to detect name case collisions. Cvupdatefs will not
+       enable case insensitive when name case collisions are present in the file
+       system.
+
+     • XML: cvRootDir <path>
+
+       Old: CvRootDir <path>
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+       The CvRootDir variable specifies the directory in the StorNext file
+       system that will be mounted by clients. The specified path is an absolute
+       pathname of a directory that will become the root of the mounted file
+       system. The default value for the CvRootDir path is the root of the file
+       system, "/". This feature is available only with Quantum StorNext
+       Appliance products.
+
+     • XML: debug <debug_value>
+
+       Old: Debug <debug_value>
+
+       The Debug variable turns on debug functions for the FSM. The output is
+       sent to /Library/Logs/Xsan/data/<volume_name>/log/cvfs_log.  These data
+       may be useful when a problem occurs.  The following list shows which
+       value turns on a specific debug trace.  Multiple debugging options may be
+       selected by calculating the bitwise OR of the options' values to use as
+       debug_value.  Output from the debugging options is accumulated into a
+       single file.
+
+          0x00000001     General Information
+          0x00000002     Sockets
+          0x00000004     Messages
+          0x00000008     Connections
+          0x00000010     File (VFS) requests
+          0x00000020     File file (VOPS)
+          0x00000040     Allocations
+          0x00000080     Inodes
+          0x00000100     Tokens
+          0x00000200     Directories
+          0x00000400     Attributes
+          0x00000800     Bandwidth Management
+          0x00001000     Quotas
+          0x00002000     Administrative Management
+          0x00004000     I/O
+          0x00008000     Data Migration
+          0x00010000     B+Trees
+          0x00020000     Transactions
+          0x00040000     Journal Logging
+          0x00080000     Memory Management
+          0x00100000     QOS IO
+          0x00200000     External API
+          0x00400000     Windows Security
+          0x00800000     Journal Activity
+          0x01000000     Dump Statistics (Once Only)
+          0x02000000     Extended Buffers
+          0x04000000     Extended Directories
+          0x08000000     Queues
+          0x10000000     Extended Inodes
+          0x20000000     Metadata Archive
+          0x40000000     Xattr manipulation
+          0x80000000     Development debug
+
+       NOTE: The performance of the volume is dramatically affected by turning
+       on debugging traces.
+
+     • XML: dirWarp <true|false>
+
+       Old: DirWarp <Yes|No>
+
+       NOTE: This setting has been deprecated and is no longer supported.  It
+       will be ignored.
+
+     • XML: enforceAcls <true|false>
+
+       Old: EnforceACLs <Yes|No>
+
+       Enables Access Control List enforcement on XSan clients.  On non-XSan
+       MDCs, windowsSecurity should also be enabled for this feature to work
+       with XSan clients.
+
+       This variable is only applicable when securityModel is set to legacy.  It
+       is ignored for other securityModel values.  See securityModel for
+       details.
+
+     • XML: enableSpotlight <true|false>
+
+       Old: EnableSpotlight <Yes|No>
+
+       Enable Spotlight indexing.
+
+     • XML: eventFiles <true|false>
+
+       Old: EventFiles <Yes|No>
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+       Enables event files processing for Data Migration
+
+     • XML: eventFileDir <path>
+
+       Old: EventFileDir <path>
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+       Specifies the location to put Event Files
+
+     • XML: extentCountThreshold <value>
+
+       Old: ExtentCountThreshold <value>
+
+       When a file has this many extents, a RAS event is triggered to warn of
+       fragmented files.  The default value is 49152.  A value of 0 or 1
+       disables the RAS event.  This value must be between 0 and 33553408
+       (0x1FFFC00), inclusive.
+
+     • XML: fileLocks <true|false>
+
+       Old: FileLocks <Yes|No>
+
+       The variable enables or disables the tracking and enforcement of file-
+       system-wide file locking.  Enabling the File locks feature allows file
+       locks to be tracked across all clients of the volume. The FileLocks
+       feature supports both the POSIX file locking model and the Windows file
+       locking model.
+
+       If enabled, byte-range file locks are coordinated through the FSM,
+       allowing a lock set by one client to block overlapping locks by other
+       clients.  If disabled, then byte-range locks are local to a client and do
+       not prevent other clients from getting byte-range locks on a file,
+       however they do prevent overlapping lock attempts on the same client.
+
+     • XML: forcePerfectFit <true|false>
+
+       Old: ForcePerfectFit <Yes|No>
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+       Enables a specialized allocation mode where all files are automatically
+       aligned and rounded to PerfectFitSize blocks.  If this is enabled,
+       allocSessionReservationSize is ignored.
+
+     • XML: fsBlockSize <value>
+
+       Old: FsBlockSize <value>
+
+       The File System Block Size defines the granularity of the volume's
+       allocation size.  The block size is fixed at 4K.  When an older file
+       system is upgraded to StorNext 5, if the block size is other than 4k, the
+       file system is converted to a 4K block size.  For these file systems, the
+       original block size value remains in the config file.  If a file system
+       is remade that had a file system block size other than 4K, the config
+       file is rewritten, changing the file system block size parameter value to
+       4K.
+
+     • XML: fsCapacityThreshold <value>
+
+       Old: FsCapacityThreshold <value>
+
+       When a file system is over fsCapacityThreshold percent full, a RAS event
+       is sent to warn of this condition. This value must be between 0 and 100,
+       inclusive. The default value is 0, which disables the RAS event for all
+       file systems except the HA shared file system which defaults to 85%.  To
+       disable this RAS event for the HA shared file system, set
+       fsCapacityThreshold to 100.
+
+     • XML: globalShareMode <true|false>
+
+       Old: GlobalShareMode <Yes|No>
+
+       The GlobalShareMode variable enables or disables the enforcement of
+       Windows Share Modes across StorNext clients.  This feature is limited to
+       StorNext clients running on Microsoft Windows platforms.  See the Windows
+       CreateFile documentation for the details on the behavior of share modes.
+       When enabled, sharing violations will be detected between processes on
+       different StorNext clients accessing the same file.  Otherwise sharing
+       violations will only be detected between processes on the same system.
+       The default of this variable is false.  This value may be modified for
+       existing volumes.
+
+     • XML: globalSuperUser <true|false>
+
+       Old: GlobalSuperUser <Yes|No>
+
+       The Global Super User variable allows the administrator to decide if any
+       user with super-user privileges may use those privileges on the file
+       system. When this variable is set to true, any super-user has global
+       access rights on the volume. This may be equated to the maproot=0
+       directive in NFS. When the Global Super User variable is set to false, a
+       super-user may only modify files where it has access rights as a normal
+       user. This value may be modified for existing volumes.  If storageManager
+       is enabled and this variable is set to false, the value will be overriden
+       and set to true on storage manager nodes.  A storage manager node is the
+       MDC or a Distributed Data Mover client.  Apple Xsan clients do not honor
+       the setting of globalSuperUser.
+
+     • XML: haFsType <HaShared|HaManaged|HaUnmanaged|HaUnmonitored>
+
+       Old: HaFsType <HaShared|HaManaged|HaUnmanaged|HaUnmonitored>
+
+       The HaFsType configuration item turns on Xsan High Availability (HA)
+       protection for a file system, which prevents split-brain scenario data
+       corruption.  HA detects conditions where split brain is possible and
+       triggers a hardware reset of the server to remove the possibility of
+       split brain scenario.  This occurs when an activated FSM is not properly
+       maintaining its brand of an arbitration block (ARB) on the metadata LUN.
+       Timers on the activated and standby FSMs coordinate the usurpation of the
+       ARB so that the activated server will relinquish control or perform a
+       hardware reset before the standby FSM can take over.  It is very
+       important to configure all file systems correctly and consistently
+       between the two servers in the HA cluster.
+
+       There are currently three types of HA monitoring that are indicated by
+       the HaShared, HaManaged, and HaUnmanaged configuration parameters.
+
+       The HaShared dedicated file system holds shared data for the operation of
+       the StorNext File System and Stornext Storage Manager (SNSM).  There must
+       be one and only one HaShared file system configured for these
+       installations.  The running of SNSM processes and the starting of managed
+       file systems is triggered by activation of the HaShared file system.  In
+       addition to being monitored for ARB branding as described above, the exit
+       of the HaShared FSM triggers a hardware reset to ensure that SNSM
+       processes are stopped if the shared file system is not unmounted.
+
+       The HaManaged file systems are not started until the HaShared file system
+       activates.  This keeps all the managed file systems collocated with the
+       SNSM processes.  It also means that they cannot experience split-brain
+       corruption because there is no redundant server to compete for control,
+       so they are not monitored and cannot trigger a hardware reset.
+
+       The HaUnmanaged file systems are monitored.  The minimum configuration
+       necessary for an HA cluster is to: 1) place this type in all the FSMs,
+       and 2) enter the peer server's IP address in the ha_peer(4) file.
+       Unmanaged FSMs can activate on either server and fail over to the peer
+       server without a hardware reset under normal operating conditions.
+
+       On non-HA setups, the special HaUnmonitored type is used to indicate no
+       HA monitoring is done on the file systems.  It is only to be used on non-
+       HA setups. Note that setting HaFsType to HaUnmonitored disables the HA
+       monitor timers used to guarantee against split brain.  When two MDCs are
+       configured to run as an HA pair but full HA protection is disabled in
+       this way, it is possible in rare situations for file system metadata to
+       become corrupt if there are lengthy delays or excessive loads in the LAN
+       and SAN networks that prevent an active FSM from maintaining its branding
+       of the ARB in a timely manner.
+
+     • XML: inodeCacheSize <value>
+
+       Old: nodeCacheSize <value>
+
+       This variable defines how many inodes can be cached in the FSM program.
+       An in-core inode is approximately 800 - 1000 bytes per entry.
+
+     • XML: inodeDeleteMax <value>
+
+       Old: InodeDeleteMax <value>
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+       Sets the trickle delete rate of inodes that fall under the Perfect Fit
+       check (see the Force Perfect Fit option for more information.  If Inode
+       Delete Max is set to 0 or is excluded from the configuration file, it is
+       set to an internally calculated value.
+
+     • XML: inodeExpandMin <file_system_blocks>
+
+       Old: InodeExpandMin <file_system_blocks>
+
+     • XML: inodeExpandInc <file_system_blocks>
+
+       Old: InodeExpandInc <file_system_blocks>
+
+     • XML: inodeExpandMax <file_system_blocks>
+
+       Old: InodeExpandMax <file_system_blocks>
+
+       The inodeExpandMin, inodeExpandInc and inodeExpandMax variables configure
+       the floor, increment and ceiling, respectively, for the block allocation
+       size of a dynamically expanding file.  The new format requires this value
+       be specified in bytes and multipliers are not supported.  In the old
+       format, when the value is specified without a multiplier suffix, it is a
+       number of volume blocks; when specified with a multiplier, it is bytes.
+
+       The first time a file requires space, inodeExpandMin blocks are
+       allocated. When an allocation is exhausted, a new set of blocks is
+       allocated equal to the size of the previous allocation to this file plus
+       inodeExpandInc additional blocks. Each new allocation size will increase
+       until the allocations reach inodeExpandMax blocks. Any expansion that
+       occurs thereafter will always use inodeExpandMax blocks per expansion.
+
+       NOTE: when inodeExpandInc is not a factor of inodeExpandMin, all new
+       allocation sizes will be rounded up to the next inodeExpandMin boundary.
+       The allocation increment rules are still used, but the actual allocation
+       size is always a multiple of inodeExpandMin.
+
+       NOTE: The explicit use of the configuration variables inodeExpandMin,
+       inodeExpandInc and inodeExpandMax are being deprecated in favor of an
+       internal table driven mechanism.  Although they are still supported for
+       backward compatibility, there may be warnings during the conversion of an
+       old configuration file to an XML format.
+
+     • XML: inodeStripeWidth <value>
+
+       Old: InodeStripeWidth <value>
+
+       The Inode Stripe Width variable defines how a file is striped across the
+       volume's data storage pools.  The default value is 4 GBs (4294967296).
+       After the initial placement policy has selected a storage pool for the
+       first extent of the file, for each Inode Stripe Width extent the
+       allocation is changed to prefer the next storage pool allowed to contain
+       file data.  Next refers to the next numerical stripe group number going
+       up or down.  (The direction is determined using the inode number: odd
+       inode numbers go up or increment, and even inode numbers go down or
+       decrement).  The rotation is modulo the number of stripe groups that can
+       hold data.
+
+       When Inode Stripe Width is not specified, file data allocations will
+       typically attempt to use the same storage pool as the initial allocation
+       to the file.
+
+       When used with an Allocation Strategy setting of Round, files will be
+       spread around the allocation groups both in terms of where their initial
+       allocation is and in how the file contents are spread out.
+
+       Inode Stripe Width is intended for large files.  The typical value would
+       be many times the maximum Stripe Breadth of the data storage pools. The
+       value cannot be less than the maximum Stripe Breadth of the data storage
+       pools.  Note that when some storage pools are full, this policy will
+       start to prefer the storage pool logically following the full one.  A
+       typical value is 4 GB (4294967296) or 8 GBs (8589934592).  The size is
+       capped at 1099511627776 (1TB).
+
+       If this value is configured too small, fragmentation can occur.  Consider
+       using a setting of 1MB with files as big as 100 GBs.  Each 100 GB file
+       would have 102,400 extents!
+
+       The new format requires this value be specified in bytes, and multipliers
+       are not supported.  In the old format, when the value is specified
+       without a multiplier suffix, it is a number of volume blocks; when
+       specified with a multiplier, it is bytes.
+
+       When allocSessionReservationSize is non-zero, this parameter is forced to
+       be >= allocSessionReservationSize.
+
+       If Inode Stripe Width is greater than allocSessionReservationSize, files
+       larger than allocSessionReservationSize will use Inode Stripe Width as
+       their allocSessionReservationSize for allocations with an offset beyond
+       allocSessionReservationSize.
+
+     • XML: ioTokens <true|false>
+
+       Old: IoTokens <Yes|No>
+
+       The I/O Tokens variable allows the administrator to select which
+       coherency model should be used when different clients open the same file,
+       concurrently.  With ioTokens set to false, the coherency model uses 3
+       states: exclusive, shared, and shared write.  If a file is exclusive,
+       only one client is using the file.  Shared indicates that multiple
+       clients have the file open but for read only mode.  This allows clients
+       to cache data in memory.  Shared write indicates multiple clients have
+       the file open and at least one client has the file open for write.  With
+       "Shared Write" mode, coherency is resolved by using DMA I/O and no
+       caching of data.
+
+       A problem with DMA I/O is that small or unaligned I/Os need to do a read-
+       modify-write.  So, two racing clients can undo each other's writes since
+       they could have data in memory.  This occurs when a client has read into
+       a buffer, modifies part of the buffer, and then write it using DMA (after
+       the other client's write that occurred before this client read into the
+       buffer being written).  Different platforms have requirements on the
+       granularity of DMA I/O, usually at least 512 bytes that must be written
+       and also using a 512 or greater boundary for the start and end of the
+       I/O.
+
+       If one sets ioTokens to true (the default setting), each I/O performed by
+       a client must have a token.  Clients cache and can do many I/Os while
+       they have the token.  When the token is revoked, all data and associated
+       attributes are flushed.
+
+       Customers, who have multiple writers on a file, should set ioTokens to
+       true, unless they know that the granularity and length of I/Os are safe
+       for DMA.  File locking does NOT prevent read-modify-write across lock
+       boundaries.
+
+       The default for I/O Tokens is true.
+
+       For backward compatibility, if a client opens a file from a prior release
+       that does not support ioTokens, the coherency model drops back to the
+       "Shared Write" model using DMA I/O (ioTokens false) but on a file-by-file
+       basis.
+
+       If ioTokens is changed and the MDC is restarted, files that were open at
+       that time continue to operate in the model before the change.  To switch
+       these files to the new value of ioTokens, all applications  must close
+       the file and wait for a few seconds and then re-open it.  Or, if the
+       value was switched from true to false, a new client can open the file and
+       all clients will transparently be switched to the old model on that file.
+
+     • XML: journalSize <value>
+
+       Old: JournalSize <value>
+
+       Controls the size of the volume journal.  cvupdatefs(8) must be run after
+       changing this value for it to take effect.  The FSM will not activate if
+       it detects that the journal size has been changed in the config file, but
+       the metadata has not been updated.
+
+     • XML: maintenanceMode <true|false>
+
+       Old: MaintenanceMode <Yes|No>
+
+       The maintenanceMode parameter enables or disables maintenance mode for
+       the file system. In maintenance mode, all client mount requests are
+       rejected by the FSM except from the client running on the same node as
+       the FSM.
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+     • XML: maxLogs <value>
+
+       Old: MaxLogs <value>
+
+       The maxLogs variable defines the maximum number of logs a FSM can rotate
+       through when they get to MaxLogSize.  The current log file resides in
+       /Library/Logs/Xsan/data/<volume_name>/log/cvlog.
+
+     • XML: maxLogSize <value>
+
+       Old: MaxLogSize <value>
+
+       The maxLogSize variable defines the maximum number of bytes a FSM log
+       file should grow to. The log file resides in
+       /Library/Logs/Xsan/data/<volume_name>/log/cvlog.  When the log file grows
+       to the specified size, it is moved to cvlog_<number> and a new cvlog is
+       started. Therefore, maxLogs the space will be consumed as specified in
+       <value>.
+
+     • XML: namedStreams <true|false>
+
+       Old: NamedStreams <Yes|No>
+
+       The namedStreams parameter enables or disables support for Apple Named
+       Streams. Named Streams can be used by macOS clients to efficiently store
+       resource forks and extended attributes directly in file system metadata
+       instead of using Apple Double files. If namedStreams is not enabled when
+       the file system is initialized, cvupdatefs(8) must be run after enabling
+       namedStreams for it to take effect. The FSM will not activate if it
+       detects that namedStreams has been enabled in the config file, but the
+       metadata has not been updated by cvupdatefs. Enabling namedStreams is
+       meant to be a permanent operation. Once enabled, disabling namedStreams
+       requires a special procedure only available through technical support
+       that is not always feasible. Note that most "copy" programs on Windows
+       and Linux do not preserve namedStreams. This includes Windows Explorer.
+       Also note that this parameter applies to Apple Named  Streams support in
+       the file system only. The StorNext NAS SMB server has its own named
+       streams option that must be activated separately.
+
+     • XML: opHangLimitSecs <value>
+
+       Old: OpHangLimitSecs <value>
+
+       This variable defines the time threshold used by the FSM program to
+       discover hung operations.  The default is 180.  It can be disabled by
+       specifying 0.  When the FSM program detects an I/O hang, it will stop
+       execution in order to initiate failover to backup system.
+
+     • XML: perfectFitSize <value>
+
+       Old: PerfectFitSize <value>
+
+       For files in perfect fit mode, all allocations will be rounded up to the
+       number of volume blocks set by this variable.  Perfect fit mode can be
+       enabled on an individual file by an application using the Xsan extended
+       API, or for an entire file system by setting forcePerfectFit.
+
+       If InodeStripeWidth or allocSessionReservationSize are non-zero and
+       Perfect fit is not being applied to an allocation, this rounding is
+       skipped.
+
+     • XML: quotas <true|false>
+
+       Old: Quotas <Yes|No>
+
+       The quotas variable enables or disables the enforcement of the volume
+       quotas. Enabling the quotas feature allows storage usage to be tracked
+       for individual users and groups. Setting hard and soft quotas allows
+       administrators to limit the amount of storage consumed by a particular
+       user/group ID. See snquota(1) for information on quotas feature commands.
+
+       NOTE: Quotas are calculated differently on Windows and Linux systems. It
+       is not possible to migrate a meta data controller running quotas between
+       these different types.
+
+       NOTE: Quotas are not allowed when securityModel is set to legacy and
+       windowsSecurity is set to false.
+
+       NOTE: When using a Windows MDC, quotas are not allowed if securityModel
+       is set to unixpermbits.
+
+     • XML: quotaHistoryDays <value>
+
+       Old: QuotaHistoryDays <value>
+
+       When the quotas variable (see above) is turned on, there will be nightly
+       logging of the current quota limits and values.  The logs will be placed
+       in the /Library/Logs/Xsan/data/<volume_name>/quota_history directory.
+       This variable specifies the number of days of logs to keep.  Valid values
+       are 0 (no logs are kept) to 3650 (10 years of nightly logs are kept).
+       The default is 7.
+
+     • XML: remoteNotification <true|false>
+
+       Old: RemoteNotification <Yes|No>
+
+       The remoteNotification variable controls the Windows Remote Directory
+       Notification feature.  The default value is no which disables the
+       feature.  Note: this option is not intended for general use.  Only use
+       when recommended by Apple Support.
+
+     • XML: renameTracking <true|false>
+
+       Old: RenameTracking <Yes|No>
+
+       The renameTracking variable controls the Stornext Storage Manager (SNSM)
+       rename tracking feature.  This replaces the (global) Storage Manager
+       configuration variable MICRO_RENAME that was present in older versions of
+       StorNext. It is by default set to 'false'. Note that this feature should
+       ONLY be enabled at sites where Microsoft, or other similar applications,
+       end up renaming operational files during their processing. See the
+       fsrecover(1) man page for more information on use of renameTracking.
+
+     • XML: reservedSpace <true|false>
+
+       Old: ReservedSpace <Yes|No>
+
+       NOTE: Not intended for general use. Only use when recommended by Quantum
+       Support.
+
+       The reservedSpace parameter allows the administrator the ability to
+       control the use of delayed allocations on clients.  The default value is
+       Yes.  reservedSpace is a performance feature that allows clients to
+       perform buffered writes on a file without first obtaining real
+       allocations from the FSM.  The allocations are later performed when the
+       data are flushed to disk in the background by a daemon performing a
+       periodic sync.
+
+       When reservedSpace is true, the FSM reserves enough disk space so that
+       clients are able to safely perform these delayed allocations.  The meta-
+       data server reserves a minimum of 4GB per stripe group and up to 280
+       megabytes per client per stripe group.
+
+       Setting reservedSpace to false allows slightly more disk space to be
+       used, but adversely affects buffer cache performance and may result in
+       serious fragmentation.
+
+       XML: metadataArchive <true|false>
+
+       The metadataArchive statement is used to enable or disable the Metadata
+       Archive created by the FSM. The Metadata Archive contains a copy of all
+       file system metadata including past history of metadata changes if
+       metadataArchiveDays is set to a value greater than zero.  The Metadata
+       Archive is used for disaster recovery, file system event notification,
+       and file system auditing among other features.
+
+       XML: metadataArchiveDir <path>
+
+       The metadataArchiveDir statement is used to change the path in which the
+       Metadata Archive is created. The default path is
+       /System/Library/Filesystems/acfs.fs/Contents/database/mdarchives/ for all
+       file systems except non-managed file systems not running in an HA
+       environment where the path is then
+       /Library/Logs/Xsan/data/<volume_name>/.
+
+       XML: metadataArchiveSearch <true|false>
+
+       The metadataArchiveSearch statement is used to enable or disable the
+       Metadata Archive Search capability in Metadata Archive.  If enabled,
+       Metadata Archive supports advanced searching capabilities which are used
+       by various other StorNext features. Metadata Archive Search is enabled by
+       default and should only be turned off if performance issues are
+       experienced.
+
+       XML: metadataArchiveCache <bytes>
+
+       The metadataArchiveCache statement is used to configure the size of the
+       memory cache for the Metadata Archive.  The minimum cache size is 1GB,
+       the maximum is 500GB, and the default is 1GB.
+
+       XML: metadataArchiveDays <value>
+
+       The metadataArchiveDays statement is used to set the number of days of
+       metadata history to keep available in the Metadata Archive.  The default
+       value is zero (no metadata history).
+
+       XML: audit <true|false>
+
+       The audit keyword controls if the filesystem maintains extra metadata for
+       use with the snaudit command and for tracking client activity on files.
+       The default value is false and this feature requires that metadataArchive
+       be enabled.
+
+       XML: restAccess <privileged|enabled|disabled>
+
+       Controls the presentation of a rest API for various filesystem
+       capabilities on Linux systems.  An https service is presented by the FSM
+       if this is enabled.  Various utilities such as sgmanage and parts of the
+       GUI make use of this.  Some rest services also depend on metadataArchive
+       being enabled.  When the mode is set to privileged, the access
+       information for the service is only available to privileged users. When
+       the mode is enabled, any user may view the service. The service may be
+       disabled completely with by setting this to disabled. The default is
+       privileged.
+
+     • XML: securityModel <legacy|acl|unixpermbits>
+
+       Old: SecurityModel <legacy|acl|unixpermbits>
+
+       The securityModel variable determines the security model to use on Xsan
+       clients.  legacy is the default value.
+
+       When set to legacy, the windowsSecurity variable is checked to determine
+       whether or not Windows clients should make use of the Windows Security
+       Reference Monitor (ACLs).  The windowsIdMapping variable is ignored for
+       this security model.
+
+       When set to acl, all Xsan clients (Windows and Unix) will make use of the
+       Windows Security Reference Monitor (ACLs).  The windowsSecurity,
+       windowsIdMapping, and enforceAcls variables are ignored for this security
+       model.
+
+       When set to unixpermbits, all Xsan clients (Unix and Windows) will use
+       Unix permission bit settings when performing file access checks.  When
+       unixpermbits is specified, an additional variable, windowsIdMapping, is
+       used to control the method used to perform the Windows User to Unix
+       User/Group ID mappings.  See the windowsIdMapping variable for additional
+       information.  The windowsSecurity, useActiveDirectorySFU, enforceAcls,
+       and unixIdFabricationOnWindows variables are ignored for this security
+       model.
+
+       NOTE: The unixpermbits setting does not support the Windows NtCreateFile
+       function FILE_OPEN_BY_FILE_ID option, which opens a file by inode number
+       versus file name.
+
+     • XML: spotlightSearchLevel <FsSearch|ReadWrite>
+
+       Old: SpotlightSearchLevel <FsSearch|ReadWrite>
+
+       Set the SpotlightSearchLevel. This option only applies when Xsan MDCs are
+       used and should not be used elsewhere as it can interfere with Spotlight
+       Proxy functionality.
+
+     • XML: spotlightUseProxy <true|false>
+
+       Old: SpotlightUseProxy <Yes|No>
+
+       Enable properly configured Xsan clients to act as proxy servers for OS X
+       Spotlight Search on Xsan.
+
+     • XML: stripeAlignSize <value>
+
+       Old: StripeAlignSize <value>
+
+       The stripeAlignSize statement causes the allocator to automatically
+       attempt stripe alignment and rounding of allocations greater than or
+       equal to this size.  The new format requires this value be specified in
+       bytes and multipliers are not supported.  In the old format, when the
+       value is specified without a multiplier suffix, it is a number of volume
+       blocks; when specified with a multiplier, it is bytes.  If set to default
+       value (-1), it internally gets set to the size of largest stripeBreadth
+       found for any stripeGroup that can hold user data.  A value of 0 turns
+       off automatic stripe alignment.  Stripe-aligned allocations are rounded
+       up so that allocations are one stripe breadth or larger.
+
+       If an allocation fails with stripe alignment enabled, another attempt is
+       made to allocate the space without stripe alignment.
+
+       If allocSessionReservationSize is enabled, stripeAlignSize is set to 0 to
+       reduce fragmentation within segments which occurs when clipping within
+       segments.
+
+     • XML: trimOnClose <value>
+
+       Old: TrimOnClose <value>
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+     • XML: useL2BufferCache <true|false>
+
+       Old: UseL2BufferCache <yes|no>
+
+       The useL2BufferCache variable determines whether the FSM should use the
+       compressed L2 metadata block cache when the bufferCacheSize is greater
+       than 1GB.  The default is true.  Setting this variable to false may delay
+       FSM startup when using a very large value for bufferCacheSize.
+
+       NOTE: This variable may be removed in a future release.
+
+       NOTE: Not intended for general use.  Only use when recommended by Apple
+       Support.
+
+     • XML: unixDirectoryCreationModeOnWindows <value>
+
+       Old: UnixDirectoryCreationModeOnWindows <value>
+
+       The unixDirectoryCreationModeOnWindows variable instructs the FSM to pass
+       this value back to Microsoft Windows clients.  The Windows Xsan clients
+       will then use this value as the permission mode when creating a
+       directory.  The default value is 0755.  This value must be between 0 and
+       0777, inclusive.
+
+     • XML: unixFileCreationModeOnWindows <value>
+
+       Old: UnixFileCreationModeOnWindows <value>
+
+       The unixFileCreationModeOnWindows variable instructs the FSM to pass this
+       value back to Microsoft Windows clients. The Windows Xsan clients will
+       then use this value as the permission mode when creating a file. The
+       default value is 0644.  This value must be between 0 and 0777, inclusive.
+
+     • XML: unixIdFabricationOnWindows <true|false>
+
+       Old: UnixIdFabricationOnWindows <yes|no>
+
+       The unixIdFabricationOnWindows variable is simply passed back to a
+       Microsoft Windows client. The client uses this information to turn on/off
+       "fabrication" of uid/gids from a Microsoft Active Directory obtained GUID
+       for a given Windows user.  A value of yes will cause the client for this
+       volume to fabricate the uid/gid and possibly override any specific
+       uid/gid already in Microsoft Active Directory for the Windows user.  This
+       setting should only be enabled if it is necessary for compatibility with
+       Apple MacOS clients.  The default is false, unless the meta-data server
+       is running on Apple MacOS, in which case it is true.
+
+       This variable is only applicable when securityModel is set to legacy or
+       acl.  It is ignored for other securityModel values.  See securityModel
+       for details.
+
+     • XML: unixIdMapping <value>
+
+       Old: UnixIdMapping <value>
+
+       When securityModel is set to acl, the unixIdMapping variable determines
+       the method Linux and Unix clients use to perform Unix User/Group ID to
+       Windows User mappings used by ACLs. This setting has no effect on Windows
+       or Xsan clients.
+
+       The default value of this variable is none which is incompatible with
+       setting securityModel to acl.
+
+       A value of winbind should be used when the environment contains Linux
+       clients that are all bound to Active Directory using Winbind and running
+       the winbind service.
+
+       A value of mdc should be used when the MDCs for a file system are bound
+       to Active Directory using Winbind but one or more of the Linux clients in
+       the environment are not running Winbind.  For example, Linux clients may
+       instead be bound to Active Directory using sssd. The use of mdc
+       unixIdMapping allows such environments to be supported by having Linux
+       clients forward ID mapping requests to the MDC for processing.
+
+       When unixIdMapping is set to algorithmic, UIDs are mapped to SIDs using
+       the following:
+           RID(uid) = (2 * uid) + 1000
+       The RID is then appended to the Domain SID. For the algorithmic
+       unixIdMapping, the default value of the Domain SID is:
+           S-5-21-3274805877-1740924817-4269325941
+       For example, a user having a UID of 400, will have the SID:
+           S-5-21-3274805877-1740924817-4269325941-1800
+       GIDs are mapped to SIDs using the following:
+           RID(gid) = (2 * gid) + 1001
+       The RID is then appended to the Domain SID.  For example, a group having
+       a GID of 300 will have the SID:
+           S-5-21-3274805877-1740924817-4269325941-1601
+       Note: while commonly only required when using Open Directory, the Domain
+       SID can be overridden using the StorNext domainsid (4) configuration
+       file.
+
+     • XML: unixNobodyGidOnWindows <value>
+
+       Old: UnixNobodyGidOnWindows <value>
+
+       The unixNobodyGidOnWindows variable instructs the FSM to pass this value
+       back to Microsoft Windows clients. The Windows Xsan clients will then use
+       this value as the gid for a Windows user when no gid can be found using
+       Microsoft Active Directory.  The default value is 60001. This value must
+       be between 0 and 2147483647, inclusive.
+
+     • XML: unixNobodyUidOnWindows <value>
+
+       Old: UnixNobodyUidOnWindows <value>
+
+       The unixNobodyUidOnWindows variable instructs the FSM to pass this value
+       back to Microsoft Windows clients. The Windows Xsan clients will then use
+       this value as the uid for a Windows user when no uid can be found using
+       Microsoft Active Directory.  The default value is 60001. This value must
+       be between 0 and 2147483647, inclusive.
+
+     • XML: useActiveDirectorySFU <true|false>
+
+       Old: UseActiveDirectorySFU <Yes|No>
+
+       The useActiveDirectorySFU variable enables or disables the use of
+       Microsoft's Active Directory Services for UNIX (SFU) on Windows based
+       Xsan clients.  (Note: Microsoft has changed the name "Services for UNIX"
+       in recent releases of Windows.  We are using the term SFU as a generic
+       name for all similar Active Directory Unix services.) This variable does
+       not affect the behavior of Unix clients.  Active Directory SFU allows
+       Windows-based clients to obtain the Windows user's Unix security
+       credentials.  By default, Xsan clients running on Windows query Active
+       Directory to translated Windows SIDs to Unix uid, gid and mode values and
+       store those credentials with newly created files.  This is needed to set
+       the proper Unix uid, gid and permissions on files.  If there is no Active
+       Directory mapping of a Windows user's SID to a Unix user, a file created
+       in Windows will have its uid and gid owned by NOBODY in the Unix view
+       (See unixNobodyUidOnWindows.)
+
+       Always use Active Directory SFU in a mixed Windows/Unix environment, or
+       if there is a possibility in the future of moving to a mixed environment.
+       If useActiveDirectorySFU is set to false, files created on Windows based
+       Xsan clients will always have their uid and gid set to NOBODY with
+       default permissions.
+
+       However, if it is unlikely a Unix client will ever access the Xsan
+       volume, then you may get a small performance increase by setting
+       useActiveDirectorySFU to false.  The performance increase will be
+       substantial higher only if you have more than 100 users concurrently
+       access the volume via a single Windows Xsan client.
+
+       This variable is only applicable when securityModel is set to legacy or
+       acl.  It is ignored for other securityModel values.  See securityModel
+       for details.
+
+       The default of this variable is true.  This value may be modified for
+       existing volumes.
+
+     • XML: windowsIdMapping <ldap|mdc|mdcall|none>
+
+       Old: WindowsIdMapping <ldap|mdc|mdcall|none>
+
+       The windowsIdMapping variable determines the method Windows clients
+       should use to perform the Windows User to Unix User/Group ID mappings.
+       ldap is the default value.
+
+       This variable is only applicable when securityModel is set to
+       unixpermbits.  It is ignored for other securityModel values.  See
+       securityModel for details. Note that due to caching, the effect of
+       changing the windowsIdMapping may not be seen on Windows clients until
+       10-15 minutes after the FSM is restarted unless StorNext is also
+       subsequently restarted on Windows clients.
+
+       When set to ldap, Microsoft Active Directory is queried to obtain uid/gid
+       values for the Windows User, including support for up to 32 supplemental
+       GIDs.
+
+       When set to mdc, the Xsan MDC is queried to obtain uid/gid values for
+       Windows users that are in the Active Directory domain that the system
+       belongs to. This includes support for an unlimited number of supplemental
+       GIDs.  However, local users and groups are NOT mapped. The mdc setting is
+       not valid on Windows MDCs.
+
+       When set to mdcall, ID mapping on Windows works the same as described
+       above for the mdc type except that locally created Windows accounts are
+       also mapped. Note that with this setting, Windows systems that are not
+       joined to any domain can still use MDC mapping.  The mdcall setting is
+       not valid on Windows MDCs.
+
+       When set to none, then there is no specific Windows User to Unix User
+       mapping (see the Windows control panel). In this case, files will be
+       owned by NOBODY in the Unix view.
+
+     • XML: windowsSecurity <true|false>
+
+       Old: WindowsSecurity <Yes|No>
+
+       The windowsSecurity variable enables or disables the use of the Windows
+       Security Reference Monitor (ACLs) on Windows clients. This does not
+       affect the behavior of Unix clients. In a mixed client environment where
+       there is no specific Windows User to Unix User mapping (see the Windows
+       control panel), files under Windows security will be owned by NOBODY in
+       the Unix view.  The default of this variable is false for configuration
+       files using the old format and true when using the new XML format.  This
+       value may be modified for existing volumes.
+
+       This variable is only applicable when securityModel is set to legacy.  It
+       is ignored for other securityModel values.  See securityModel for
+       details.
+
+       NOTE: Once windowsSecurity has been enabled, the volume will track
+       Windows access control lists (ACLs) for the life of the volume regardless
+       of the windowsSecurity value.
+
+AUTOAFFINITY DEFINITION
+       A autoAffinity defines a mapping of file extension(s) to an Affinity. A
+       noAffinity defines a mapping of file extensions to an affinity of 0.  The
+       Affinity must exist in the storage pool section (see below).  At file
+       creation time, if the file has an extension in the list specified, it
+       will be assigned the Affinity or 0.  This is only done for regular files
+       and not other types of files such as directories, devices, symbolic
+       links, etc.  An extension can only exist once for all autoAffinity and
+       noAffinity mappings.
+
+       Extensions in a file name are defined by all the characters following the
+       last "." in the file name.  The extension tag in the configuration file
+       is followed by the characters in the extension without the ".".  There is
+       one special extension that is defined by not specifying an extension.
+       This is the "empty" extension and tells file creation to map all files
+       not matching another extension to the autoAffinity or noAffinity mapping
+       it is in.
+
+       For example, an administrator can map all files ending in .dpx to an
+       affinity of Movies.  Or, all remaining files could be mapped to an
+       affinity of Other.
+
+       Customers can explicitly assign affinities to files and directories using
+       the cvmkdir, cvmkfile, or cvaffinity commands.  Or, files can be assigned
+       affinities with library API calls from within applications.  The
+       automatic affinities defined in this section take precedence and override
+       affinities set with cvmkdir/cvmkfile or via a library function.  For
+       example, if a directory exists with an affinity of Audio and a file is
+       created in that directory with a dpx extension with the above
+       autoAffinity mapping.  The *.dpx files gets assigned the Movies affinity
+       overriding Audio.
+
+       The cvaffinity command can be used to later change the affinity of a file
+       to some other value.
+
+       Some applications create temporary files before renaming them to their
+       final name.  Mappings of extension to affinity take effect only on the
+       create call.  So for these applications, the temporary file name
+       determines the file's affinity.  If the temporary file name has a
+       different extension or no extension, the temporary's extension is used
+       for the mapping.  If the file is renamed to a different extension, the
+       mapping is not affected.  A typical example of this is Microsoft Word.
+
+DISKTYPE DEFINITION
+       A diskType defines the number of sectors for a category of disk devices,
+       and optionally the number of bytes per disk device sector.  Since
+       multiple disks used in a file system may have the same type of disk, it
+       is easier to consolidate that information into a disk type definition
+       rather than including it for each disk definition.
+
+       For example, a 9.2GB Seagate Barracuda Fibre Channel ST19171FC disk has
+       1778311 total sectors. However, using most drivers, a portion of the disk
+       device is used for the volume header. For example, when using a Prisa
+       adapter and driver, the maximum number of sectors available to the volume
+       is 11781064.
+
+       When specified, the sector size must be 512 or 4096 bytes.  The default
+       sector size is 512 bytes.
+
+DISK DEFINITION
+       Note: The XML format defines disks in the stripeGroup section. The old
+       format defines disks in a separate section and then links to that
+       definition with the node variable in the stripe group. The general
+       description below applies to both.
+
+       Each disk defines a disk device that is in the Storage Area Network
+       configuration. The name of each disk device must be entered into the disk
+       device's volume header label using cvlabel(8).  Disk devices that the
+       client cannot see will not be accessible, and any stripe group containing
+       an inaccessible disk device will not be available, so plan stripe groups
+       accordingly.  Entire disks must be specified here; partitions may not be
+       used.
+
+       The disk definition's name must be unique, and is used by the volume
+       administrator programs.
+
+       A disk's status may be up or down.  When down, this device will not be
+       accessible. Users may still be able to see directories, file names and
+       other meta-data if the disk is in a stripe group that only contains
+       userdata, but attempts to open a file affected by the downed disk device
+       will receive an Operation Not Permitted (EPERM) failure.  When a volume
+       contains down data storage pools, space reporting tools in the operating
+       system will not count these storage pools in computing the total volume
+       size and available free blocks.  NOTE: when files are removed that only
+       contain extents on down storage pools, the amount of available free space
+       displayed will not change.
+
+       Each disk definition has a type which must match one of the names from a
+       previously defined diskType.
+
+       NOTE: In much older releases there was also a DeviceName option in the
+       Disk section.  The DeviceName was previously used to specify a operating
+       system specific disk name, but this has been superseded by automatic
+       volume recognition for some time and is no longer supported.  This is now
+       for internal use only.
+
+STRIPEGROUP DEFINITION
+       The stripeGroup defines individual storage pools.  A storage pool is a
+       collection of disk devices. A disk device may only be in one storage
+       pool.
+
+       The stripeGroup has a name name that is used in subsequent system
+       administration functions for the storage pool.
+
+       A storage pool can be set to have it's status up or down.  If down, the
+       storage pool is not used by the file system, and anything on that storage
+       pool is inaccessible.  This should normally be left up.
+
+       A storage pool can contain a combination of metadata, journal, or
+       userdata.  There can only be one storage pool that contains a journal per
+       file system.  Best performance is attained with a minimum of 2 stripe
+       groups per file system with one stripe group used exclusively for
+       metadata/journal and the other for user data.  Metadata has an I/O
+       pattern of small random I/O whereas user data is typically of much larger
+       size.  Splitting apart metadata and journal so there are 3 stripe groups
+       is recommended particularly if latency for file creation, removal and
+       allocation of space is important.
+
+       When a collection of disk devices is assembled under a storage pool, each
+       disk device is logically striped into chunks of disk blocks as defined by
+       the stripeBreadth variable.  For example, with a 4k-byte block-size and a
+       stripe breadth of 86 volume blocks, the first 352,256 bytes would be
+       written or read from/to the first disk device in the storage pool, the
+       second 352,256 bytes would be on the second disk device and so on. When
+       the last disk device used its 352,256 bytes, the stripe would start again
+       at drive zero. This allows for more than a single disk device's bandwidth
+       to be realized by applications.
+
+       The allocator aligns an allocation that is greater than or equal to the
+       largest stripeBreadth of any storage pool that can hold data. This is
+       done if the allocation request is an extension of the file.
+
+       A storage pool can be marked up or down.  When the storage pool is marked
+       down, it is not available for data access. However, users may look at the
+       directory and meta-data information. Attempts to open a file residing on
+       a downed storage pool will receive a Permission Denied failure.
+
+       There is an option to turn off reads to a stripe group.  NOTE: Not
+       intended for general use.  Only use when recommended by Apple Support.
+
+       A storage pool can have write access denied.  If writes are disabled,
+       then any new allocations are disallowed as well.  When a volume contains
+       data storage pools with writes disabled, space reporting tools in the
+       operating system will show all blocks for the storage pool as used.  Note
+       that when files are removed that only contain extents on write-disabled
+       storage pools, the amount of available free space displayed will not
+       change.  This is typically only used during Dynamic Resource Allocation
+       procedures (see the StorNext User Guide for more details).
+
+       Allocations can be disabled on a storage pool. This would typically be
+       done as a step towards retiring a stripe group. Unlike disabling writes,
+       turning off allocations allows writes to a file which do not require a
+       new allocation.  On Linux systems, the stripe group management utilities
+       sgmanage and sgoffload can be used to change this field, while the file
+       system remains up and on-line.
+
+       Affinities can be used to target allocations at specific stripe groups,
+       and the stripe group can exclusively contain affinity targeted
+       allocations or have affinity targeted allocations co-existing with other
+       allocations.  See snfs.cfg(5) and snfs.cfgx(5) for more details.
+
+       Each stripe group can define a multipath method, which controls the
+       algorithm used to allocate disk I/Os on paths to the storage when the
+       volume has multiple paths available to it. See sgmanage(8) for details.
+
+       Various realtime I/O parameters can be specified on a per stripe group
+       basis as well.  These define the maximum number of I/O operations per
+       second available to real-time applications for the stripe group using the
+       Quality of Service (QoS) API.  There is also the ability to specify I/Os
+       that should be reserved for applications not using the QoS API.  Realtime
+       I/O functionality is off by default.
+
+       A stripe group contains one or more disks on which to put the
+       metadata/journal/userdata.  The disk has an index that defines the
+       ordinal position the disk has in the storage pool. This number must be in
+       the range of zero to the number of disks in the storage pool minus one,
+       and be unique within the storage pool. There must be one disk entry per
+       disk and the number of disk entries defines the stripe depth.  For more
+       information about disks, see the DISK DEFINITION section above.
+
+       NOTE: The StripeClusters variable has been deprecated.  It was used to
+       limit I/O submitted by a single process, but was removed when
+       asynchronous I/O was added to the volume.
+
+       NOTE: The Type variable for Stripe Groups has been deprecated.  Several
+       versions ago, the Type parameter was used as a very course-grained
+       affinity-like control of how data was laid out between stripe groups.
+       The only valid value of Type for several releases of SNFS has been
+       Regular, and this is now deprecated as well for the XML configuration
+       format.  Type has been superseded by Affinity.
+
+FILES
+       /Library/Preferences/Xsan/*.cfgx
+       /Library/Preferences/Xsan/*.cfg
+
+SEE ALSO
+       snfs.cfgx(5), snfs.cfg(5), sncfgedit(8), cnvt2ha.sh(8), cvfs(8),
+       cvadmin(8), cvlabel(8), snldapd(8), cvmkdir(1), cvmkfile(1),
+       acldomain(4), ha_peer(4), mount_acfs(8), sgmanage(8), sgoffload(8)
+
+
+

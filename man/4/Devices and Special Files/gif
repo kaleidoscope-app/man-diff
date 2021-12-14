@@ -1,0 +1,112 @@
+GIF(4)                        Device Drivers Manual                       GIF(4)
+
+NAME
+     gif – generic tunnel interface
+
+SYNOPSIS
+     pseudo-device gif
+
+DESCRIPTION
+     The gif interface is a generic tunneling pseudo device for IPv4 and IPv6.
+     It can tunnel IPv[46] traffic over IPv[46].  Therefore, there can be four
+     possible configurations.  The behavior of gif is mainly based on RFC2893
+     IPv6-over-IPv4 configured tunnel.  On NetBSD, gif can also tunnel ISO
+     traffic over IPv[46] using EON encapsulation.
+
+     Each gif interface is created at runtime using interface cloning.  This is
+     most easily done with the ifconfig(8) create command or using the
+     gifconfig_⟨interface⟩ variable in rc.conf(5).
+
+     To use gif, administrator needs to configure protocol and addresses used
+     for the outer header.  This can be done by using gifconfig(8), or
+     SIOCSIFPHYADDR ioctl.  Also, administrator needs to configure protocol and
+     addresses used for the inner header, by using ifconfig(8).  Note that IPv6
+     link-local address (those start with fe80::) will be automatically
+     configured whenever possible.  You may need to remove IPv6 link-local
+     address manually using ifconfig(8), when you would like to disable the use
+     of IPv6 as inner header (like when you need pure IPv4-over-IPv6 tunnel).
+     Finally, use routing table to route the packets toward gif interface.
+
+     gif can be configured to be ECN friendly.  This can be configured by
+     IFF_LINK1.
+
+   ECN friendly behavior
+     gif can be configured to be ECN friendly, as described in
+     draft-ietf-ipsec-ecn-02.txt.  This is turned off by default, and can be
+     turned on by IFF_LINK1 interface flag.
+
+     Without IFF_LINK1, gif will show a normal behavior, like described in
+     RFC2893.  This can be summarized as follows:
+
+           Ingress  Set outer TOS bit to 0.
+
+           Egress   Drop outer TOS bit.
+
+     With IFF_LINK1, gif will copy ECN bits (0x02 and 0x01 on IPv4 TOS byte or
+     IPv6 traffic class byte) on egress and ingress, as follows:
+
+           Ingress  Copy TOS bits except for ECN CE (masked with 0xfe) from
+                    inner to outer.  Set ECN CE bit to 0.
+
+           Egress   Use inner TOS bits with some change.  If outer ECN CE bit is
+                    1, enable ECN CE bit on the inner.
+
+     Note that the ECN friendly behavior violates RFC2893.  This should be used
+     in mutual agreement with the peer.
+
+   Security
+     Malicious party may try to circumvent security filters by using tunnelled
+     packets.  For better protection, gif performs martian filter and ingress
+     filter against outer source address, on egress.  Note that martian/ingress
+     filters are no way complete.  You may want to secure your node by using
+     packet filters.  Ingress filter can be turned off by IFF_LINK2 bit.
+
+   Miscellaneous
+     By default, gif tunnels may not be nested.  This behavior may be modified
+     at runtime by setting the sysctl(8) variable net.link.gif.max_nesting to
+     the desired level of nesting.  Additionally, gif tunnels are restricted to
+     one per pair of end points.  Parallel tunnels may be enabled by setting the
+     sysctl(8) variable net.link.gif.parallel_tunnels to 1.
+
+SEE ALSO
+     inet(4), inet6(4), gifconfig(8)
+
+     R. Gilligan and E. Nordmark, “Transition Mechanisms for IPv6 Hosts and
+     Routers”, RFC2893, August 2000, ftp://ftp.isi.edu/in-notes/rfc2893.txt.
+
+     Sally Floyd, David L. Black, and K. K. Ramakrishnan, IPsec Interactions
+     with ECN, December 1999, draft-ietf-ipsec-ecn-02.txt.
+
+HISTORY
+     The gif device first appeared in WIDE hydrangea IPv6 kit.
+
+BUGS
+     There are many tunneling protocol specifications, defined differently from
+     each other.  gif may not interoperate with peers which are based on
+     different specifications, and are picky about outer header fields.  For
+     example, you cannot usually use gif to talk with IPsec devices that use
+     IPsec tunnel mode.
+
+     The current code does not check if the ingress address (outer source
+     address) configured to gif makes sense.  Make sure to configure an address
+     which belongs to your node.  Otherwise, your node will not be able to
+     receive packets from the peer, and your node will generate packets with a
+     spoofed source address.
+
+     If the outer protocol is IPv4, gif does not try to perform path MTU
+     discovery for the encapsulated packet (DF bit is set to 0).
+
+     If the outer protocol is IPv6, path MTU discovery for encapsulated packet
+     may affect communication over the interface.  The first bigger-than-pmtu
+     packet may be lost.  To avoid the problem, you may want to set the
+     interface MTU for gif to 1240 or smaller, when outer header is IPv6 and
+     inner header is IPv4.
+
+     gif does not translate ICMP messages for outer header into inner header.
+
+     In the past, gif had a multi-destination behavior, configurable via
+     IFF_LINK0 flag.  The behavior was obsoleted and is no longer supported.
+
+     It is thought that this is not actually a bug in gif, but rather lies
+     somewhere around a manipulation of an IPv6 routing table.
+

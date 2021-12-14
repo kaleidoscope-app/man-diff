@@ -1,0 +1,106 @@
+nns_intro(n)                  Name service facility                 nns_intro(n)
+
+
+
+________________________________________________________________________________
+
+NAME
+       nns_intro - Name service facility, introduction
+
+DESCRIPTION
+       nns (short for nano nameservice) is a facility built for the package
+       comm, adding a simple name service to it.  It is also built on top of
+       comm, using it for the exchange of messages between the client and server
+       parts.
+
+       This name service facility has nothing to do with the Internet's Domain
+       Name System, otherwise known as DNS. If the reader is looking for a
+       package dealing with that please see either of the packages dns and
+       resolv, both found in Tcllib too.
+
+       Tcllib provides 2 applications and 4 packages which are working together
+       and provide access to the facility at different levels.
+
+APPLICATIONS
+       The application nnsd provides a simple name server which can be run by
+       anybody anywhere on their system, as they see fit.  It is also an example
+       on the use of the server-side package nameserv::server.
+
+       Complementing this server is the nns client application.  A possible, but
+       no very sensible use would be to enter name/port bindings into a server
+       from a shell script. Not sensible, as shell scripts normally do not
+       provide a comm-based service.
+
+       The only case for this to make some sense would be in a shell script
+       wrapped around a Tcl script FOO which is using comm, to register the
+       listening port used by FOO.  However even there it would much more
+       sensible to extend FOO to use the nameservice directly. And in regard on
+       how to that nns can be used as both example and template.  Beyond that it
+       may also be useful to perform nameservice queries from shell scripts.
+
+       The third application, nnslog is a stripped down form of the nns client
+       application. It is reduced to perform a continuous search for all changes
+       and logs all received events to stdout.
+
+       Both clients use the nameserv::auto package to automatically hande the
+       loss and restoration of the connection to the server.
+
+PACKAGES
+       The two main packages implementing the service are nameserv and
+       nameserv::server, i.e. client and server. The latter has not much of an
+       API, just enough to start, stop, and configure it. See the application
+       nnsd on how to use it.
+
+       The basic client, in package nameserv, provides the main API to
+       manipulate and query the service. An example of its use is the
+       application nns.
+
+       The second client package, nameserv::auto is API compatible to the basic
+       client, but provides the additional functionality that it will
+       automatically restore data like bound names when the connection to the
+       name service was lost and then reestablished. I.e. it automatically
+       detects the loss of the server and re-enters the data when the server
+       comes back.
+
+       The package nameserv::common is of no interest to users. It is an
+       internal package containing code and definitions common to the packages
+       nameserv and nameserv::server.
+
+       All packages use the uevent package for the reporting of special
+       circumstances via events, and reserve the uevent-tag nameserv for their
+       exclusive use. All their events will be posted to that tag.
+
+INTERNALS
+       The document Name service facility, client/server protocol specifies the
+       protocol used by the packages nameserv and nameserv::server to talk to
+       each other. It is of no interest to users of either the packages or
+       applications.
+
+       Developers wishing to modify and/or extend or to just understand the
+       internals of the nameservice facility however are strongly advised to
+       read it.
+
+BUGS, IDEAS, FEEDBACK
+       This document, will undoubtedly contain bugs and other problems.  Please
+       report such in the category nameserv of the Tcllib SF Trackers
+       [http://sourceforge.net/tracker/?group_id=12883].  Please also report any
+       ideas for enhancements you may have for either package and/or
+       documentation.  Please also report any ideas for enhancements you may
+       have.
+
+SEE ALSO
+       nameserv(n), nameserv::auto(n), nameserv::common(n),
+       nameserv::protocol(n), nameserv::server(n), nnsd(n), nss(n)
+
+KEYWORDS
+       client, name service, server
+
+CATEGORY
+       Networking
+
+COPYRIGHT
+       Copyright (c) 2008 Andreas Kupries <andreas_kupries@users.sourceforge.net>
+
+
+
+
