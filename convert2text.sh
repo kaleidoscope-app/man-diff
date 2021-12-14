@@ -78,6 +78,7 @@ do
 	export MANWIDTH=80
 	/usr/bin/man -c "$PAGE_PATH" | col -bx \
 		| awk '/^mandoc: / { print $0 > "/dev/stderr"; next } { print $0 }' \
+		| sed '$d' \
 		> "$FANCY_DIR_PATH/$PAGE_NAME"
 done
 

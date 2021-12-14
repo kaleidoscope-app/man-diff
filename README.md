@@ -4,7 +4,7 @@
 
 <div clear="all" />
 
-### Find differences in man pages between macOS Big Sur 11.6 and macOS Monterey 12.0.1.
+### Find differences in man pages starting with macOS Big Sur 11.6.
 
 <img src="README/screen/cat@2x.jpg" width="844" />
 
@@ -38,6 +38,13 @@ Or quickly lookup a single man page:
 ```
 ./man-diff.sh plutil
 ```
+
+## Changelog
+
+Dec 14, 2021:
+
+* Added macOS 12.1: ```git difftool changeset/macOS12..changeset/macOS12.1```
+* Removed man page footer to simplify diff
 
 ## Prerequisites
 
