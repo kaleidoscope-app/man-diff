@@ -12,10 +12,18 @@ DESCRIPTION
      -g milliseconds
               Gap betwen requests in milliseconds.
 
+     -n number
+              Number of DNS records to use for each host argument. This does not
+              have to be less than, equal to, or greater than the number of
+              records that any host lookup returns. Numbers smaller than the
+              number of records will fetch only that many records. Numbers
+              larger than the number of records will fetch some records more
+              than once, as required, to reach the number of fetches desired.
+
      -r       bind(2) the NTP reserved port (123) for source communications.
 
-     -S       Use settimeofday(2) to set the system clock if the offset is
-              greater than 50 milliseconds.
+     -S       Use clock_settime(2) to set the system clock if the offset is
+              greater than 50 milliseconds, or -s is not specified.
 
      -s       Use adjtime(2) to slew the system clock if the offset is less than
               50 milliseconds.
@@ -23,16 +31,19 @@ DESCRIPTION
      -t seconds
               Maximum number of seconds to wait for responses.
 
+     -z path  Path to dump header state to. This is useful for sntpd(8) to read
+              from. Header data is stored on disk in big-endian (NBO) format.
+
 USAGE
      sntp pool.ntp.org
 
 SEE ALSO
-     settimeofday(2), adjtime(2), timed(8),
+     clock_settime(2), adjtime(2), timed(8), sntpd(8)
 
 HISTORY
      This sntp should not be confused with the Network Time Foundation's sntp
      implementation. This is a simplified client that supports a minimal subset
      of features for compatibility.
 
-     This sntp first appeared in macOS 10.16.
+     This sntp first appeared in macOS 11.0.
 

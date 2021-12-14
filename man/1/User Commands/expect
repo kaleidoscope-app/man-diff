@@ -161,7 +161,7 @@ COMMANDS
        refers to the Expect program while "expect" with a lower-case "e" refers
        to the expect command within the Expect program.)
 
-       close [-slave] [-onexec 0|1] [-i spawn_id]
+       close [-replica] [-onexec 0|1] [-i spawn_id]
              closes the connection to the current process.  Most interactive
              programs will detect EOF on their stdin and exit; thus close
              usually suffices to kill the process as well.  The -i flag declares
@@ -176,8 +176,8 @@ COMMANDS
              a spawn id open, use the value 0.  A non-zero integer value will
              force the spawn closed (the default) in any new processes.
 
-             The -slave flag closes the slave associated with the spawn id.
-             (See "spawn -pty".)  When the connection is closed, the slave is
+             The -replica flag closes the replica associated with the spawn id.
+             (See "spawn -pty".)  When the connection is closed, the replica is
              automatically closed as well if still open.
 
              No matter whether the connection is closed implicitly or
@@ -1187,8 +1187,8 @@ COMMANDS
 
 
              spawn returns the UNIX process id.  If no process is spawned, 0 is
-             returned.  The variable spawn_out(slave,name) is set to the name of
-             the pty slave device.
+             returned.  The variable spawn_out(replica,name) is set to the name
+             of the pty replica device.
 
              By default, spawn echoes the command name and arguments.  The
              -noecho flag stops spawn from doing this.
@@ -1238,9 +1238,9 @@ COMMANDS
              is returned to indicate there is no associated process.  Spawn_id
              is set as usual.
 
-             The variable spawn_out(slave,fd) is set to a file identifier
-             corresponding to the pty slave.  It can be closed using "close
-             -slave".
+             The variable spawn_out(replica,fd) is set to a file identifier
+             corresponding to the pty replica.  It can be closed using "close
+             -replica".
 
              The -ignore flag names a signal to be ignored in the spawned
              process.  Otherwise, signals get the default behavior.  Signals are

@@ -1,0 +1,55 @@
+shortcuts(1)                 General Commands Manual                shortcuts(1)
+
+NAME
+     shortcuts – Command-line utility for running shortcuts.
+
+SYNOPSIS
+     shortcuts run shortcut-name [--input-path input-path ...]
+               [--output-path output-path ...] [--output-type output-type]
+     shortcuts list [--folder-name folder-name] [--folders]
+     shortcuts view shortcut-name
+     shortcuts sign [--mode mode] --input input --output output
+
+DESCRIPTION
+     The shortcuts command is used to run, list, view or sign shortcuts. To
+     create or edit a shortcut, use the Shortcuts application.
+
+OPTIONS
+   shortcuts run
+     shortcut-name
+
+     [--input-path input-path ...]
+              The input to provide to the shortcut. Can be dropped, or set to
+              “-” for stdin.
+
+     [--output-path output-path ...]
+              Where to write the shortcut output, if applicable. Can be omitted,
+              or set to “-” for stdout.
+
+     [--output-type output-type]
+              What type to output data in, in Uniform Type Identifier format. If
+              not provided shortcuts will attempt to infer the output type from
+              the output filename, or use the default type of the output
+              content.
+
+   shortcuts list
+     [--folder-name folder-name]
+              List all shortcuts in the folder “folder-name” .
+
+     [--folders]
+              List all user-created folders.
+
+   shortcuts sign
+     [--mode mode]
+              The signing mode. Either “people-who-know-me” or “anyone”
+              .Specifying “people-who-know-me” will sign locally, but only your
+              devices, or people who have your contact info in their contacts,
+              will be able to import the shortcut. Specifying “anyone” will
+              notarize via iCloud, and allow anyone to import the shortcut.
+
+     --input input
+              The shortcut file to sign.
+
+     --output output
+              Output path for the signed shortcut file.
+

@@ -4,9 +4,10 @@ NAME
      atos – convert numeric addresses to symbols of binary images or processes
 
 SYNOPSIS
-     atos [-o <binary-image-file>] [-p <pid> | <partial-executable-name>]
-          [-arch architecture] [-l <load-address>] [-s <slide>] [-printHeader]
-          [-fullPath] [-f <address-input-file>] [<address> ...]
+     atos [-o <binary-image-file> | <dSYM>]
+          [-p <pid> | <partial-executable-name>] [-arch architecture]
+          [-l <load-address>] [-s <slide>] [-printHeader] [-fullPath] [-i]
+          [-d <delimiter>] [-f <address-input-file>] [<address> ...]
 
 DESCRIPTION
      The atos command converts numeric addresses to their symbolic equivalents.
@@ -27,8 +28,9 @@ DESCRIPTION
      The symbols are found in either a binary image file or in a currently
      executing process, as specified by:
 
-     -o <binary-image-file>
-             The path to a binary image file in which to look up symbols.
+     -o <binary-image-file> | <dSYM>
+             The path to a binary image file or dSYM in which to look up
+             symbols.
 
      -p <pid> | <partial-executable-name>
              The process ID or the partial name of a currently executing process
@@ -74,6 +76,12 @@ DESCRIPTION
      -fullPath
              Print the full path of the source files.
 
+     -i      Display inlined symbols.
+
+     -d <delimiter>
+             Delimiter when outputting inline frames. Defaults to newline.
+
+
 EXAMPLE
      A stripped, optimized version of Sketch was built as an x86_64 position-
      independent executable (PIE) into /BuildProducts/Release.  Full debug
@@ -97,6 +105,14 @@ EXAMPLE
      -[SKTGraphicView drawRect:] (in Sketch) (SKTGraphicView.m:445)
      -[SKTGraphic drawHandlesInView:] (in Sketch) (NSGeometry.h:110)
      -[SKTGraphic drawHandleInView:atPoint:] (in Sketch) (SKTGraphic.m:490)
+
+     The same goal can be achieved by running atos with the dSYM:
+
+     % atos -o /BuildProducts/Release/Sketch.app.dSYM -arch x86_64 -l 0x10acde000  0x10acea1d3 0x10ace4bea 0x10ace4b7a
+     -[SKTGraphicView drawRect:] (in Sketch) (SKTGraphicView.m:445)
+     -[SKTGraphic drawHandlesInView:] (in Sketch) (NSGeometry.h:110)
+     -[SKTGraphic drawHandleInView:atPoint:] (in Sketch) (SKTGraphic.m:490)
+
 
 GETTING SYMBOLS FOR A DIFFERENT MACHINE ARCHITECTURE
      It is possible to get symbols for addresses from a different machine

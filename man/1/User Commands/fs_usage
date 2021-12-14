@@ -5,7 +5,9 @@ NAME
      activity in real-time
 
 SYNOPSIS
-     fs_usage [-e] [-w] [-f mode] [-b] [-t seconds] [-R rawfile [-S start_time] [-E end_time]] [pid | cmd [pid | cmd] ...]
+     fs_usage [-e] [-w] [-f mode] [-b] [-t seconds]
+              [-R rawfile [-S start_time -E end_time]]
+              [pid | cmd [pid | cmd [...]]]
 
 DESCRIPTION
      The fs_usage utility presents an ongoing display of system call usage
@@ -36,17 +38,17 @@ DESCRIPTION
              mode provided.  Multiple filtering options can be specified.  By
              default, no output filtering occurs.  The supported modes are:
 
-             network    Network-related events are displayed.
+             network Network-related events are displayed.
 
-             filesys    Filesystem-related events are displayed.
+             filesys Filesystem-related events are displayed.
 
-             pathname   Pathname-related events are displayed.
+             pathname Pathname-related events are displayed.
 
-             exec       Exec and spawn events are displayed.
+             exec Exec and spawn events are displayed.
 
-             diskio     Disk I/O events are displayed.
+             diskio Disk I/O events are displayed.
 
-             cachehit   In addition, show cache hits.
+             cachehit In addition, show cache hits.
 
      -b      Specifying the -b option annotates disk I/O events with BootCache
              info (if available).
@@ -60,7 +62,7 @@ DESCRIPTION
 
      -S start_time
              If -R is selected, specifies the start time in microseconds to
-             begin processing entries from the raw trace file. Entries with
+             begin processing entries from the raw trace file.  Entries with
              timestamps before the specified start time will be skipped.
 
      -E end_time
@@ -109,7 +111,7 @@ DESCRIPTION
 
      SELECT RETURN
              Of the form S=x, x is the number of ready descriptors returned by
-             the select() system call.  If S=0, the time limit expired.
+             the select(2) system call.  If S=0, the time limit expired.
 
      TIME INTERVAL(W)
              The elapsed time spent in the system call.  A ‘W’ after the elapsed
@@ -121,10 +123,9 @@ DESCRIPTION
              thread id to the process name (i.e Mail.nnn).
 
 SAMPLE USAGE
-     fs_usage -w -f filesys Mail
-
-     fs_usage will display file system related data for all instances of
-     processes named Mail.  Maximum data output will be displayed in the window.
+     fs_usage -w -f filesys Mail fs_usage will display file system related data
+     for all instances of processes named Mail.  Maximum data output will be
+     displayed in the window.
 
 SEE ALSO
      dyld(1), latency(1), sc_usage(1), top(1)

@@ -43,8 +43,8 @@ DESCRIPTION
      possibly <exec.h> in the standard include directory.  These files have a
      “magic number” stored in a particular place near the beginning of the file
      that tells the UNIX operating system that the file is a binary executable,
-     and which of several types thereof.  The concept of a “magic” has been
-     applied by extension to data files.  Any file with some invariant
+     and which of several types thereof.  The concept of a “magic number” has
+     been applied by extension to data files.  Any file with some invariant
      identifier at a small fixed offset into the file can usually be described
      in this way.  The information identifying these files is read from the
      compiled magic file /usr/share/file/magic.mgc, or the files in the
@@ -82,7 +82,7 @@ DESCRIPTION
 OPTIONS
      --apple
              Causes the file command to output the file type and creator code as
-             used by older MacOS versions. The code consists of eight letters,
+             used by older MacOS versions.  The code consists of eight letters,
              the first describing the file type, the latter the creator.  This
              option works properly only for file formats that have the apple-
              style output defined.
@@ -96,8 +96,8 @@ OPTIONS
 
      -c, --checking-printout
              Cause a checking printout of the parsed form of the magic file.
-             This is usually used in conjunction with the -m flag to debug a new
-             magic file before installing it.
+             This is usually used in conjunction with the -m option to debug a
+             new magic file before installing it.
 
      -C, --compile
              Write a magic.mgc output file that contains a pre-parsed version of
@@ -144,7 +144,7 @@ OPTIONS
 
      --exclude-quiet
              Like --exclude but ignore tests that file does not know about.
-             This is intended for compatilibity with older versions of file.
+             This is intended for compatibility with older versions of file.
 
      --extension
              Print a slash-separated list of valid extensions for the file type
@@ -168,8 +168,8 @@ OPTIONS
              -F @”.
 
      -h, --no-dereference
-             option causes symlinks not to be followed (on systems that support
-             symbolic links).
+             This option causes symlinks not to be followed (on systems that
+             support symbolic links).
 
      -i      If the file is a regular file, do not classify its contents.
 
@@ -193,9 +193,9 @@ OPTIONS
              option).
 
      -L, --dereference
-             option causes symlinks to be followed, as the like-named option in
-             ls(1) (on systems that support symbolic links).  This is the
-             default behavior.
+             This option causes symlinks to be followed, as the like-named
+             option in ls(1) (on systems that support symbolic links).  This is
+             the default behavior.
 
      -m, --magic-file list
              Specify an alternate list of files and directories containing
@@ -225,6 +225,8 @@ OPTIONS
                    elf_notes    256        max ELF notes processed
                    elf_phnum    2048       max ELF program sections processed
                    elf_shnum    32768      max ELF sections processed
+                   encoding     65536      max number of bytes to scan for
+                                           encoding evaluation
                    indir        50         recursion limit for indirect magic
                    name         60         use count limit for name/use magic
                    regex        8192       length limit for regex searches
@@ -425,7 +427,7 @@ TODO
      and complicated; refactor and centralize.
 
      Some of the encoding logic is hard-coded in encoding.c and can be moved to
-     the magic files if we had a !:charset annotation
+     the magic files if we had a !:charset annotation.
 
      Continue to squash all magic bugs.  See Debian BTS for a good source.
 
@@ -461,8 +463,13 @@ TODO
      If the offsets specified internally in the file exceed the buffer size (
      HOWMANY variable in file.h), then we don't seek to that offset, but we give
      up.  It would be better if buffer managements was done when the file
-     descriptor is available so move around the file.  One must be careful
-     though because this has performance (and thus security considerations).
+     descriptor is available so we can seek around the file.  One must be
+     careful though because this has performance and thus security
+     considerations, because one can slow down things by repeateadly seeking.
+
+     There is support now for keeping separate buffers and having offsets from
+     the end of the file, but the internal buffer management still needs an
+     overhaul.
 
 AVAILABILITY
      You can obtain the original author's latest version by anonymous FTP on

@@ -13,9 +13,9 @@ SYNOPSIS
 DESCRIPTION
        curl is a tool to transfer data from or to a server, using one of the
        supported protocols (DICT, FILE, FTP, FTPS, GOPHER, HTTP, HTTPS, IMAP,
-       IMAPS, LDAP, LDAPS, POP3, POP3S, RTMP, RTSP, SCP, SFTP, SMB, SMBS, SMTP,
-       SMTPS, TELNET and TFTP). The command is designed to work without user
-       interaction.
+       IMAPS, LDAP, LDAPS, MQTT, POP3, POP3S, RTMP, RTMPS, RTSP, SCP, SFTP, SMB,
+       SMBS, SMTP, SMTPS, TELNET and TFTP). The command is designed to work
+       without user interaction.
 
        curl offers a busload of useful tricks like proxy support, user
        authentication, FTP upload, HTTP post, SSL connections, cookies, file
@@ -30,22 +30,22 @@ URL
        in RFC 3986.
 
        You can specify multiple URLs or parts of URLs by writing part sets
-       within braces as in:
+       within braces and quoting the URL as in:
 
-         http://site.{one,two,three}.com
+         "http://site.{one,two,three}.com"
 
        or you can get sequences of alphanumeric series by using [] as in:
 
-         ftp://ftp.example.com/file[1-100].txt
+         "ftp://ftp.example.com/file[1-100].txt"
 
-         ftp://ftp.example.com/file[001-100].txt    (with leading zeros)
+         "ftp://ftp.example.com/file[001-100].txt"    (with leading zeros)
 
-         ftp://ftp.example.com/file[a-z].txt
+         "ftp://ftp.example.com/file[a-z].txt"
 
        Nested sequences are not supported, but you can use several ones next to
        each other:
 
-         http://example.com/archive[1996-1999]/vol[1-4]/part{a,b,c}.html
+         "http://example.com/archive[1996-1999]/vol[1-4]/part{a,b,c}.html"
 
        You can specify any amount of URLs on the command line. They will be
        fetched in a sequential manner in the specified order. You can specify
@@ -54,9 +54,9 @@ URL
        You can specify a step counter for the ranges to get every Nth number or
        letter:
 
-         http://example.com/file[1-100:10].txt
+         "http://example.com/file[1-100:10].txt"
 
-         http://example.com/file[a-z:2].txt
+         "http://example.com/file[a-z:2].txt"
 
        When using [] or {} sequences when invoked from a command line prompt,
        you probably have to put the full URL within double quotes to avoid the
@@ -66,7 +66,7 @@ URL
        Provide the IPv6 zone index in the URL with an escaped percentage sign
        and the interface name. Like in
 
-         http://[fe80::3%25eth0]/
+         "http://[fe80::3%25eth0]/"
 
        If you specify URL without protocol:// prefix, curl will attempt to guess
        what protocol you might want. It will then default to HTTP but try other
@@ -82,6 +82,75 @@ URL
        connects / handshakes. This improves speed. Of course this is only done
        on files specified on a single command line and cannot be used between
        separate curl invokes.
+
+OUTPUT
+       If not told otherwise, curl writes the received data to stdout. It can be
+       instructed to instead save that data into a local file, using the -o,
+       --output or -O, --remote-name options. If curl is given multiple URLs to
+       transfer on the command line, it similarly needs multiple options for
+       where to save them.
+
+       curl does not parse or otherwise "understand" the content it gets or
+       writes as output. It does no encoding or decoding, unless explicitly
+       asked so with dedicated command line options.
+
+PROTOCOLS
+       curl supports numerous protocols, or put in URL terms: schemes. Your
+       particular build may not support them all.
+
+       DICT   Lets you lookup words using online dictionaries.
+
+       FILE   Read or write local files. curl does not support accessing file://
+              URL remotely, but when running on Microsoft Windows using the
+              native UNC approach will work.
+
+       FTP(S) curl supports the File Transfer Protocol with a lot of tweaks and
+              levers. With or without using TLS.
+
+       GOPHER Retrieve files.
+
+       HTTP(S)
+              curl supports HTTP with numerous options and variations. It can
+              speak HTTP version 0.9, 1.0, 1.1, 2 and 3 depending on build
+              options and the correct command line options.
+
+       IMAP(S)
+              Using the mail reading protocol, curl can "download" emails for
+              you. With or without using TLS.
+
+       LDAP(S)
+              curl can do directory lookups for you, with or without TLS.
+
+       MQTT   curl supports MQTT version 3. Downloading over MQTT equals
+              "subscribe" to a topic while uploading/posting equals "publish" on
+              a topic. MQTT support is experimental and TLS based MQTT is not
+              supported (yet).
+
+       POP3(S)
+              Downloading from a pop3 server means getting a mail. With or
+              without using TLS.
+
+       RTMP(S)
+              The Realtime Messaging Protocol is primarily used to server
+              streaming media and curl can download it.
+
+       RTSP   curl supports RTSP 1.0 downloads.
+
+       SCP    curl supports SSH version 2 scp transfers.
+
+       SFTP   curl supports SFTP (draft 5) done over SSH version 2.
+
+       SMB(S) curl supports SMB version 1 for upload and download.
+
+       SMTP(S)
+              Uploading contents to an SMTP server means sending an email. With
+              or without TLS.
+
+       TELNET Telling curl to fetch a telnet URL starts an interactive session
+              where it sends what it reads on stdin and outputs what the server
+              sends it.
+
+       TFTP   curl can do TFTP downloads and uploads.
 
 PROGRESS METER
        curl normally displays a progress meter during operations, indicating the
@@ -135,7 +204,7 @@ OPTIONS
               Added in 7.53.0.
 
        --alt-svc <file name>
-              (HTTPS) WARNING: this option is experiemental. Do not use in
+              (HTTPS) WARNING: this option is experimental. Do not use in
               production.
 
               This option enables the alt-svc parser in curl. If the file name
@@ -143,11 +212,11 @@ OPTIONS
               a completed transfer, the cache will be saved to the file name
               again if it has been modified.
 
-              Specifiy a "" file name (zero length) to avoid loading/saving and
+              Specify a "" file name (zero length) to avoid loading/saving and
               make curl just handle the cache in memory.
 
               If this option is used several times, curl will load contents from
-              all the files but the the last one will be used for saving.
+              all the files but the last one will be used for saving.
 
               Added in 7.64.1.
 
@@ -166,13 +235,29 @@ OPTIONS
 
               Used together with -u, --user.
 
-              See also --proxy-anyauth and --basic and --digest.
+              See also --proxy-anyauth, --basic and --digest.
 
        -a, --append
               (FTP SFTP) When used in an upload, this makes curl append to the
               target file instead of overwriting it. If the remote file doesn't
               exist, it will be created.  Note that this flag is ignored by some
               SFTP servers (including OpenSSH).
+
+       --aws-sigv4 <provider1[:provider2[:region[:service]]]>
+              Use AWS V4 signature authentication in the transfer.
+
+              The provider argument is a string that is used by the algorithm
+              when creating outgoing authentication headers.
+
+              The region argument is a string that points to a geographic area
+              of a resources collection (region-code) when the region name is
+              omitted from the endpoint.
+
+              The service argument is a string that points to a function
+              provided by a cloud (service-code) when the service name is
+              omitted from the endpoint.
+
+              Added in 7.75.0.
 
        --basic
               (HTTP) Tells curl to use HTTP Basic authentication with the remote
@@ -255,7 +340,7 @@ OPTIONS
 
               If this option is used several times, the last one will be used.
 
-              See also -E, --cert and --key and --key-type.
+              See also -E, --cert, --key and --key-type.
 
        -E, --cert <certificate[:password]>
               (TLS) Tells curl to use the specified client certificate file when
@@ -310,14 +395,14 @@ OPTIONS
 
               If this option is used several times, the last one will be used.
 
-              See also --cert-type and --key and --key-type.
+              See also --cert-type, --key and --key-type.
 
        --ciphers <list of ciphers>
               (TLS) Specifies which ciphers to use in the connection. The list
               of ciphers must specify valid ciphers. Read up on SSL cipher list
               details on this URL:
 
-               https://curl.haxx.se/docs/ssl-ciphers.html
+               https://curl.se/docs/ssl-ciphers.html
 
               If this option is used several times, the last one will be used.
 
@@ -329,9 +414,11 @@ OPTIONS
 
        --compressed
               (HTTP) Request a compressed response using one of the algorithms
-              curl supports, and save the uncompressed document.  If this option
-              is used and the server sends an unsupported encoding, curl will
-              report an error.
+              curl supports, and automatically decompress the content. Headers
+              are not modified.
+
+              If this option is used and the server sends an unsupported
+              encoding, curl will report an error.
 
        -K, --config <file>
 
@@ -347,13 +434,13 @@ OPTIONS
               with one or two dashes, there can be no colon or equals character
               between the option and its parameter.
 
-              If the parameter is to contain whitespace, the parameter must be
-              enclosed within quotes. Within double quotes, the following escape
-              sequences are available: \\, \", \t, \n, \r and \v. A backslash
-              preceding any other letter is ignored. If the first column of a
-              config line is a '#' character, the rest of the line will be
-              treated as a comment. Only write one option per physical line in
-              the config file.
+              If the parameter contains whitespace (or starts with : or =), the
+              parameter must be enclosed within quotes. Within double quotes,
+              the following escape sequences are available: \\, \", \t, \n, \r
+              and \v. A backslash preceding any other letter is ignored. If the
+              first column of a config line is a '#' character, the rest of the
+              line will be treated as a comment. Only write one option per
+              physical line in the config file.
 
               Specify the filename to -K, --config as '-' to make curl read the
               file from stdin.
@@ -362,20 +449,26 @@ OPTIONS
               to specify it using the --url option, and not by simply writing
               the URL on its own line. So, it could look similar to this:
 
-              url = "https://curl.haxx.se/docs/"
+              url = "https://curl.se/docs/"
 
               When curl is invoked, it (unless -q, --disable is used) checks for
               a default config file and uses it if found. The default config
               file is checked for in the following places in this order:
 
-              1) curl tries to find the "home dir": It first checks for the
-              CURL_HOME and then the HOME environment variables. Failing that,
-              it uses getpwuid() on Unix-like systems (which returns the home
-              dir given the current user in your system). On Windows, it then
-              checks for the APPDATA variable, or as a last resort the
-              '%USERPROFILE%\Application Data'.
+              1) Use the CURL_HOME environment variable if set
 
-              2) On windows, if there is no _curlrc file in the home dir, it
+              2) Use the XDG_CONFIG_HOME environment variable if set (Added in
+              7.73.0)
+
+              3) Use the HOME environment variable if set
+
+              4) Non-windows: use getpwuid to find the home directory
+
+              5) Windows: use APPDATA if set
+
+              6) Windows: use "USERPROFILElication Data" if set
+
+              7) On windows, if there is no .curlrc file in the home dir, it
               checks for one in the same dir the curl executable is placed. On
               Unix-like systems, it will simply try to load .curlrc from the
               determined home dir.
@@ -473,7 +566,7 @@ OPTIONS
               cookies, which may be handy if you're using this in combination
               with the -L, --location option or do multiple URL transfers on the
               same invoke. If the file name is exactly a minus ("-"), curl will
-              instead the contents from stdin.
+              instead read the contents from stdin.
 
               The file format of the file to read cookies from should be plain
               HTTP headers (Set-Cookie style) or the Netscape/Mozilla cookie
@@ -483,18 +576,12 @@ OPTIONS
               cookies will be written to the file. To store cookies, use the -c,
               --cookie-jar option.
 
-              Exercise caution if you are using this option and multiple
-              transfers may occur.  If you use the NAME1=VALUE1; format, or in a
-              file use the Set-Cookie format and don't specify a domain, then
-              the cookie is sent for any domain (even after redirects are
-              followed) and cannot be modified by a server-set cookie. If the
-              cookie engine is enabled and a server sets a cookie of the same
-              name then both will be sent on a future transfer to that server,
-              likely not what you intended.  To address these issues set a
-              domain in Set-Cookie (doing that will include sub domains) or use
-              the Netscape format.
+              If you use the Set-Cookie file format and don't specify a domain
+              then the cookie is not sent since the domain will never match. To
+              address this, set a domain in Set-Cookie line (doing that will
+              include sub-domains) or preferably: use the Netscape format.
 
-              If this option is used several times, the last one will be used.
+              This option can be used multiple times.
 
               Users very often want to both read cookies from a file and write
               updated cookies back to a file, so using both -b, --cookie and -c,
@@ -507,8 +594,20 @@ OPTIONS
               nothing else. If the --output file name uses no dir or if the dirs
               it mentions already exist, no dir will be created.
 
+              Created dirs are made with mode 0750 on unix style file systems.
+
               To create remote directories when using FTP or SFTP, try --ftp-
               create-dirs.
+
+       --create-file-mode <mode>
+              (SFTP SCP FILE) When curl is used to create files remotely using
+              one of the supported protocols, this option allows the user to set
+              which 'mode' to set on the file at creation time, instead of the
+              default 0644.
+
+              This option takes an octal number as argument.
+
+              See also --ftp-create-dirs. Added in 7.75.0.
 
        --crlf (FTP SMTP) Convert LF to CRLF in upload. Useful for MVS (OS/390).
 
@@ -522,6 +621,22 @@ OPTIONS
               If this option is used several times, the last one will be used.
 
               Added in 7.19.7.
+
+       --curves <algorithm list>
+              (TLS) Tells curl to request specific curves to use during SSL
+              session establishment according to RFC 8422, 5.1.  Multiple
+              algorithms can be provided by separating them with ":" (e.g.
+              "X25519:P-521").  The parameter is available identically in the
+              "openssl s_client/s_server" utilities.
+
+              --curves allows a OpenSSL powered curl to make SSL-connections
+              with exactly the (EC) curve requested by the client, avoiding
+              intransparent client/server negotiations.
+
+              If this option is set, the default curves list built into openssl
+              will be ignored.
+
+              Added in 7.73.0.
 
        --data-ascii <data>
               (HTTP) This is just an alias for -d, --data.
@@ -588,7 +703,7 @@ OPTIONS
        See also -d, --data and --data-raw. Added in 7.18.0.
 
        -d, --data <data>
-              (HTTP) Sends the specified data in a POST request to the HTTP
+              (HTTP MQTT) Sends the specified data in a POST request to the HTTP
               server, in the same way that a browser does when a user has filled
               in an HTML form and presses the submit button. This will cause
               curl to pass the data to the server using the content-type
@@ -607,12 +722,13 @@ OPTIONS
 
               If you start the data with the letter @, the rest should be a file
               name to read the data from, or - if you want curl to read the data
-              from stdin. Multiple files can also be specified. Posting data
-              from a file named from a file like that, carriage returns and
-              newlines will be stripped out. If you don't want the @ character
-              to have a special interpretation use --data-raw instead.
+              from stdin. Posting data from a file named 'foobar' would thus be
+              done with -d, --data @foobar. When -d, --data is told to read from
+              a file like that, carriage returns and newlines will be stripped
+              out. If you don't want the @ character to have a special
+              interpretation use --data-raw instead.
 
-              See also --data-binary and --data-urlencode and --data-raw. This
+              See also --data-binary, --data-urlencode and --data-raw. This
               option overrides -F, --form and -I, --head and -T, --upload-file.
 
        --delegation <LEVEL>
@@ -635,7 +751,7 @@ OPTIONS
 
               If this option is used several times, only the first one is used.
 
-              See also -u, --user and --proxy-digest and --anyauth. This option
+              See also -u, --user, --proxy-digest and --anyauth. This option
               overrides --basic and --ntlm and --negotiate.
 
        --disable-eprt
@@ -720,12 +836,29 @@ OPTIONS
               --dns-servers requires that the underlying libcurl was built to
               support c-ares. Added in 7.33.0.
 
+       --doh-cert-status
+              (all) Same as --cert-status but used for DOH (DNS-over-HTTPS).
+
+              Added in 7.76.0.
+
+       --doh-insecure
+              (all) Same as -k, --insecure but used for DOH (DNS-over-HTTPS).
+
+              Added in 7.76.0.
+
        --doh-url <URL>
               (all) Specifies which DNS-over-HTTPS (DOH) server to use to
               resolve hostnames, instead of using the default name resolver
               mechanism. The URL must be HTTPS.
 
+              Some SSL options that you set for your transfer will apply to DOH
+              since the name lookups take place over SSL. However, the
+              certificate verification settings are not inherited and can be
+              controlled separately via --doh-insecure and --doh-cert-status.
+
               If this option is used several times, the last one will be used.
+
+              Added in 7.62.0.
 
        -D, --dump-header <filename>
               (HTTP FTP) Write the received protocol headers to the specified
@@ -736,6 +869,9 @@ OPTIONS
               then be read in a second curl invocation by using the -b, --cookie
               option! The -c, --cookie-jar option is a better way to store
               cookies.
+
+              If no headers are received, the use of this option will create an
+              empty file.
 
               When used in FTP, the FTP server response lines are considered
               being "headers" and thus are saved there.
@@ -756,6 +892,40 @@ OPTIONS
               operations. Use --engine list to print a list of build-time
               supported engines. Note that not all (or none) of the engines may
               be available at run-time.
+
+       --etag-compare <file>
+              (HTTP) This option makes a conditional HTTP request for the
+              specific ETag read from the given file by sending a custom If-
+              None-Match header using the extracted ETag.
+
+              For correct results, make sure that specified file contains only a
+              single line with a desired ETag. An empty file is parsed as an
+              empty ETag.
+
+              Use the option --etag-save to first save the ETag from a response,
+              and then use this option to compare using the saved ETag in a
+              subsequent request.
+
+              COMPARISON: There are 2 types of comparison or ETags: Weak and
+              Strong.  This option expects, and uses a strong comparison.
+
+              Added in 7.68.0.
+
+       --etag-save <file>
+              (HTTP) This option saves an HTTP ETag to the specified file. Etag
+              is usually part of headers returned by a request. When server
+              sends an ETag, it must be enveloped by a double quote. This option
+              extracts the ETag without the double quotes and saves it into the
+              <file>.
+
+              A server can send a weak ETag which is prefixed by "W/". This
+              identifier is not considered, and only relevant ETag between
+              quotation marks is parsed.
+
+              It an ETag wasn't sent by the server or it cannot be parsed, an
+              empty file is created.
+
+              Added in 7.68.0.
 
        --expect100-timeout <seconds>
               (HTTP) Maximum time in seconds that you allow curl to wait for a
@@ -790,17 +960,32 @@ OPTIONS
 
               Added in 7.52.0.
 
+       --fail-with-body
+              (HTTP) Return an error on server errors where the HTTP response
+              code is 400 or greater). In normal cases when an HTTP server fails
+              to deliver a document, it returns an HTML document stating so
+              (which often also describes why and more). This flag will still
+              allow curl to output and save that content but also to return
+              error 22.
+
+              This is an alternative option to -f, --fail which makes curl fail
+              for the same circumstances but without saving the content.
+
+              See also -f, --fail. Added in 7.76.0.
+
        -f, --fail
               (HTTP) Fail silently (no output at all) on server errors. This is
-              mostly done to better enable scripts etc to better deal with
-              failed attempts. In normal cases when an HTTP server fails to
-              deliver a document, it returns an HTML document stating so (which
-              often also describes why and more). This flag will prevent curl
-              from outputting that and return error 22.
+              mostly done to enable scripts etc to better deal with failed
+              attempts. In normal cases when an HTTP server fails to deliver a
+              document, it returns an HTML document stating so (which often also
+              describes why and more). This flag will prevent curl from
+              outputting that and return error 22.
 
               This method is not fail-safe and there are occasions where non-
               successful response codes will slip through, especially when
               authentication is involved (response codes 401 and 407).
+
+              See also --fail-with-body.
 
        --false-start
               (TLS) Tells curl to use false start during the TLS handshake.
@@ -856,14 +1041,13 @@ OPTIONS
 
                curl -F profile=@portrait.jpg https://example.com/upload.cgi
 
-              Example: send a your name and shoe size in two text fields to the
+              Example: send your name and shoe size in two text fields to the
               server:
 
                curl -F name=John -F shoesize=11 https://example.com/
 
-              Example: send a your essay in a text field to the server. Send it
-              as a plain text field, but get the contents for it from a local
-              file:
+              Example: send your essay in a text field to the server. Send it as
+              a plain text field, but get the contents for it from a local file:
 
                curl -F "story=<hugefile.txt" https://example.com/
 
@@ -1070,6 +1254,8 @@ OPTIONS
               connection. Instead curl will re-use the same IP address it
               already uses for the control connection.
 
+              Since curl 7.74.0 this option is enabled by default.
+
               This option has no effect if PORT, EPRT or EPSV is used instead of
               PASV.
 
@@ -1172,14 +1358,16 @@ OPTIONS
               part of the header content: do not add newlines or carriage
               returns, they will only mess things up for you.
 
-              Starting in 7.55.0, this option can take an argument in @filename
-              style, which then adds a header for each line in the input file.
-              Using @- will make curl read the header file from stdin.
+              This option can take an argument in @filename style, which then
+              adds a header for each line in the input file. Using @- will make
+              curl read the header file from stdin. Added in 7.55.0.
 
-              See also the -A, --user-agent and -e, --referer options.
+              You need --proxy-header to send custom headers intended for a HTTP
+              proxy. Added in 7.37.0.
 
-              Starting in 7.37.0, you need --proxy-header to send custom headers
-              intended for a proxy.
+              Passing on a "Transfer-Encoding: chunked" header when doing a HTTP
+              request with a request body, will make curl send the data using
+              chunked encoding.
 
               Example:
 
@@ -1194,9 +1382,14 @@ OPTIONS
               This option can be used multiple times to add/replace/remove
               multiple headers.
 
-       -h, --help
-              Usage help. This lists all current command line options with a
-              short description.
+              See also -A, --user-agent and -e, --referer.
+
+       -h, --help <category>
+              Usage help. This lists all commands of the <category>.  If no arg
+              was provided, curl will display the most important command line
+              arguments.  If the argument "all" was provided, curl will display
+              all options available.  If the argument "category" was provided,
+              curl will display all categories and their meanings.
 
        --hostpubmd5 <md5>
               (SFTP SCP) Pass a string containing 32 hexadecimal digits. The
@@ -1206,6 +1399,23 @@ OPTIONS
 
               Added in 7.17.1.
 
+       --hsts <file name>
+              (HTTPS) WARNING: this option is experimental. Do not use in
+              production.
+
+              This option enables HSTS for the transfer. If the file name points
+              to an existing HSTS cache file, that will be used. After a
+              completed transfer, the cache will be saved to the file name again
+              if it has been modified.
+
+              Specify a "" file name (zero length) to avoid loading/saving and
+              make curl just handle HSTS in memory.
+
+              If this option is used several times, curl will load contents from
+              all the files but the last one will be used for saving.
+
+              Added in 7.74.0.
+
        --http0.9
               (HTTP) Tells curl to be fine with HTTP version 0.9 response.
 
@@ -1214,8 +1424,7 @@ OPTIONS
               response since curl will simply transparently downgrade - if
               allowed.
 
-              A future curl version will deny continuing if the response isn't
-              at least HTTP/1.0 unless this option is used.
+              Since curl 7.66.0, HTTP/0.9 is disabled by default.
 
        -0, --http1.0
               (HTTP) Tells curl to use HTTP version 1.0 instead of using its
@@ -1242,9 +1451,29 @@ OPTIONS
        --http2
               (HTTP) Tells curl to use HTTP version 2.
 
-              See also --no-alpn. --http2 requires that the underlying libcurl
-              was built to support HTTP/2. This option overrides --http1.1 and
-              -0, --http1.0 and --http2-prior-knowledge. Added in 7.33.0.
+              See also --http1.1 and --http3. --http2 requires that the
+              underlying libcurl was built to support HTTP/2. This option
+              overrides --http1.1 and -0, --http1.0 and --http2-prior-knowledge.
+              Added in 7.33.0.
+
+       --http3
+              (HTTP) WARNING: this option is experimental. Do not use in
+              production.
+
+              Tells curl to use HTTP version 3 directly to the host and port
+              number used in the URL. A normal HTTP/3 transaction will be done
+              to a host and then get redirected via Alt-SVc, but this option
+              allows a user to circumvent that when you know that the target
+              speaks HTTP/3 on the given host and port.
+
+              This option will make curl fail if a QUIC connection cannot be
+              established, it cannot fall back to a lower HTTP version on its
+              own.
+
+              See also --http1.1 and --http2. --http3 requires that the
+              underlying libcurl was built to support HTTP/3. This option
+              overrides --http1.1 and -0, --http1.0 and --http2 and
+              --http2-prior-knowledge. Added in 7.66.0.
 
        --ignore-content-length
               (FTP HTTP) For HTTP, Ignore the Content-Length header. This is
@@ -1273,7 +1502,7 @@ OPTIONS
               using the cert store.
 
               See this online resource for further details:
-               https://curl.haxx.se/docs/sslcerts.html
+               https://curl.se/docs/sslcerts.html
 
               See also --proxy-insecure and --cacert.
 
@@ -1338,7 +1567,8 @@ OPTIONS
        --key <key>
               (TLS SSH) Private key file name. Allows you to provide your
               private key in this separate file. For SSH, if not specified, curl
-              tries the following candidates in order:
+              tries the following candidates in order: '~/.ssh/id_rsa',
+              '~/.ssh/id_dsa', './id_rsa', './id_dsa'.
 
               If curl is built against OpenSSL library, and the engine pkcs11 is
               available, then a PKCS#11 URI (RFC 7512) can be used to specify a
@@ -1408,7 +1638,7 @@ OPTIONS
               send an UIDL command instead, so the user may use the email's
               unique identifier rather than it's message id to make the request.
 
-              Added in 7.21.5.
+              Added in 4.0.
 
        --local-port <num/range>
               Set a preferred single number or range (FROM-TO) of local port
@@ -1440,15 +1670,18 @@ OPTIONS
               trusted on how to change this. You can limit the amount of
               redirects to follow by using the --max-redirs option.
 
-              When curl follows a redirect and the request is not a plain GET
-              (for example POST or PUT), it will do the following request with a
-              GET if the HTTP response was 301, 302, or 303. If the response
-              code was any other 3xx code, curl will re-send the following
-              request using the same unmodified method.
+              When curl follows a redirect and if the request is a POST, it will
+              do the following request with a GET if the HTTP response was 301,
+              302, or 303. If the response code was any other 3xx code, curl
+              will re-send the following request using the same unmodified
+              method.
 
-              You can tell curl to not change the non-GET request method to GET
-              after a 30x response by using the dedicated options for that:
-              --post301, --post302 and --post303.
+              You can tell curl to not change POST requests to GET after a 30x
+              response by using the dedicated options for that: --post301,
+              --post302 and --post303.
+
+              The method set with -X, --request overrides the method curl would
+              otherwise select to use.
 
        --login-options <options>
               (IMAP POP3 SMTP) Specify the login options to use during server
@@ -1476,6 +1709,19 @@ OPTIONS
               sent from.
 
               See also --mail-rcpt and --mail-auth. Added in 7.20.0.
+
+       --mail-rcpt-allowfails
+              (SMTP) When sending data to multiple recipients, by default curl
+              will abort SMTP conversation if at least one of the recipients
+              causes RCPT TO command to return an error.
+
+              The default behavior can be changed by passing --mail-rcpt-
+              allowfails command-line option which will make curl ignore errors
+              and proceed with the remaining valid recipients.
+
+              In case when all recipients cause RCPT TO command to fail, curl
+              will abort SMTP conversation and return the error received from to
+              the last RCPT TO command.  Added in 7.69.0.
 
        --mail-rcpt <address>
               (SMTP) Specify a single address, user name or mailing list name.
@@ -1550,7 +1796,7 @@ OPTIONS
               To use a Metalink file in the local file system, use FILE protocol
               (file://):
 
-               curl --metalink file://example.metalink
+               curl --metalink file:///example.metalink
 
               Please note that if FILE protocol is disabled, there is no way to
               use a local Metalink file at the time of this writing. Also note
@@ -1576,7 +1822,7 @@ OPTIONS
 
               If this option is used several times, only the first one is used.
 
-              See also --basic and --ntlm and --anyauth and --proxy-negotiate.
+              See also --basic, --ntlm, --anyauth and --proxy-negotiate.
 
        --netrc-file <filename>
               This option is similar to -n, --netrc, except that you provide the
@@ -1664,6 +1910,16 @@ OPTIONS
               See also --no-alpn and --http2. --no-npn requires that the
               underlying libcurl was built to support TLS. Added in 7.36.0.
 
+       --no-progress-meter
+              Option to switch off the progress meter output without muting or
+              otherwise affecting warning and informational messages like -s,
+              --silent does.
+
+              Note that this is the negated option name documented. You can thus
+              use --progress-meter to enable the progress meter again.
+
+              See also -v, --verbose and -s, --silent. Added in 7.67.0.
+
        --no-sessionid
               (TLS) Disable curl's use of SSL session-ID caching.  By default
               all transfers are done using the cache. Note that while nothing
@@ -1716,27 +1972,45 @@ OPTIONS
               --negotiate and --digest and --anyauth.
 
        --oauth2-bearer <token>
-              (IMAP POP3 SMTP) Specify the Bearer Token for OAUTH 2.0 server
-              authentication. The Bearer Token is used in conjunction with the
-              user name which can be specified as part of the --url or -u,
-              --user options.
+              (IMAP POP3 SMTP HTTP) Specify the Bearer Token for OAUTH 2.0
+              server authentication. The Bearer Token is used in conjunction
+              with the user name which can be specified as part of the --url or
+              -u, --user options.
 
               The Bearer Token and user name are formatted according to RFC
               6750.
 
               If this option is used several times, the last one will be used.
 
+       --output-dir <dir>
+
+              This option specifies the directory in which files should be
+              stored, when -O, --remote-name or -o, --output are used.
+
+              The given output directory is used for all URLs and output options
+              on the command line, up until the first -:, --next.
+
+              If the specified target directory doesn't exist, the operation
+              will fail unless --create-dirs is also used.
+
+              If this option is used multiple times, the last specified
+              directory will be used.
+
+              See also -O, --remote-name and -J, --remote-header-name. Added in
+              7.73.0.
+
        -o, --output <file>
               Write output to <file> instead of stdout. If you are using {} or
-              [] to fetch multiple documents, you can use '#' followed by a
-              number in the <file> specifier. That variable will be replaced
-              with the current string for the URL being fetched. Like in:
+              [] to fetch multiple documents, you should quote the URL and you
+              can use '#' followed by a number in the <file> specifier. That
+              variable will be replaced with the current string for the URL
+              being fetched. Like in:
 
-               curl http://{one,two}.example.com -o "file_#1.txt"
+               curl "http://{one,two}.example.com" -o "file_#1.txt"
 
               or use several variables like:
 
-               curl http://{site,host}.host[1-5].com -o "#1_#2"
+               curl "http://{site,host}.host[1-5].com" -o "#1_#2"
 
               You may use this option as many times as the number of URLs you
               have. For example, if you specify two URLs on the same command
@@ -1754,8 +2028,31 @@ OPTIONS
               dynamically. Specifying the output as '-' (a single dash) will
               force the output to be done to stdout.
 
-              See also -O, --remote-name and --remote-name-all and -J, --remote-
+              See also -O, --remote-name, --remote-name-all and -J, --remote-
               header-name.
+
+       --parallel-immediate
+              When doing parallel transfers, this option will instruct curl that
+              it should rather prefer opening up more connections in parallel at
+              once rather than waiting to see if new transfers can be added as
+              multiplexed streams on another connection.
+
+              See also -Z, --parallel and --parallel-max. Added in 7.68.0.
+
+       --parallel-max
+              When asked to do parallel transfers, using -Z, --parallel, this
+              option controls the maximum amount of transfers to do
+              simultaneously.
+
+              The default is 50.
+
+              See also -Z, --parallel. Added in 7.66.0.
+
+       -Z, --parallel
+              Makes curl perform its transfers in parallel as compared to the
+              regular serial manner.
+
+              Added in 7.66.0.
 
        --pass <phrase>
               (SSH TLS) Passphrase for the private key
@@ -1783,36 +2080,32 @@ OPTIONS
 
               PEM/DER support:
                 7.39.0: OpenSSL, GnuTLS and GSKit
-                7.43.0: NSS and wolfSSL/CyaSSL
-                7.47.0: mbedtls
-                7.49.0: PolarSSL sha256 support:
-                7.44.0: OpenSSL, GnuTLS, NSS and wolfSSL/CyaSSL.
-                7.47.0: mbedtls
-                7.49.0: PolarSSL Other SSL backends not supported.
+                7.43.0: NSS and wolfSSL
+                7.47.0: mbedtls sha256 support:
+                7.44.0: OpenSSL, GnuTLS, NSS and wolfSSL
+                7.47.0: mbedtls Other SSL backends not supported.
 
               If this option is used several times, the last one will be used.
 
        --post301
               (HTTP) Tells curl to respect RFC 7231/6.4.2 and not convert POST
               requests into GET requests when following a 301 redirection. The
-              non-RFC behaviour is ubiquitous in web browsers, so curl does the
+              non-RFC behavior is ubiquitous in web browsers, so curl does the
               conversion by default to maintain consistency. However, a server
               may require a POST to remain a POST after such a redirection. This
               option is meaningful only when using -L, --location.
 
-              See also --post302 and --post303 and -L, --location. Added in
-              7.17.1.
+              See also --post302, --post303 and -L, --location. Added in 7.17.1.
 
        --post302
               (HTTP) Tells curl to respect RFC 7231/6.4.3 and not convert POST
               requests into GET requests when following a 302 redirection. The
-              non-RFC behaviour is ubiquitous in web browsers, so curl does the
+              non-RFC behavior is ubiquitous in web browsers, so curl does the
               conversion by default to maintain consistency. However, a server
               may require a POST to remain a POST after such a redirection. This
               option is meaningful only when using -L, --location.
 
-              See also --post301 and --post303 and -L, --location. Added in
-              7.19.1.
+              See also --post301, --post303 and -L, --location. Added in 7.19.1.
 
        --post303
               (HTTP) Tells curl to violate RFC 7231/6.4.4 and not convert POST
@@ -1821,8 +2114,7 @@ OPTIONS
               redirection. This option is meaningful only when using -L,
               --location.
 
-              See also --post302 and --post301 and -L, --location. Added in
-              7.26.0.
+              See also --post302, --post301 and -L, --location. Added in 7.26.0.
 
        --preproxy [protocol://]host[:port]
               Use the specified SOCKS proxy before connecting to an HTTP or
@@ -1882,18 +2174,20 @@ OPTIONS
 
                curl --proto-redir -all,http,https http://example.com
 
-              By default curl will allow all protocols on redirect except
-              several disabled for security reasons: Since 7.19.4 FILE and SCP
-              are disabled, and since 7.40.0 SMB and SMBS are also disabled.
-              Specifying all or +all enables all protocols on redirect,
-              including those disabled for security.
+              By default curl will allow HTTP, HTTPS, FTP and FTPS on redirect
+              (7.65.2).  Older versions of curl allowed all protocols on
+              redirect except several disabled for security reasons: Since
+              7.19.4 FILE and SCP are disabled, and since 7.40.0 SMB and SMBS
+              are also disabled. Specifying all or +all enables all protocols on
+              redirect, including those disabled for security.
 
               Added in 7.20.2.
 
        --proto <protocols>
               Tells curl to limit what protocols it may use in the transfer.
               Protocols are evaluated left to right, are comma separated, and
-              are each a protocol name or
+              are each a protocol name or 'all', optionally prefixed by zero or
+              more modifiers. Available modifiers are:
 
               +  Permit this protocol in addition to protocols already permitted
                  (this is the default if no modifier is used).
@@ -1929,8 +2223,8 @@ OPTIONS
               communicating with the given HTTP proxy. This might cause an extra
               request/response round-trip.
 
-              See also -x, --proxy and --proxy-basic and --proxy-digest. Added
-              in 7.13.2.
+              See also -x, --proxy, --proxy-basic and --proxy-digest. Added in
+              7.13.2.
 
        --proxy-basic
               Tells curl to use HTTP Basic authentication when communicating
@@ -1938,18 +2232,18 @@ OPTIONS
               remote host. Basic is the default authentication method curl uses
               with proxies.
 
-              See also -x, --proxy and --proxy-anyauth and --proxy-digest.
+              See also -x, --proxy, --proxy-anyauth and --proxy-digest.
 
        --proxy-cacert <file>
               Same as --cacert but used in HTTPS proxy context.
 
-              See also --proxy-capath and --cacert and --capath and -x, --proxy.
-              Added in 7.52.0.
+              See also --proxy-capath, --cacert, --capath and -x, --proxy. Added
+              in 7.52.0.
 
        --proxy-capath <dir>
               Same as --capath but used in HTTPS proxy context.
 
-              See also --proxy-cacert and -x, --proxy and --capath. Added in
+              See also --proxy-cacert, -x, --proxy and --capath. Added in
               7.52.0.
 
        --proxy-cert-type <type>
@@ -1977,7 +2271,7 @@ OPTIONS
               with the given proxy. Use --digest for enabling HTTP Digest with a
               remote host.
 
-              See also -x, --proxy and --proxy-anyauth and --proxy-basic.
+              See also -x, --proxy, --proxy-anyauth and --proxy-basic.
 
        --proxy-header <header/@file>
               (HTTP) Extra header to include in the request when sending HTTP to
@@ -2059,13 +2353,23 @@ OPTIONS
 
               Added in 7.52.0.
 
+       --proxy-ssl-auto-client-cert
+              Same as --ssl-auto-client-cert but used in HTTPS proxy context.
+
+              Added in 7.77.0.
+
        --proxy-tls13-ciphers <ciphersuite list>
               (TLS) Specifies which cipher suites to use in the connection to
               your HTTPS proxy when it negotiates TLS 1.3. The list of ciphers
               suites must specify valid ciphers. Read up on TLS 1.3 cipher suite
               details on this URL:
 
-               https://curl.haxx.se/docs/ssl-ciphers.html
+               https://curl.se/docs/ssl-ciphers.html
+
+              This option is currently used only when curl is built to use
+              OpenSSL 1.1.1 or later. If you are using a different SSL backend
+              you can try setting TLS 1.3 cipher suites by using the --proxy-
+              ciphers option.
 
               If this option is used several times, the last one will be used.
 
@@ -2193,16 +2497,23 @@ OPTIONS
               commands as RFC 959 defines to FTP servers, or one of the commands
               listed below to SFTP servers.
 
-              This option can be used multiple times. When speaking to an FTP
-              server, prefix the command with an asterisk (*) to make curl
-              continue even if the command fails as by default curl will stop at
-              first failure.
+              Prefix the command with an asterisk (*) to make curl continue even
+              if the command fails as by default curl will stop at first
+              failure.
+
+              This option can be used multiple times.
 
               SFTP is a binary protocol. Unlike for FTP, curl interprets SFTP
               quote commands itself before sending them to the server.  File
               names may be quoted shell-style to embed spaces or special
               characters.  Following is the list of all supported SFTP quote
               commands:
+
+              atime date file
+                     The atime command sets the last access time of the file
+                     named by the file operand. The <date expression> can be all
+                     sorts of date strings, see the curl_getdate(3) man page for
+                     date expression details. (Added in 7.73.0)
 
               chgrp group file
                      The chgrp command sets the group ID of the file named by
@@ -2226,6 +2537,12 @@ OPTIONS
               mkdir directory_name
                      The mkdir command creates the directory named by the
                      directory_name operand.
+
+              mtime date file
+                     The mtime command sets the last modification time of the
+                     file named by the file operand. The <date expression> can
+                     be all sorts of date strings, see the curl_getdate(3) man
+                     page for date expression details. (Added in 7.73.0)
 
               pwd    The pwd command returns the absolute pathname of the
                      current working directory.
@@ -2270,7 +2587,9 @@ OPTIONS
                         specifies two separate 100-byte ranges(*) (HTTP)
 
               (*) = NOTE that this will cause the server to reply with a
-              multipart response!
+              multipart response, which will be returned as-is by curl! Parsing
+              or otherwise transforming this response is the responsibility of
+              the caller.
 
               Only digit characters (0-9) are valid in the 'start' and 'stop'
               fields of the 'start-stop' range syntax. If a non-digit character
@@ -2405,7 +2724,7 @@ OPTIONS
 
               If this option is used several times, the last one will be used.
 
-       --resolve <host:port:address[,address]...>
+       --resolve <[+]host:port:addr[,addr]...>
               Provide a custom address for a specific host and port pair. Using
               this, you can make the curl requests(s) use a specified address
               and prevent the otherwise normally resolved address to be used.
@@ -2423,6 +2742,13 @@ OPTIONS
               The provided address set by this option will be used even if -4,
               --ipv4 or -6, --ipv6 is set to make curl use another IP version.
 
+              By prefixing the host with a '+' you can make the entry time out
+              after curl's default timeout (1 minute). Note that this will only
+              make sense for long running parallel transfers with a lot of
+              files. In such cases, if this option is used curl will try to
+              resolve the host as it normally would once the timeout has
+              expired.
+
               Support for providing the IP address within [brackets] was added
               in 7.57.0.
 
@@ -2431,10 +2757,43 @@ OPTIONS
 
               Support for resolving with wildcard was added in 7.64.0.
 
+              Support for the '+' prefix was was added in 7.75.0.
+
               This option can be used many times to add many host names to
               resolve.
 
               Added in 7.21.3.
+
+       --retry-all-errors
+              Retry on any error. This option is used together with --retry.
+
+              This option is the "sledgehammer" of retrying. Do not use this
+              option by default (eg in curlrc), there may be unintended
+              consequences such as sending or receiving duplicate data. Do not
+              use with redirected input or output. You'd be much better off
+              handling your unique problems in shell script. Please read the
+              example below.
+
+              Warning: For server compatibility curl attempts to retry failed
+              flaky transfers as close as possible to how they were started, but
+              this is not possible with redirected input or output. For example,
+              before retrying it removes output data from a failed partial
+              transfer that was written to an output file. However this is not
+              true of data redirected to a | pipe or > file, which are not
+              reset. We strongly suggest don't parse or record output via
+              redirect in combination with this option, since you may receive
+              duplicate data.
+
+              By default curl will not error on an HTTP response code that
+              indicates an HTTP error, if the transfer was successful. For
+              example, if a server replies 404 Not Found and the reply is fully
+              received then that is not an error. When --retry is used then curl
+              will retry on some HTTP response codes that indicate transient
+              HTTP errors, but that does not include most 4xx response codes
+              such as 404. If you want to retry on all response codes that
+              indicate HTTP errors (4xx and 5xx) then combine with -f, --fail.
+
+              Added in 7.71.0.
 
        --retry-connrefused
               In addition to the other conditions, consider ECONNREFUSED as a
@@ -2472,7 +2831,8 @@ OPTIONS
               transfer, it will retry this number of times before giving up.
               Setting the number to 0 makes curl do no retries (which is the
               default). Transient error means either: a timeout, an FTP 4xx
-              response code or an HTTP 408 or 5xx response code.
+              response code or an HTTP 408, 429, 500, 502, 503 or 504 response
+              code.
 
               When curl is about to retry a transfer, it will first wait one
               second and then for all forthcoming retries it will double the
@@ -2481,9 +2841,25 @@ OPTIONS
               disable this exponential backoff algorithm. See also --retry-max-
               time to limit the total time allowed for retries.
 
+              Since curl 7.66.0, curl will comply with the Retry-After: response
+              header if one was present to know when to issue the next retry.
+
               If this option is used several times, the last one will be used.
 
               Added in 7.12.3.
+
+       --sasl-authzid <identity>
+              Use this authorisation identity (authzid), during SASL PLAIN
+              authentication, in addition to the authentication identity
+              (authcid) as specified by -u, --user.
+
+              If the option isn't specified, the server will derive the authzid
+              from the authcid, but if specified, and depending on the server
+              implementation, it may be used to access another user's inbox,
+              that the user has been granted access to, or a shared mailbox for
+              example.
+
+              Added in 7.66.0.
 
        --sasl-ir
               Enable initial response in SASL authentication.
@@ -2502,6 +2878,8 @@ OPTIONS
               When used with -s, --silent, it makes curl show an error message
               if it fails.
 
+              See also --no-progress-meter.
+
        -s, --silent
               Silent or quiet mode. Don't show progress meter or error messages.
               Makes Curl mute. It will still output the data you ask for,
@@ -2510,7 +2888,7 @@ OPTIONS
               Use -S, --show-error in addition to this option to disable
               progress meter but still show error messages.
 
-              See also -v, --verbose and --stderr.
+              See also -v, --verbose, --stderr and --no-progress-meter.
 
        --socks4 <host[:port]>
               Use the specified SOCKS4 proxy. If the port number is not
@@ -2659,6 +3037,17 @@ OPTIONS
 
               Added in 7.25.0.
 
+       --ssl-auto-client-cert
+              Tell libcurl to automatically locate and use a client certificate
+              for authentication, when requested by the server. This option is
+              only supported for Schannel (the native Windows SSL library).
+              Prior to 7.77.0 this was the default behavior in libcurl with
+              Schannel. Since the server can request any certificate that
+              supports client authentication in the OS certificate store it
+              could be a privacy violation and unexpected.
+
+              See also --proxy-ssl-auto-client-cert. Added in 7.77.0.
+
        --ssl-no-revoke
               (Schannel) This option tells curl to disable certificate
               revocation checks.  WARNING: this option loosens the SSL security,
@@ -2674,6 +3063,13 @@ OPTIONS
 
               Added in 7.20.0.
 
+       --ssl-revoke-best-effort
+              (Schannel) This option tells curl to ignore certificate revocation
+              checks when they failed due to missing/offline distribution points
+              for the revocation check lists.
+
+              Added in 7.70.0.
+
        --ssl  (FTP IMAP POP3 SMTP) Try to use SSL/TLS for the connection.
               Reverts to a non-secure connection if the server doesn't support
               SSL/TLS.  See also --ftp-ssl-control and --ssl-reqd for different
@@ -2686,24 +3082,24 @@ OPTIONS
               Added in 7.20.0.
 
        -2, --sslv2
-              (SSL) Forces curl to use SSL version 2 when negotiating with a
-              remote SSL server. Sometimes curl is built without SSLv2 support.
-              SSLv2 is widely considered insecure (see RFC 6176).
+              (SSL) This option previously asked curl to use SSLv2, but starting
+              in curl 7.77.0 this instruction is ignored. SSLv2 is widely
+              considered insecure (see RFC 6176).
 
               See also --http1.1 and --http2. -2, --sslv2 requires that the
               underlying libcurl was built to support TLS. This option overrides
               -3, --sslv3 and -1, --tlsv1 and --tlsv1.1 and --tlsv1.2.
 
        -3, --sslv3
-              (SSL) Forces curl to use SSL version 3 when negotiating with a
-              remote SSL server. Sometimes curl is built without SSLv3 support.
-              SSLv3 is widely considered insecure (see RFC 7568).
+              (SSL) This option previously asked curl to use SSLv3, but starting
+              in curl 7.77.0 this instruction is ignored. SSLv3 is widely
+              considered insecure (see RFC 7568).
 
               See also --http1.1 and --http2. -3, --sslv3 requires that the
               underlying libcurl was built to support TLS. This option overrides
               -2, --sslv2 and -1, --tlsv1 and --tlsv1.1 and --tlsv1.2.
 
-       --stderr
+       --stderr <file>
               Redirect all writes to stderr to the specified file instead. If
               the file name is a plain '-', it is instead written to stdout.
 
@@ -2725,8 +3121,7 @@ OPTIONS
               show protocol headers in the output. It has no effect on debug
               options such as -v, --verbose or --trace, or any statistics.
 
-              See also -D, --dump-header and -i, --include and -p,
-              --proxytunnel.
+              See also -D, --dump-header, -i, --include and -p, --proxytunnel.
 
        --tcp-fastopen
               Enable use of TCP Fast Open (RFC7413).
@@ -2787,6 +3182,9 @@ OPTIONS
               (SSL) VERSION defines maximum supported TLS version. The minimum
               acceptable version is set by tlsv1.0, tlsv1.1, tlsv1.2 or tlsv1.3.
 
+              If the connection is done without TLS, this option has no effect.
+              This includes QUIC-using (HTTP/3) transfers.
+
 
               default
                      Use up to recommended TLS version.
@@ -2799,16 +3197,21 @@ OPTIONS
 
               1.3    Use up to TLSv1.3.
 
-       See also --tlsv1.0 and --tlsv1.1 and --tlsv1.2 and --tlsv1.3. --tls-max
+       See also --tlsv1.0, --tlsv1.1, --tlsv1.2 and --tlsv1.3. --tls-max
        requires that the underlying libcurl was built to support TLS. Added in
        7.54.0.
 
-       --tls13-ciphers <list of TLS 1.3 ciphersuites>
+       --tls13-ciphers <ciphersuite list>
               (TLS) Specifies which cipher suites to use in the connection if it
               negotiates TLS 1.3. The list of ciphers suites must specify valid
               ciphers. Read up on TLS 1.3 cipher suite details on this URL:
 
-               https://curl.haxx.se/docs/ssl-ciphers.html
+               https://curl.se/docs/ssl-ciphers.html
+
+              This option is currently used only when curl is built to use
+              OpenSSL 1.1.1 or later. If you are using a different SSL backend
+              you can try setting TLS 1.3 cipher suites by using the --ciphers
+              option.
 
               If this option is used several times, the last one will be used.
 
@@ -2826,11 +3229,15 @@ OPTIONS
               Set password for use with the TLS authentication method specified
               with --tlsauthtype. Requires that --tlsuser also be set.
 
+              This doesn't work with TLS 1.3.
+
               Added in 7.21.4.
 
        --tlsuser <name>
               Set username for use with the TLS authentication method specified
               with --tlsauthtype. Requires that --tlspassword also is set.
+
+              This doesn't work with TLS 1.3.
 
               Added in 7.21.4.
 
@@ -2838,11 +3245,19 @@ OPTIONS
               (TLS) Forces curl to use TLS version 1.0 or later when connecting
               to a remote TLS server.
 
+              In old versions of curl this option was documented to allow _only_
+              TLS 1.0, but behavior was inconsistent depending on the TLS
+              library. Use --tls-max if you want to set a maximum TLS version.
+
               Added in 7.34.0.
 
        --tlsv1.1
               (TLS) Forces curl to use TLS version 1.1 or later when connecting
               to a remote TLS server.
+
+              In old versions of curl this option was documented to allow _only_
+              TLS 1.1, but behavior was inconsistent depending on the TLS
+              library. Use --tls-max if you want to set a maximum TLS version.
 
               Added in 7.34.0.
 
@@ -2850,15 +3265,20 @@ OPTIONS
               (TLS) Forces curl to use TLS version 1.2 or later when connecting
               to a remote TLS server.
 
+              In old versions of curl this option was documented to allow _only_
+              TLS 1.2, but behavior was inconsistent depending on the TLS
+              library. Use --tls-max if you want to set a maximum TLS version.
+
               Added in 7.34.0.
 
        --tlsv1.3
               (TLS) Forces curl to use TLS version 1.3 or later when connecting
               to a remote TLS server.
 
-              Note that TLS 1.3 is only supported by a subset of TLS backends.
-              At the time of this writing, they are BoringSSL, NSS, and Secure
-              Transport (on iOS 11 or later, and macOS 10.13 or later).
+              If the connection is done without TLS, this option has no effect.
+              This includes QUIC-using (HTTP/3) transfers.
+
+              Note that TLS 1.3 is not supported by all TLS backends.
 
               Added in 7.52.0.
 
@@ -2960,6 +3380,9 @@ OPTIONS
               URL is written, use the -o, --output or the -O, --remote-name
               options.
 
+              Warning: On Windows, particular file:// accesses can be converted
+              to network accesses by the operating system. Beware!
+
        -B, --use-ascii
               (FTP LDAP) Enable ASCII transfer. For FTP, this can also be
               enforced by using a URL that ends with ";type=A". This option
@@ -2970,6 +3393,10 @@ OPTIONS
               To encode blanks in the string, surround the string with single
               quote marks. This header can also be set with the -H, --header or
               the --proxy-header options.
+
+              If you give an empty argument to -A, --user-agent (""), it will
+              remove the header completely from the request. If you prefer a
+              blank header, you can set it to a single space (" ").
 
               If this option is used several times, the last one will be used.
 
@@ -3041,37 +3468,71 @@ OPTIONS
               The third line (starts with "Features:") shows specific features
               libcurl reports to offer. Available features include:
 
-              IPv6   You can use IPv6 with this.
-
-              krb4   Krb4 for FTP is supported.
-
-              SSL    SSL versions of various protocols are supported, such as
-                     HTTPS, FTPS, POP3S and so on.
-
-              libz   Automatic decompression of compressed files over HTTP is
-                     supported.
-
-              NTLM   NTLM authentication is supported.
-
-              Debug  This curl uses a libcurl built with Debug. This enables
-                     more error-tracking and memory debugging etc. For curl-
-                     developers only!
+              alt-svc
+                     Support for the Alt-Svc: header is provided.
 
               AsynchDNS
                      This curl uses asynchronous name resolves. Asynchronous
                      name resolves can be done using either the c-ares or the
                      threaded resolver backends.
 
-              SPNEGO SPNEGO authentication is supported.
+              brotli Support for automatic brotli compression over HTTP(S).
+
+              CharConv
+                     curl was built with support for character set conversions
+                     (like EBCDIC)
+
+              Debug  This curl uses a libcurl built with Debug. This enables
+                     more error-tracking and memory debugging etc. For curl-
+                     developers only!
+
+              gsasl  The built-in SASL authentication includes extensions to
+                     support SCRAM because libcurl was built with libgsasl.
+
+              GSS-API
+                     GSS-API is supported.
+
+              HSTS   HSTS support is present.
+
+              HTTP2  HTTP/2 support has been built-in.
+
+              HTTP3  HTTP/3 support has been built-in.
+
+              HTTPS-proxy
+                     This curl is built to support HTTPS proxy.
+
+              IDN    This curl supports IDN - international domain names.
+
+              IPv6   You can use IPv6 with this.
+
+              Kerberos
+                     Kerberos V5 authentication is supported.
 
               Largefile
                      This curl supports transfers of large files, files larger
                      than 2GB.
 
-              IDN    This curl supports IDN - international domain names.
+              libz   Automatic decompression (via gzip, deflate) of compressed
+                     files over HTTP is supported.
 
-              GSS-API
-                     GSS-API is supported.
+              Metalink
+                     This curl supports Metalink.
+
+              MultiSSL
+                     This curl supports multiple TLS backends.
+
+              NTLM   NTLM authentication is supported.
+
+              NTLM_WB
+                     NTLM delegation to winbind helper is supported.
+
+              PSL    PSL is short for Public Suffix List and means that this
+                     curl has been built with knowledge about "public suffixes".
+
+              SPNEGO SPNEGO authentication is supported.
+
+              SSL    SSL versions of various protocols are supported, such as
+                     HTTPS, FTPS, POP3S and so on.
 
               SSPI   SSPI is supported.
 
@@ -3079,25 +3540,17 @@ OPTIONS
                      SRP (Secure Remote Password) authentication is supported
                      for TLS.
 
-              HTTP2  HTTP/2 support has been built-in.
+              TrackMemory
+                     Debug memory tracking is supported.
+
+              Unicode
+                     Unicode support on Windows.
 
               UnixSockets
                      Unix sockets support is provided.
 
-              HTTPS-proxy
-                     This curl is built to support HTTPS proxy.
-
-              Metalink
-                     This curl supports Metalink (both version 3 and 4 (RFC
-                     5854)), which describes mirrors and hashes.  curl will use
-                     mirrors for failover if there are errors (such as the file
-                     or server not being available).
-
-              PSL    PSL is short for Public Suffix List and means that this
-                     curl has been built with knowledge about "public suffixes".
-
-              MultiSSL
-                     This curl supports multiple TLS backends.
+              zstd   Automatic decompression (via zstd) of compressed files over
+                     HTTP is supported.
 
        -w, --write-out <format>
               Make curl display information on stdout after a completed
@@ -3124,6 +3577,11 @@ OPTIONS
               content_type   The Content-Type of the requested document, if
                              there was any.
 
+              errormsg       The error message. (Added in 7.75.0)
+
+              exitcode       The numerical exitcode of the transfer. (Added in
+                             7.75.0)
+
               filename_effective
                              The ultimate filename that curl writes out to. This
                              is only meaningful if curl is told to write to a
@@ -3146,6 +3604,8 @@ OPTIONS
               http_version   The http version that was effectively used. (Added
                              in 7.50.0)
 
+              json           A JSON object with all available keys.
+
               local_ip       The IP address of the local end of the most
                              recently done connection - can be either IPv4 or
                              IPv6 (Added in 7.29.0)
@@ -3153,11 +3613,23 @@ OPTIONS
               local_port     The local port number of the most recently done
                              connection (Added in 7.29.0)
 
+              method         The http method used in the most recent HTTP
+                             request (Added in 7.72.0)
+
               num_connects   Number of new connects made in the recent transfer.
                              (Added in 7.12.3)
 
+              num_headers    The number of response headers in the most recent
+                             request (restarted at each
+                              redirect). Note that the status line IS NOT a
+                             header. (Added in 7.73.0)
+
               num_redirects  Number of redirects that were followed in the
                              request. (Added in 7.12.3)
+
+              onerror        The rest of the output is only shown if the
+                             transfer returned a non-zero error (Added in
+                             7.75.0)
 
               proxy_ssl_verify_result
                              The result of the HTTPS proxy's SSL peer
@@ -3170,12 +3642,19 @@ OPTIONS
                              is met), this variable will show the actual URL a
                              redirect would have gone to. (Added in 7.18.2)
 
+              referer        The Referer: header, if there was any. (Added in
+                             7.76.0)
+
               remote_ip      The remote IP address of the most recently done
                              connection - can be either IPv4 or IPv6 (Added in
                              7.29.0)
 
               remote_port    The remote port number of the most recently done
                              connection (Added in 7.29.0)
+
+              response_code  The numerical response code that was found in the
+                             last transfer (formerly known as "http_code").
+                             (Added in 7.18.2)
 
               scheme         The URL scheme (sometimes called protocol) that was
                              effectively used (Added in 7.52.0)
@@ -3244,6 +3723,11 @@ OPTIONS
               time_total     The total time, in seconds, that the full operation
                              lasted.
 
+              url            The URL that was fetched. (Added in 7.75.0)
+
+              urlnum         The URL index number of this transfer, 0-indexed.
+                             (Added in 7.75.0)
+
               url_effective  The URL that was fetched last. This is most
                              meaningful if you've told curl to follow location:
                              headers.
@@ -3301,6 +3785,35 @@ ENVIRONMENT
               The list of host names can also be include numerical IP addresses,
               and IPv6 versions should then be given without enclosing brackets.
 
+              IPv6 numerical addresses are compared as strings, so they will
+              only match if the representations are the same: "::1" is the same
+              as "::0:1" but they don't match.
+
+       CURL_SSL_BACKEND <TLS backend>
+              If curl was built with support for "MultiSSL", meaning that it has
+              built-in support for more than one TLS backend, this environment
+              variable can be set to the case insensitive name of the particular
+              backend to use when curl is invoked. Setting a name that isn't a
+              built-in alternative will make curl stay with the default.
+
+              SSL backend names (case-insensitive): bearssl, gnutls, gskit,
+              mbedtls, mesalink, nss, openssl, rustls, schannel, secure-
+              transport, wolfssl
+
+       QLOGDIR <directory name>
+              If curl was built with HTTP/3 support, setting this environment
+              variable to a local directory will make curl produce qlogs in that
+              directory, using file names named after the destination connection
+              id (in hex). Do note that these files can become rather large.
+              Works with both QUIC backends.
+
+       SSLKEYLOGFILE <file name>
+              If you set this environment variable to a file name, curl will
+              store TLS secrets from its connections in that file when invoked
+              to enable you to analyze the TLS traffic in real time using
+              network analyzing tools such as Wireshark. This works with the
+              following TLS backends: OpenSSL, libressl, BoringSSL, GnuTLS, NSS
+              and wolfSSL.
 
 PROXY PROTOCOL PREFIXES
        Since curl version 7.21.7, the proxy string may be specified with a
@@ -3533,6 +4046,17 @@ EXIT CODES
 
        92     Stream error in HTTP/2 framing layer.
 
+       93     An API function was called from inside a callback.
+
+       94     An authentication function returned an error.
+
+       95     A problem was detected in the HTTP/3 layer. This is somewhat
+              generic and can be one out of several problems, see the error
+              message for details.
+
+       96     QUIC connection error. This error may be caused by an SSL library
+              error. QUIC is the protocol used for HTTP/3 transfers.
+
        XX     More error codes will appear here in future releases. The existing
               ones are meant to never change.
 
@@ -3541,7 +4065,7 @@ AUTHORS / CONTRIBUTORS
        found in the separate THANKS file.
 
 WWW
-       https://curl.haxx.se
+       https://curl.se
 
 SEE ALSO
        ftp(1), wget(1)

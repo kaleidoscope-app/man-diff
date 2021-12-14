@@ -23,22 +23,29 @@ DESCRIPTION
      sections described in the Mach-O(5) header.
 
 NOTE
-     Core dumps are disabled by default under Darwin/Mac OS X.  To re-enable
-     core dumps, a privileged user must do one of the following
+     Core dumps are disabled by default under Darwin/macOS.  To re-enable core
+     dumps, do one of the following
 
-     * Edit /etc/launchd.conf or $HOME/.launchd.conf and add a line specifying
-     the limit limit core unlimited
+     * For subsequent processes spawned by launchd and their child processes, a
+     privileged user can issue the command
 
-     * A privileged user can also enable cores with launchctl limit core
-     unlimited
+           # launchctl limit core unlimited
 
-     * A privileged user can also enable core files by using ulimit(1) or
-     limit(1) depending upon the shell.
+     * For susequent processes spawned by a shell, use ulimit(1) or limit(1)
+     depending upon the shell.
+
+           % ulimit -c unlimited
+     or
+
+           % limit coredumpsize unlimited
+
+     To disable core dumps, set the limit to 0 using one of the aforementioned
+     ways.
 
 SEE ALSO
-     gdb(1), setrlimit(2), sigaction(2), Mach-O(5), launchd.conf(5),
-     launchd.plist(5), sysctl(8)
+     lldb(1), setrlimit(2), sigaction(2), launchd.conf(5), launchd.plist(5),
+     Mach-O(5), sysctl(8)
 
 HISTORY
-     A core file format appeared in Version 6 AT&T UNIX.
+     A core file format appeared in Version 1 AT&T UNIX.
 

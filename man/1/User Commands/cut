@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
      cut -b list [-n] [file ...]
      cut -c list [file ...]
-     cut -f list [-d delim] [-s] [file ...]
+     cut -f list [-w | -d delim] [-s] [file ...]
 
 DESCRIPTION
      The cut utility cuts out selected portions of each line (as specified by
@@ -14,18 +14,18 @@ DESCRIPTION
      arguments are specified, or a file argument is a single dash (‘-’), cut
      reads from the standard input.  The items specified by list can be in terms
      of column position or in terms of fields delimited by a special character.
-     Column numbering starts from 1.
+     Column and field numbering start from 1.
 
      The list option argument is a comma or whitespace separated set of numbers
      and/or number ranges.  Number ranges consist of a number, a dash (‘-’), and
-     a second number and select the fields or columns from the first number to
+     a second number and select the columns or fields from the first number to
      the second, inclusive.  Numbers or number ranges may be preceded by a dash,
-     which selects all fields or columns from 1 to the last number.  Numbers or
-     number ranges may be followed by a dash, which selects all fields or
-     columns from the last number to the end of the line.  Numbers and number
+     which selects all columns or fields from 1 to the last number.  Numbers or
+     number ranges may be followed by a dash, which selects all columns or
+     fields from the last number to the end of the line.  Numbers and number
      ranges may be repeated, overlapping, and in any order.  If a field or
      column is specified multiple times, it will appear only once in the output.
-     It is not an error to select fields or columns not present in the input
+     It is not an error to select columns or fields not present in the input
      line.
 
      The options are as follows:
@@ -42,7 +42,7 @@ DESCRIPTION
 
      -f list
              The list specifies fields, separated in the input by the field
-             delimiter character (see the -d option.)  Output fields are
+             delimiter character (see the -d option).  Output fields are
              separated by a single occurrence of the field delimiter character.
 
      -n      Do not split multi-byte characters.  Characters will only be output
@@ -52,6 +52,9 @@ DESCRIPTION
 
      -s      Suppress lines with no field delimiter characters.  Unless
              specified, lines with no delimiters are passed through unmodified.
+
+     -w      Use whitespace (spaces and tabs) as the delimiter.  Consecutive
+             spaces and tabs count as one single field separator.
 
 ENVIRONMENT
      The LANG, LC_ALL and LC_CTYPE environment variables affect the execution of
@@ -75,6 +78,8 @@ SEE ALSO
 
 STANDARDS
      The cut utility conforms to IEEE Std 1003.2-1992 (“POSIX.2”).
+
+     The -w flag is an extension to the specification.
 
 HISTORY
      A cut command appeared in AT&T System III UNIX.

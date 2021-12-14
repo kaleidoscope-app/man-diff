@@ -331,10 +331,6 @@ SUBCOMMANDS
               SystemUIServer will be unaffected. Apps are terminated in the same
               manner as the logout argument, and all the same caveats apply.
 
-              -s       When rebooting the machine (either a full reboot or
-                       userspace reboot), brings the subsequent boot session up
-                       in single-user mode.
-
      error [posix|mach|bootstrap] code
               Prints a human-readable string of the given error code.  By
               default, launchctl will attempt to guess which error domain the
@@ -348,11 +344,14 @@ SUBCOMMANDS
      version  Prints the launchd version string.
 
 LEGACY SUBCOMMANDS
-     Subcommands from the previous implementation of launchd are generally
-     available, though some may be unimplemented. Unimplemented subcommands are
-     documented as such.
+     Legacy subcommands select the target domain based on whether they are
+     executed as root or not. When executed as root, they target the system
+     domain.
 
      load | unload [-wF] [-S sessiontype] [-D searchpath] paths ...
+              Recommended alternative subcommands: bootstrap | bootout | enable
+              | disable
+
               Load the specified configuration files or directories of
               configuration files.  Jobs that are not on-demand will be started
               as soon as possible. All specified jobs will be loaded before any
@@ -450,6 +449,8 @@ LEGACY SUBCOMMANDS
               is satisfied.
 
      list [-x] [label]
+              Recommended alternative subcommand: print
+
               With no arguments, list all of the jobs loaded into launchd in
               three columns. The first column displays the PID of the job if it
               is running.  The second column displays the last exit status of

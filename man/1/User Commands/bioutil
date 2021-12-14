@@ -5,8 +5,8 @@ NAME
      listing/deleting enrolled fingerprints
 
 SYNOPSIS
-     bioutil {-r | -w [-f { 0 | 1 }] [-u { 0 | 1 }] [-a { 0 | 1 }]} | [-c] |
-             [-p] | [-d <uid>] [-s]
+     bioutil {-r | -w [-f { 0 | 1 }] [-u { 0 | 1 }] [-a { 0 | 1 }] [-o
+             <seconds>]} | [-c] | [-p] | [-d <uid>] [-s]
 
 DESCRIPTION
      bioutil provides the possibility of viewing and changing Touch ID
@@ -36,6 +36,10 @@ OPTIONS
               Enables (1) or disables (0) Touch ID for ApplePay (user-specific
               configuration only).
 
+     -o, --timeout
+              Sets Touch ID timeout (in seconds, system-wide configuration
+              only).
+
      -c, --count
               Provides number of enrolled fingerprints of the current user or of
               all users (when run with -s as an administrator)
@@ -60,6 +64,9 @@ EXAMPLES
 
      sudo bioutil -w -s -u 0
               Disables Touch ID for unlock for the whole system.
+
+     sudo bioutil -w -s -o 86400
+              Sets Touch ID timeout to 24h.
 
      bioutil -c
               Prints the number of enrolled fingerprints of the current user.

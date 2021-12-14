@@ -5,7 +5,7 @@ NAME
      machine
 
 SYNOPSIS
-     ssh-copy-id [-f] [-n] [-i [identity_file]] [-p port] [-o ssh_option]
+     ssh-copy-id [-f] [-n] [-s] [-i [identity_file]] [-p port] [-o ssh_option]
                  [user@]hostname
      ssh-copy-id -h | -?
 
@@ -44,6 +44,12 @@ DESCRIPTION
 
      -n      do a dry-run.  Instead of installing keys on the remote system
              simply prints the key(s) that would have been installed.
+
+     -s      SFTP mode: usually the public keys are installed by executing
+             commands on the remote side.  With this option the user's
+             ~/.ssh/authorized_keys file will be downloaded, modified locally
+             and uploaded with sftp.  This option is useful if the server has
+             restrictions on commands which can be used on the remote side.
 
      -h, -?  Print Usage summary
 
@@ -93,7 +99,7 @@ EXAMPLES
 
      The reason you might want to specify the -i option in this case is to
      ensure that the comment on the installed key is the one from the .pub file,
-     rather than just the filename that was loaded into you agent.  It also
+     rather than just the filename that was loaded into your agent.  It also
      ensures that only the id you intended is installed, rather than all the
      keys that you have in your ssh-agent(1).  Of course, you can specify
      another id, or use the contents of the ssh-agent(1) as you prefer.

@@ -1,0 +1,66 @@
+OPEN(8)                      System Manager's Manual                     OPEN(8)
+
+NAME
+     csnameddata – displays and sets information for the the CSNamedData service
+
+SYNOPSIS
+     csnameddata [-v] [--verbose] [-f] [--full] command [options] [command]
+
+DESCRIPTION
+     The csnameddata command displays information for and sets and controls the
+     service which provides CSNamedData.  The options are as follows:
+
+     -f         when displaying an item, don't truncate the data display
+
+     -full      when displaying an item, don't truncate the data display
+
+     -v         display more verbose status
+
+     --verbose  display more verbose status
+
+COMMANDS
+     Each command and any arguments are handled.  Multiple commands may be
+     passed in one invokation.
+
+     get key         fetches the data for the given key from the service and
+                     displays it.  If -f is passed, the full data will be
+                     displayed, otherwise it will be truncated if longer than 64
+                     characters.
+
+     set key value   sets the data for the given key.  If the first character of
+                     value is '/', then it is assumed to be a file and the
+                     contents of the file will be read and set as the value,
+                     otherwise value will be treated as a string.
+
+     flush key       flushes any data set for the given key.  This only affects
+                     future callers; any previous processes which have fetched
+                     the value will still see the previous value.
+
+     flushAll        flushes all data in the service.  This only affects future
+                     callers; any previous processes which have fetched the
+                     value will still see the previous value.
+
+     showall         displays all of the known keys and values from the service.
+                     If -f is passed, then the full data will be displayed,
+                     otherwise it will be truncated if longer than 64
+                     characters.
+
+     statistics      displays usage statistics.
+
+EXAMPLES
+     csnameddata get com.apple.sample
+
+     displays whatever value, if any, is set for the key "com.apple.sample"
+
+     csnameddata set com.apple.sample "This is a string"
+
+     sets the value of the key "com.apple.sample" to the 16 character string
+     "This is a string".
+
+     csnameddata flushall
+
+     flushes all data in the service
+
+HISTORY
+     First appeared in macOS 11.1
+

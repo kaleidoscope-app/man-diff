@@ -1,0 +1,122 @@
+xctspawn(1)                  General Commands Manual                 xctspawn(1)
+
+
+
+
+
+NAME
+       xctspawn - Command line utility to execute XCTest unit and UI tests
+       locally on device.
+
+
+SYNOPSIS
+       xctspawn /path/to/test_run_file.xctestrun [options]
+
+
+DESCRIPTION
+       To run your tests, point the tool at the xctestrun file sitting alongside
+       your built tests. The tool will execute the tests and generate an Xcode
+       result bundle containing the test results (pass/fail/skipped/xfail
+       status, activities, attachments, crash reports, etc.). Note that the
+       tests must be built for the platform you are running them on.
+
+       If this tool is interrupted via SIGINT while tests are still executing,
+       it will still generate a result bundle containing the test results that
+       have been produced so far.
+
+
+OPTIONS
+       --result-bundle-path /path/to/generated_result_bundle.xcresult
+              Location that the generated result bundle should be placed. By
+              default, the result bundle is emitted to the current working
+              directory.
+
+       --only-test-configuration configuration
+              Constrains testing by specifying test configurations to include,
+              and excluding other test configurations.
+
+       --skip-test-configuration configuration
+              Constrains testing by specifying test configurations to exclude,
+              but including other test configurations.
+
+       --only-testing test identifier
+              Constrains testing by specifying tests to include, and excluding
+              other tests. The test identifier takes the form
+              `TestTargetName[/TestClassName][/TestMethodName]`, e.g.
+              `MyTestTarget/MyTestClass/testFoo` (ObjC) or
+              `MyTestTarget/MyTestClass/testFoo()` (Swift).
+
+       --skip-testing test identifier
+              Constrains testing by specifying tests to exclude, but including
+              other tests. The test identifier takes the form
+              `TestTargetName[/TestClassName][/TestMethodName]`, e.g.
+              `MyTestTarget/MyTestClass/testFoo` (ObjC) or
+              `MyTestTarget/MyTestClass/testFoo()` (Swift).
+
+       --parallel-testing-enabled YES|NO
+              Overrides the per-target setting in the scheme/test plan.
+
+       --parallel-testing-worker-count number
+              The exact number of test runners that will be spawned during
+              parallel testing.
+
+       --parallel-testing-maximum-worker-count number
+              The maximum number of test runners that will be spawned during
+              parallel testing.
+
+       --test-timeouts-enabled YES|NO
+              Enable or disable test timeout behavior.
+
+       --default-test-execution-time-allowance seconds
+              The default execution time an individual test is given to execute,
+              if test timeouts are enabled.
+
+       --maximum-test-execution-time-allowance seconds
+              The maximum execution time an individual test is given to execute,
+              regardless of the test's preferred allowance.
+
+       --trace-collection-enabled YES|NO
+              Whether to collect a ktrace/artrace file during the execution of
+              performance tests.
+
+       --enable-performance-tests-diagnostics YES|NO
+              Whether to collect a memgraphset file during the execution of
+              performance tests.
+
+       --performance-test-configuration /path/to/performance_test_configuration
+              The path to a performance test configuration file that controls
+              how performance tests are executed.
+
+       --test-iterations number
+              The number of times to execute each test, or, if either
+              --run-tests-until-failure or --retry-tests-on-failure are
+              specified, the maximum number of times each test will be executed.
+
+       --run-tests-until-failure
+              Run each test until it fails, up until a maximum number of
+              iterations. The maximum defaults to 100, but can be customized via
+              the --test-iterations option.
+
+       --retry-tests-on-failure
+              Re-run a failing test until it succeeds, up until a maximum number
+              of iterations. The maximum defaults to 3, but can be customized
+              via the --test-iterations option.
+
+       --test-repetition-relaunch-enabled YES|NO
+              Enable or disable tests repeating in a new process for each
+              repetition. Must be used in conjunction with --test-iterations,
+              --retry-tests-on-failure, or --run-tests-until-failure. If not
+              specified, tests will repeat in the same process.
+
+       --arg value
+              A command-line argument to supply to any test runner process that
+              is launched during test execution. Can be specified multiple
+              times.
+
+       --env value
+              A key-value pair of the form EnvVar=Value to supply as an
+              environment variable to any test runner process that is launched
+              during test execution.
+
+
+

@@ -292,9 +292,25 @@ COMMANDS
                        Specify the password for the administrator account.
 
 
-     activateSan  This subcommand must be run as root and does not depend on
+     activateSan [createReplica arguments]
+                  This subcommand must be run as root and does not depend on
                   xsand running. This subcommand activates the previous Xsan SAN
-                  configuration after macOS upgrade.
+                  configuration after macOS upgrade.  On secondary MDC, the
+                  subcommand's behavior depends on the configuration state of
+                  Open Directory when it runs.  Xsan controllers must be Open
+                  Directory controllers for the cluster containing the SAN
+                  configuration. If the computer is not an Open Directory
+                  controller, this subcommand configures the computer to be a
+                  replica in the Open Directory cluster, and then activates the
+                  previous Xsan SAN configuraton.
+
+                  The subcommand options supplied are examined in the case where
+                  the computer is not an Open Directory controller. In this
+                  case, they are processed as if the createReplica subcommand
+                  had been run. In the case where the computer is already an
+                  Open Directory controller, none of the additional
+                  createReplica command options are valid.
+
 
      cullSan sanName
                   This subcommand must be run as root and does not depend on
@@ -322,6 +338,13 @@ COMMANDS
      importVolume volumeConfigFile
                   Imports a volume into SAN using the specified volume config
                   file. Upon successful import, the volume will be started.
+
+     dumpLdapConfig
+                  Prints the SAN configuration.
+
+                  --json
+
+                       Print the configuration in JSON.
 
    Plumbing commands
      These commands expose specific points of SAN management functionality. They

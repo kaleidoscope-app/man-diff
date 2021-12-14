@@ -1,7 +1,5 @@
 ARCH(1)                      General Commands Manual                     ARCH(1)
 
-
-
 NAME
      arch – print architecture type or run selected architecture of a universal
      binary
@@ -45,8 +43,8 @@ DESCRIPTION
            arm64e   64-bit arm (Apple Silicon)
 
      If the binary does not contain code for arch_name, the arch command may try
-     to select a close match. If arm64 is specified and not found, arm64e will
-     be tried next. If this happens, the order the architectures will be tried
+     to select a close match.  If arm64 is specified and not found, arm64e will
+     be tried next.  If this happens, the order the architectures will be tried
      is not guaranteed.
 
      Either prefix the architecture with a hyphen, or (for compatibility with
@@ -96,16 +94,8 @@ DESCRIPTION
            /System/Library/archSettings       System settings
 
      This property list contains the architecture order preferences, as well as
-     the full path to the real executable.  For examples of the property list
-     format, look at the files in /System/Library/archSettings.
-
-   Example
-     On an intel processor:
-
-           % perl -MConfig -e 'printf "%s\n", $Config{byteorder}'
-           1234
-
-     shows the intel little endian byte order.
+     the full path to the real executable.  Please refer to the EXAMPLES section
+     for an example of the property list file format.
 
    Making links to the arch command
      When a link is made to arch command with a different name, that name is
@@ -116,7 +106,7 @@ DESCRIPTION
      may not work quite right.  It is best to avoid using hard links, and only
      use symbolic links to the arch command.
 
-   Environment
+ENVIRONMENT
      The environment variable ARCHPREFERENCE can be used to provide architecture
      order preferences.  It is checked before looking for the corresponding
      property list file.
@@ -139,7 +129,28 @@ DESCRIPTION
      specified.  If not specified as a second field in a specifier, the
      executable path will be looked up in the corresponding property list file.
 
-   Example ARCHPREFERENCE Values
+EXAMPLES
+   archSettings Property List Format
+     This is an example of a property list file as is expected in one of the
+     archSettings locations mentioned above:
+
+           <?xml version="1.0" encoding="UTF-8"?>
+           <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+           <plist version="1.0">
+           <dict>
+                   <key>ExecutablePath</key>
+                   <string>$execpath</string>
+                   <key>PreferredOrder</key>
+                   <array>
+                           <string>x86_64</string>
+                           <string>arm64</string>
+                   </array>
+                   <key>PropertyListVersion</key>
+                   <string>1.0</string>
+           </dict>
+           </plist>
+
+   ARCHPREFERENCE Values
      i386,x86_64,x86_64h,arm64,arm64e
            A specifier that matches any name.
 
@@ -154,12 +165,10 @@ DESCRIPTION
            A specifier for baz and a second specifier that would match any other
            name.
 
-BUGS
-     Running the arch command on an interpreter script may not work if the
-     interpreter is a link to the arch command, especially if a 64-bit
-     architecture is specified (since the arch command is 2-way universal,
-     32-bit only).
-
 SEE ALSO
      machine(1)
+
+BUGS
+     Running the arch command on an interpreter script may not work if the
+     interpreter is a link to the arch command.
 

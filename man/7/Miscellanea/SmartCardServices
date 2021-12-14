@@ -238,8 +238,6 @@ KERBEROS ATTRIBUTE MAPPING CONFIG EXAMPLE
      </dict>
      </plist>
 
-
-
    Additional considerations
      Certificate Checking: checkCertificateTrust should not be set to 3 (hard
      revocation check) if certificate revocation or OCSP servers are not always
@@ -255,9 +253,7 @@ SMARTCARD ENFORCEMENT
      your environment. Enforcing the use of the SmartCard for the entire system
      can be done using MDM or a command:
 
-
            sudo defaults write /Library/Preferences/com.apple.security.smartcard enforceSmartCard -bool true
-
 
      In addition, the system might be configured to allow users who are not
      paired with SmartCard to login with password using MDM or the command:
@@ -270,7 +266,7 @@ SMARTCARD ENFORCEMENT
 
      It is also possible to specify an entire group whose members will be
      exempted from using the card. See the NotEnforcedGroup section above for
-     usage. Please note that this option is not compatible with Filevault
+     usage. Please note that this option is not compatible with FileVault
      Unlock.
 
      In addition, it is possible to use the attribute
@@ -278,17 +274,14 @@ SMARTCARD ENFORCEMENT
      record. It always refers to that specific user and can take the following
      values:
 
-     0 - the system default is respected
+     0   the system default is respected
 
-     1 - card use is always enforced
+     1   card use is always enforced
 
-     2 - card enforcement is always disabled, the user can use a password
-
+     2   card enforcement is always disabled, the user can use a password
 
      If ActiveDirectory is used in your environment, the value of the
      userAccountControl attribute is respected.
-
-
 
    Temporarily disabling card enforcement
      In case the system is configured for SmartCard enforced login and this
@@ -299,6 +292,20 @@ SMARTCARD ENFORCEMENT
            security filevault skip-sc-enforcement
 
      For more details please see the man page of the security command.
+
+
+   Evaluation order
+     The exceptions for enforcement are processed in the following order:
+
+     -   OD kDSNativeAttrTypePrefix:SmartCardEnforcement
+
+     -   AD userAccountControl
+
+     -   NotEnforced group (not available in FileVault Unlock)
+
+     -   AllowUnmappedUsers setting
+
+     -   System-wide setting using defaults or MDM
 
 
 EXTENSIONS
@@ -348,6 +355,15 @@ SMART CARD APDU LOGGING
      unplugging and replugging the same reader.  If a USB token is used, it is
      treated as both a card and a reader.  Use ssh from a remote system to log
      back in and re-enable logging as needed
+
+DISABLING SMART CARD DRIVERS
+     It is possible to turn off token drivers by setting the global preference:
+
+           sudo defaults write /Library/Preferences/com.apple.security.smartcard DisabledTokens -array com.apple.CryptoTokenKit.pivtoken
+
+     This statement disables built-in PIV SmartCard driver, but it can be used
+     to disable any token driver or set of token drivers just by replacing token
+     driver extension identifier.
 
 ENTITLEMENT
      Sandboxed PCSC clients require 'com.apple.security.smartcard=YES'

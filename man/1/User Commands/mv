@@ -34,8 +34,8 @@ DESCRIPTION
 
      -v      Cause mv to be verbose, showing files after they are moved.
 
-     It is an error for either the source operand or the destination path to
-     specify a directory unless both do.
+     It is an error for the source operand to specify a directory if the target
+     exists and is not a directory.
 
      If the destination path does not have a mode which permits writing, mv
      prompts the user for confirmation as specified for the -i option.
@@ -47,7 +47,7 @@ DESCRIPTION
            cp -pRP source_file destination && \
            rm -rf source_file
 
-DIAGNOSTICS
+EXIT STATUS
      The mv utility exits 0 on success, and >0 if an error occurs.
 
      The command "mv dir/afile dir" will abort with an error message.
@@ -58,8 +58,10 @@ LEGACY DIAGNOSTICS
 
      For more information about legacy mode, see compat(5).
 
-SEE ALSO
-     cp(1), rm(1), symlink(7)
+EXAMPLES
+     Rename file foo to bar, overwriting bar if it already exists:
+
+           $ mv -f foo bar
 
 COMPATIBILITY
      The -n and -v options are non-standard and their use in scripts is not
@@ -68,6 +70,9 @@ COMPATIBILITY
      The mv utility now supports HFS+ Finder and Extended Attributes and
      resource forks.  The mv utility will no longer strip resource forks off of
      HFS files.  For an alternative method, refer to cp(1).
+
+SEE ALSO
+     cp(1), rm(1), symlink(7)
 
 STANDARDS
      The mv utility is expected to be IEEE Std 1003.2 (“POSIX.2”) compatible.

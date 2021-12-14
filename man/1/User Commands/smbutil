@@ -38,8 +38,9 @@ DESCRIPTION
              escaped out if the -e option is specified.
 
      view [-options] //[domain;][user[:password]@]server
-             List resources available on the specified server for the user.  The
-             options are as follows:
+             List resources available on the specified server for the user.
+
+             The options are as follows:
 
              -A      authorize only.
 
@@ -62,11 +63,41 @@ DESCRIPTION
              Display the Dfs referrals for this URL for the authenticated
              session.
 
-     statshares [-m mount_path] | [-a]
+     statshares [-m mount_path | -a] [-f format]
              If -m is specified, it prints the attributes of the share mounted
              at mount_path.  If -a is specified, it prints the attributes of all
              mounted shares. You can not specify both -m and -a together since
-             they are mutually exclusive.
+             they are mutually exclusive.  -f controls the output format.  If -f
+             is not specified then human readable format is used. Supported
+             formats are: Json.
+
+     multichannel [-m mount_path | -a] [-options] [-f format]
+             If -m is specified, it prints the multichannel attributes of the
+             share mounted at mount_path.  If -a is specified, it prints the
+             multichannel attributes of all mounted shares. You can not specify
+             both -m and -a together since they are mutually exclusive.  -f
+             controls the output format.  If -f is not specified then human
+             readable format is used. Supported formats are: Json.
+
+             The options are as follows:
+
+             -i      print information about the session.
+
+             -c      print information about the client's interfaces.
+
+             -s      print information about the server's interfaces.
+
+             -x      print information about the established connection.
+
+             If no option is given, then all options will be shown.
+
+     snapshot [-m mount_path | -a] [-f format]
+             If -m is specified, it prints out a list of snapshots for the item
+             at the path of mount_path.  If -a is specified, it prints the
+             snapshots of all mounted shares. You can not specify both -m and -a
+             together since they are mutually exclusive.  -f controls the output
+             format.  If -f is not specified then human readable format is used.
+             Supported formats are: Json.
 
 FILES
      nsmb.conf      Keeps static parameters for connections and other

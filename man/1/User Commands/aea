@@ -1,0 +1,166 @@
+AEA(1)                       General Commands Manual                      AEA(1)
+
+
+
+NAME
+       aea - Manipulate Apple Encrypted Archives
+
+SYNOPSIS
+       aea command [options]
+
+DESCRIPTION
+       aea creates and manipulates Apple Encrypted Archives (AEA)
+
+VERBS
+       encrypt           Create a new AEA archive
+
+       decrypt           Decrypt an AEA archive
+
+       sign              Sign an AEA archive
+
+       append            Append data to an existing AEA archive
+
+       id                Identify an AEA archive
+
+
+OPTIONS
+       -v     Increase verbosity. Default is silent operation.
+
+       -h     Print usage and exit.
+
+       -i input_file
+              Input file. Default is stdin.
+
+       -o output_file
+              Output file. Default is stdout.
+
+       -profile profile
+              Archive profile, one of the following (both index and id are
+              allowed):
+              0: hkdf_sha256_hmac__none__ecdsa_p256              - no
+              encryption, signed
+              1: hkdf_sha256_aesctr_hmac__symmetric__none        - symmetric key
+              encryption
+              2: hkdf_sha256_aesctr_hmac__symmetric__ecdsa_p256  - symmetric key
+              encryption, signed
+              3: hkdf_sha256_aesctr_hmac__ecdhe_p256__none       - ECDHE
+              encryption
+              4: hkdf_sha256_aesctr_hmac__ecdhe_p256__ecdsa_p256 - ECDHE
+              encryption, signed
+              5: hkdf_sha256_aesctr_hmac__scrypt__none           - scrypt
+              encryption (password based)
+
+       -a algorithm
+              Compression algorithm used when creating archives. One of lzfse,
+              lzma, lz4, zlib, copy.  Default is lzfse.
+
+       -b block_size
+              Block size used for compression+encryption, a number with optional
+              b, k, m, g suffix (bytes are assumed if no suffix is specified).
+              Default is 1m.
+
+       -t worker_threads
+              Number of worker threads. Default is the number of physical CPU on
+              the running machine.
+
+       -checksum checksum_mode
+              Block checksum mode, one of none, murmur64, sha256.
+
+       -key key_file
+              File containing or receiving the symmetric encryption key.
+
+       -key-value <key>
+              Symmetric encryption key, encoded either as hex:..., or
+              base64:....
+
+       -key-gen
+              When creating a new archive, generate a new random high entropy
+              symmetric key, and store it in the file specified by -key.  The
+              new key is stored as hex:... in the file.
+
+       -password password_file
+              File containing or receiving the encryption password.
+
+       -password-value <password>
+              Encryption password.
+
+       -password-gen
+              When creating a new archive, generate a new random high entropy
+              password, and store it in the file specified by -password.
+
+       -auth-data-key <string>
+              Define the key for the next -auth-data or -auth-data-value option.
+              If this option is specified at least once, the auth data blob in
+              the archive will be stored using the key->value format, and all
+              occurrences of fI-auth-data or -auth-data-value must be preceded
+              by a -auth-data-key.
+
+       -auth-data data_file
+              Insert the contents of data_file in the container as
+              authentication data. This option can be specified multiple times.
+              Authentication data is stored in plain text in the container, and
+              can be used to store public key certificates for example.
+
+       -auth-data-value <data>
+              Insert the contents of data (encoded either as hex:..., or
+              base64:...) in the container as authentication data. This option
+              can be specified multiple times. Authentication data is stored in
+              plain text in the container, and can be used to store public key
+              certificates for example.
+
+       -sign-pub key_file
+              File containing the signature public key. Used to decrypt a signed
+              container, or encrypt a container without signing it.
+
+       -sign-priv key_file
+              File containing the signature private key. Used to sign a
+              container.
+
+       -recipient-pub key_file
+              File containing the recipient public key. Used to encrypt a
+              container in the ECDHE modes.
+
+       -recipient-priv key_file
+              File containing the recipient private key. Used to decrypt a
+              container in the ECDHE modes.
+
+       -master-key key_file
+              When creating a new container, if this option is given, the file
+              will receive the container main key, needed for future append
+              operations.  The main key is only intended to unlock an existing
+              container to append new data, and should be kept by the container
+              creator.
+
+       -signature-key key_file
+              When creating an new signed container, if this option is given,
+              the file will receive the signature encryption key.  if only the
+              signature public key is passed with -sign-pub when creating a new
+              signed container, the container needs to be signed offline using
+              the sign command. This requires both the signature private key
+              -sign-priv, and this signature encryption key.
+
+EXAMPLES
+       Encrypt foo into foo.aea using a new random symmetric key stored in
+       foo.key
+
+              aea encrypt -profile hkdf_sha256_aesctr_hmac__symmetric__none -i
+              foo -o foo.aea -key foo.key
+
+       Decrypt foo.aea into bar
+
+              aea decrypt -i foo.aea -o bar -key foo.key
+
+       Alice encrypts and signs foo into foo.aea, so only Bob can decrypt it.
+
+              aea encrypt -profile
+              hkdf_sha256_aesctr_hmac__ecdhe_p256__ecdsa_p256 -i foo -o foo.aea
+              -sign-priv alice.priv -recipient-pub bob.pub
+
+       Bob decrypts foo.aea into bar using his private key, and at the same time
+       verifying Alice signed it.
+
+              aea decrypt -i foo.aea -o bar -sign-pub alice.pub -recipient-priv
+              bob.priv
+
+
+

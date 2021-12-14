@@ -4,41 +4,99 @@ NAME
      time – time command execution
 
 SYNOPSIS
-     time [-lp] utility
+     time [-al] [-h | -p] [-o file] utility [argument ...]
 
 DESCRIPTION
-     The time utility executes and times utility.  After the utility finishes,
-     time writes the total time elapsed, the time consumed by system overhead,
-     and the time used to execute utility to the standard error stream.  Times
-     are reported in seconds.
+     The time utility executes and times the specified utility.  After the
+     utility finishes, time writes to the standard error stream, (in seconds):
+     the total time elapsed, the time used to execute the utility process and
+     the time consumed by system overhead.
 
-     Available options:
+     The following options are available:
 
-     -l      The contents of the rusage structure are printed.
+     -a      If the -o flag is used, append to the specified file rather than
+             overwriting it.  Otherwise, this option has no effect.
 
-     -p      The output is formatted as specified by IEEE Std 1003.2-1992
-             (“POSIX.2”).
+     -h      Print times in a human friendly format.  Times are printed in
+             minutes, hours, etc. as appropriate.
+
+     -l      The contents of the rusage structure are printed as well.
+
+     -o file
+             Write the output to file instead of stderr.  If file exists and the
+             -a flag is not specified, the file will be overwritten.
+
+     -p      Makes time output POSIX.2 compliant (each time is printed on its
+             own line).
 
      Some shells may provide a builtin time command which is similar or
      identical to this utility.  Consult the builtin(1) manual page.
 
-DIAGNOSTICS
-     The time utility shall exit with one of the following values:
+     If time receives a SIGINFO (see the status argument for stty(1)) signal,
+     the current time the given command is running will be written to the
+     standard output.
 
-     1-125   An error occurred in the time utility.
+ENVIRONMENT
+     The PATH environment variable is used to locate the requested utility if
+     the name contains no ‘/’ characters.
 
-     126     The utility was found but could not be invoked.
+EXIT STATUS
+     If utility could be timed successfully, its exit status is returned.  If
+     utility terminated abnormally, a warning message is output to stderr.  If
+     the utility was found but could not be run, the exit status is 126.  If no
+     utility could be found at all, the exit status is 127.  If time encounters
+     any other error, the exit status is between 1 and 125 included.
 
-     127     The utility could not be found.
+EXAMPLES
+     Time the execution of ls(1) on an empty directory:
 
-     Otherwise, the exit status of time shall be that of utility.
+           $ /usr/bin/time ls
+                   0.00 real         0.00 user         0.00 sys
+
+     Time the execution of the cp(1) command and store the result in the
+     times.txt file.  Then execute the command again to make a new copy and add
+     the result to the same file:
+
+           $ /usr/bin/time -o times.txt cp FreeBSD-12.1-RELEASE-amd64-bootonly.iso copy1.iso
+           $ /usr/bin/time -a -o times.txt cp FreeBSD-12.1-RELEASE-amd64-bootonly.iso copy2.iso
+
+     The times.txt file will contain the times of both commands:
+
+           $ cat times.txt
+                   0.68 real         0.00 user         0.22 sys
+                   0.67 real         0.00 user         0.21 sys
+
+     Time the sleep(1) command and show the results in a human friendly format.
+     Show the contents of the rusage structure too:
+
+           $ /usr/bin/time -l -h -p sleep 5
+           real 5.01
+           user 0.00
+           sys 0.00
+                    0  maximum resident set size
+                    0  average shared memory size
+                    0  average unshared data size
+                    0  average unshared stack size
+                   80  page reclaims
+                    0  page faults
+                    0  swaps
+                    1  block input operations
+                    0  block output operations
+                    0  messages sent
+                    0  messages received
+                    0  signals received
+                    3  voluntary context switches
+                    0  involuntary context switches
+              2054316  instructions retired
+              2445544  cycles elapsed
+               241664  peak memory footprint
 
 SEE ALSO
-     builtin(1), csh(1), getrusage(2)
-
-FILES
-     /usr/include/sys/resource.h
+     builtin(1), csh(1), getrusage(2), wait(2)
 
 STANDARDS
-     The time utility conforms to IEEE Std 1003.2-1992 (“POSIX.2”).
+     The time utility is expected to conform to ISO/IEC 9945-2:1993 (``POSIX'').
+
+HISTORY
+     A time utility appeared in Version 3 AT&T UNIX.
 

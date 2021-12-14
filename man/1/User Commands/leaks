@@ -9,8 +9,9 @@ SYNOPSIS
 
    Options:
      [-list] [-groupByType] [-nostacks] [-nosources] [-quiet] [-exclude symbol]
-     [-traceTree address] [-outputGraph path] [-fullContent] [-readonlyContent]
-     [-noContent]
+     [-outputGraph path] [-fullContent] [-readonlyContent] [-noContent]
+     [-diffFrom=<memgraph>] [-traceTree address] [-referenceTree]
+     [-autoreleasePools] [-debug=<mode>]
 
 DESCRIPTION
      leaks identifies leaked memory -- memory that the application has
@@ -78,14 +79,6 @@ OPTIONS
                    This allows ignoring leaks that, for example, are allocated
                    in libraries for which you do not have source code.
 
-     -traceTree address
-                   Print a reverse tree of references, from the given block up
-                   to the process 'roots' (e.g., global data, registers, or
-                   locations on stacks) to the given block.  This is useful for
-                   determining what is holding onto a buffer such that it has
-                   not been freed, and is similar to the information shown in
-                   the Xcode Memory Graph Debugger.
-
      -outputGraph path
                    Generate a memory graph file containing information about all
                    VM and malloc nodes, and the references between them.  path
@@ -118,6 +111,47 @@ OPTIONS
                    it might be leaked, it could expose confidential information
                    from the process if you, for example, file bug reports with
                    that output included.
+
+     -diffFrom=<memgraph>
+                   Show only the new leaks since the specified memgraph.
+
+     -traceTree address
+                   Print a reverse tree of references, from the given block up
+                   to the process 'roots' (e.g., global data, registers, or
+                   locations on stacks) to the given block.  This is useful for
+                   determining what is holding onto a buffer such that it has
+                   not been freed, and is similar to the information shown in
+                   the Xcode Memory Graph Debugger.
+
+     -referenceTree
+                   Print a top-down tree of all malloc allocations and
+                   dynamically-allocated VM regions in the process.  This can be
+                   useful for getting an overall sense of how memory is held by
+                   the process.  The -groupByType argument can also be passed to
+                   summarize the data.
+
+                   In this reference tree mode, each allocation only appears
+                   once in the output. Some attempt is made to prioritize which
+                   reference to an allocation should be considered as the
+                   "owning" allocation to decide where in the tree to show the
+                   allocation, but since allocations often have several or
+                   numerous references to them (some of which may be false or
+                   stale references) and only one can be the "parent" in this
+                   reference tree output, sometimes allocations are shown in the
+                   wrong place in the tree.
+
+     -autoreleasePools
+                   Print the contents of all autorelease pools of all threads of
+                   the process, and trees of memory that are only held by those
+                   allocations.  If the autorelease pool got popped then that
+                   additional memory that is only held by autorelease pool
+                   entries would get released.
+
+     -debug=[mode]
+                   This flag offers several additional more detailed modes of
+                   output, intended for debugging and deeper investigations. Use
+                   -debug=help to get more information about various debug
+                   modes.
 
      -atExit -- command
                    Launches the specified command and runs leaks when that

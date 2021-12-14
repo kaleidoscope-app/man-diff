@@ -47,22 +47,11 @@ DESCRIPTION
              However, you may wish to consider the -print0 primary in
              conjunction with “xargs -0” as an effective alternative.
 
-     -d      Cause find to perform a depth-first traversal, i.e., directories
-             are visited in post-order and all entries in a directory will be
-             acted on before the directory itself.  By default, find visits
-             directories in pre-order, i.e., before their contents.  Note, the
-             default is not a breadth-first traversal.
+     -d      Cause find to perform a depth-first traversal.
 
-             This option is equivalent to the -depth primary of IEEE Std
-             1003.1-2001 (“POSIX.1”).  The -d option can be useful when find is
-             used with cpio(1) to process files that are contained in
-             directories with unusual permissions.  It ensures that you have
-             write permission while you are placing files in a directory, then
-             sets the directory's permissions as the last thing.
-
-     -f      Specify a file hierarchy for find to traverse.  File hierarchies
-             may also be specified as the operands immediately following the
-             options.
+             This option is a BSD-specific equivalent of the -depth primary
+             specified by IEEE Std 1003.1-2001 (“POSIX.1”).  Refer to its
+             description under PRIMARIES for more information.
 
      -s      Cause find to traverse the file hierarchies in lexicographical
              order, i.e., alphabetical order within each directory.  Note: ‘find
@@ -102,10 +91,10 @@ PRIMARIES
      -acl    May be used in conjunction with other primaries to locate files
              with extended ACLs.  See acl(3) for more information.
 
-     -amin n
+     -amin [-|+]n
              True if the difference between the file last access time and the
-             time find was started, rounded up to the next full minute, is n
-             minutes.
+             time find was started, rounded up to the next full minute, is more
+             than n (+n), less than n (-n), or exactly n minutes ago.
 
      -anewer file
              Same as -neweram.
@@ -130,10 +119,11 @@ PRIMARIES
              example, “-atime -1h30m”.  Units are probably only useful when used
              in conjunction with the + or - modifier.
 
-     -cmin n
+     -cmin [-|+]n
              True if the difference between the time of last change of file
              status information and the time find was started, rounded up to the
-             next full minute, is n minutes.
+             next full minute, is more than n (+n), less than n (-n), or exactly
+             n minutes ago.
 
      -cnewer file
              Same as -newercm.
@@ -150,18 +140,30 @@ PRIMARIES
              Please refer to the -atime primary description for information on
              supported time units.
 
-     -d      Same as depth.  GNU find implements this as a primary in mistaken
-             emulation of FreeBSD find(1).
+     -d      Non-portable, BSD-specific version of depth.  GNU find implements
+             this as a primary in mistaken emulation of FreeBSD find.
 
      -delete
              Delete found files and/or directories.  Always returns true.  This
              executes from the current working directory as find recurses down
              the tree.  It will not attempt to delete a filename with a “/”
              character in its pathname relative to “.” for security reasons.
-             Depth-first traversal processing is implied by this option.
+             Depth-first traversal processing is implied by this option.  The
+             -delete primary will fail to delete a directory if it is not empty.
              Following symlinks is incompatible with this option.
 
-     -depth  Always true; same as the -d option.
+     -depth  Always true; same as the non-portable -d option.  Cause find to
+             perform a depth-first traversal, i.e., directories are visited in
+             post-order and all entries in a directory will be acted on before
+             the directory itself.  By default, find visits directories in pre-
+             order, i.e., before their contents.  Note, the default is not a
+             breadth-first traversal.
+
+             The -depth primary can be useful when find is used with cpio(1) to
+             process files that are contained in directories with unusual
+             permissions.  It ensures that you have write permission while you
+             are placing files in a directory, then sets the directory's
+             permissions as the last thing.
 
      -depth n
              True if the depth of the file relative to the starting point of the
@@ -184,7 +186,9 @@ PRIMARIES
      -exec utility [argument ...] {} +
              Same as -exec, except that “{}” is replaced with as many pathnames
              as possible for each invocation of utility.  This behaviour is
-             similar to that of xargs(1).
+             similar to that of xargs(1).  The primary always returns true; if
+             at least one invocation of utility returns a non-zero exit status,
+             find will return a non-zero exit status.
 
      -execdir utility [argument ...] ;
              The -execdir primary is identical to the -exec primary with the
@@ -195,7 +199,9 @@ PRIMARIES
      -execdir utility [argument ...] {} +
              Same as -execdir, except that “{}” is replaced with as many
              pathnames as possible for each invocation of utility.  This
-             behaviour is similar to that of xargs(1).
+             behaviour is similar to that of xargs(1).  The primary always
+             returns true; if at least one invocation of utility returns a non-
+             zero exit status, find will return a non-zero exit status.
 
      -flags [-|+]flags,notflags
              The flags are specified using symbolic names (see chflags(1)).
@@ -226,7 +232,7 @@ PRIMARIES
 
      -gid gname
              The same thing as -group gname for compatibility with GNU find.
-             GNU find imposes a restriction that gname is numeric, while find(1)
+             GNU find imposes a restriction that gname is numeric, while find
              does not.
 
      -group gname
@@ -235,7 +241,9 @@ PRIMARIES
              ID.
 
      -ignore_readdir_race
-             This option is for GNU find compatibility and is ignored.
+             Ignore errors because a file or a directory is deleted after
+             reading the name from a directory.  This option does not affect
+             errors occurring on starting points.
 
      -ilname pattern
              Like -lname, but the match is case insensitive.  This is a GNU find
@@ -288,10 +296,10 @@ PRIMARIES
              expression even if it would not normally be evaluated.  “-mindepth
              1” processes all but the command line arguments.
 
-     -mmin n
+     -mmin [-|+]n
              True if the difference between the file last modification time and
-             the time find was started, rounded up to the next full minute, is n
-             minutes.
+             the time find was started, rounded up to the next full minute, is
+             more than n (+n), less than n (-n), or exactly n minutes ago.
 
      -mnewer file
              Same as -newer.
@@ -332,11 +340,12 @@ PRIMARIES
              True if the file belongs to an unknown group.
 
      -noignore_readdir_race
-             This option is for GNU find compatibility and is ignored.
+             Turn off the effect of -ignore_readdir_race.  This is default
+             behaviour.
 
      -noleaf
              This option is for GNU find compatibility.  In GNU find it disables
-             an optimization not relevant to find(1), so it is ignored.
+             an optimization not relevant to find, so it is ignored.
 
      -nouser
              True if the file belongs to an unknown user.
@@ -389,6 +398,8 @@ PRIMARIES
              descend into the current file.  Note, the -prune primary has no
              effect if the -d option was specified.
 
+     -quit   Causes find to terminate immediately.
+
      -regex pattern
              True if the whole path of the file matches pattern using regular
              expression.  To match a file named “./foo/xyzzy”, you can use the
@@ -412,6 +423,11 @@ PRIMARIES
              T       terabytes (1024 gigabytes)
              P       petabytes (1024 terabytes)
 
+     -sparse
+             True if the current file is sparse, i.e. has fewer blocks allocated
+             than expected based on its size in bytes.  This might also match
+             files that have been compressed by the filesystem.
+
      -type t
              True if the file is of the specified type.  Possible file types are
              as follows:
@@ -426,8 +442,8 @@ PRIMARIES
 
      -uid uname
              The same thing as -user uname for compatibility with GNU find.  GNU
-             find imposes a restriction that uname is numeric, while find(1)
-             does not.
+             find imposes a restriction that uname is numeric, while find does
+             not.
 
      -user uname
              True if the file belongs to the user uname.  If uname is numeric
@@ -531,9 +547,9 @@ STANDARDS
 
      All the single character options except -H and -L as well as -amin,
      -anewer, -cmin, -cnewer, -delete, -empty, -fstype, -iname, -inum, -iregex,
-     -ls, -maxdepth, -mindepth, -mmin, -path, -print0, -regex and all of the -B*
-     birthtime related primaries are extensions to IEEE Std 1003.1-2001
-     (“POSIX.1”).
+     -ls, -maxdepth, -mindepth, -mmin, -not, -path, -print0, -regex, -sparse and
+     all of the -B* birthtime related primaries are extensions to IEEE Std
+     1003.1-2001 (“POSIX.1”).
 
      Historically, the -d, -L and -x options were implemented using the
      primaries -depth, -follow, and -xdev.  These primaries always evaluated to
@@ -554,7 +570,10 @@ STANDARDS
      The -E option was inspired by the equivalent grep(1) and sed(1) options.
 
 HISTORY
-     A find command appeared in Version 1 AT&T UNIX.
+     A simple find command appeared in Version 1 AT&T UNIX and was removed in
+     Version 3 AT&T UNIX.  It was rewritten for Version 5 AT&T UNIX and later be
+     enhanced for the Programmer's Workbench (PWB).  These changes were later
+     incorporated in AT&T UNIX v7.
 
 BUGS
      The special characters used by find are also special characters to many

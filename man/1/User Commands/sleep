@@ -9,15 +9,17 @@ SYNOPSIS
 DESCRIPTION
      The sleep command suspends execution for a minimum of seconds.
 
-     If the sleep command receives a signal, it takes the standard action.
+     If the sleep command receives a signal, it takes the standard action.  When
+     the SIGINFO signal is received, the estimate of the amount of seconds left
+     to sleep is printed on the standard output.
 
 IMPLEMENTATION NOTES
      The SIGALRM signal is not handled specially by this implementation.
 
-     The sleep command will accept and honor a non-integer number of specified
-     seconds (with a ‘.’ character as a decimal point).  This is a non-portable
-     extension, and its use will nearly guarantee that a shell script will not
-     execute properly on another system.
+     The sleep command allows and honors a non-integer number of seconds to
+     sleep in any form acceptable by strtod(3).  This is a non-portable
+     extension, but is also implemented in GNU sh-utils since version 2.0a
+     (released in 2002).
 
 EXIT STATUS
      The sleep utility exits 0 on success, and >0 if an error occurs.
