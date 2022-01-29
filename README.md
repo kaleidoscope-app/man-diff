@@ -41,6 +41,10 @@ Or quickly lookup a single man page:
 
 ## Changelog
 
+Jan 29, 2021:
+
+* Added macOS 12.2: ```git difftool changeset/macOS12.1..changeset/macOS12.2```
+
 Dec 14, 2021:
 
 * Added macOS 12.1: ```git difftool changeset/macOS12..changeset/macOS12.1```
