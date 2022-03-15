@@ -1,20 +1,20 @@
 BUILTIN(1)                   General Commands Manual                  BUILTIN(1)
 
 NAME
-     builtin, !, %, ., :, @, {, }, alias, alloc, bg, bind, bindkey, break,
+     builtin, !, %, ., :, @, [, {, }, alias, alloc, bg, bind, bindkey, break,
      breaksw, builtins, case, cd, chdir, command, complete, continue, default,
      dirs, do, done, echo, echotc, elif, else, end, endif, endsw, esac, eval,
      exec, exit, export, false, fc, fg, filetest, fi, for, foreach, getopts,
      glob, goto, hash, hashstat, history, hup, if, jobid, jobs, kill, limit,
      local, log, login, logout, ls-F, nice, nohup, notify, onintr, popd,
-     printenv, pushd, pwd, read, readonly, rehash, repeat, return, sched, set,
-     setenv, settc, setty, setvar, shift, source, stop, suspend, switch, telltc,
-     test, then, time, times, trap, true, type, ulimit, umask, unalias,
-     uncomplete, unhash, unlimit, unset, unsetenv, until, wait, where, which,
-     while – shell built-in commands
+     printenv, printf, pushd, pwd, read, readonly, rehash, repeat, return,
+     sched, set, setenv, settc, setty, setvar, shift, source, stop, suspend,
+     switch, telltc, test, then, time, times, trap, true, type, ulimit, umask,
+     unalias, uncomplete, unhash, unlimit, unset, unsetenv, until, wait, where,
+     which, while – shell built-in commands
 
 SYNOPSIS
-     builtin [-options] [args ...]
+     See the built-in command description in the appropriate shell manual page.
 
 DESCRIPTION
      Shell builtin commands are commands that can be executed within the running
@@ -22,7 +22,7 @@ DESCRIPTION
      command is executed in a subshell if it occurs as any component of a
      pipeline except the last.
 
-     If a command specified to the shell contains a slash “/”, the shell will
+     If a command specified to the shell contains a slash ‘/’, the shell will
      not execute a builtin command, even if the last component of the specified
      command matches the name of a builtin command.  Thus, while specifying
      “echo” causes a builtin command to be executed under shells that support
@@ -49,6 +49,7 @@ DESCRIPTION
            .                 No              No           Yes
            :                 No              Yes          Yes
            @                 No              Yes          Yes
+           [                 Yes             No           Yes
            {                 No              No           Yes
            }                 No              No           Yes
            alias             No**            Yes          Yes
@@ -92,14 +93,14 @@ DESCRIPTION
            getopts           No**            No           Yes
            glob              No              Yes          No
            goto              No              Yes          No
-           hash              No              No           Yes
+           hash              No**            No           Yes
            hashstat          No              Yes          No
            history           No              Yes          No
            hup               No              Yes          No
            if                No              Yes          Yes
            jobid             No              No           Yes
            jobs              No**            Yes          Yes
-           kill              Yes             Yes          No
+           kill              Yes             Yes          Yes
            limit             No              Yes          No
            local             No              No           Yes
            log               No              Yes          No
@@ -112,6 +113,7 @@ DESCRIPTION
            onintr            No              Yes          No
            popd              No              Yes          No
            printenv          Yes             Yes          No
+           printf            Yes             No           Yes
            pushd             No              Yes          No
            pwd               Yes             No           Yes
            read              No**            No           Yes
@@ -137,8 +139,8 @@ DESCRIPTION
            times             No              No           Yes
            trap              No              No           Yes
            true              Yes             No           Yes
-           type              No              No           Yes
-           ulimit            No              No           Yes
+           type              No**            No           Yes
+           ulimit            No**            No           Yes
            umask             No**            Yes          Yes
            unalias           No**            Yes          Yes
            uncomplete        No              Yes          No
@@ -154,12 +156,12 @@ DESCRIPTION
 
 SEE ALSO
      csh(1), dash(1), echo(1), false(1), info(1), kill(1), login(1), nice(1),
-     nohup(1), printenv(1), pwd(1), sh(1), test(1), time(1), true(1), which(1),
-     zsh(1)
+     nohup(1), printenv(1), printf(1), pwd(1), sh(1), test(1), time(1), true(1),
+     which(1), zsh(1)
 
 HISTORY
      The builtin manual page first appeared in FreeBSD 3.4.
 
 AUTHORS
-     This manual page was written by Sheldon Hearn ⟨sheldonh@FreeBSD.org⟩.
+     This manual page was written by Sheldon Hearn <sheldonh@FreeBSD.org>.
 
