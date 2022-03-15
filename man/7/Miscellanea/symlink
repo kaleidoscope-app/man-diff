@@ -53,19 +53,27 @@ SYMBOLIC LINK HANDLING
      named “afile”, the system call “open("slink" ...)” would return a file
      descriptor to the file “afile”.
 
-     There are nine system calls that do not follow links, and which operate on
-     the symbolic link itself.  They are: lchflags(2), lchmod(2), lchown(2),
-     lstat(2), lutimes(3), readlink(2), rename(2), rmdir(2), and unlink(2).
-     Because remove(3) is an alias for unlink(2), it also does not follow
-     symbolic links.  When rmdir(2) is applied to a symbolic link, it fails with
-     the error ENOTDIR.
+     There are twelve system calls that do not follow links, and which operate
+     on the symbolic link itself.  They are: lchflags(2), lchmod(2), lchown(2),
+     lstat(2), lutimes(3), readlink(2), readlinkat(2), rename(2), renameat(2),
+     rmdir(2), unlink(2), and unlinkat(2).  Because remove(3) is an alias for
+     unlink(2), it also does not follow symbolic links.  When rmdir(2) or
+     unlinkat(2) with the AT_REMOVEDIR flag is applied to a symbolic link, it
+     fails with the error ENOTDIR.
+
+     The linkat(2) system call does not follow symbolic links unless given the
+     AT_SYMLINK_FOLLOW flag.
+
+     The following system calls follow symbolic links unless given the
+     AT_SYMLINK_NOFOLLOW flag: chflagsat(2), fchmodat(2), fchownat(2),
+     fstatat(2) and utimensat(2).
 
      The owner and group of an existing symbolic link can be changed by means of
      the lchown(2) system call.  The flags, access permissions, owner/group and
      modification time of an existing symbolic link can be changed by means of
      the lchflags(2), lchmod(2), lchown(2), and lutimes(3) system calls,
-     respectively.  Of these, only the flags are used by the system; the access
-     permissions and ownership are ignored.
+     respectively.  Of these, only the flags and ownership are used by the
+     system; the access permissions are ignored.
 
      The 4.4BSD system differs from historical 4BSD systems in that the system
      call chown(2) has been changed to follow symbolic links.  The lchown(2)
@@ -94,7 +102,7 @@ SYMBOLIC LINK HANDLING
      “slink”, while “chown -h root slink” would change the ownership of “slink”
      itself.
 
-     There are four exceptions to this rule.  The mv(1) and rm(1) commands do
+     There are five exceptions to this rule.  The mv(1) and rm(1) commands do
      not follow symbolic links named as arguments, but respectively attempt to
      rename and delete them.  (Note, if the symbolic link references a file via
      a relative path, moving it to another directory may very well cause it to
@@ -108,10 +116,9 @@ SYMBOLIC LINK HANDLING
      -H and -L options affect its behavior even though it is not doing a walk of
      a file tree.)
 
-     The file(1) command is also an exception to this rule.  The file(1) command
-     does not follow symbolic links named as argument by default.  The file(1)
-     command does follow symbolic links named as argument if -L option is
-     specified.
+     The file(1) and stat(1) commands are also exceptions to this rule.  These
+     commands do not follow symbolic links named as argument by default, but do
+     follow symbolic links named as argument if the -L option is specified.
 
      The 4.4BSD system differs from historical 4BSD systems in that the chown
      and chgrp commands follow symbolic links specified on the command line.

@@ -9,8 +9,7 @@ SYNOPSIS
 DESCRIPTION
      The col utility filters out reverse (and half reverse) line feeds so that
      the output is in the correct order with only forward and half forward line
-     feeds, and replaces white-space characters with tabs where possible.  This
-     can be useful in processing the output of nroff(1) and tbl(1).
+     feeds, and replaces white-space characters with tabs where possible.
 
      The col utility reads from the standard input and writes to the standard
      output.
@@ -36,12 +35,19 @@ DESCRIPTION
 
      -x      Output multiple spaces instead of tabs.
 
-     The control sequences for carriage motion that col understands and their
-     decimal values are listed in the following table:
+     In the input stream, col understands both the escape sequences of the form
+     escape-digit mandated by Version 2 of the Single UNIX Specification
+     (“SUSv2”) and the traditional BSD format escape-control-character.  The
+     control sequences for carriage motion and their ASCII values are as
+     follows:
 
-     ESC-7            reverse line feed (escape then 7)
-     ESC-8            half reverse line feed (escape then 8)
-     ESC-9            half forward line feed (escape then 9)
+     ESC-BELL         reverse line feed (escape then bell).
+     ESC-7            reverse line feed (escape then 7).
+     ESC-BACKSPACE    half reverse line feed (escape then backspace).
+     ESC-8            half reverse line feed (escape then 8).
+     ESC-TAB          half forward line feed (escape than tab).
+     ESC-9            half forward line feed (escape then 9).  In -f mode, this
+                      sequence may also occur in the output stream.
      backspace        moves back one column (8); ignored in the first column
      carriage return  (13)
      newline          forward line feed (10); also does carriage return
@@ -66,8 +72,14 @@ ENVIRONMENT
 EXIT STATUS
      The col utility exits 0 on success, and >0 if an error occurs.
 
+EXAMPLES
+     We can use col to filter the output of man(1) and remove the backspace
+     characters ( ^H ) before searching for some text:
+
+           man ls | col -b | grep HISTORY
+
 SEE ALSO
-     colcrt(1), expand(1), nroff(1), tbl(1)
+     expand(1)
 
 STANDARDS
      The col utility conforms to Version 2 of the Single UNIX Specification

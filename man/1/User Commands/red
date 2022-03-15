@@ -4,8 +4,8 @@ NAME
      ed, red – text editor
 
 SYNOPSIS
-     ed [-] [-sx] [-p string] [file]
-     red [-] [-sx] [-p string] [file]
+     ed [-] [-s] [-p string] [file]
+     red [-] [-s] [-p string] [file]
 
 DESCRIPTION
      The ed utility is a line-oriented text editor.  It is used to create,
@@ -62,9 +62,6 @@ OPTIONS
      -s      Suppress diagnostics.  This should be used if ed's standard input
              is from a script.
 
-     -x      Prompt for an encryption key to be used in subsequent reads and
-             writes (see the x command).  Unsupported on Mac OS X.
-
      -p string
              Specify a command prompt.  This may be toggled on and off with the
              P command.
@@ -112,7 +109,7 @@ LINE ADDRESSING
 
      $       The last line in the buffer.
 
-     n       The nth, line in the buffer where n is a number in the range [0,$].
+     n       The nth line in the buffer where n is a number in the range [0,$].
 
      - or ^  The previous line.  This is equivalent to -1 and may be repeated
              with cumulative effect.
@@ -327,7 +324,7 @@ COMMANDS
              deleted or otherwise modified.
 
      (.,.)l  Print the addressed lines unambiguously.  If a single line fills
-             for than one screen (as might be the case when viewing a binary
+             more than one screen (as might be the case when viewing a binary
              file, for instance), a “--More--” prompt is printed on the last
              line.  The ed utility waits until the RETURN key is pressed before
              displaying the next screen.  The current address is set to the last
@@ -436,11 +433,6 @@ COMMANDS
              the w command, expect that the previous contents of file is not
              clobbered.  The current address is unchanged.
 
-     x       Prompt for an encryption key which is used in subsequent reads and
-             writes.  If a newline alone is entered as the key, then encryption
-             is turned off.  Otherwise, echoing is disabled while a key is read.
-             Unsupported on Mac OS X.
-
      (.+1)zn
              Scroll n lines at a time starting at addressed line.  If n is not
              specified, then the current window size is used.  The current
@@ -490,6 +482,10 @@ SEE ALSO
 
      B. W. Kernighan and P. J. Plauger, Software Tools in Pascal, 1981, Addison-
      Wesley.
+
+     B. W. Kernighan, A Tutorial Introduction to the UNIX Text Editor.
+
+     B. W. Kernighan, Advanced Editing on UNIX.
 
 LIMITATIONS
      The ed utility processes file arguments for backslash escapes, i.e., in a

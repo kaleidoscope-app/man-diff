@@ -19,13 +19,28 @@ DESCRIPTION
              column positions (or bytes).
 
      -w width
-             Specify a line width to use instead of the default 80 columns.
-             Width should be a multiple of 8 if tabs are present, or the tabs
-             should be expanded using expand(1) before using fold.
+             Specify a line width to use instead of the default 80 columns.  The
+             width value should be a multiple of 8 if tabs are present, or the
+             tabs should be expanded using expand(1) before using fold.
 
 ENVIRONMENT
      The LANG, LC_ALL and LC_CTYPE environment variables affect the execution of
      fold as described in environ(7).
+
+EXAMPLES
+     Fold text in standard input with a width of 20 columns:
+
+           $ echo "I am smart enough to know that I am dumb" | fold -w 15
+           I am smart enou
+           gh to know that
+            I am dumb
+
+     Same as above but breaking lines after the last blank character:
+
+           $ echo "I am smart enough to know that I am dumb" | fold -s -w 15
+           I am smart
+           enough to know
+           that I am dumb
 
 SEE ALSO
      expand(1), fmt(1)
@@ -33,6 +48,16 @@ SEE ALSO
 STANDARDS
      The fold utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).
 
+HISTORY
+     The fold utility first appeared in 1BSD.  It was rewritten for 4.3BSD-Reno
+     to improve speed and modernize style.  The -b and -s options were added to
+     NetBSD 1.0 for IEEE Std 1003.2 (“POSIX.2”) compliance.
+
+AUTHORS
+     Bill Joy wrote the original version of fold on June 28, 1977.  Kevin Ruddy
+     rewrote the command in 1990, and J. T. Conklin added the missing options in
+     1993.
+
 BUGS
-     If underlining is present it may be messed up by folding.
+     If underlining (see ul(1)) is present it may be messed up by folding.
 

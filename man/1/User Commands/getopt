@@ -18,6 +18,11 @@ DESCRIPTION
      is preceded by a ‘-’ and in its own shell argument; each option argument is
      also in its own shell argument.
 
+EXIT STATUS
+     The getopt utility prints an error message on the standard error output and
+     exits with status > 0 when it encounters an option letter not included in
+     optstring.
+
 EXAMPLES
      The following code fragment shows how one might process the arguments for a
      command that can take the options -a and -b, and the option -o, which
@@ -26,8 +31,7 @@ EXAMPLES
            args=`getopt abo: $*`
            # you should not use `getopt abo: "$@"` since that would parse
            # the arguments differently from what the set command below does.
-           if [ $? != 0 ]
-           then
+           if [ $? -ne 0 ]; then
                    echo 'Usage: ...'
                    exit 2
            fi
@@ -35,38 +39,33 @@ EXAMPLES
            # You cannot use the set command with a backquoted getopt directly,
            # since the exit code from getopt would be shadowed by those of set,
            # which is zero by definition.
-           for i
-           do
-                   case "$i"
-                   in
-                           -a|-b)
-                                   echo flag $i set; sflags="${i#-}$sflags";
-                                   shift;;
-                           -o)
-                                   echo oarg is "'"$2"'"; oarg="$2"; shift;
-                                   shift;;
-                           --)
-                                   shift; break;;
+           while :; do
+                   case "$1" in
+                   -a|-b)
+                           echo "flag $1 set"; sflags="${1#-}$sflags"
+                           shift
+                           ;;
+                   -o)
+                           echo "oarg is '$2'"; oarg="$2"
+                           shift; shift
+                           ;;
+                   --)
+                           shift; break
+                           ;;
                    esac
            done
-           echo single-char flags: "'"$sflags"'"
-           echo oarg is "'"$oarg"'"
+           echo "single-char flags: '$sflags'"
+           echo "oarg is '$oarg'"
 
      This code will accept any of the following as equivalent:
 
-           cmd -aoarg file file
-           cmd -a -o arg file file
-           cmd -oarg -a file file
-           cmd -a -oarg -- file file
-
+           cmd -aoarg file1 file2
+           cmd -a -o arg file1 file2
+           cmd -oarg -a file1 file2
+           cmd -a -oarg -- file1 file2
 
 SEE ALSO
-     sh(1), getopt(3)
-
-DIAGNOSTICS
-     The getopt utility prints an error message on the standard error output and
-     exits with status > 0 when it encounters an option letter not included in
-     optstring.
+     getopts(1), sh(1), getopt(3)
 
 HISTORY
      Written by Henry Spencer, working from a Bell Labs manual page.  Behavior
@@ -77,7 +76,7 @@ BUGS
      Whatever getopt(3) has.
 
      Arguments containing white space or embedded shell metacharacters generally
-     will not survive intact;  this looks easy to fix but isn't. People trying
+     will not survive intact; this looks easy to fix but is not.  People trying
      to fix getopt or the example in this manpage should check the history of
      this file in FreeBSD.
 
@@ -90,7 +89,7 @@ BUGS
      another.
 
      Each shellscript has to carry complex code to parse arguments halfway
-     correcty (like the example presented here). A better getopt-like tool would
-     move much of the complexity into the tool and keep the client shell scripts
-     simpler.
+     correctly (like the example presented here).  A better getopt-like tool
+     would move much of the complexity into the tool and keep the client shell
+     scripts simpler.
 

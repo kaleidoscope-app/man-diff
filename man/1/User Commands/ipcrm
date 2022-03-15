@@ -1,49 +1,55 @@
-ipcrm(1)                     General Commands Manual                    ipcrm(1)
+IPCRM(1)                     General Commands Manual                    IPCRM(1)
 
 NAME
      ipcrm – remove the specified message queues, semaphore sets, and shared
-     memory segments
+     segments
 
 SYNOPSIS
-     ipcrm [-M shmkey] [-m shmid] [-Q msgkey] [-q msqid] [-S semkey] [-s semid]
+     ipcrm [-q msqid] [-m shmid] [-s semid] [-Q msgkey] [-M shmkey] [-S semkey]
            ...
 
 DESCRIPTION
-     Ipcrm removes the specified message queues, semaphores and shared memory
-     segments.  These System V IPC objects can be specified by their creation id
-     or any associated key.
+     The ipcrm utility removes the specified message queues, semaphores and
+     shared memory segments.  These System V IPC objects can be specified by
+     their creation ID or any associated key.
 
      The following options are used to specify which IPC objects will be
      removed.  Any number and combination of these options can be used:
+
+     -q msqid
+             Remove the message queue associated with the ID msqid from the
+             system.
+
+     -m shmid
+             Mark the shared memory segment associated with ID shmid for
+             removal.  This marked segment will be destroyed after the last
+             detach.
+
+     -s semid
+             Remove the semaphore set associated with ID semid from the system.
+
+     -Q msgkey
+             Remove the message queue associated with key msgkey from the
+             system.
 
      -M shmkey
              Mark the shared memory segment associated with key shmkey for
              removal.  This marked segment will be destroyed after the last
              detach.
 
-     -m shmid
-             Mark the shared memory segment associated with id shmid for
-             removal.  This marked segment will be destroyed after the last
-             detach.
-
-     -Q msgkey
-             Remove the message queue associated with key msgkey from the
-             system.
-
-     -q msqid
-             Remove the message queue associated with the id msqid from the
-             system.
-
      -S semkey
              Remove the semaphore set associated with key semkey from the
              system.
 
-     -s semid
-             Removes the semaphore set associated with id semid from the system.
-
      The identifiers and keys associated with these System V IPC objects can be
-     determined by using ipcs(1)
+     determined by using ipcs(1).
 
 SEE ALSO
      ipcs(1)
+
+AUTHORS
+     The original author was Adam Glass.  The wiping of all System V IPC objects
+     was thought up by
+     Callum Gibson and extended and implemented by
+     Edwin Groothuis.
 

@@ -1,7 +1,8 @@
 GZIP(1)                      General Commands Manual                     GZIP(1)
 
 NAME
-     gzip – compression/decompression tool using Lempel-Ziv coding (LZ77)
+     gzip, gunzip, zcat – compression/decompression tool using Lempel-Ziv coding
+     (LZ77)
 
 SYNOPSIS
      gzip [-cdfhkLlNnqrtVv] [-S suffix] file [file [...]]
@@ -27,7 +28,7 @@ DESCRIPTION
      gzcat then both the -c and -d options are enabled.
 
      This version of gzip is also capable of decompressing files compressed
-     using compress(1), bzip2(1), or xz(1).
+     using compress(1), bzip2(1), lzip, or xz(1).
 
 OPTIONS
      The following options are available:
@@ -58,8 +59,8 @@ OPTIONS
 
      -h, --help        This option prints a usage summary and exits.
 
-     -k, --keep        Keep (do not delete) input files during compression or
-                       decompression.
+     -k, --keep        This option prevents gzip from deleting input files after
+                       (de)compression.
 
      -L, --license     This option prints gzip license.
 
@@ -100,6 +101,12 @@ EXIT STATUS
      The gzip utility exits 0 on success, 1 on errors, and 2 if a warning
      occurs.
 
+SIGNALS
+     gzip responds to the following signals:
+
+     SIGINFO
+             Report progress to standard error.
+
 SEE ALSO
      bzip2(1), compress(1), xz(1), fts(3), zlib(3)
 
@@ -110,8 +117,8 @@ HISTORY
      library.  It was enhanced to be mostly feature-compatible with the original
      GNU gzip program for NetBSD 2.0.
 
-     This implementation of gzip was ported based on the NetBSD gzip, and first
-     appeared in FreeBSD 7.0.
+     This implementation of gzip was ported based on the NetBSD gzip version
+     20181111, and first appeared in FreeBSD 7.0.
 
 AUTHORS
      This implementation of gzip was written by Matthew R. Green

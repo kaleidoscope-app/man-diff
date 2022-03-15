@@ -4,7 +4,7 @@ NAME
      pathchk – check pathnames
 
 SYNOPSIS
-     pathchk [-p] pathname ...
+     pathchk [-pP] pathname ...
 
 DESCRIPTION
      The pathchk utility checks whether each of the specified pathname arguments
@@ -35,14 +35,21 @@ DESCRIPTION
                  set (that is, alphanumeric characters, ‘.’, ‘-’ and ‘_’).  No
                  component may start with the hyphen (‘-’) character.
 
+     -P      In addition to the default or -p checks, write a diagnostic for
+             each argument that:
+
+             •   Is empty.
+
+             •   Contains a component that starts with a hyphen.
+
+EXIT STATUS
+     The pathchk utility exits 0 on success, and >0 if an error occurs.
+
 EXAMPLES
      Check whether the names of files in the current directory are portable to
      other POSIX systems:
 
-           find . -print | xargs pathchk -p
-
-DIAGNOSTICS
-     The pathchk utility exits 0 on success, and >0 if an error occurs.
+           find . -exec pathchk -p -- {} +
 
 SEE ALSO
      getconf(1), pathconf(2), stat(2)

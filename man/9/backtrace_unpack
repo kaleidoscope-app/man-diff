@@ -1,0 +1,52 @@
+BACKTRACE_PACK(9)           Kernel Developer's Manual          BACKTRACE_PACK(9)
+
+NAME
+     backtrace_pack, backtrace_unpack – convert a backtrace to and from compact
+     formats
+
+SYNOPSIS
+     #include <kern/backtrace.h>
+
+     size_t
+     backtrace_pack(backtrace_pack_t packing, uint8_t *dst, size_t dst_size,
+         uintptr_t *src, unsigned int src_len);
+
+     unsigned int
+     backtrace_unpack(backtrace_pack_t packing, uintptr_t *dst,
+         unsigned int dst_len, uint8_t *src, size_t src_size);
+
+DESCRIPTION
+     The backtrace_pack and backtrace_unpack functions convert to and from a
+     compact representation of a backtrace.
+
+RETURN VALUES
+     The backtrace_pack() function returns the number of bytes written to the
+     destination buffer.  The backtrace_unpack() function returns the number of
+     addresses written to the destination buffer.
+
+FORMATS
+     BTP_NONE
+             Just copy the addresses unpacked to the destination buffer.
+
+     BTP_KERN_OFFSET_32
+             Subtract the kernel base address from each address so they fit in 4
+             bytes.
+
+EXAMPLE
+     uintptr_t bt[8] = { 0 };
+     enum backtrace_info bti = BTI_NONE;
+     unsigned int len = backtrace(bt, sizeof(bt) / sizeof(bt[0]), NULL, &bti);
+     uint8_t bt_packed[1024] = { 0 };
+     size_t packed_size = backtrace_pack(BTP_KERN_OFFSET_32, bt_packed,
+                     sizeof(bt_packed), bt, len);
+     uintptr_t bt_unpacked[8] = { 0 };
+     unsigned int unpacked_len = backtrace_unpack(BTP_KERN_OFFSET_32, bt_unpacked,
+                     sizeof(bt_unpacked) / sizeof(bt_unpacked[0]), bt_packed, packed_size);
+     assert(len == unpacked_len);
+     for (unsigned int i = 0; i < len; i++) {
+             assert(bt[i] == unpacked_bt[i]);
+     }
+
+SEE ALSO
+     backtrace(9)
+

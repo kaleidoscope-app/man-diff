@@ -4,7 +4,7 @@ NAME
      chgrp – change group
 
 SYNOPSIS
-     chgrp [-fhnv] [-R [-H | -L | -P]] group file ...
+     chgrp [-fhnvx] [-R [-H | -L | -P]] group file ...
 
 DESCRIPTION
      The chgrp utility sets the group ID of the file named by each file operand
@@ -12,29 +12,35 @@ DESCRIPTION
 
      The following options are available:
 
-     -f      The force option ignores errors, except for usage errors and
-             doesn't query about strange modes (unless the user does not have
-             proper permissions).
-
      -H      If the -R option is specified, symbolic links on the command line
-             are followed.  (Symbolic links encountered in the tree traversal
-             are not followed).
-
-     -h      If the file is a symbolic link, the group ID of the link itself is
-             changed rather than the file that is pointed to.
+             are followed and hence unaffected by the command.  (Symbolic links
+             encountered during traversal are not followed.)
 
      -L      If the -R option is specified, all symbolic links are followed.
 
      -P      If the -R option is specified, no symbolic links are followed.
-             This is the default. Use -h to change the group ID of a symbolic
+             This is the default.  Use -h to change the group ID of a symbolic
              link.
 
-     -R      Change the group ID for the file hierarchies rooted in the files
-             instead of just the files themselves.
+     -R      Change the group ID of the file hierarchies rooted in the files,
+             instead of just the files themselves.  Beware of unintentionally
+             matching the “..” hard link to the parent directory when using
+             wildcards like “.*”.
+
+     -f      The force option ignores errors, except for usage errors and does
+             not query about strange modes (unless the user does not have proper
+             permissions).
+
+     -h      If the file is a symbolic link, the group ID of the link itself is
+             changed rather than the file that is pointed to.
 
      -n      Interpret the group ID as numeric, avoiding the name lookup.
 
      -v      Cause chgrp to be verbose, showing files as the group is modified.
+             If the -v flag is specified more than once, chgrp will print the
+             filename, followed by the old and new numeric group ID.
+
+     -x      File system mount points are not traversed.
 
      The -H, -L and -P options are ignored unless the -R option is specified.
      In addition, these options override each other and the command's actions
@@ -47,16 +53,21 @@ DESCRIPTION
      The user invoking chgrp must belong to the specified group and be the owner
      of the file, or be the super-user.
 
-DIAGNOSTICS
+     If chgrp receives a SIGINFO signal (see the status argument for stty(1)),
+     then the current filename as well as the old and new group names are
+     displayed.
+
+FILES
+     /etc/group  group ID file
+
+EXIT STATUS
      The chgrp utility exits 0 on success, and >0 if an error occurs.
 
 COMPATIBILITY
      In previous versions of this system, symbolic links did not have groups.
 
-     The -v option is non-standard and its use in scripts is not recommended.
-
-FILES
-     /etc/group  group ID file
+     The -v and -x options are non-standard and their use in scripts is not
+     recommended.
 
 SEE ALSO
      chown(2), fts(3), group(5), passwd(5), symlink(7), chown(8)

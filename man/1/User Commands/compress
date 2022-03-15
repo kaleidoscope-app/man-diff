@@ -5,7 +5,7 @@ NAME
 
 SYNOPSIS
      compress [-fv] [-b bits] [file ...]
-     compress -c [-b bits] [file ...]
+     compress -c [-b bits] [file]
      uncompress [-fv] [file ...]
      uncompress -c [file ...]
 
@@ -78,6 +78,10 @@ DESCRIPTION
      (as used in the historical command pack), or adaptive Huffman coding (as
      used in the historical command compact), and takes less time to compute.
 
+     If file is a soft or hard link compress will replace it with a compressed
+     copy of the file pointed to by the link.  The link's target file is left
+     uncompressed.
+
 EXIT STATUS
      The compress and uncompress utilities exit 0 on success, and >0 if an error
      occurs.
@@ -85,6 +89,33 @@ EXIT STATUS
      The compress utility exits 2 if attempting to compress a file would not
      reduce its size and the -f option was not specified and if no other error
      occurs.
+
+EXAMPLES
+     Create a file test_file with a single line of text:
+
+           echo "This is a test" > test_file
+
+     Try to reduce the size of the file using a 10-bit code and show the exit
+     status:
+
+           $ compress -b 10 test_file
+           $ echo $?
+           2
+
+     Try to compress the file and show compression percentage:
+
+           $ compress -v test_file
+           test_file: file would grow; left unmodified
+
+     Same as above but forcing compression:
+
+           $ compress -f -v test_file
+           test_file.Z: 79% expansion
+
+     Compress and uncompress the string ‘hello’ on the fly:
+
+           $ echo "hello" | compress | uncompress
+           hello
 
 SEE ALSO
      gunzip(1), gzexe(1), gzip(1), zcat(1), zmore(1), znew(1)
@@ -100,6 +131,8 @@ HISTORY
      The compress command appeared in 4.3BSD.
 
 BUGS
+     The program does not handle links well and has no link-handling options.
+
      Some of these might be considered otherwise-undocumented features.
 
      compress: If the utility does not compress a file because doing so would

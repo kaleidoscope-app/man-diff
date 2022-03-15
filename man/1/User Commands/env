@@ -4,8 +4,9 @@ NAME
      env – set environment and execute command, or print environment
 
 SYNOPSIS
+     env [-0iv] [-u name] [name=value ...]
      env [-iv] [-P altpath] [-S string] [-u name] [name=value ...]
-         [utility [argument ...]]
+         utility [argument ...]
 
 DESCRIPTION
      The env utility executes another utility after modifying the environment as
@@ -14,6 +15,8 @@ DESCRIPTION
      environment variables are set before the utility is executed.
 
      The options are as follows:
+
+     -0      End each output line with NUL, not newline.
 
      -i      Execute the utility with only those environment variables specified
              by name=value options.  The environment inherited by env is ignored
@@ -45,9 +48,11 @@ DESCRIPTION
      name=value options.
 
      If no utility is specified, env prints out the names and values of the
-     variables in the environment, with one name/value pair per line.
+     variables in the environment.  Each name/value pair is separated by a new
+     line unless -0 is specified, in which case name/value pairs are separated
+     by NUL.  Both -0 and utility may not be specified together.
 
-   Details of -S -Ss -(split-string) -processing
+   Details of -S (split-string) processing
      The processing of the -S option will split the given string into separate
      arguments based on any space or <tab> characters found in the string.  Each
      of those new arguments will then be treated as if it had been specified as
@@ -104,8 +109,8 @@ DESCRIPTION
      above.  And any settings of name=value will not effect the values used for
      substitution in -S processing.
 
-     Also, -S processing can not reference the value of the special parameters
-     which are defined by most shells.  For instance, -S can not recognize
+     Also, -S processing cannot reference the value of the special parameters
+     which are defined by most shells.  For instance, -S cannot recognize
      special parameters such as: ‘$*’, ‘$@’, ‘$#’, ‘$?’ or ‘$$’ if they appear
      inside the given string.
 
@@ -206,11 +211,11 @@ COMPATIBILITY
      The env utility accepts the - option as a synonym for -i.
 
 SEE ALSO
-     printenv(1), sh(1), execvp(3), environ(7)
+     printenv(1), sh(1), execvp(3), login.conf(5), environ(7)
 
 STANDARDS
-     The env utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).  The -P, -S,
-     -u and -v options are non-standard extensions supported by FreeBSD, but
+     The env utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).  The -0, -P,
+     -S, -u and -v options are non-standard extensions supported by FreeBSD, but
      which may not be available on other operating systems.
 
 HISTORY

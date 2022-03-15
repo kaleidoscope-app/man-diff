@@ -4,27 +4,37 @@ NAME
      split – split a file into pieces
 
 SYNOPSIS
-     split [-a suffix_length] [-b byte_count[k|m]] [-l line_count] [-p pattern]
-           [file [name]]
+     split -d [-l line_count] [-a suffix_length] [file [prefix]]
+     split -d -b byte_count[K|k|M|m|G|g] [-a suffix_length] [file [prefix]]
+     split -d -n chunk_count [-a suffix_length] [file [prefix]]
+     split -d -p pattern [-a suffix_length] [file [prefix]]
 
 DESCRIPTION
      The split utility reads the given file and breaks it up into files of 1000
-     lines each.  If file is a single dash (‘-’) or absent, split reads from the
-     standard input.
+     lines each (if no options are specified), leaving the file unchanged.  If
+     file is a single dash (‘-’) or absent, split reads from the standard input.
 
      The options are as follows:
 
      -a suffix_length
              Use suffix_length letters to form the suffix of the file name.
 
-     -b byte_count[k|m]
-             Create smaller files byte_count bytes in length.  If “k” is
+     -b byte_count[K|k|M|m|G|g]
+             Create split files byte_count bytes in length.  If k or K is
              appended to the number, the file is split into byte_count kilobyte
-             pieces.  If “m” is appended to the number, the file is split into
-             byte_count megabyte pieces.
+             pieces.  If m or M is appended to the number, the file is split
+             into byte_count megabyte pieces.  If g or G is appended to the
+             number, the file is split into byte_count gigabyte pieces.
+
+     -d      Use a numeric suffix instead of a alphabetic suffix.
 
      -l line_count
-             Create smaller files n lines in length.
+             Create split files line_count lines in length.
+
+     -n chunk_count
+             Split file into chunk_count smaller files.  The first n - 1 files
+             will be of size (size of file / chunk_count ) and the last file
+             will contain the remaining bytes.
 
      -p pattern
              The file is split whenever an input line matches pattern, which is
@@ -40,7 +50,7 @@ DESCRIPTION
      suffix_length characters in the range “a-z”.  If -a is not specified, two
      letters are used as the suffix.
 
-     If the name argument is not specified, the file is split into lexically
+     If the prefix argument is not specified, the file is split into lexically
      ordered files named with the prefix “x” and with suffixes as above.
 
 ENVIRONMENT
@@ -49,6 +59,27 @@ ENVIRONMENT
 
 EXIT STATUS
      The split utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     Split input into as many files as needed, so that each file contains at
+     most 2 lines:
+
+           $ echo -e "first line\nsecond line\nthird line\nforth line" | split -l2
+
+     Split input in chunks of 10 bytes using numeric prefixes for file names.
+     This generates two files of 10 bytes (x00 and x01) and a third file (x02)
+     with the remaining 2 bytes:
+
+           $ echo -e "This is 22 bytes long" | split -d -b10
+
+     Split input generating 6 files:
+
+           echo -e "This is 22 bytes long" | split -n 6
+
+     Split input creating a new file every time a line matches the regular
+     expression for a “t” followed by either “a” or “u” thus creating two files:
+
+           $ echo -e "stack\nstock\nstuck\nanother line" | split -p 't[au]'
 
 SEE ALSO
      csplit(1), re_format(7)

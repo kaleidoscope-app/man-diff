@@ -1,0 +1,131 @@
+BACKTRACE(9)                Kernel Developer's Manual               BACKTRACE(9)
+
+NAME
+     backtrace, backtrace_packed, backtrace_user, – gather the PC and return
+     addresses of a thread's kernel or user call stack
+
+SYNOPSIS
+     #include <kern/backtrace.h>
+
+     unsigned int
+     backtrace(uintptr_t *bt, unsigned int btlen, struct backtrace_control *ctl,
+         backtrace_info_t *info_out);
+
+     size_t
+     backtrace_packed(backtrace_pack_t packing, uintptr_t *bt, size_t btlen,
+         struct backtrace_control *ctl, backtrace_info_t *info_out);
+
+     unsigned int
+     backtrace_user(uintptr_t *bt, unsigned int btlen,
+         struct backtrace_control *ctl, struct backtrace_user_info *info_out);
+
+DESCRIPTION
+     The backtrace, backtrace_packed, and backtrace_user functions fill a buffer
+     with the current PC and return addresses of a thread's kernel and user call
+     stack, respectively.  This is only possible when frame pointers are pushed
+     to the stack, alongside the return addresses.  clang(1), disables this
+     behavior with the -fomit-frame-pointer flag, so it will prevent these
+     functions from working.  Furthermore, leaf functions and inlined function
+     calls can also prevent backtracing from reporting the source-level function
+     control flow.  backtrace_user() operates on user call stacks, while
+     backtrace() captures the current kernel call stack.  backtrace_packed()
+     writes a more compact representation of the return addresses to a buffer,
+     which can be unpacked with backtrace_unpack(9).  Calling backtrace_user()
+     on a kernel thread (which lacks a user context) is undefined.
+
+     Up to btlen instruction addresses (or btsize bytes for backtrace_packed())
+     are written to the buffer at bt.  These functions also accept ctl and
+     info_out arguments, described in BACKTRACE_CONTROL and BACKTRACE_INFO,
+     respectively.  backtrace_packed() takes a backtrace_pack_t to control which
+     packing scheme to use.
+
+     backtrace() records the kernel PC and call stack of the current thread.
+
+     backtrace_packed() records the kernel PC and call stack of the current
+     thread in a buffer in a compact representation.  See backtrace_pack(9) for
+     a description of the supported formats.
+
+     backtrace_user() records the user PC and call stack of the current thread,
+     which must be associated with a user space task.
+
+RETURN VALUES
+     The backtrace functions return the number of PC and return address elements
+     (or bytes for backtrace_packed()) written to the provided buffer.  If there
+     is space, the buffer is terminated with a NULL entry (except for
+     backtrace_packed()).  The info_out argument will be set with information
+     about the provided call stack.  backtrace_user() will set btui_error to an
+     error of the copyin(9) routine if an error occurred during call stack
+     traversal.
+
+BACKTRACE_CONTROL
+     The backtrace functions accept a struct backtrace_control control argument
+     to alter their behavior, with the following fields:
+
+     btc_flags        These flags control the backtracer's behavior:
+
+                      BTF_KERN_INTERRUPTED  For backtrace() only, record the PC
+                                            and return addresses of the
+                                            interrupted call stack.
+
+     btc_frame_addr   Start backtracing from the provided frame address.
+
+     btc_user_thread  Capture the backtrace of the provided thread pointer.
+                      This must be either the current thread or a different
+                      thread that is suspended and unable to run in user space.
+
+     btc_user_copy    For backtrace_user() only, the function to use instead of
+                      copyin(9) to copy data from the thread's user space
+                      virtual address space into the kernel.
+
+     btc_user_copy_context
+                      Additional data that's passed to the custom copy routine
+                      to act as private context.
+
+BACKTRACE_INFO
+     The backtrace functions report additional information through a
+     backtrace_info_t flags out-parameter, with the following options:
+
+     BTI_64_BIT     The PC and call stack return addresses are 64-bit
+                    quantities.
+
+     BTI_TRUNCATED  The backtrace has been truncated and does not terminate with
+                    the base frame.
+
+     The backtrace_user() variant uses an out-parameter structure struct
+     backtrace_user_info to return additional context:
+
+     btui_info
+            The backtrace_info_t flags, described above.
+
+     btui_error
+            Any error encountered while copying data.
+
+     btui_async_start_index
+            For Swift continuations (async stacks), the location where the
+            continuation hint was found and where it logically branches from the
+            standard call stack.
+
+     btui_async_frame_addr
+            The frame address of the Swift continuation to pass in to a
+            subsequent call to backtrace_user() (as the control structure's
+            frame address field) to follow the corresponding async stack.
+
+     btui_next_frame_addr
+            In the case of a truncated backtrace due to lack of space in the
+            destination buffer, the next frame address to resume the backtrace
+            operation.
+
+EXAMPLE
+     uintptr_t bt[8] = {};
+     enum backtrace_info bti = BTI_NONE;
+     unsigned int len = backtrace(bt, sizeof(bt) / sizeof(bt[0]), NULL, &bti);
+     for (unsigned int i = 0; i < len; i++)  {
+             printf("%d: 0x%lx\n", i, bt[i]);
+     }
+     if (bti & BTI_TRUNCATED) {
+             printf("[... TRUNCATED ...]\n");
+     }
+
+SEE ALSO
+     backtrace(3), backtrace_pack(9), and copyin(9)
+

@@ -15,11 +15,11 @@ DESCRIPTION
 
      The following options are available:
 
-     -1      Suppress printing of column 1.
+     -1      Suppress printing of column 1, lines only in file1.
 
-     -2      Suppress printing of column 2.
+     -2      Suppress printing of column 2, lines only in file2.
 
-     -3      Suppress printing of column 3.
+     -3      Suppress printing of column 3, lines common to both.
 
      -i      Case insensitive comparison of lines.
 
@@ -39,6 +39,29 @@ ENVIRONMENT
 EXIT STATUS
      The comm utility exits 0 on success, and >0 if an error occurs.
 
+EXAMPLES
+     Assuming a file named example.txt with the following contents:
+
+           a
+           b
+           c
+           d
+
+     Show lines only in example.txt, lines only in stdin and common lines:
+
+           $ echo -e "B\nc" | comm example.txt -
+                   B
+           a
+           b
+                           c
+           d
+
+     Show only common lines doing case insensitive comparisons:
+
+           $ echo -e "B\nc" | comm -1 -2 -i example.txt -
+           b
+           c
+
 SEE ALSO
      cmp(1), diff(1), sort(1), uniq(1)
 
@@ -49,7 +72,4 @@ STANDARDS
 
 HISTORY
      A comm command appeared in Version 4 AT&T UNIX.
-
-BUGS
-     Input lines are limited to LINE_MAX (2048) characters in length.
 

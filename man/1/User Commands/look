@@ -17,12 +17,15 @@ DESCRIPTION
 
      The following options are available:
 
-     -d      Dictionary character set and order, i.e., only alphanumeric
+     -d, --alphanum
+             Dictionary character set and order, i.e., only alphanumeric
              characters are compared.
 
-     -f      Ignore the case of alphabetic characters.
+     -f, --ignore-case
+             Ignore the case of alphabetic characters.
 
-     -t      Specify a string termination character, i.e., only the characters
+     -t, --terminate termchar
+             Specify a string termination character, i.e., only the characters
              in string up to and including the first occurrence of termchar are
              compared.
 
@@ -37,10 +40,32 @@ EXIT STATUS
      The look utility exits 0 if one or more lines were found and displayed, 1
      if no lines were found, and >1 if an error occurred.
 
+EXAMPLES
+     Look for lines starting with ‘xylene’ in the file /usr/share/dict/words:
+
+           $ look xylen
+           xylene
+           xylenol
+           xylenyl
+
+     Same as above, but do not consider any characters in string beyond the
+     first ‘e’.  Note that -f is implicit since we are searching the default
+     file /usr/share/dict/words:
+
+           $ look -t e xylen
+           Xyleborus
+           xylem
+           xylene
+           xylenol
+           xylenyl
+           xyletic
+
 COMPATIBILITY
      The original manual page stated that tabs and blank characters participated
      in comparisons when the -d option was specified.  This was incorrect and
      the current man page matches the historic implementation.
+
+     The -a and --alternative flags are ignored for compatibility.
 
 SEE ALSO
      grep(1), sort(1)

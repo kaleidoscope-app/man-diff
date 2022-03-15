@@ -4,9 +4,9 @@ NAME
      mount – mount file systems
 
 SYNOPSIS
-     mount [-adfruvw] [-t lfs | external_type]
-     mount [-dfruvw] special | mount_point
-     mount [-dfruvw] [-o options] [-t lfs | external_type] special mount_point
+     mount [-adfrkuvw] [-t lfs | external_type]
+     mount [-dfrkuvw] special | mount_point
+     mount [-dfrkuvw] [-o options] [-t lfs | external_type] special mount_point
 
 DESCRIPTION
      The mount command calls the mount(2) system call to prepare and graft a
@@ -32,6 +32,11 @@ DESCRIPTION
 
      -f      Forces the revocation of write access when trying to downgrade a
              filesystem mount status from read-write to read-only.
+
+     -k      In the course of the mount system call, the kernel should not
+             follow any symlinks that may be present in the provided mount-on
+             directory.
+
 
      -o      Options are specified with a -o flag followed by a comma separated
              string of options.  The following options are available:
@@ -106,6 +111,12 @@ DESCRIPTION
                      This option indicates that the mount point should not be
                      visible via the GUI (i.e., appear on the Desktop as a
                      separate volume).
+
+             nofollow
+                     This option indicates that in the course of the mount
+                     system call, the kernel should not follow any symlinks that
+                     may be present in the provided mount-on directory. This is
+                     the same as the -k option.
 
              Any additional options specific to a filesystem type that is not
              one of the internally known types (see the -t option) may be passed

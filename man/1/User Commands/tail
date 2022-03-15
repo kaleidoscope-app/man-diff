@@ -20,10 +20,10 @@ DESCRIPTION
 
      The options are as follows:
 
-     -b number
+     -b number, --blocks=number
              The location is number 512-byte blocks.
 
-     -c number
+     -c number, --bytes=number
              The location is number bytes.
 
      -f      The -f option causes tail to not stop when end of file is reached,
@@ -34,10 +34,16 @@ DESCRIPTION
      -F      The -F option implies the -f option, but tail will also check to
              see if the file being followed has been renamed or rotated.  The
              file is closed and reopened when tail detects that the filename
-             being read from has a new inode number.  The -F option is ignored
-             if reading from standard input rather than a file.
+             being read from has a new inode number.
 
-     -n number
+             If the file being followed does not (yet) exist or if it is
+             removed, tail will keep looking and will display the file from the
+             beginning if and when it is created.
+
+             The -F option is the same as the -f option if reading from standard
+             input rather than a file.
+
+     -n number, --lines=number
              The location is number lines.
 
      -q      Suppresses printing of headers when multiple files are being
@@ -57,6 +63,16 @@ DESCRIPTION
 
 EXIT STATUS
      The tail utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     To display the last 500 lines of the file foo:
+
+           $ tail -n 500 foo
+
+     Keep /var/log/messages open, displaying to the standard output anything
+     appended to the file:
+
+           $ tail -F /var/log/messages
 
 SEE ALSO
      cat(1), head(1), sed(1)

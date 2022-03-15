@@ -4,7 +4,7 @@ NAME
      rmdir – remove directories
 
 SYNOPSIS
-     rmdir [-p] directory ...
+     rmdir [-pv] directory ...
 
 DESCRIPTION
      The rmdir utility removes the directory entry specified by each directory
@@ -22,18 +22,31 @@ DESCRIPTION
              last most component.  (See rm(1) for fully non-discriminant
              recursive removal.)
 
+     -v      Be verbose, listing each directory as it is removed.
+
+EXIT STATUS
      The rmdir utility exits with one of the following values:
 
-     0       Each directory entry specified by a dir operand referred to an
-             empty directory and was removed successfully.
+     0       Each directory entry specified by a directory operand referred to
+             an empty directory and was removed successfully.
 
      >0      An error occurred.
+
+EXAMPLES
+     Remove the directory foobar, if it is empty:
+
+           $ rmdir foobar
+
+     Remove all directories up to and including cow, stopping at the first non-
+     empty directory (if any):
+
+           $ rmdir -p cow/horse/monkey
 
 SEE ALSO
      rm(1)
 
 STANDARDS
-     The rmdir command is expected to be IEEE Std 1003.2 (“POSIX.2”) compatible.
+     The rmdir utility is expected to be IEEE Std 1003.2 (“POSIX.2”) compatible.
 
 HISTORY
      A rmdir command appeared in Version 1 AT&T UNIX.

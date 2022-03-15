@@ -6,7 +6,7 @@ NAME
        cvupdatefs - Commit a Xsan Volume configuration change
 
 SYNOPSIS
-       cvupdatefs [-bdfFhlnSv] [-c pathname] [-M] [-R NewVolName] [VolName]
+       cvupdatefs [-bdfFhlnSv] [-c pathname] [[-M] -R NewVolName] [VolName]
               [VolPath]
 
 DESCRIPTION
@@ -79,6 +79,7 @@ OPTIONS
        -S     Status - write status plist to
               /var/run/cvupdatefs_status_<FS>.plist.
 
+
        -U     When a storagepool is added, do a check for disks that are
               included in the storagepool that is being added to see if they are
               currently in use in another file system that is visible to the
@@ -90,6 +91,8 @@ OPTIONS
        -y     Yes - Bypass the prompt and answer yes to the basic warning about
               proceeding.  If the prompt warning is for an unusual condition,
               this option will not bypass that prompt.
+
+       -W     Do not use copy-on-write (COW) when applying changes.
 
        Once the volume configuration has been changed to reflect the stripe
        group or journal changes the cvupdatefs utility may be run.  When
@@ -298,6 +301,15 @@ EXIT VALUES
 NOTES
        IMPORTANT: It is highly recommended to run cvfsck(8) prior to making any
        configuration changes.
+
+       By default, cvupdatefs uses a copy-on-write (COW) store and applies
+       changes to metadata at the very end. This is beneficial for performance
+       and allows easier recovery if any issues are encountered that prevent
+       successful completion. When COW is enabled, temporary space is typically
+       consumed from /tmp or similiar, depending on the platform. However, the
+       temporary directory can be set using the TMPDIR environment variable.  As
+       noted above, COW can be disabled using the -W option in which case no
+       temporary space is used.
 
 FILES
        /Library/Preferences/Xsan/*.cfg

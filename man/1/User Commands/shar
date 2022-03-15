@@ -7,25 +7,19 @@ SYNOPSIS
      shar file ...
 
 DESCRIPTION
-     shar writes an sh(1) shell script to the standard output which will
-     recreate the file hierarchy specified by the command line operands.
+     The shar command writes a sh(1) shell script to the standard output which
+     will recreate the file hierarchy specified by the command line operands.
      Directories will be recreated and must be specified before the files they
      contain (the find(1) utility does this correctly).
 
-     shar is normally used for distributing files by ftp(1) or mail(1).
-
-SEE ALSO
-     compress(1), mail(1), tar(1), uuencode(1)
-
-BUGS
-     shar makes no provisions for special types of files or files containing
-     magic characters.
+     The shar command is normally used for distributing files by ftp(1) or
+     mail(1).
 
 EXAMPLES
      To create a shell archive of the program ls(1) and mail it to Rick:
 
            cd ls
-           shar `find . -print` |  mail -s "ls source" rick
+           shar `find . -print` | mail -s "ls source" rick
 
      To recreate the program directory:
 
@@ -36,14 +30,21 @@ EXAMPLES
            ...
            sh archive
 
-HISTORY
-     The shar command appears in 4.4BSD.
+SEE ALSO
+     compress(1), mail(1), tar(1), uuencode(1)
 
-SECURITY CONSIDERATIONS
+HISTORY
+     The shar command appeared in 4.4BSD.
+
+BUGS
+     The shar command makes no provisions for special types of files or files
+     containing magic characters.  The shar command cannot handle files without
+     a newline ('\n') as the last character.
+
      It is easy to insert trojan horses into shar files.  It is strongly
      recommended that all shell archive files be examined before running them
      through sh(1).  Archives produced using this implementation of shar may be
      easily examined with the command:
 
-           egrep -v '^[X#]' shar.file
+           egrep -av '^[X#]' shar.file
 

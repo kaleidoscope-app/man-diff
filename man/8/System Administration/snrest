@@ -12,11 +12,11 @@ SYNOPSIS
 
        snrest gateway show
 
-       snrest gateway remove
+       snrest gateway remove [url]
 
-       snrest gateway register [ url ]
+       snrest gateway register [url]
 
-       snrest gateway unregister
+       snrest gateway unregister [url]
 
        snrest gateway status [-d]
 
@@ -35,7 +35,19 @@ DESCRIPTION
        access to the Xsan Volume.
 
        The snrest gateway commands support configuration and control of StorNext
-       interactions with a Quantum API Gateway.
+       interactions with a single or multiple Quantum API Gateways.
+
+       Commands with a <url> parameter may specify the url using only the
+       hostname
+        of the API Gateway.  If the protocol is not specified it defaults to
+       https and if the port is not specified it defaults to 8443.  This allows
+       the caller to only specify the hostname, as in the following example:
+
+          snrest gateway admin-url <hostname>
+
+       which is the same as explicitly specifying the following:
+
+          snrest gateway admin-url https://<hostname>:8443
 
        The snrest gateway import command imports configuration information from
        a Quantum API Gateway.  This command takes a single argument which is a
@@ -48,38 +60,19 @@ DESCRIPTION
        registration (in which case you must use snrest gateway import instead).
 
        With snrest gateway admin-url simply specify the URL of the API Gateway
-       as a command line argument.  If the protocol is not specified it defaults
-       to https and if the port is not specified it defaults to 8443.  This
-       allows the caller to only specify the hostname, as in the following
-       example:
-
-          snrest gateway admin-url <hostname>
-
-       which is the same as explicitly specifying the following:
-
-          snrest gateway admin-url https://<hostname>:8443
+       as a command line argument.
 
        The snrest gateway show command displays the API Gateway configuration.
 
-       The snrest gateway remove command removes the API Gateway configuration
-       and unregisters the system with the API Gateway.
+       The snrest gateway remove [ <url> ] command unregisters with the API
+       Gateway and removes the API Gateway from the configuration. If the url is
+       specified, only the specified API Gateway is unregistered and removed.
 
-       The snrest gateway register command registers with the API Gateway.  This
-       needs to be called if you use snrest gateway import or snrest gateway
-       admin-url commands to change the API Gateway configuration.  If the
-       gateway is not available when this is called, the system will continue to
-       periodically retry until registration succeeds.  This command does not
-       implicitly unregister with the previously registered gateway so if you
-       are changing gateways run snrest gateway unregister after configuring
-       your new gateway but before registering as in the following example:
-
-          snrest gateway admin-url <new-hostname>
-          snrest gateway unregister
-          snrest gateway register
-
-       This works because snrest gateway unregister uses the currently
-       registered gateway, not the configured gateway.  Then snrest gateway
-       register uses the newly-configured gateway.
+       The snrest gateway register [ <url> ] command registers all the
+       configured API Gateways.  API Gateways that are registered will continue
+       to periodically retry until the registration succeeds.  This needs to be
+       called if you use snrest gateway import or snrest gateway admin-url
+       commands to add an API Gateway configuration to the configuration.
 
        An optional URL parameter may be specified to snrest gateway register.
        The following command:
@@ -91,27 +84,22 @@ DESCRIPTION
           snrest gateway admin-url <url>
           snrest gateway register
 
-       This allows the caller to configure the URL and register with the API
-       Gateway in a single command.  And, as with the snrest gateway admin-url
-       command, the URL specified can be just the hostname if using the default
-       port and protocol.
+       This allows the caller to configure the url and register with the API
+       Gateway in a single command.  If the specified API Gateway has already
+       been configured, the command performs only the registration.
 
        The snrest gateway unregister command unregisters with the currently
-       registered Quantum API Gateway.  However, once unregistered, the system
-       will continue to try periodically to re-register with the configured
-       gateway.  So, to stop any attempt to register with a gateway do the
-       following to remove the configuration and unregister:
-
-          snrest gateway remove
+       registered API Gateways.  If the url is specified, only that API Gateway
+       is unregistered.
 
        The snrest gateway status command displays the current status of the
        StorNext registrations with a Quantum API Gateway.  This typically
        reports that either all or none of the internal endpoints in StorNext are
-       registered.  But there is also the possibility, especially in transitory
-       states or when connectivity to the API Gateway is problematic, that only
-       a subset of the internal endpoints are registered.  If any endpoints are
-       not currently registered the system will continue to try to register
-       those endpoints until successful.
+       registered with a particular API Gateway..  But there is also the
+       possibility, especially in transitory states or when connectivity to the
+       API Gateway is problematic, that only a subset of the internal endpoints
+       are registered.  If any endpoints are not currently registered the system
+       will continue to try to register those endpoints until successful.
 
        There is an additional option to get extra detail on the registration
        status with the -d option.  This provides a detailed display of

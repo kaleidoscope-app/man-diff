@@ -32,7 +32,7 @@ SYNOPSIS
 
 DESCRIPTION
      bless is used to modify the volume bootability characteristics of
-     filesystems, as well as select the active boot volume.  bless has 6 modes
+     filesystems, as well as select the active boot device.  bless has 6 modes
      of execution: Folder Mode, Mount Mode, Device Mode, NetBoot Mode, Info
      Mode, and Unbless Mode.
 
@@ -63,7 +63,7 @@ DESCRIPTION
      such as using Startup Disk, should be used to select that.
 
      Info Mode will print out the currently-blessed directory of a volume, or if
-     no mountpoint is specified, the active boot volume that the firmware is set
+     no mountpoint is specified, the active boot device that the firmware is set
      to boot from.
 
      Unbless Mode complements Folder Mode, and clears the persistent blessed
@@ -71,6 +71,7 @@ DESCRIPTION
 
      Additionally, --help can be used to display the command-line usage summary.
 
+OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES or EXTERNAL STORAGE DEVICES:
    FILE/FOLDER MODE
      Folder Mode has the following options:
      --folder directory       Set this directory to be the Mac OS X/Darwin
@@ -135,12 +136,13 @@ DESCRIPTION
                               and valid for this particular machine.  This may
                               require network access, in order to check the
                               signatures.
-     --create-snapshot        Attempts to create an APFS snapshot of the target
-                              APFS system volume and set it as root snapshot of
-                              the system volume. The target system will boot
-                              from this snapshot on its next boot.
+     --create-snapshot        Attempts to create an APFS root snapshot of the
+                              target APFS system volume and set it as root
+                              snapshot of the system volume. The target system
+                              will boot from this snapshot on its next boot.
      --last-sealed-snapshot   Reverts back to using the previously signed APFS
-                              snapshot reenabling Authenticated Root Volume.
+                              root snapshot reenabling Authenticated Root
+                              Volume.
                                The target system will boot from this sealed
                               snapshot on its next boot.
      --quiet                  Do not print any output
@@ -149,7 +151,7 @@ DESCRIPTION
    MOUNT MODE
      Mount Mode has the following options:
      --mount directory        Use the volume mounted at directory to change the
-                              active boot volume, in conjunction with --setBoot.
+                              active boot device, in conjunction with --setBoot.
                               The volume must already be properly blessed.
      --file file              Instead of allowing the firmware to discover the
                               booter based on the blessed directory or file,
@@ -177,7 +179,7 @@ DESCRIPTION
    DEVICE MODE
      Device Mode has the following options:
      --device device          Use the block device device to change the active
-                              boot volume. No volumes should be mounted from
+                              boot device. No volumes should be mounted from
                               device , and the filesystem should already be
                               properly blessed.
      --label name             Set the firmware-based OS picker label for the
@@ -225,10 +227,10 @@ DESCRIPTION
      --info [directory]       Print out the blessed system folder for the volume
                               mounted at directory . If directory is not
                               specified, print information for the currently
-                              selected boot volume (which may not necessarily be
+                              selected boot device (which may not necessarily be
                               ‘/’ ). This is not supported on Apple Silicon
                               based systems.
-     --getBoot                Print out the logical boot volume, based on what
+     --getBoot                Print out the logical boot device, based on what
                               is currently selected. This option will take into
                               account the fact that the firmware may be pointing
                               to an auxiliary booter partition, and will print
@@ -250,6 +252,75 @@ DESCRIPTION
      --unbless directory      Use the HFS+ volume mounted at directory and unset
                               any persistent blessed files/directories in the
                               HFS+ Volume Header.
+
+OPTIONS FOR APPLE SILICON DEVICES:
+     NOTE: Admin credentials may be prompted when running bless on an Apple
+     silicon platform (beyond running the tool as an admin user). However, if
+     the volume has been previously blessed by a different OS instance, then
+     these credentials may not be necessary or used to bless the target OS.
+
+   MOUNT MODE
+     Mount Mode has the following options:
+     --mount directory        Use the volume mounted at directory to change the
+                              active boot device, in conjunction with
+     --setBoot.               The volume must already be properly blessed.
+     --nextonly               Only change the boot device selection for the next
+                              boot.
+     --create-snapshot        Attempts to create an APFS root snapshot of the
+                              target APFS system volume and set it as root
+                              snapshot of the system volume. The target system
+                              will boot from this snapshot on its next boot.
+     --last-sealed-snapshot   Reverts back to using the previously signed APFS
+                              root snapshot reenabling Authenticated Root
+                              Volume.  The target system will boot from this
+                              sealed snapshot on its next boot.
+     --user                   Collect a local owner username to authorize boot
+                              policy modification.
+     --stdinpass              Collect a local owner password from stdin without
+                              prompting.
+     --passpromt              Explicitly ask to be prompted for the password.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+
+   DEVICE MODE
+     Device Mode has the following options:
+     --device device          Use the block device device to change the active
+                              boot device. No volumes should be mounted from
+                              device , and the filesystem should already be
+                              properly blessed.
+     --setBoot                Set the system to boot off the specified volume,
+                              as with Mount and Device mode Modes.  for the
+                              startup file type.
+     --nextonly               Same as for Mount Mode.
+     --user                   Collect a local owner username to authorize boot
+                              policy modification.
+     --stdinpass              Collect a local owner password from stdin without
+                              prompting.
+     --passpromt              Explicitly ask to be prompted for the password.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+
+   INFO MODE
+     Info Mode has the following options:
+     --getBoot                Print out the logical boot device, based on what
+                              is currently selected. This option will take into
+                              account the fact that the firmware may be pointing
+                              to an auxiliary booter partition, and will print
+                              out the corresponding root partition for those
+                              cases.
+     --plist                  Output all information in Property List (.plist)
+                              format, suitable for parsing by CoreFoundation.
+                              This is most useful when bless is executed from
+                              another program and its standard output must be
+                              parsed.
+     --user                   Collect a local owner username to authorize boot
+                              policy modification.
+     --stdinpass              Collect a local owner password from stdin without
+                              prompting.
+     --passpromt              Explicitly ask to be prompted for the password.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+     --version                Print bless version and exit immediately
 
 FILES
      /usr/standalone/ppc/bootx.bootinfo  Secondary loader with XML headers, used

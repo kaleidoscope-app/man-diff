@@ -1,25 +1,33 @@
 STAT(1)                      General Commands Manual                     STAT(1)
 
 NAME
-     readlink, stat – display file status
+     stat, readlink – display file status
 
 SYNOPSIS
      stat [-FLnq] [-f format | -l | -r | -s | -x] [-t timefmt] [file ...]
-     readlink [-n] [file ...]
+     readlink [-fn] [file ...]
 
 DESCRIPTION
      The stat utility displays information about the file pointed to by file.
-     Read, write or execute permissions of the named file are not required, but
-     all directories listed in the path name leading to the file must be
+     Read, write, or execute permissions of the named file are not required, but
+     all directories listed in the pathname leading to the file must be
      searchable.  If no argument is given, stat displays information about the
      file descriptor for standard input.
 
      When invoked as readlink, only the target of the symbolic link is printed.
-     If the given argument is not a symbolic link, readlink will print nothing
-     and exit with an error.
+     If the given argument is not a symbolic link and the -f option is not
+     specified, readlink will print nothing and exit with an error.  If the -f
+     option is specified, the output is canonicalized by following every symlink
+     in every component of the given path recursively.  readlink will resolve
+     both absolute and relative paths, and return the absolute pathname
+     corresponding to file.  In this case, the argument does not need to be a
+     symbolic link.
 
      The information displayed is obtained by calling lstat(2) with the given
-     argument and evaluating the returned structure.
+     argument and evaluating the returned structure.  The default format
+     displays the st_dev, st_ino, st_mode, st_nlink, st_uid, st_gid, st_rdev,
+     st_size, st_atime, st_mtime, st_ctime, st_birthtime, st_blksize, st_blocks,
+     and st_flags fields, in that order.
 
      The options are as follows:
 
@@ -30,13 +38,14 @@ DESCRIPTION
              socket, and a vertical bar (‘|’) after each that is a FIFO.  The
              use of -F implies -l.
 
-     -f format
-             Display information using the specified format.  See the FORMATS
-             section for a description of valid formats.
-
      -L      Use stat(2) instead of lstat(2).  The information reported by stat
              will refer to the target of file, if file is a symbolic link, and
-             not to file itself.
+             not to file itself.  If the link is broken or the target does not
+             exist, fall back on lstat(2) and report information about the link.
+
+     -f format
+             Display information using the specified format.  See the Formats
+             section for a description of valid formats.
 
      -l      Display output in ls -lT format.
 
@@ -50,8 +59,8 @@ DESCRIPTION
              structure, display the raw, numerical value (for example, times in
              seconds since the epoch, etc.).
 
-     -s      Display information in “shell output”, suitable for initializing
-             variables.
+     -s      Display information in “shell output” format, suitable for
+             initializing variables.
 
      -t timefmt
              Display timestamps using the specified format.  This format is
@@ -113,6 +122,8 @@ DESCRIPTION
 
              dr      Display actual device name.
 
+             f       Display the flags of file as in ls -lTdo.
+
              gu      Display group or user name.
 
              p       Display the mode of file as in ls -lTd.
@@ -146,36 +157,40 @@ DESCRIPTION
 
      datum   A required field specifier, being one of the following:
 
-             d       Device upon which file resides.
+             d       Device upon which file resides (st_dev).
 
-             i       file's inode number.
+             i       file's inode number (st_ino).
 
-             p       File type and permissions.
+             p       File type and permissions (st_mode).
 
-             l       Number of hard links to file.
+             l       Number of hard links to file (st_nlink).
 
-             u, g    User ID and group ID of file's owner.
+             u, g    User ID and group ID of file's owner (st_uid, st_gid).
 
-             r       Device number for character and block device special files.
+             r       Device number for character and block device special files
+                     (st_rdev).
 
              a, m, c, B
-                     The time file was last accessed or modified, of when the
-                     inode was last changed, or the birth time of the inode.
+                     The time file was last accessed or modified, or when the
+                     inode was last changed, or the birth time of the inode
+                     (st_atime, st_mtime, st_ctime, st_birthtime).
 
-             z       The size of file in bytes.
+             z       The size of file in bytes (st_size).
 
-             b       Number of blocks allocated for file.
+             b       Number of blocks allocated for file (st_blocks).
 
-             k       Optimal file system I/O operation block size.
+             k       Optimal file system I/O operation block size (st_blksize).
 
              f       User defined flags for file.
 
-             v       Inode generation number.
+             v       Inode generation number (st_gen).
 
-             The following four field specifiers are not drawn directly from the
+             The following five field specifiers are not drawn directly from the
              data in struct stat, but are:
 
              N       The name of the file.
+
+             R       The absolute pathname corresponding to the file.
 
              T       The file type, either as in ls -F or in a more descriptive
                      form if the sub field specifier H is given.
@@ -188,14 +203,20 @@ DESCRIPTION
 
      Only the % and the field specifier are required.  Most field specifiers
      default to U as an output form, with the exception of p which defaults to
-     O, a, m, and c which default to D, and Y, T, and N which default to S.
+     O; a, m, and c which default to D; and Y, T, and N which default to S.
 
 EXIT STATUS
      The stat and readlink utilities exit 0 on success, and >0 if an error
      occurs.
 
 EXAMPLES
-     Given a symbolic link foo that points from /tmp/foo to /, you would use
+     If no options are specified, the default format is "%d %i %Sp %l %Su %Sg %r
+     %z \"%Sa\" \"%Sm\" \"%Sc\" \"%SB\" %k %b %#Xf %N".
+
+           > stat /tmp/bar
+           0 78852 -rw-r--r-- 1 root wheel 0 0 "Jul  8 10:26:03 2004" "Jul  8 10:26:03 2004" "Jul  8 10:28:13 2004" "Jan  1 09:00:00 1970" 16384 0 0 /tmp/bar
+
+     Given a symbolic link “foo” that points from /tmp/foo to /, you would use
      stat as follows:
 
            > stat -F /tmp/foo
@@ -216,8 +237,8 @@ EXAMPLES
            $ echo $st_size $st_mtimespec
            1148 1015432481
 
-     In order to get a list of the kind of files including files pointed to if
-     the file is a symbolic link, you could use the following format:
+     In order to get a list of file types including files pointed to if the file
+     is a symbolic link, you could use the following format:
 
            $ stat -f "%N: %HT%SY" /tmp/*
            /tmp/bar: Symbolic Link -> /tmp/foo
@@ -255,6 +276,27 @@ EXAMPLES
            Apr 25 10:36:34 2002 /tmp/bar
            Apr 24 16:47:35 2002 /tmp/foo
 
+     To display a file's modification time:
+
+           > stat -f %m /tmp/foo
+           1177697733
+
+     To display the same modification time in a readable format:
+
+           > stat -f %Sm /tmp/foo
+           Apr 27 11:15:33 2007
+
+     To display the same modification time in a readable and sortable format:
+
+           > stat -f %Sm -t %Y%m%d%H%M%S /tmp/foo
+           20070427111533
+
+     To display the same in UTC:
+
+           > sh
+           $ TZ= stat -f %Sm -t %Y%m%d%H%M%S /tmp/foo
+           20070427181533
+
 SEE ALSO
      file(1), ls(1), lstat(2), readlink(2), stat(2), printf(3), strftime(3)
 
@@ -262,6 +304,6 @@ HISTORY
      The stat utility appeared in NetBSD 1.6 and FreeBSD 4.10.
 
 AUTHORS
-     The stat utility was written by Andrew Brown ⟨atatat@NetBSD.org⟩.  This man
-     page was written by Jan Schaumann ⟨jschauma@NetBSD.org⟩.
+     The stat utility was written by Andrew Brown <atatat@NetBSD.org>.  This man
+     page was written by Jan Schaumann <jschauma@NetBSD.org>.
 

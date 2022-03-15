@@ -4,8 +4,8 @@ NAME
      chmod – change file modes or Access Control Lists
 
 SYNOPSIS
-     chmod [-fv] [-R [-H | -L | -P]] mode file ...
-     chmod [-fv] [-R [-H | -L | -P]] [-a | +a | =a] ACE file ...
+     chmod [-fhv] [-R [-H | -L | -P]] mode file ...
+     chmod [-fhv] [-R [-H | -L | -P]] [-a | +a | =a] ACE file ...
      chmod [-fhv] [-R [-H | -L | -P]] [-E] file ...
      chmod [-fhv] [-R [-H | -L | -P]] [-C] file ...
      chmod [-fhv] [-R [-H | -L | -P]] [-N] file ...
@@ -134,8 +134,8 @@ MODES
            value is specified, the owner, group and other mode bits are cleared.
            Then, if no value is supplied for who, each permission bit specified
            in perm, for which the corresponding bit in the file mode creation
-           mask is clear, is set.  Otherwise, the mode bits represented by the
-           specified who and perm values are set.
+           mask (see umask(2)) is clear, is set.  Otherwise, the mode bits
+           represented by the specified who and perm values are set.
 
      Each clause specifies one or more operations to be performed on the mode
      bits, and each operation is applied to the mode bits in the order
@@ -399,4 +399,7 @@ STANDARDS
 
 HISTORY
      A chmod command appeared in Version 1 AT&T UNIX.
+
+BUGS
+     There is no perm option for the naughty bits of a horse.
 

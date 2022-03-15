@@ -1,0 +1,149 @@
+DERQ(1)                      General Commands Manual                     DERQ(1)
+
+NAME
+     derq – Query and manipulate DER entitlements.
+
+SYNOPSIS
+     derq query [--pretty] [--raw] [-f format] [-i input] [-o output]
+          ⟨query statements⟩
+
+
+     derq csops [-p pid] [-o output] [--xml] ⟨query statements⟩
+
+
+     derq macho [-i input] [-o output] [--xml] ⟨query statements⟩
+
+DESCRIPTION
+     The derq command queries DER encoded entitlements using the
+     CoreEntitlements library.
+
+     It currently supports querying from a Mach-O, file / input stream, as well
+     as directly from a process using csops(2).
+
+     After a succesful execution of the query statements on the input , derq
+     will output the active DER context to the output.
+
+OPTIONS
+     A list of flags and their descriptions:
+
+     --pretty
+              When specified, derq will print the active context in a textual
+              representation to stderr.
+
+     --raw    Signifies that the input might not be a DER encoded entitlements
+              blob. This forces derq to treat the input as a raw DER object.
+              Particularly this means that if a V1 entitlements is passed in,
+              the active context will be set to the outer metadata object, and
+              not the inner entitlements dictionary.
+
+     --xml    Instruct the macho or csops subcommands to query the embedded XML
+              blob instead of the embedded DER blob.
+
+     -i input
+              Allows you to specify which file should be used as the input.  If
+              not specified "-" is assumed, which signfies that the input will
+              follow on stdin.
+
+     -o output
+              Allows you to specify which file should be used as the output.  If
+              not specified "-" is assumed, which signfies that derq should use
+              stdout for output.
+
+     -p pid   Specifies the pid of a running process from which derq should
+              extract the DER entitlements blob to be used as input.
+
+     -f format
+              Specifies what format the input is. If this flag isn't passed in
+              DER is assumed. The other supported format is "xml."
+
+     query statements ...
+              A space seperated list of operations to be exected left-to-right.
+              The operation syntax is described in SYNTAX.
+
+SYNTAX
+     DERQL has very simplistic syntax that consists of a series of operations
+     that are executed one after another. Execution stops either when the last
+     operation is executed or an operation induces the execution engine into an
+     invalid state.  There are many operations that can produce an invalid
+     state, such as selecting a key that doesn't exist, or indexing an array
+     past the bounds. Invalid state is also produced when a matching operation
+     fails.
+
+     Currently derq supports 4 operations:
+
+           CESelectIndex
+           This operation selects an index in a zero indexed array. Any query
+           statement that starts with a number character (0-9) implies the start
+           of a CESelectIndex operation. Example invocation: invocatio:
+
+                 % derq query -i - -o - 1
+
+           Will select the second element in the array passed in on stdin and
+           output the selected value to stdout.
+
+           CESelectDictValue
+           This operation selects the value associated with the passed in key in
+           the actively selected dictionary. Any query statement that does not
+           imply any operation will be parsed as CESelectDictValue. Meaning that
+           any query statement that starts with an alphanumeric sequence will be
+           treated as a CESelectDictValue operation. Example:
+
+                 % derq query application-identifier
+
+           Will select the value that belongs to the key
+           "application-identifier" from the dictionary passed in on stdin and
+           output the selected value to stdout.
+
+           CEMatchBool
+           This operation produces a valid output if the currently selected
+           value is a boolean that has the value of true. Execution of this
+           operation does not modify the selection. Any query statement that
+           starts with "?" signifies this operation. Example:
+
+                 % derq query get-task-allow ?
+
+           Will return a valid boolean only if the value for the key
+           "get-task-allow" is a boolean and has the value of true.
+
+           CEMatchString
+           This operation produces a valid output if the currently selected
+           value is a string that is equal to the passed in value.  Execution of
+           this operation does not modify the selection. Any query statement
+           that starts with "=" signifies this operation. Example:
+
+                 % derq query useractivity-team-identifier =appleiwork
+
+           Will return a valid string only if the value for the key
+           "useractivity-team-identifier" is exactly equal to "appleiwork".
+
+EXAMPLES
+     To check if a file has the string "secret-entitlement" as the first value
+     in an array in a file named "application.entitlements":
+           % derq query -i application.entitlements 0 =secret-entitlement
+
+
+     To verify the DER entitlements validity of process 666 and to check that it
+     has the "com.apple.application-identifier" equal to
+     "P9Z4AN7VHQ.com.apple.radar.gm":
+           % derq csops -pid 666 com.apple.application-identifier
+           =P9Z4AN7VHQ.com.apple.radar.gm
+
+
+     To check if the first array element of a key
+     "com.apple.security.iokit-user-client-class" is equal to
+     "AppleImage4UserClient":
+           % derq query com.apple.security.iokit-user-client-class 0
+           =AppleImage4UserClient
+
+DIAGNOSTICS
+     The derq utility exits 0 on success, and >0 if an error occurs.
+
+     In particular EX_DATAERR (66) is returned if the query could not be
+     satisfied or resulted in invalid state.
+
+NOTES
+     The correct pronunciation of derq sounds similar to "dirk".
+
+SEE ALSO
+     codesign(1)
+

@@ -70,6 +70,10 @@ OPTIONS
               prints the grand total of free space fragments for all storage
               pools.
 
+       -B separator
+              Use separator instead of comma (,) for the character used to
+              partition fields when the -x option is specified.
+
        -c pathname
               Provide a specific path to a configuration file that is to be
               used, overriding the implicit location.  This option is used when
@@ -303,12 +307,13 @@ OPTIONS
               if other metadata inconsistencies are detected prior to the orphan
               inode phase.
 
-       -x     Report statistics for input to a spread sheet.  No checking is
-              done. Implies -e,-r and -n flags.  All values are in decimal.
-              Data is comma separated and in this order: Inode#, Mode, Size,
-              Block Count, Affinity, Path, Extent Count, Extent Number, Storage
-              pool, File Relative Block, Base, End, Depth, Breadth No tracing is
-              enabled for this report option.
+       -x     Report statistics. No checking is done. Implies -e,-r and -n
+              flags.  All values are in decimal.  Data is output in this order:
+              Inode#, Mode, Size, Block Count, Affinity, Path, Extent Count,
+              Extent Number, Storage pool, File Relative Block, Base, End,
+              Depth, Breadth By default, fields are comma separated.  However,
+              the separating character can be changed using the -B option. See
+              also the -z option.  No tracing is enabled for this report option.
 
        -X     (Engineering use only.) Free all inodes in extended attribute
               chains. Extended attributes present in these inodes will be
@@ -323,6 +328,10 @@ OPTIONS
 
        -Y     Same behavior as -y except that the changes are not buffered
               through the local volume as they are by default.
+
+       -z     Enclose the Path field displayed by -x with double quotes. If the
+              Path itself contains double quotes, replace each of them with two
+              double quote characters.
 
        -Z     Remove all NT Security Descriptors from the file system.  This is
               useful when ACLs are being abandoned to allow the use of the
@@ -389,6 +398,12 @@ NOTES
 
        NOTE: On large file systems cvfsck may requires 100s of megabytes or more
        of local system disk space for working files.
+
+       If the output of -x is to be used with Excel, consider the use of the -z
+       option so that lines having pathnames containing commas can be parsed.
+       If the output of -x is to be used with Unix tools such as awk, Perl, or
+       Python, consider using the -B option with a field separator such as '|'
+       or similar that does not appear as a character in a pathname.
 
 FILES
        /Library/Logs/Xsan/data/*

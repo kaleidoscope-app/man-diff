@@ -27,8 +27,7 @@ DESCRIPTION
 
      -m      Try to format mail header lines contained in the input sensibly.
 
-     -n      Format lines beginning with a ‘.’ (dot) character.  Normally, fmt
-             does not fill these lines, for compatibility with nroff(1).
+     -n      Format lines beginning with a ‘.’ (dot) character.
 
      -p      Allow indented paragraphs.  Without the -p flag, any change in the
              amount of whitespace at the start of a line results in a new
@@ -65,8 +64,21 @@ ENVIRONMENT
      The LANG, LC_ALL and LC_CTYPE environment variables affect the execution of
      fmt as described in environ(7).
 
+EXAMPLES
+     Center the text in standard input:
+
+           $ echo -e 'The merit of all things\nlies\nin their difficulty' | fmt -c
+                                The merit of all things
+                                          lies
+                                  in their difficulty
+
+     Format the text in standard input collapsing spaces:
+
+           $ echo -e 'Multiple   spaces    will be collapsed' | fmt -s
+           Multiple spaces will be collapsed
+
 SEE ALSO
-     fold(1), mail(1), nroff(1)
+     fold(1), mail(1)
 
 HISTORY
      The fmt command appeared in 3BSD.

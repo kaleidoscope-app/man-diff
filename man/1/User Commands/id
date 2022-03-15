@@ -8,7 +8,6 @@ SYNOPSIS
      id -A
      id -F [user]
      id -G [-n] [user]
-     id -M
      id -P [user]
      id -g [-nr] [user]
      id -p [user]
@@ -32,8 +31,6 @@ DESCRIPTION
 
      -G      Display the different group IDs (effective, real and supplementary)
              as white-space separated numbers, in no particular order.
-
-     -M      Display the MAC label of the current process.
 
      -P      Display the id as a password file entry.
 
@@ -65,8 +62,33 @@ DESCRIPTION
 EXIT STATUS
      The id utility exits 0 on success, and >0 if an error occurs.
 
+EXAMPLES
+     Show information for the user ‘bob’ as a password file entry:
+
+           $ id -P bob
+           bob:*:0:0::0:0:Robert:/bob:/usr/local/bin/bash
+
+     Same output as groups(1) for the root user:
+
+           $ id -Gn root
+           wheel operator
+
+     Show human readable information about ‘alice’:
+
+           $ id -p alice
+           uid     alice
+           groups  alice webcamd vboxusers
+
+     Assuming the user ‘bob’ executed “su -l” to simulate a root login, compare
+     the result of the following commands:
+
+           # id -un
+           root
+           # who am i
+           bob          pts/5        Dec  4 19:51
+
 SEE ALSO
-     who(1)
+     groups(1), who(1)
 
 STANDARDS
      The id function is expected to conform to IEEE Std 1003.2 (“POSIX.2”).

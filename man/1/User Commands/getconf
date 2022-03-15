@@ -4,17 +4,24 @@ NAME
      getconf – retrieve standard configuration variables
 
 SYNOPSIS
+     getconf -a [file]
      getconf [-v environment] path_var file
      getconf [-v environment] system_var
 
 DESCRIPTION
-     The getconf utility prints the value of a POSIX or X/Open path or system
-     configuration variable to the standard output.  If the specified variable
-     is undefined, the string “undefined” is output.
+     The getconf utility prints the values of POSIX or X/Open path or system
+     configuration variables to the standard output.  If a variable is
+     undefined, the string “undefined” is output.
 
-     The first form of the command, with two mandatory arguments, retrieves
+     The first form of the command displays all of the path or system
+     configuration variables to standard output.  If file is provided, all path
+     configuration variables are reported for file using pathconf(2).
+     Otherwise, all system configuration variables are reported using confstr(3)
+     and sysconf(3).
+
+     The second form of the command, with two mandatory arguments, retrieves
      file- and file system-specific configuration variables using pathconf(2).
-     The second form, with a single argument, retrieves system configuration
+     The third form, with a single argument, retrieves system configuration
      variables using confstr(3) and sysconf(3), depending on the type of
      variable.  As an extension, the second form can also be used to query
      static limits from <limits.h>.
@@ -45,7 +52,7 @@ DESCRIPTION
 
            POSIX_V6_LP64_OFF64        Exactly 32-bit integer; exactly 64-bit
                                       long, pointer, and file offset.  Supported
-                                      platforms: Alpha, SPARC64.
+                                      platforms: AMD64, SPARC64.
 
            POSIX_V6_LPBIG_OFFBIG      At least 32-bit integer; at least 64-bit
                                       long, pointer, and file offset.  Supported
@@ -107,5 +114,5 @@ HISTORY
      The getconf utility first appeared in FreeBSD 5.0.
 
 AUTHORS
-     Garrett A. Wollman ⟨wollman@lcs.mit.edu⟩
+     Garrett A. Wollman <wollman@lcs.mit.edu>
 

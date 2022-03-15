@@ -13,27 +13,32 @@ DESCRIPTION
      of the single long n-th output line into which they are assembled.  The
      name `-' means the standard input, and may be repeated.
 
-     Normally, each option affects only the file after it.  If the option letter
-     is capitalized it affects all subsequent files until it appears again
-     uncapitalized.  The options are described below:
-
-     -f min.max
+     -f min.max, -F min.max
              Print line fragments according to the format string min.max, where
              min is the minimum field width and max the maximum field width.  If
              min begins with a zero, zeros will be added to make up the field
              width, and if it begins with a `-', the fragment will be left-
-             adjusted within the field.
+             adjusted within the field.  Using -f applies only to the next file
+             while -F applies to all subsequent files until it appears again
+             uncapitalized.
 
-     -p min.max
+     -p min.max, -P min.max
              Like -f, but pad this file's field when end-of-file is reached and
-             other files are still active.
+             other files are still active.  Using -p applies only to the next
+             file while -P applies to all subsequent files until it appears
+             again uncapitalized.
 
-     -s sepstring
+     -s sepstring, -S sepstring
              Print sepstring before printing line fragments from the next file.
-             This option may appear after the last file.
+             This option may appear after the last file.  Using -s applies only
+             to the next file while -S applies to all subsequent files until it
+             appears again uncapitalized.
 
-     -t c    The input line terminator is c instead of a newline.  The newline
-             normally appended to each output line is omitted.
+     -t c, -T c
+             The input line terminator is c instead of a newline.  The newline
+             normally appended to each output line is omitted.  Using -t applies
+             only to the next file while -T applies to all subsequent files
+             until it appears again uncapitalized.
 
      To print files simultaneously for easy viewing use pr(1).
 
@@ -62,6 +67,12 @@ SEE ALSO
 STANDARDS
      Some of the functionality of lam is standardized as the paste(1) utility by
      IEEE Std 1003.2 (“POSIX.2”).
+
+HISTORY
+     The lam utility first appeared in 4.2BSD.
+
+AUTHORS
+     John A. Kunze
 
 BUGS
      The lam utility does not recognize multibyte characters.

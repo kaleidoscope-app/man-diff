@@ -34,6 +34,8 @@ DESCRIPTION
      -P ppid           Restrict matches to processes with a parent process ID in
                        the comma-separated list ppid.
 
+     -S                Search also in system processes (kernel threads).
+
      -U uid            Restrict matches to processes with a real user ID in the
                        comma-separated list uid.
 
@@ -68,7 +70,7 @@ DESCRIPTION
      -o                Select only the oldest (least recently started) of the
                        matching processes.
 
-     -q                Do not write anything to standard output.
+     -q                For pgrep, Do not write anything to standard output.
 
      -t tty            Restrict matches to processes associated with a terminal
                        in the comma-separated list tty.  Terminal names may be
@@ -91,8 +93,9 @@ DESCRIPTION
                        TERM.  This option is valid only when given as the first
                        argument to pkill.
 
-     If any pattern operands are specified, they are used as regular expressions
-     to match the command name or full argument list of each process.
+     If any pattern operands are specified, they are used as extended regular
+     expressions to match the command name or full argument list of each
+     process.
 
      Note that a running pgrep or pkill process will never consider itself as a
      potential match.
@@ -108,6 +111,75 @@ EXIT STATUS
 
      3       An internal error occurred.
 
+EXAMPLES
+     Show the pid of the process holding the /tmp/.X0-lock pid file:
+
+           $ pgrep -F /tmp/.X0-lock
+           1211
+
+     Show the pid and the name of the process including kernel threads in the
+     search:
+
+           $ pgrep -lS vnlru
+           37 vnlru
+
+     Search for processes including kernel threads that match the extended
+     regular expression pattern:
+
+           $ pgrep -S 'crypto.*[2-3]'
+           20
+           19
+           6
+           5
+
+     Show long output for firefox processes:
+
+           $ pgrep -l firefox
+           1312 firefox
+           1309 firefox
+           1288 firefox
+           1280 firefox
+           1279 firefox
+           1278 firefox
+           1277 firefox
+           1264 firefox
+
+     Same as above but just showing the pid of the most recent process:
+
+           $ pgrep -n firefox
+           1312
+
+     Look for vim processes.  Match against the full argument list:
+
+           $ pgrep -f vim
+           44968
+           30790
+
+     Same as above but matching against the ‘list’ word and showing the full
+     argument list:
+
+           $ pgrep -f -l list
+           30790 vim list.txt
+
+     Send SIGSTOP signal to processes that are an exact match:
+
+           $ pkill -SIGSTOP -f -x "vim list.txt"
+
+     Without -f names over 19 characters will silently fail:
+
+           $ vim this_is_a_very_long_file_name &
+           [1] 36689
+           $
+
+           [1]+  Stopped                 vim this_is_a_very_long_file_name
+           $ pgrep "vim this"
+           $
+
+     Same as above using the -f flag:
+
+           $ pgrep -f "vim this"
+           36689
+
 SEE ALSO
      kill(1), killall(1), ps(1), flock(2), kill(2), sigaction(2), pidfile(3),
      re_format(7)
@@ -118,5 +190,5 @@ HISTORY
      They made their first appearance in FreeBSD 5.3.
 
 AUTHORS
-     Andrew Doran ⟨ad@NetBSD.org⟩
+     Andrew Doran <ad@NetBSD.org>
 

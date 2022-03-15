@@ -13,9 +13,9 @@ DESCRIPTION
 
      The options are as follows:
 
-     -A base        Specify the input address base.  base may be one of d, o, x
-                    or n, which specify decimal, octal, hexadecimal addresses or
-                    no address, respectively.
+     -A base        Specify the input address base.  The argument base may be
+                    one of d, o, x or n, which specify decimal, octal,
+                    hexadecimal addresses or no address, respectively.
 
      -a             Output named characters.  Equivalent to -t a.
 
@@ -26,6 +26,8 @@ DESCRIPTION
      -c             Output C-style escaped characters.  Equivalent to -t c.
 
      -D             Output unsigned decimal ints.  Equivalent to -t u4.
+
+     -d             Output unsigned decimal shorts.  Equivalent to -t u2.
 
      -e, -F         Output double-precision floating point numbers.  Equivalent
                     to -t fD.
@@ -42,9 +44,9 @@ DESCRIPTION
      -i             Output signed decimal ints.  Equivalent to -t dI.
 
      -j skip        Skip skip bytes of the combined input before dumping.  The
-                    number may be followed by one of b, k or m which specify the
-                    units of the number as blocks (512 bytes), kilobytes and
-                    megabytes, respectively.
+                    number may be followed by one of b, k, m or g which specify
+                    the units of the number as blocks (512 bytes), kilobytes,
+                    megabytes and gigabytes, respectively.
 
      -N length      Dump at most length bytes of input.
 
@@ -52,18 +54,19 @@ DESCRIPTION
 
      -s             Output signed decimal shorts.  Equivalent to -t d2.
 
-     -t type        Specify the output format.  type is a string containing one
-                    or more of the following kinds of type specifiers:
+     -t type        Specify the output format.  The type argument is a string
+                    containing one or more of the following kinds of type
+                    specifiers:
 
                     a       Named characters (ASCII).  Control characters are
                             displayed using the following names:
 
                             000 NUL 001 SOH 002 STX 003 ETX 004 EOT 005 ENQ
-                            006 ACK 007 BEL 008 BS  009 HT  00a NL  00b VT
-                            00c FF  00d CR  00e SO  00f SI  010 DLE 011 DC1
+                            006 ACK 007 BEL 008 BS  009 HT  00A NL  00B VT
+                            00C FF  00D CR  00E SO  00F SI  010 DLE 011 DC1
                             012 DC2 013 DC3 014 DC4 015 NAK 016 SYN 017 ETB
-                            018 CAN 019 EM  01a SUB 01b ESC 01c FS  01d GS
-                            01e RS  01f US  020 SP  0ff DEL
+                            018 CAN 019 EM  01A SUB 01B ESC 01C FS  01D GS
+                            01E RS  01F US  020 SP  07F DEL
 
                     c       Characters in the default character set.  Non-
                             printing characters are represented as 3-digit octal
@@ -106,8 +109,25 @@ ENVIRONMENT
      The LANG, LC_ALL and LC_CTYPE environment variables affect the execution of
      od as described in environ(7).
 
-DIAGNOSTICS
+EXIT STATUS
      The od utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     Dump stdin and show the output using named characters and C-style escaped
+     characters:
+
+           $ echo "FreeBSD: The power to serve" | od -a -c
+           0000000    F   r   e   e   B   S   D   :  sp   T   h   e  sp   p   o   w
+                      F   r   e   e   B   S   D   :       T   h   e       p   o   w
+           0000020    e   r  sp   t   o  sp   s   e   r   v   e  nl
+                      e   r       t   o       s   e   r   v   e  \n
+           0000034
+
+     Dump stdin skipping the first 13 bytes using named characters and dumping
+     no more than 5 bytes:
+
+           $ echo "FreeBSD: The power to serve" | od -An -a -j 13 -N 5
+                      p   o   w   e   r
 
 COMPATIBILITY
      The traditional -s option to extract string constants is not supported;
