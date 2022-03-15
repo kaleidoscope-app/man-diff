@@ -41,13 +41,23 @@ Or quickly lookup a single man page:
 
 ## Changelog
 
+Mar 15, 2022:
+
+* Added macOS 12.3:
+  * We post processed the changeset and grouped buildins changes:  
+    ```git difftool changeset/macOS12.2-post-processed..changeset/macOS12.3```
+  * To see all changes you can do so with:  
+    ```git difftool changeset/macOS12.2..changeset/macOS12.3```
+
 Jan 29, 2021:
 
-* Added macOS 12.2: ```git difftool changeset/macOS12.1..changeset/macOS12.2```
+* Added macOS 12.2:  
+  ```git difftool changeset/macOS12.1..changeset/macOS12.2```
 
 Dec 14, 2021:
 
-* Added macOS 12.1: ```git difftool changeset/macOS12..changeset/macOS12.1```
+* Added macOS 12.1:  
+  ```git difftool changeset/macOS12..changeset/macOS12.1```
 * Removed man page footer to simplify diff
 
 ## Prerequisites
