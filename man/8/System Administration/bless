@@ -71,7 +71,7 @@ DESCRIPTION
 
      Additionally, --help can be used to display the command-line usage summary.
 
-OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES or EXTERNAL STORAGE DEVICES:
+OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES:
    FILE/FOLDER MODE
      Folder Mode has the following options:
      --folder directory       Set this directory to be the Mac OS X/Darwin
@@ -259,6 +259,24 @@ OPTIONS FOR APPLE SILICON DEVICES:
      the volume has been previously blessed by a different OS instance, then
      these credentials may not be necessary or used to bless the target OS.
 
+   FOLDER MODE - Available only for external/removable devices
+     Folder Mode has the following options:
+     --folder directory       Set this directory to be the Mac OS X/Darwin
+                              blessed directory, containing a booter for EFI-
+                              based systems.
+     --file file              Set this file to be the Mac OS X/Darwin blessed
+                              boot file, containing a booter for EFI-based
+                              systems. If this option is not provided, a default
+                              boot file is used based on the blessed directory.
+     --personalize            Attempts to do a personalization operation on the
+                              target, which validates the SecureBoot bundle and
+                              ensures that the relevant boot files are signed
+                              and valid for this particular machine.  This may
+                              require network access, in order to check the
+                              signatures.
+     --quiet                  Do not print any output
+     --verbose                Print verbose output
+
    MOUNT MODE
      Mount Mode has the following options:
      --mount directory        Use the volume mounted at directory to change the
@@ -302,6 +320,12 @@ OPTIONS FOR APPLE SILICON DEVICES:
 
    INFO MODE
      Info Mode has the following options:
+     --info [directory]       (Available only for external/removable devices)
+                              Print out the blessed system folder for the volume
+                              mounted at directory . If directory is not
+                              specified, print information for the currently
+                              selected boot device (which may not necessarily be
+                              ‘/’ ).
      --getBoot                Print out the logical boot device, based on what
                               is currently selected. This option will take into
                               account the fact that the firmware may be pointing
