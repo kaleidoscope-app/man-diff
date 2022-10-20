@@ -73,10 +73,18 @@ OPTIONS
        -c     Create log file for each interval, even if empty.
 
        -n number-of-files
-              Use a circular list of filenames without timestamps. With -n 3,
+              Use a circular list of filenames without timestamps. This option
+              overwrites log files at startup and during rotation. With -n 3,
               the series of log files opened would be "logfile", "logfile.1",
-              "logfile.2", then overwriting "logfile". Available in 2.4.5 and
-              later.
+              "logfile.2", then overwriting "logfile". When this program first
+              opens "logfile", the file will only be truncated if -t is also
+              provided. Every subsequent rotation will always begin with
+              truncation of the target file. For size based rotation without -t
+              and existing log files in place, this option may result in
+              unintuitive behavior such as initial log entries being sent to
+              "logfile.1", and entries in "logfile.1" not being preserved even
+              if later "logfile.n" have not yet been used. Available in 2.4.5
+              and later.
 
        logfile
               The path plus basename of the logfile. If logfile includes any '%'
