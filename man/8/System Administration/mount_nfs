@@ -190,8 +190,8 @@ DESCRIPTION
      readahead=⟨maxreadahead⟩
              Set the maximum read-ahead count to the specified value.  The
              default is 16.  This may be in the range of 0 - 128, and determines
-             how many blocks will be read ahead when a large file is being read
-             sequentially.  Trying larger values for this is suggested for
+             how many Read RPCs will be read ahead when a large file is being
+             read sequentially.  Trying larger values for this is suggested for
              mounts with a large bandwidth * delay product.
 
      rdirplus / nordirplus
@@ -484,6 +484,15 @@ ERRORS
      the NFS directory with remote locks (enabled by default), mount_nfs should
      fail with EPROGUNAVAIL. rpc.statd status can be verified using rpcinfo (see
      above).
+
+     The following warning:
+
+           mount_nfs: wsize/rsize ratio is high: this could end up with
+           unexpected readahead RPCs
+
+     indicates that provided wsize is much greater than rsize. which could end
+     up with a different amount of readahead RPCs compared to the amount
+     requested by the user.
 
 SEE ALSO
      mount(2), unmount(2), mount(8), umount(8), nfsstat(1), netstat(1),

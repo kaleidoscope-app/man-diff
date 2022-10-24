@@ -7,6 +7,8 @@ SYNOPSIS
      cp [-R [-H | -L | -P]] [-fi | -n] [-alpsvXx] source_file target_file
      cp [-R [-H | -L | -P]] [-fi | -n] [-alpsvXx]
         source_file ... target_directory
+     cp [-f | -i | -n] [-alPpsvx] source_file target_file
+     cp [-f | -i | -n] [-alPpsvx] source_file ... target_directory
 
 DESCRIPTION
      In the first synopsis form, the cp utility copies the contents of the
@@ -23,8 +25,8 @@ DESCRIPTION
 
      -L    If the -R option is specified, all symbolic links are followed.
 
-     -P    If the -R option is specified, no symbolic links are followed.  This
-           is the default.
+     -P    No symbolic links are followed.  This is the default if the -R option
+           is specified.
 
      -R    If source_file designates a directory, cp copies the directory and
            the entire subtree connected at that point.  If the source_file ends
@@ -34,6 +36,8 @@ DESCRIPTION
            files rather than copying them as normal files.  Created directories
            have the same mode as the corresponding source directory, unmodified
            by the process' umask.
+
+           In -R mode, cp will continue copying even if errors are detected.
 
            Note that cp copies hard linked files as separate files.  If you need
            to preserve hard links, consider using tar(1), cpio(1), or pax(1)
@@ -78,21 +82,6 @@ DESCRIPTION
            cannot be preserved, neither the set-user-ID nor set-group-ID bits
            are preserved in the copy's permissions.
 
-     -R    If source_file designates a directory, cp copies the directory and
-           the entire subtree connected at that point.  If the source_file ends
-           in a /, the contents of the directory are copied rather than the
-           directory itself.  This option also causes symbolic links to be
-           copied, rather than indirected through, and for cp to create special
-           files rather than copying them as normal files.  Created directories
-           have the same mode as the corresponding source directory, unmodified
-           by the process' umask.
-
-           In -R mode, cp will continue copying even if errors are detected.
-
-           Note that cp copies hard-linked files as separate files.  If you need
-           to preserve hard links, consider using tar(1), cpio(1), or pax(1)
-           instead.
-
      -s    Create symbolic links to regular files in a hierarchy instead of
            copying.
 
@@ -135,6 +124,12 @@ DESCRIPTION
      current input and output file and the percentage complete will be written
      to the standard output.
 
+     If cp encounters an I/O error during the copy, then cp may leave a
+     partially copied target_file in place.  cp specifically avoids cleaning up
+     the output file in error cases to avoid further data loss in cases where
+     the source may not be recoverable.  Alternatives, like install(1), may be
+     preferred if stronger guarantees about the target_file are required.
+
 EXIT STATUS
      The cp utility exits 0 on success, and >0 if an error occurs.
 
@@ -174,7 +169,7 @@ LEGACY DESCRIPTION
      For more information about legacy mode, see compat(5).
 
 SEE ALSO
-     mv(1), rcp(1), umask(2), fts(3), compat(5), symlink(7)
+     install(1), mv(1), rcp(1), umask(2), fts(3), compat(5), symlink(7)
 
 STANDARDS
      The cp command is expected to be IEEE Std 1003.2 (“POSIX.2”) compatible.

@@ -66,6 +66,17 @@ OPTIONS
        -v, --verbose
            Output debugging information.
 
+       Invoking xmlcatalog non-interactively without a designated action
+       (imposed with options like --add) will result in a lookup of the catalog
+       entry for ENTITIES in the catalog denoted with CATALOGFILE. The
+       corresponding entries will be output to the command line. This mode of
+       operation, together with --shell mode and non-modifying (i.e. without
+       --noout) direct actions, allows for a special shortcut of the void
+       CATALOGFILE specification (possibly expressed as "" in the shell
+       environment) appointing the default system catalog. That simplifies the
+       handling when its exact location is irrelevant but the respective
+       built-in still needs to be consulted.
+
 SHELL COMMANDS
        Invoking xmlcatalog with the --shell CATALOGFILE option opens a command
        line shell allowing interactive access to the catalog file identified by
@@ -96,7 +107,7 @@ SHELL COMMANDS
            Quit the shell.
 
        public PUBLIC-ID
-           Execute a Formal Public Identifier look-up of the catalog entry for
+           Execute a Formal Public Identifier lookup of the catalog entry for
            PUBLIC-ID. The corresponding entry will be output to the command
            line.
 
@@ -104,7 +115,7 @@ SHELL COMMANDS
            Stop printing debugging statements.
 
        system SYSTEM-ID
-           Execute a Formal Public Identifier look-up of the catalog entry for
+           Execute a Formal Public Identifier lookup of the catalog entry for
            SYSTEM-ID. The corresponding entry will be output to the command
            line.
 
@@ -112,9 +123,10 @@ ENVIRONMENT
        XML_CATALOG_FILES
            XML catalog behavior can be changed by redirecting queries to the
            user's own set of catalogs. This can be done by setting the
-           XML_CATALOG_FILES environment variable to a list of catalogs. An
-           empty one should deactivate loading the default /etc/xml/catalog
-           catalog.
+           XML_CATALOG_FILES environment variable to a space-separated list of
+           catalogs. Use percent-encoding to escape spaces or other characters.
+           An empty variable should deactivate loading the default
+           /etc/xml/catalog catalog.
 
 DIAGNOSTICS
        xmlcatalog return codes provide information that can be used when calling
@@ -140,10 +152,10 @@ SEE ALSO
 
        More information can be found at
 
-       •   libxml(3) web page http://www.xmlsoft.org/
+       •   libxml(3) web page https://gitlab.gnome.org/GNOME/libxml2
 
        •   libxml(3) catalog support web page at
-           http://www.xmlsoft.org/catalog.html
+           https://gitlab.gnome.org/GNOME/libxml2/-/wikis/Catalog-support
 
        •   James Clark's SGML catalog page http://www.jclark.com/sp/catalog.htm
 

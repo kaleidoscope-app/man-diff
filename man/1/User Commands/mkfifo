@@ -7,36 +7,31 @@ SYNOPSIS
      mkfifo [-m mode] fifo_name ...
 
 DESCRIPTION
-     mkfifo creates the fifos requested, in the order specified.  By default,
-     the resulting fifos have mode 0666 (rw-rw-rw-), limited by the current
-     umask(2).
+     The mkfifo utility creates the fifos requested, in the order specified.
 
      The options are as follows:
 
-     -m      Set the file permission bits of newly-created fifos to mode,
-             without respect to the current umask.
+     -m      Set the file permission bits of the created fifos to the specified
+             mode, ignoring the umask(2) of the calling process.  The mode
+             argument takes any format that can be specified to the chmod(1)
+             command.  If a symbolic mode is specified, the op symbols ‘+’
+             (plus) and ‘-’ (hyphen) are interpreted relative to an assumed
+             initial mode of “a=rw” (read and write permissions for all).
 
-             The mode is specified as in chmod(1).  In symbolic mode strings,
-             the “+” and “-” operators are interpreted relative to an assumed
-             initial mode of “a=rw”
+     If the -m option is not specified, fifos are created with mode 0666
+     modified by the umask(2) of the calling process.  The mkfifo utility
+     requires write permission in the parent directory.
 
-     mkfifo requires write permission in the parent directory.
-
-     mkfifo exits with 0 if successful, and with >0 if an error occurred.
-
-LEGACY DESCRIPTION
-     In legacy mode, the fifo's file permission bits are always limited by the
-     current umask.
-
-     For more information about legacy mode, see compat(5).
+EXIT STATUS
+     The mkfifo utility exits 0 on success, and >0 if an error occurs.
 
 SEE ALSO
-     mkdir(1), rm(1), umask(1), mkfifo(2), umask(2), compat(5), mknod(8)
+     mkdir(1), rm(1), umask(1), mkfifo(2), mknod(2), umask(2), compat(5),
+     mknod(8)
 
 STANDARDS
-     The mkfifo utility is expected to be IEEE Std 1003.2-1992 (“POSIX.2”)
-     compliant.
+     The mkfifo utility is expected to be IEEE Std 1003.2 (“POSIX.2”) compliant.
 
 HISTORY
-     mkfifo command appeared in 4.4BSD.
+     The mkfifo command appeared in 4.4BSD.
 

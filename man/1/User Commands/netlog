@@ -4,22 +4,27 @@ NAME
      netlog – Log summary of every UDP and TCP socket when the socket is closed.
 
 SYNOPSIS
-     netlog [-v] [-i interval] [-I iterations] [-t type] [-p process-name|pid]
-            [-c] [-z]
+     netlog [-v] [-h] [-i interval] [-I iterations] [-t type] [-m mode]
+            [-p process-name|pid] [-c] [-N] [-Z]
 
 DESCRIPTION
-     The netlog program logs a summary for each TCP and UDP socket when the
-     socket is closed. A header is printed once. The row items are separated by
-     spaces.  Address to hostname lookups are not performed. Sockets that do not
-     send or receive any data are not listed unless the -z option is specified.
+     The netlog program logs a summary for each TCP, UDP and QUIC flow when the
+     flow is closed. A header is printed once. The row items are separated by
+     spaces.
+     Address to hostname lookups are not performed. The -Z option allows flows
+     that do not send or receive any data to not be listed.
+     An experimental nettop style display may be requested via use of the -N
+     option as the first option on the command line.
 
 OPTIONS
      A list of flags and their descriptions:
 
      -v       Verbose output
 
+     -h       Print command line usage information and exit.
+
      -i interval
-              Report socket statistics periodically
+              Report socket statistics periodically.
 
      -I iterations
               Used in combination with -i, will make netlog exit after the
@@ -29,24 +34,42 @@ OPTIONS
               monitored.  Multiple interface types may be specified.  The
               following types are supported:
 
-              wifi     WiFi interfaces
+              wifi     WiFi interfaces.
 
-              wired    Wired interfaces
+              wired    Wired interfaces.
 
               loopback
-                       Loopback interfaces
+                       Loopback interfaces.
 
-              awdl     Apple Wireless Direct Link interfaces
+              awdl     Apple Wireless Direct Link interfaces.
 
               expensive
-                       Interfaces marked as "expensive", for example via hotspot
+                       Interfaces marked as "expensive", for example via
+                       hotspot.
 
               undefined
-                       Cases where the underlying socket is not associated with
-                       an interface
+                       Cases where the underlying socket or flow is not
+                       associated with an interface.
 
               external
                        The combination of all defined non-loopback interfaces.
+
+     -m mode  Specify the mode.  By default, all TCP, UDP and QUIC flows will be
+              monitored.
+
+              tcp      Only TCP flows will be monitored.
+
+              udp      Only UDP flows will be monitored.
+
+              quic     Only QUIC flows will be monitored.
+
+              conn     Instead of flows, NECP connections will be monitored.
+
+              subflows
+                       Only UDP sub-flows will be monitored.
+
+              all      Instead of the default of all full flows, all flows plus
+                       sub-flows plus NECP connections will be monitored.
 
      -p process-name|pid
               Select a process for display.  A numeric argument identifies a
@@ -59,5 +82,10 @@ OPTIONS
 
      -c       Print details in comma-separated values (CSV) form.
 
-     -z       Print details even if there was no data transfer on the socket
+     -N       Use the experimental curses output, in the general style of the
+              nettop program.  This must be the first option.  Subsequent
+              options are per nettop precedent rather than the ones defined
+              here.  Use -N -h for online help.
+
+     -Z       Avoid printing details if there was no data transfer on the flow.
 

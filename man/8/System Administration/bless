@@ -6,11 +6,11 @@ NAME
 SYNOPSIS
      bless --help
 
-     bless --folder directory [--file file] [--bootinfo [file]]
-           [--bootefi [file]] [--label name | --labelfile file] [--setBoot]
-           [--openfolder directory] [--nextonly] [--shortform] [--legacy]
-           [--legacydrivehint device] [--options string] [--personalize]
-           [--create-snapshot] [--last-sealed-snapshot] [--quiet | --verbose]
+     bless --folder directory [--file file] [--bootefi [file]]
+           [--label name | --labelfile file] [--setBoot] [--nextonly]
+           [--shortform] [--legacy] [--legacydrivehint device]
+           [--options string] [--personalize] [--create-snapshot]
+           [--last-sealed-snapshot] [--quiet | --verbose]
 
      bless --mount directory [--file file] [--setBoot] [--nextonly]
            [--shortform] [--legacy] [--legacydrivehint device]
@@ -69,6 +69,8 @@ DESCRIPTION
      Unbless Mode complements Folder Mode, and clears the persistent blessed
      folder and file information on HFS+ volumes.
 
+     NOTE: bless must be run as the root user.
+
      Additionally, --help can be used to display the command-line usage summary.
 
 OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES:
@@ -81,7 +83,7 @@ OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES:
                               boot file, containing a booter for EFI-based
                               systems. If this option is not provided, a default
                               boot file is used based on the blessed directory.
-     --bootinfo [file]        Create a BootX file in the Mac OS X/Darwin system
+                              Create a BootX file in the Mac OS X/Darwin system
                               folder using file as a source. If file is not
                               provided, a default is used (see FILES), using a
                               path relative to the mountpoint you are blessing.
@@ -99,8 +101,6 @@ OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES:
                               picker
      --labelfile file         Use a pre-rendered label used for the firmware-
                               based OS picker
-     --openfolder directory   Specify a folder to be opened in the Finder when
-                              the volume is mounted by the system.
      --setBoot                Set the system to boot off the specified
                               partition. This is implemented in a platform-
                               specific manner. On Open Firmware-based systems,
@@ -347,18 +347,9 @@ OPTIONS FOR APPLE SILICON DEVICES:
      --version                Print bless version and exit immediately
 
 FILES
-     /usr/standalone/ppc/bootx.bootinfo  Secondary loader with XML headers, used
-                                         with the --bootinfo flag. Used for
-                                         booting New World PPC-based
-                                         Macintoshes. If the argument to
-                                         --bootinfo is ommitted, this file will
-                                         be used as the default input.
-     /usr/standalone/i386/boot.efi       Booter for EFI-based systems, used with
-                                         the --bootefi flag. If the argument to
-                                         --bootefi is ommitted, this file will
-                                         be used as the default input.
-     /System/Library/CoreServices        Typical blessed folder for Mac OS X and
-                                         Darwin
+     Booter for EFI-based systems, used with the --bootefi flag. If the argument
+     to --bootefi is ommitted, this file will be used as the default input.
+     Typical blessed folder for Mac OS X and Darwin
 
 EXAMPLES
    FOLDER MODE
@@ -366,7 +357,7 @@ EXAMPLES
      boot.efi files as needed:
 
            bless --folder "/Volumes/Mac OS X/System/Library/CoreServices"
-           --bootinfo --bootefi
+           --bootefi
 
    MOUNT MODE
      To set a volume containing either Mac OS 9 and Mac OS X to be the active

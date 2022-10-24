@@ -22,6 +22,37 @@ DESCRIPTION
      Some shells may provide a builtin which command which is similar or
      identical to this utility.  Consult the builtin(1) manual page.
 
+EXAMPLES
+     Locate the ls(1) and cp(1) commands:
+
+           $ /usr/bin/which ls cp
+           /bin/ls
+           /bin/cp
+
+     Same as above with a specific PATH and showing all occurrences:
+
+           $ PATH=/bin:/rescue /usr/bin/which -a ls cp
+           /bin/ls
+           /rescue/ls
+           /bin/cp
+           /rescue/cp
+
+     which will show duplicates if the same executable is found more than once:
+
+           $ PATH=/bin:/bin /usr/bin/which -a ls
+           /bin/ls
+           /bin/ls
+
+     Do not show output.  Just exit with an appropriate return code:
+
+           $ /usr/bin/which -s ls cp
+           $ echo $?
+           0
+
+           $ /usr/bin/which -s fakecommand
+           $ echo $?
+           1
+
 SEE ALSO
      builtin(1), csh(1), find(1), locate(1), whereis(1)
 

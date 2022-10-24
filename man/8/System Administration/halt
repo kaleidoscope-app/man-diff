@@ -4,22 +4,28 @@ NAME
      halt, reboot – stopping and restarting the system
 
 SYNOPSIS
-     halt [-lnqu]
-     reboot [-lnq]
+     halt [-lNnqu]
+     reboot [-lNnqu]
 
 DESCRIPTION
      The halt and reboot utilities flush the file system cache to disk, send all
      running processes a SIGTERM (and subsequently a SIGKILL) and, respectively,
      halt or restart the system.  The action is logged, including entering a
-     shutdown record into the wtmp(5) file.
+     shutdown record into the user accounting database.
 
      When the system is halted with the halt command, the system is powered off.
 
      The options are as follows:
 
-     -l      The halt or reboot is not recorded in the system log.  This option
-             is intended for applications such as shutdown(8), that call reboot
-             or halt and log this themselves.
+     -l      The halt or reboot is not logged to the system log.  This option is
+             intended for applications such as shutdown(8), that call halt or
+             reboot and log this themselves.
+
+     -N      The file system cache is not flushed during the initial process
+             clean-up, however the kernel level reboot(2) is still processed
+             with a sync.  This option can be useful for performing a
+             “best-effort” reboot when devices might be unavailable.  This can
+             happen when devices have been disconnected.
 
      -n      The file system cache is not flushed.  This option should probably
              not be used.
@@ -46,8 +52,8 @@ SIGTERM TO SIGKILL INTERVAL
      OS vendor, should they encounter an issue with this functionality.
 
 SEE ALSO
-     wtmp(5), shutdown(8), sync(8)
+     getutxent(3), wtmp(5), shutdown(8), sync(8)
 
 HISTORY
-     A reboot utility appeared in Version 6 AT&T UNIX.
+     A reboot utility appeared in 4.0BSD.
 

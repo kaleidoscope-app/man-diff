@@ -106,16 +106,28 @@ XML PROPERTY LIST KEYS
      LimitLoadToHardware <dictionary of arrays>
      This configuration file only applies to the hardware listed with this key.
      Each key in the dictionary defines a subdomain of the "hw" sysctl(3)
-     domain. Each value of the value defines valid values for the job to load.
-     So a key of "model" with an array specifying only "MacBookPro4,2" would
-     only load on a machine whose "hw.model" value was "MacBookPro4,2".
+     domain. Each value of the key defines valid values for the job to load. So
+     a key of "model" with an array specifying only "MacBookPro4,2" would only
+     load on a machine whose "hw.model" value was "MacBookPro4,2".
+
+     LimitLoadFromHardware <dictionary of arrays>
+     This configuration file only applies to the hardware NOT listed with this
+     key.  Each key in the dictionary defines a subdomain of the "hw" sysctl(3)
+     domain. Each value of the key defines values where the job will not load.
+     So a key of "model" with an array specifying only "MacBookPro4,2" would not
+     load the job on a machine whose "hw.model" value was "MacBookPro4,2".
 
      Program <string>
      This key maps to the first argument of execv(3) and indicates the absolute
      path to the executable for the job. If this key is missing, then the first
      element of the array of strings provided to the ProgramArguments will be
      used instead. This key is required in the absence of the ProgramArguments
-     key.
+     and BundleProgram keys.
+
+     BundleProgram <string>
+     This key maps to the first argument of execv(3) and is an app-bundle
+     relative path to the executable for the job. This key is only supported for
+     plists that are installed using SMAppService.
 
      ProgramArguments <array of strings>
      This key maps to the second argument of execvp(3) and specifies the
@@ -177,7 +189,8 @@ XML PROPERTY LIST KEYS
      to refine the logic and stall if necessary. If launchd finds no reason to
      restart the job, it falls back on demand based invocation.  Jobs that exit
      quickly and frequently when configured to be kept alive will be throttled
-     to conserve system resources.
+     to conserve system resources. The use of this key implicitly implies
+     RunAtLoad, causing launchd to speculatively launch the job.
 
            SuccessfulExit <boolean>
            If true, the job will be restarted as long as the program exits and
@@ -650,6 +663,11 @@ XML PROPERTY LIST KEYS
      true, timers created by the job will opt into less efficient but more
      precise behavior and not be coalesced with other timers. This key may have
      no effect if the job's ProcessType is not set to Interactive.
+
+     AssociatedBundleIdentifiers <string or array of string>
+     This optional key indicates which bundles are associated with this job in
+     the System Settings Login Items UI. If an app installs a legacy plist the
+     plist should include this key with a value of the app's bundle identifier.
 
 CAVEATS
      Daemons and agents managed by launchd are subject to macOS user privacy

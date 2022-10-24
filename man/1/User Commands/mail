@@ -4,10 +4,10 @@ NAME
      mail, mailx – send and receive mail
 
 SYNOPSIS
-     mail [-EiInv] [-s subject] [-c cc-addr] [-b bcc-addr] [-F] to-addr ...
-     mail [-EHiInNv] [-F] -f [name]
-     mail [-EHiInNv] [-F] [-u user]
-     mail -e [-f name]
+     mail [-dEiInv] [-s subject] [-c cc-addr] [-b bcc-addr] [-F] to-addr ...
+     mail [-dEHiInNv] [-F] -f [name]
+     mail [-dEHiInNv] [-F] [-u user]
+     mail [-d] -e [-f name]
      mail [-H]
 
 INTRODUCTION
@@ -19,11 +19,13 @@ INTRODUCTION
      -v      Verbose mode.  The details of delivery are displayed on the user's
              terminal.
 
+     -d      Debugging mode.  See the debug mail option for details.
+
      -e      Test for the presence of mail in the (by default, system) mailbox.
              An exit status of 0 is returned if it has mail; otherwise, an exit
              status of 1 is returned.
 
-     -H      Write a header summary only.
+     -H      Write a header summary only, then exit.
 
      -E      Do not send messages with an empty body.  This is useful for piping
              errors from cron(8) scripts.
@@ -62,7 +64,8 @@ INTRODUCTION
              “To:” line in the mail header.  Overrides the record variable, if
              set.
 
-     -u      Is equivalent to:
+     -u user
+             Is equivalent to:
 
                    mail -f /var/mail/user
 
@@ -160,8 +163,6 @@ INTRODUCTION
      performed and the recipient is treated as a local or network mail address.
 
    Network Mail (ARPA, UUCP, Berknet)
-     See mailaddr(7) for a description of network addresses.
-
      The mail utility has a number of options which can be set in the .mailrc
      file to alter its behavior; thus “set askcc” enables the askcc feature.
      (These options are summarized below.)
@@ -528,7 +529,9 @@ SUMMARY
 
      debug   Setting the binary option debug is the same as specifying -d on the
              command line and causes mail to output all sorts of information
-             useful for debugging mail.  Default is nodebug.
+             useful for debugging mail.  In case mail is invoked in this mode to
+             send mail, all preparations will be performed and reported about,
+             but the mail will not be actually sent.  Default is nodebug.
 
      dot     The binary option dot causes mail to interpret a period alone on a
              line as the terminator of a message you are sending.  Default is
@@ -631,7 +634,7 @@ ENVIRONMENT
                   The default is mbox in the user's home directory.
 
      PAGER        Pathname of the program to use in the more command or when crt
-                  variable is set.  The default paginator more(1) is used if
+                  variable is set.  The default paginator less(1) is used if
                   this option is not defined.
 
      REPLYTO      If set, will be used to initialize the Reply-To field for
@@ -640,6 +643,8 @@ ENVIRONMENT
      SHELL        Pathname of the shell to use in the ! command and the ~!
                   escape.  A default shell is used if this option is not
                   defined.
+
+     TMPDIR       Pathname of the directory used for creating temporary files.
 
      VISUAL       Pathname of the text editor to use in the visual command and
                   ~v escape.
@@ -662,9 +667,7 @@ FILES
                                      exists.
 
 SEE ALSO
-     fmt(1), newaliases(1), vacation(1), aliases(5), mailaddr(7), sendmail(8)
-
-     The Mail Reference Manual.
+     fmt(1), newaliases(1), vacation(1), aliases(5), sendmail(8)
 
 HISTORY
      A mail command appeared in Version 1 AT&T UNIX.  This man page is derived

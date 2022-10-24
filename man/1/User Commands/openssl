@@ -45,10 +45,10 @@ DESCRIPTION
      list-...-commands, or no-command itself.
 
 ASN1PARSE
-     openssl asn1parse [-i] [-dlimit number] [-dump] [-genconf file]
-                       [-genstr str] [-in file] [-inform der | pem | txt]
-                       [-length number] [-noout] [-offset number] [-oid file]
-                       [-out file] [-strparse offset]
+     openssl asn1parse  [-i] [-dlimit number] [-dump] [-genconf file]
+                        [-genstr str] [-in file] [-inform der | pem | txt]
+                        [-length number] [-noout] [-offset number] [-oid file]
+                        [-out file] [-strparse offset]
 
      The asn1parse command is a diagnostic utility that can parse ASN.1
      structures.  It can also be used to extract data from ASN.1 formatted data.
@@ -106,17 +106,18 @@ ASN1PARSE
              nested structure.
 
 CA
-     openssl ca [-batch] [-cert file] [-config file] [-create_serial]
-                [-crl_CA_compromise time] [-crl_compromise time]
-                [-crl_hold instruction] [-crl_reason reason] [-crldays days]
-                [-crlexts section] [-crlhours hours] [-days arg] [-enddate date]
-                [-extensions section] [-extfile section] [-gencrl] [-in file]
-                [-infiles] [-key password] [-keyfile arg] [-keyform pem | der]
-                [-md arg] [-msie_hack] [-multivalue-rdn] [-name section]
-                [-noemailDN] [-notext] [-out file] [-outdir dir] [-passin arg]
-                [-policy arg] [-preserveDN] [-revoke file] [-selfsign]
-                [-spkac file] [-ss_cert file] [-startdate date] [-status serial]
-                [-subj arg] [-updatedb] [-utf8] [-verbose]
+     openssl ca  [-batch] [-cert file] [-config file] [-create_serial]
+                 [-crl_CA_compromise time] [-crl_compromise time]
+                 [-crl_hold instruction] [-crl_reason reason] [-crldays days]
+                 [-crlexts section] [-crlhours hours] [-crlsec seconds]
+                 [-days arg] [-enddate date] [-extensions section]
+                 [-extfile file] [-gencrl] [-in file] [-infiles] [-key password]
+                 [-keyfile file] [-keyform pem | der] [-md alg] [-msie_hack]
+                 [-multivalue-rdn] [-name section] [-noemailDN] [-notext]
+                 [-out file] [-outdir directory] [-passin arg] [-policy arg]
+                 [-preserveDN] [-revoke file] [-selfsign] [-sigopt nm:v]
+                 [-spkac file] [-ss_cert file] [-startdate date]
+                 [-status serial] [-subj arg] [-updatedb] [-utf8] [-verbose]
 
      The ca command is a minimal certificate authority (CA) application.  It can
      be used to sign certificate requests in a variety of forms and generate
@@ -256,6 +257,11 @@ CA
            counter as all other certificates signed with the self-signed
            certificate.
 
+     -sigopt nm:v
+           Pass options to the signature algorithm during sign or certify
+           operations.  The names and values of these options are algorithm-
+           specific.
+
      -spkac file
            A file containing a single Netscape signed public key and challenge,
            and additional field values to be signed by the CA.  This will
@@ -315,7 +321,7 @@ CA
            useful because it is only used in delta CRLs which are not currently
            implemented.
 
-     -crldays num
+     -crldays days
            The number of days before the next CRL is due.  This is the days from
            now to place in the CRL nextUpdate field.
 
@@ -328,8 +334,11 @@ CA
            some software can't handle V2 CRLs.  See the x509v3.cnf(5) manual
            page for details of the extension section format.
 
-     -crlhours num
+     -crlhours hours
            The number of hours before the next CRL is due.
+
+     -crlsec seconds
+           The number of seconds before the next CRL is due.
 
      -gencrl
            Generate a CRL based on information in the index file.
@@ -480,6 +489,36 @@ CA
      x509_extensions
            The same as -extensions.
 
+CERTHASH
+     openssl certhash  [-nv] dir ...
+
+     The certhash command calculates a hash value of ".pem" file in the
+     specified directory list and creates symbolic links for each file, where
+     the name of the link is the hash value.  See the
+     SSL_CTX_load_verify_locations(3) manual page for how hash links are used.
+
+     The links created are of the form "HHHHHHHH.D", where each ‘H’ is a
+     hexadecimal character and ‘D’ is a single decimal digit.  The hashes for
+     CRLs look similar, except the letter ‘r’ appears after the period, like
+     this: "HHHHHHHH.rD".  When processing a directory, certhash will first
+     remove all links that have a name in that syntax and invalid reference.
+
+     Multiple objects may have the same hash; they will be indicated by
+     incrementing the ‘D’ value.  Duplicates are found by comparing the full
+     SHA256 fingerprint.  A warning will be displayed if a duplicate is found.
+
+     A warning will also be displayed if there are files that cannot be parsed
+     as either a certificate or a CRL.
+
+     The options are as follows:
+
+     -n      Perform a dry-run, and do not make any changes.
+
+     -v      Print extra details about the processing.
+
+     dir ...
+             Specify the directories to process.
+
 CIPHERS
      openssl ciphers [-hVv] [control]
 
@@ -497,10 +536,397 @@ CIPHERS
 
      -v      Like -V, but without cipher suite codes.
 
+CMS
+     openssl cms  [-aes128 | -aes192 | -aes256 | -camellia128 |
+                  -camellia192 | -camellia256 | -des | -des3 |
+                  -rc2-40 | -rc2-64 | -rc2-128] [-CAfile file]
+                  [-CApath directory] [-binary] [-certfile file]
+                  [-certsout file] [-cmsout] [-compress] [-content file]
+                  [-crlfeol] [-data_create] [-data_out] [-debug_decrypt]
+                  [-decrypt] [-digest_create] [-digest_verify]
+                  [-econtent_type type] [-encrypt] [-EncryptedData_decrypt]
+                  [-EncryptedData_encrypt] [-from addr] [-in file]
+                  [-inform der | pem | smime] [-inkey file] [-keyform der | pem]
+                  [-keyid] [-keyopt nm:v] [-md digest] [-no_attr_verify]
+                  [-no_content_verify] [-no_signer_cert_verify] [-noattr]
+                  [-nocerts] [-nodetach] [-nointern] [-nooldmime] [-noout]
+                  [-nosigs] [-nosmimecap] [-noverify] [-out file]
+                  [-outform der | pem | smime] [-passin src] [-print]
+                  [-pwri_password arg] [-rctform der | pem | smime]
+                  [-receipt_request_all | -receipt_request_first]
+                  [-receipt_request_from addr] [-receipt_request_print]
+                  [-receipt_request_to addr] [-recip file] [-resign]
+                  [-secretkey key] [-secretkeyid id] [-sign] [-sign_receipt]
+                  [-signer file] [-stream | -indef | -noindef] [-subject s]
+                  [-text] [-to addr] [-uncompress] [-verify]
+                  [-verify_receipt file] [-verify_retcode] [cert.pem ...]
+
+     The cms command handles S/MIME v3.1 mail.  It can encrypt, decrypt, sign
+     and verify, compress and uncompress S/MIME messages.
+
+     The MIME message must be sent without any blank lines between the headers
+     and the output.  Some mail programs will automatically add a blank line.
+     Piping the mail directly to sendmail is one way to achieve the correct
+     format.
+
+     The supplied message to be signed or encrypted must include the necessary
+     MIME headers or many S/MIME clients won't display it properly (if at all).
+     You can use the -text option to automatically add plain text headers.
+
+     A "signed and encrypted" message is one where a signed message is then
+     encrypted.  This can be produced by encrypting an already signed message.
+
+     There are various operation options that set the type of operation to be
+     performed.  The meaning of the other options varies according to the
+     operation type.
+
+     -encrypt
+           Encrypt mail for the given recipient certificates.  Input file is the
+           message to be encrypted.  The output file is the encrypted mail in
+           MIME format.  The actual CMS type is EnvelopedData.  Note that no
+           revocation check is done for the recipient cert, so if that key has
+           been compromised, others may be able to decrypt the text.
+
+     -decrypt
+           Decrypt mail using the supplied certificate and private key.  Expects
+           an encrypted mail message in MIME format for the input file.  The
+           decrypted mail is written to the output file.
+
+     -sign
+           Sign mail using the supplied certificate and private key.  Input file
+           is the message to be signed.  The signed message in MIME format is
+           written to the output file.
+
+     -verify
+           Verify signed mail.  Expects a signed mail message on input and
+           outputs the signed data.  Both clear text and opaque signing are
+           supported.
+
+     -cmsout
+           Take an input message and write out a PEM encoded CMS structure.
+
+     -resign
+           Resign a message.  Take an existing message and one or more new
+           signers.  This operation uses an existing message digest when adding
+           a new signer.  This means that attributes must be present in at least
+           one existing signer using the same message digest or this operation
+           will fail.
+
+     -data_create
+           Create a CMS Data type.
+
+     -data_out
+           Output a content from the input CMS Data type.
+
+     -digest_create
+           Create a CMS DigestedData type.
+
+     -digest_verify
+           Verify a CMS DigestedData type and output the content.
+
+     -compress
+           Create a CMS CompressedData type.  Must be compiled with zlib support
+           for this option to work.
+
+     -uncompress
+           Uncompress a CMS CompressedData type and output the content.  Must be
+           compiled with zlib support for this option to work.
+
+     -EncryptedData_encrypt
+           Encrypt a content using supplied symmetric key and algorithm using a
+           CMS EncryptedData type.
+
+     -EncryptedData_decrypt
+           Decrypt a CMS EncryptedData type using supplied symmetric key.
+
+     -sign_receipt
+           Generate and output a signed receipt for the supplied message.  The
+           input message must contain a signed receipt request.  Functionality
+           is otherwise similar to the -sign operation.
+
+     -verify_receipt file
+           Verify a signed receipt in file.  The input message must contain the
+           original receipt request.  Functionality is otherwise similar to the
+           -verify operation.
+
+     The remaining options are as follows:
+
+     -aes128 | -aes192 | -aes256 | -camellia128 | -camellia192 | -camellia256 |
+           -des | -des3 | -rc2-40 | -rc2-64 | -rc2-128
+           The encryption algorithm to use.  128-, 192-, or 256-bit AES, 128-,
+           192-, or 256-bit CAMELLIA, DES (56 bits), triple DES (168 bits), or
+           40-, 64-, or 128-bit RC2, respectively; if not specified, triple DES
+           is used.  Only used with -encrypt and -EncryptedData_encrypt
+           commands.
+
+     -binary
+           Normally the input message is converted to "canonical" format which
+           is effectively using CR/LF as end of line, as required by the S/MIME
+           specification.  When this option is present, no translation occurs.
+           This is useful when handling binary data which may not be in MIME
+           format.
+
+     -CAfile file
+           A file containing trusted CA certificates, used with -verify and
+           -verify_receipt.
+
+     -CApath directory
+           A directory containing trusted CA certificates, used with -verify and
+           -verify_receipt.  This directory must be a standard certificate
+           directory: that is a hash of each subject name (using x509 -hash)
+           should be linked to each certificate.
+
+     cert.pem ...
+           One or more certificates of message recipients: used when encrypting
+           a message.
+
+     -certfile file
+           Allows additional certificates to be specified.  When signing these
+           will be included with the message.  When verifying these will be
+           searched for the signer's certificates.  The certificates should be
+           in PEM format.
+
+     -certsout file
+           A file that any certificates contained in the message are written to.
+
+     -check_ss_sig, -crl_check, -crl_check_all, -extended_crl, -ignore_critical,
+           -issuer_checks, -policy, -policy_check, -purpose, -x509_strict
+           Set various certificate chain validation options.  See the verify
+           command for details.
+
+     -content file
+           A file containing the detached content.  This is only useful with the
+           -verify command.  This is only usable if the CMS structure is using
+           the detached signature form where the content is not included.  This
+           option will override any content if the input format is S/MIME and it
+           uses the multipart/signed MIME content type.
+
+     -crlfeol
+           Output a S/MIME message with CR/LF end of line.
+
+     -debug_decrypt
+           Set the CMS_DEBUG_DECRYPT flag when decrypting.  This option should
+           be used with caution, since this can be used to disable the MMA
+           attack protection and return an error if no recipient can be found.
+           See the CMS_decrypt(3) manual page for details of the flag.
+
+     -from addr, -subject s, -to addr
+           The relevant mail headers.  These are included outside the signed
+           portion of a message so they may be included manually.  If signing
+           then many S/MIME mail clients check the signer's certificate's email
+           address matches that specified in the From: address.
+
+     -econtent_type type
+           Set the encapsulated content type, used with -sign.  If not supplied
+           the Data type is used.  The type argument can be any valid OID name
+           in either text or numerical format.
+
+     -in file
+           The input message to be encrypted or signed or the message to be
+           decrypted or verified.
+
+     -inform der | pem | smime
+           The input format for the CMS structure.  The default is smime, which
+           reads an S/MIME format message.  pem and der format change this to
+           expect PEM and DER format CMS structures instead.  This currently
+           only affects the input format of the CMS structure; if no CMS
+           structure is being input (for example with -encrypt or -sign) this
+           option has no effect.
+
+     -inkey file
+           The private key to use when signing or decrypting.  This must match
+           the corresponding certificate.  If this option is not specified then
+           the private key must be included in the certificate file specified
+           with the -recip or -signer file.  When signing this option can be
+           used multiple times to specify successive keys.
+
+     -keyform der | pem
+           Input private key format.  The default is pem.
+
+     -keyid
+           Use subject key identifier to identify certificates instead of issuer
+           name and serial number.  The supplied certificate must include a
+           subject key identifier extension.  Supported by -sign and -encrypt
+           operations.
+
+     -keyopt nm:v
+           Set customised parameters for the preceding key or certificate for
+           encryption and signing.  It can currently be used to set RSA-PSS for
+           signing, RSA-OAEP for encryption or to modify default parameters for
+           ECDH.  This option can be used multiple times.
+
+     -md digest
+           The digest algorithm to use when signing or resigning.  If not
+           present then the default digest algorithm for the signing key will be
+           used (usually SHA1).
+
+     -no_attr_verify
+           Do not verify the signer's attribute of a signature.
+
+     -no_content_verify
+           Do not verify the content of a signed message.
+
+     -no_signer_cert_verify
+           Do not verify the signer's certificate of a signed message.
+
+     -noattr
+           Do not include attributes.  Normally when a message is signed a set
+           of attributes are included which include the signing time and
+           supported symmetric algorithms.  With this option they are not
+           included.
+
+     -nocerts
+           Do not include the signer's certificate.  This will reduce the size
+           of the signed message but the verifier must have a copy of the
+           signer's certificate available locally (passed using the -certfile
+           option for example).
+
+     -nodetach
+           When signing a message use opaque signing.  This form is more
+           resistant to translation by mail relays but it cannot be read by mail
+           agents that do not support S/MIME.  Without this option cleartext
+           signing with the MIME type multipart/signed is used.
+
+     -nointern
+           Only the certificates specified in the -certfile option are used.
+           When verifying a message normally certificates (if any) included in
+           the message are searched for the signing certificate.  The supplied
+           certificates can still be used as untrusted CAs however.
+
+     -nooldmime
+           Output an old S/MIME content type like "application/x-pkcs7-".
+
+     -noout
+           Do not output the parsed CMS structure for the -cmsout operation.
+           This is useful when combined with the -print option or if the syntax
+           of the CMS structure is being checked.
+
+     -nosigs
+           Do not try to verify the signatures on the message.
+
+     -nosmimecap
+           Exclude the list of supported algorithms from signed attributes;
+           other options such as signing time and content type are still
+           included.
+
+     -noverify
+           Do not verify the signer's certificate of a signed message.
+
+     -out file
+           The message text that has been decrypted or verified or the output
+           MIME format message that has been signed or verified.
+
+     -outform der | pem | smime
+           This specifies the output format for the CMS structure.  The default
+           is smime, which writes an S/MIME format message.  pem and der format
+           change this to write PEM and DER format CMS structures instead.  This
+           currently only affects the output format of the CMS structure; if no
+           CMS structure is being output (for example with -verify or -decrypt)
+           this option has no effect.
+
+     -passin src
+           The private key password source.
+
+     -print
+           Print out all fields of the CMS structure for the -cmsout operation.
+           This is mainly useful for testing purposes.
+
+     -pwri_password arg
+           Specify PasswordRecipientInfo (PWRI) password to use.  Supported by
+           the -encrypt and -decrypt operations.
+
+     -rctform der | pem | smime
+           Specify the format for a signed receipt for use with the
+           -receipt_verify operation.  The default is smime.
+
+     -receipt_request_all | -receipt_request_first
+           Indicate requests should be provided by all recipient or first tier
+           recipients (those mailed directly and not from a mailing list), for
+           the -sign operation to include a signed receipt request.  Ignored if
+           -receipt_request_from is included.
+
+     -receipt_request_from addr
+           Add an explicit email address where receipts should be supplied.
+
+     -receipt_request_print
+           Print out the contents of any signed receipt requests for the -verify
+           operation.
+
+     -receipt_request_to addr
+           Add an explicit email address where signed receipts should be sent
+           to.  This option must be supplied if a signed receipt is requested.
+
+     -recip file
+           When decrypting a message this specifies the recipient's certificate.
+           The certificate must match one of the recipients of the message or an
+           error occurs.  When encrypting a message this option may be used
+           multiple times to specify each recipient.  This form must be used if
+           customised parameters are required (for example to specify RSA-OAEP).
+           Only certificates carrying RSA, Diffie-Hellman or EC keys are
+           supported by this option.
+
+     -secretkey key
+           Specify symmetric key to use.  The key must be supplied in hex format
+           and be consistent with the algorithm used.  Supported by the
+           -EncryptedData_encrypt, -EncryptedData_decrypt, -encrypt and -decrypt
+           operations.  When used with -encrypt or -decrypt the supplied key is
+           used to wrap or unwrap the content encryption key using an AES key in
+           the KEKRecipientInfo type.
+
+     -secretkeyid id
+           The key identifier for the supplied symmetric key for
+           KEKRecipientInfo type.  This option must be present if the -secretkey
+           option is used with -encrypt.  With -decrypt operations the id is
+           used to locate the relevant key; if it is not supplied then an
+           attempt is used to decrypt any KEKRecipientInfo structures.
+
+     -signer file
+           A signing certificate when signing or resigning a message; this
+           option can be used multiple times if more than one signer is
+           required.  If a message is being verified then the signers
+           certificates will be written to this file if the verification was
+           successful.
+
+     -stream | -indef | -noindef
+           The -stream and -indef options are equivalent and enable streaming
+           I/O for encoding operations.  This permits single pass processing of
+           data without the need to hold the entire contents in memory,
+           potentially supporting very large files.  Streaming is automatically
+           set for S/MIME signing with detached data if the output format is
+           smime; it is currently off by default for all other operations.
+           -noindef disable streaming I/O where it would produce an indefinite
+           length constructed encoding.  This option currently has no effect.
+
+     -text
+           Add plain text (text/plain) MIME headers to the supplied message if
+           encrypting or signing.  If decrypting or verifying it strips off text
+           headers: if the decrypted or verified message is not of MIME type
+           text/plain then an error occurs.
+
+     -verify_retcode
+           Set verification error code to exit code to indicate what
+           verification error has occurred.  Supported by -verify operation
+           only.  Exit code value minus 32 shows verification error code.  See
+           verify command for the list of verification error code.
+
+     The exit codes for cms are as follows:
+
+        0     The operation was completely successful.
+        1     An error occurred parsing the command options.
+        2     One of the input files could not be read.
+        3     An error occurred creating the CMS file or when reading the MIME
+              message.
+        4     An error occurred decrypting or verifying the message.
+        5     The message was verified correctly but an error occurred writing
+              out the signer's certificates.
+        6     An error occurred writing the output file.
+        32+   A verify error occurred while -verify_retcode is specified.
+
 CRL
-     openssl crl [-CAfile file] [-CApath dir] [-fingerprint] [-hash] [-in file]
-                 [-inform der | pem] [-issuer] [-lastupdate] [-nextupdate]
-                 [-noout] [-out file] [-outform der | pem] [-text]
+     openssl crl  [-CAfile file] [-CApath dir] [-crlnumber] [-fingerprint]
+                  [-hash] [-hash_old] [-in file] [-inform der | pem] [-issuer]
+                  [-lastupdate] [-nameopt option] [-nextupdate] [-noout]
+                  [-out file] [-outform der | pem] [-text] [-verify]
 
      The crl command processes CRL files in DER or PEM format.
 
@@ -516,11 +942,17 @@ CRL
              i.e. a hash of each subject name (using x509 -hash) should be
              linked to each certificate.
 
+     -crlnumber
+             Print the CRL number.
+
      -fingerprint
              Print the CRL fingerprint.
 
      -hash   Output a hash of the issuer name.  This can be used to look up CRLs
              in a directory by issuer name.
+
+     -hash_old
+             Output an old-style (MD5) hash of the issuer name.
 
      -in file
              The input file to read from, or standard input if not specified.
@@ -533,6 +965,9 @@ CRL
 
      -lastupdate
              Output the lastUpdate field.
+
+     -nameopt option
+             Specify certificate name options.
 
      -nextupdate
              Output the nextUpdate field.
@@ -547,9 +982,12 @@ CRL
 
      -text   Print the CRL in plain text.
 
+     -verify
+             Verify the signature on the CRL.
+
 CRL2PKCS7
-     openssl crl2pkcs7 [-certfile file] [-in file] [-inform der | pem] [-nocrl]
-                       [-out file] [-outform der | pem]
+     openssl crl2pkcs7  [-certfile file] [-in file] [-inform der | pem] [-nocrl]
+                        [-out file] [-outform der | pem]
 
      The crl2pkcs7 command takes an optional CRL and one or more certificates
      and converts them into a PKCS#7 degenerate "certificates only" structure.
@@ -579,10 +1017,10 @@ CRL2PKCS7
              The output format.
 
 DGST
-     openssl dgst [-cd] [-binary] [-digest] [-hex] [-hmac key] [-keyform pem]
-                  [-mac algorithm] [-macopt nm:v] [-out file] [-passin arg]
-                  [-prverify file] [-sign file] [-signature file] [-sigopt nm:v]
-                  [-verify file] [file ...]
+     openssl dgst  [-cdr] [-binary] [-digest] [-hex] [-hmac key] [-keyform pem]
+                   [-mac algorithm] [-macopt nm:v] [-out file] [-passin arg]
+                   [-prverify file] [-sign file] [-signature file]
+                   [-sigopt nm:v] [-verify file] [file ...]
 
      The digest functions output the message digest of a supplied file or files
      in hexadecimal form.  They can also be used for digital signing and
@@ -598,10 +1036,10 @@ DGST
      -d      Print BIO debugging information.
 
      -digest
-             Use the specified message digest.  The default is MD5.  The
+             Use the specified message digest.  The default is SHA256.  The
              available digests can be displayed using openssl
              list-message-digest-commands.  The following are equivalent:
-             openssl dgst -md5 and openssl md5.
+             openssl dgst -sha256 and openssl sha256.
 
      -hex    Digest is to be output as a hex dump.  This is the default case for
              a "normal" digest as opposed to a digital signature.
@@ -642,6 +1080,8 @@ DGST
              Verify the signature using the private key in file.  The output is
              either "Verification OK" or "Verification Failure".
 
+     -r      Print the digest in coreutils format.
+
      -sign file
              Digitally sign the digest using the private key in file.
 
@@ -662,9 +1102,9 @@ DGST
              input is used.
 
 DHPARAM
-     openssl dhparam [-2 | -5] [-C] [-check] [-dsaparam] [-in file]
-                     [-inform der | pem] [-noout] [-out file]
-                     [-outform der | pem] [-text] [numbits]
+     openssl dhparam  [-2 | -5] [-C] [-check] [-dsaparam] [-in file]
+                      [-inform der | pem] [-noout] [-out file]
+                      [-outform der | pem] [-text] [numbits]
 
      The dhparam command is used to manipulate DH parameter files.  Only the
      older PKCS#3 DH is supported, not the newer X9.42 DH.
@@ -713,10 +1153,11 @@ DHPARAM
              instead.
 
 DSA
-     openssl dsa [-aes128 | -aes192 | -aes256 | -des | -des3] [-in file]
-                 [-inform der | pem] [-modulus] [-noout] [-out file]
-                 [-outform der | pem] [-passin arg] [-passout arg] [-pubin]
-                 [-pubout] [-text]
+     openssl dsa  [-aes128 | -aes192 | -aes256 | -des | -des3] [-in file]
+                  [-inform der | pem | pvk] [-modulus] [-noout] [-out file]
+                  [-outform der | pem | pvk] [-passin arg] [-passout arg]
+                  [-pubin] [-pubout] [-pvk-none | -pvk-strong | -pvk-weak]
+                  [-text]
 
      The dsa command processes DSA keys.  They can be converted between various
      forms and their components printed out.
@@ -741,7 +1182,7 @@ DSA
              The input file to read from, or standard input if not specified.
              If the key is encrypted, a pass phrase will be prompted for.
 
-     -inform der | pem
+     -inform der | pem | pvk
              The input format.
 
      -modulus
@@ -754,7 +1195,7 @@ DSA
              If any encryption options are set then a pass phrase will be
              prompted for.
 
-     -outform der | pem
+     -outform der | pem | pvk
              The output format.
 
      -passin arg
@@ -769,11 +1210,14 @@ DSA
              Output a public key, not a private key.  Automatically set if the
              input is a public key.
 
+     -pvk-none | -pvk-strong | -pvk-weak
+             Enable or disable PVK encoding.  The default is -pvk-strong.
+
      -text   Print the public/private key in plain text.
 
 DSAPARAM
-     openssl dsaparam [-C] [-genkey] [-in file] [-inform der | pem] [-noout]
-                      [-out file] [-outform der | pem] [-text] [numbits]
+     openssl dsaparam  [-C] [-genkey] [-in file] [-inform der | pem] [-noout]
+                       [-out file] [-outform der | pem] [-text] [numbits]
 
      The dsaparam command is used to manipulate or generate DSA parameter files.
 
@@ -808,10 +1252,10 @@ DSAPARAM
              included, the input file is ignored.
 
 EC
-     openssl ec [-conv_form arg] [-des] [-des3] [-in file] [-inform der | pem]
-                [-noout] [-out file] [-outform der | pem] [-param_enc arg]
-                [-param_out] [-passin arg] [-passout arg] [-pubin] [-pubout]
-                [-text]
+     openssl ec  [-conv_form arg] [-des] [-des3] [-in file] [-inform der | pem]
+                 [-noout] [-out file] [-outform der | pem] [-param_enc arg]
+                 [-param_out] [-passin arg] [-passout arg] [-pubin] [-pubout]
+                 [-text]
 
      The ec command processes EC keys.  They can be converted between various
      forms and their components printed out.  openssl uses the private key
@@ -823,8 +1267,8 @@ EC
 
      -conv_form arg
              Specify how the points on the elliptic curve are converted into
-             octet strings.  Possible values are: compressed (the default),
-             uncompressed, and hybrid.  For more information regarding the point
+             octet strings.  Possible values are: compressed, uncompressed (the
+             default), and hybrid.  For more information regarding the point
              conversion forms see the X9.62 standard.  Note: Due to patent
              issues the compressed option is disabled by default for binary
              curves and can be enabled by defining the preprocessor macro
@@ -833,16 +1277,16 @@ EC
      -des | -des3
              Encrypt the private key with DES, triple DES, or any other cipher
              supported by openssl.  A pass phrase is prompted for.  If none of
-             these options is specified the key is written in plain text.  This
-             means that using the ec utility to read in an encrypted key with no
-             encryption option can be used to remove the pass phrase from a key,
-             or by setting the encryption options it can be used to add or
-             change the pass phrase.  These options can only be used with PEM
-             format output files.
+             these options are specified, the key is written in plain text.
+             This means that using the ec utility to read in an encrypted key
+             with no encryption option can be used to remove the pass phrase
+             from a key, or by setting the encryption options it can be used to
+             add or change the pass phrase.  These options can only be used with
+             PEM format output files.
 
      -in file
              The input file to read a key from, or standard input if not
-             specified.  If the key is encrypted a pass phrase will be prompted
+             specified.  If the key is encrypted, a pass phrase will be prompted
              for.
 
      -inform der | pem
@@ -866,6 +1310,9 @@ EC
              default value is named_curve.  Note: the implicitlyCA alternative,
              as specified in RFC 3279, is currently not implemented.
 
+     -param_out
+             Print the elliptic curve parameters.
+
      -passin arg
              The key password source.
 
@@ -881,10 +1328,10 @@ EC
      -text   Print the public/private key in plain text.
 
 ECPARAM
-     openssl ecparam [-C] [-check] [-conv_form arg] [-genkey] [-in file]
-                     [-inform der | pem] [-list_curves] [-name arg] [-no_seed]
-                     [-noout] [-out file] [-outform der | pem] [-param_enc arg]
-                     [-text]
+     openssl ecparam  [-C] [-check] [-conv_form arg] [-genkey] [-in file]
+                      [-inform der | pem] [-list_curves] [-name arg] [-no_seed]
+                      [-noout] [-out file] [-outform der | pem] [-param_enc arg]
+                      [-text]
 
      The ecparam command is used to manipulate or generate EC parameter files.
      openssl is not able to generate new groups so ecparam can only create EC
@@ -899,8 +1346,8 @@ ECPARAM
 
      -conv_form arg
              Specify how the points on the elliptic curve are converted into
-             octet strings.  Possible values are: compressed (the default),
-             uncompressed, and hybrid.  For more information regarding the point
+             octet strings.  Possible values are: compressed, uncompressed (the
+             default), and hybrid.  For more information regarding the point
              conversion forms see the X9.62 standard.  Note: Due to patent
              issues the compressed option is disabled by default for binary
              curves and can be enabled by defining the preprocessor macro
@@ -945,10 +1392,10 @@ ECPARAM
      -text   Print the EC parameters in plain text.
 
 ENC
-     openssl enc -ciphername [-AadePp] [-base64] [-bufsize number] [-debug]
-                 [-in file] [-iv IV] [-K key] [-k password] [-kfile file]
-                 [-md digest] [-none] [-nopad] [-nosalt] [-out file] [-pass arg]
-                 [-S salt] [-salt]
+     openssl enc  -ciphername [-AadePpv] [-base64] [-bufsize number] [-debug]
+                  [-in file] [-iter iterations] [-iv IV] [-K key] [-k password]
+                  [-kfile file] [-md digest] [-none] [-nopad] [-nosalt]
+                  [-out file] [-pass arg] [-pbkdf2] [-S salt] [-salt]
 
      The symmetric cipher commands allow data to be encrypted or decrypted using
      various block and stream ciphers using keys based on passwords or
@@ -983,6 +1430,10 @@ ENC
      -in file
              The input file to read from, or standard input if not specified.
 
+     -iter iterations
+             Use the pbkdf2 key derivation function, with iterations as the
+             number of iterations.
+
      -iv IV  The actual IV (initialisation vector) to use: this must be
              represented as a string comprised only of hex digits.  When only
              the key is specified using the -K option, the IV must explicitly be
@@ -1005,8 +1456,8 @@ ENC
              Superseded by the -pass option.
 
      -md digest
-             Use digest to create a key from a pass phrase.  digest may be one
-             of md5 or sha1.
+             Use digest to create a key from a pass phrase.  Currently, the
+             default value is sha256.
 
      -none   Use NULL cipher (no encryption or decryption of input).
 
@@ -1029,6 +1480,10 @@ ENC
      -pass arg
              The password source.
 
+     -pbkdf2
+             Use the pbkdf2 key derivation function, with the default of 10000
+             iterations.
+
      -S salt
              The actual salt to use: this must be represented as a string
              comprised only of hex digits.
@@ -1037,6 +1492,8 @@ ENC
              salt is being used the first eight bytes of the encrypted data are
              reserved for the salt: it is randomly generated when encrypting a
              file and read from the encrypted file when it is decrypted.
+
+     -v      Print extra details about the processing.
 
 ERRSTR
      openssl errstr [-stats] errno ...
@@ -1056,8 +1513,9 @@ ERRSTR
      -stats  Print debugging statistics about various aspects of the hash table.
 
 GENDSA
-     openssl gendsa [-aes128 | -aes192 | -aes256 | -des | -des3] [-out file]
-                    [paramfile]
+     openssl gendsa  [-aes128 | -aes192 | -aes256 | -camellia128 |
+                     -camellia192 | -camellia256 | -des | -des3 | -idea]
+                     [-out file] [-passout arg] paramfile
 
      The gendsa command generates a DSA private key from a DSA parameter file
      (typically generated by the openssl dsaparam command).  DSA key generation
@@ -1066,23 +1524,27 @@ GENDSA
 
      The options are as follows:
 
-     -aes128 | -aes192 | -aes256 | -des | -des3
-             Encrypt the private key with the AES, DES, or the triple DES
-             ciphers, respectively, before outputting it.  A pass phrase is
-             prompted for.  If none of these options are specified, no
+     -aes128 | -aes192 | -aes256 | -camellia128 | -camellia192 | -camellia256 |
+             -des | -des3 | -idea
+             Encrypt the private key with the AES, CAMELLIA, DES, triple DES or
+             the IDEA ciphers, respectively, before outputting it.  A pass
+             phrase is prompted for.  If none of these options are specified, no
              encryption is used.
 
      -out file
              The output file to write to, or standard output if not specified.
+
+     -passout arg
+             The output file password source.
 
      paramfile
              Specify the DSA parameter file to use.  The parameters in this file
              determine the size of the private key.
 
 GENPKEY
-     openssl genpkey [-algorithm alg] [cipher] [-genparam] [-out file]
-                     [-outform der | pem] [-paramfile file] [-pass arg]
-                     [-pkeyopt opt:value] [-text]
+     openssl genpkey  [-algorithm alg] [cipher] [-genparam] [-out file]
+                      [-outform der | pem] [-paramfile file] [-pass arg]
+                      [-pkeyopt opt:value] [-text]
 
      The genpkey command generates private keys.  The use of this program is
      encouraged over the algorithm specific utilities because additional
@@ -1141,21 +1603,23 @@ GENPKEY
                            (DH) The value to use for the generator g.
 
                    ec_paramgen_curve:curve
-                           (EC) The EC curve to use.
+                           (EC) The elliptic curve to use.
 
      -text   Print the private/public key in plain text.
 
 GENRSA
-     openssl genrsa [-3 | -f4] [-aes128 | -aes192 | -aes256 | -des | -des3]
-                    [-out file] [-passout arg] [numbits]
+     openssl genrsa  [-3 | -f4] [-aes128 | -aes192 | -aes256 | -camellia128 |
+                     -camellia192 | -camellia256 | -des | -des3 | -idea]
+                     [-out file] [-passout arg] [numbits]
 
      The genrsa command generates an RSA private key, which essentially involves
      the generation of two prime numbers.  When generating the key, various
      symbols will be output to indicate the progress of the generation.  A ‘.’
      represents each number which has passed an initial sieve test; ‘+’ means a
-     number has passed a single round of the Miller-Rabin primality test.  A
-     newline means that the number has passed all the prime tests (the actual
-     number depends on the key size).
+     number has passed a single round of the Miller-Rabin primality test; ‘*’
+     means the number has failed primality testing and needs to be generated
+     afresh.  A newline means that the number has passed all the prime tests
+     (the actual number depends on the key size).
 
      The options are as follows:
 
@@ -1163,12 +1627,13 @@ GENRSA
              The public exponent to use, either 3 or 65537.  The default is
              65537.
 
-     -aes128 | -aes192 | -aes256 | -des | -des3
-             Encrypt the private key with the AES, DES, or the triple DES
-             ciphers, respectively, before outputting it.  If none of these
-             options are specified, no encryption is used.  If encryption is
-             used, a pass phrase is prompted for, if it is not supplied via the
-             -passout option.
+     -aes128 | -aes192 | -aes256 | -camellia128 | -camellia192 | -camellia256 |
+             -des | -des3 | -idea
+             Encrypt the private key with the AES, CAMELLIA, DES, triple DES or
+             the IDEA ciphers, respectively, before outputting it.  If none of
+             these options are specified, no encryption is used.  If encryption
+             is used, a pass phrase is prompted for, if it is not supplied via
+             the -passout option.
 
      -out file
              The output file to write to, or standard output if not specified.
@@ -1202,18 +1667,20 @@ NSEQ
              created from a file of certificates.
 
 OCSP
-     openssl ocsp [-CA file] [-CAfile file] [-CApath directory] [-cert file]
-                  [-dgst alg] [-host hostname:port] [-index indexfile]
-                  [-issuer file] [-ndays days] [-nmin minutes] [-no_cert_checks]
-                  [-no_cert_verify] [-no_certs] [-no_chain] [-no_intern]
-                  [-no_nonce] [-no_signature_verify] [-nonce] [-noverify]
-                  [-nrequest number] [-out file] [-path path] [-port portnum]
-                  [-req_text] [-reqin file] [-reqout file] [-resp_key_id]
-                  [-resp_no_certs] [-resp_text] [-respin file] [-respout file]
-                  [-rkey file] [-rother file] [-rsigner file] [-serial number]
-                  [-sign_other file] [-signer file] [-signkey file]
-                  [-status_age age] [-text] [-trust_other] [-url responder_url]
-                  [-VAfile file] [-validity_period nsec] [-verify_other file]
+     openssl ocsp  [-CA file] [-CAfile file] [-CApath directory] [-cert file]
+                   [-dgst alg] [-header name value] [-host hostname:port]
+                   [-ignore_err] [-index indexfile] [-issuer file] [-ndays days]
+                   [-nmin minutes] [-no_cert_checks] [-no_cert_verify]
+                   [-no_certs] [-no_chain] [-no_explicit] [-no_intern]
+                   [-no_nonce] [-no_signature_verify] [-nonce] [-noverify]
+                   [-nrequest number] [-out file] [-path path] [-port portnum]
+                   [-req_text] [-reqin file] [-reqout file] [-resp_key_id]
+                   [-resp_no_certs] [-resp_text] [-respin file] [-respout file]
+                   [-rkey file] [-rother file] [-rsigner file] [-serial num]
+                   [-sign_other file] [-signer file] [-signkey file]
+                   [-status_age age] [-text] [-timeout seconds] [-trust_other]
+                   [-url responder_url] [-VAfile file] [-validity_period nsec]
+                   [-verify_other file]
 
      The Online Certificate Status Protocol (OCSP) enables applications to
      determine the (revocation) state of an identified certificate (RFC 2560).
@@ -1235,11 +1702,15 @@ OCSP
 
      -dgst alg
              Use the digest algorithm alg for certificate identification in the
-             OCSP request.  By default SHA-1 is used.
+             OCSP request.  By default SHA1 is used.
 
      -host hostname:port, -path path
              Send the OCSP request to hostname on port.  -path specifies the
              HTTP path name to use, or / by default.
+
+     -header name value
+             Add the header name with the specified value to the OCSP request
+             that is sent to the responder.  This may be repeated.
 
      -issuer file
              The current issuer certificate, in PEM format.  Can be used
@@ -1263,6 +1734,10 @@ OCSP
      -no_chain
              Do not use certificates in the response as additional untrusted CA
              certificates.
+
+     -no_explicit
+             Don't check the explicit trust for OCSP signing in the root CA
+             certificate.
 
      -no_intern
              Ignore certificates contained in the OCSP response when searching
@@ -1319,6 +1794,9 @@ OCSP
              key is read from the same file as the certificate.  If neither
              option is specified, the OCSP request is not signed.
 
+     -timeout seconds
+             Connection timeout to the OCSP responder in seconds.
+
      -trust_other
              The certificates specified by the -verify_other option should be
              explicitly trusted and no additional checks will be performed on
@@ -1360,6 +1838,9 @@ OCSP
      -CA file
            CA certificate corresponding to the revocation information in
            indexfile.
+
+     -ignore_err
+           Ignore the invalid response.
 
      -index indexfile
            indexfile is a text index file in ca format containing certificate
@@ -1435,8 +1916,8 @@ OCSP
      itself can be explicitly trusted with the -VAfile option.
 
 PASSWD
-     openssl passwd [-1 | -apr1 | -crypt] [-in file] [-noverify] [-quiet]
-                    [-reverse] [-salt string] [-stdin] [-table] [password]
+     openssl passwd  [-1 | -apr1 | -crypt] [-in file] [-noverify] [-quiet]
+                     [-reverse] [-salt string] [-stdin] [-table] [password]
 
      The passwd command computes the hash of a password.
 
@@ -1471,8 +1952,8 @@ PASSWD
              character to each password hash.
 
 PKCS7
-     openssl pkcs7 [-in file] [-inform der | pem] [-noout] [-out file]
-                   [-outform der | pem] [-print_certs] [-text]
+     openssl pkcs7  [-in file] [-inform der | pem] [-noout] [-out file]
+                    [-outform der | pem] [-print] [-print_certs] [-text]
 
      The pkcs7 command processes PKCS#7 files in DER or PEM format.  The PKCS#7
      routines only understand PKCS#7 v 1.5 as specified in RFC 2315.
@@ -1494,6 +1975,8 @@ PKCS7
      -outform der | pem
              The output format.
 
+     -print  Print the ASN.1 representation of PKCS#7 structure.
+
      -print_certs
              Print any certificates or CRLs contained in the file, preceded by
              their subject and issuer names in a one-line format.
@@ -1502,9 +1985,9 @@ PKCS7
              issuer names.
 
 PKCS8
-     openssl pkcs8 [-in file] [-inform der | pem] [-nocrypt] [-noiter]
-                   [-out file] [-outform der | pem] [-passin arg] [-passout arg]
-                   [-topk8] [-v1 alg] [-v2 alg]
+     openssl pkcs8  [-in file] [-inform der | pem] [-nocrypt] [-noiter]
+                    [-out file] [-outform der | pem] [-passin arg]
+                    [-passout arg] [-topk8] [-v1 alg] [-v2 alg]
 
      The pkcs8 command processes private keys (both encrypted and unencrypted)
      in PKCS#8 format with a variety of PKCS#5 (v1.5 and v2.0) and PKCS#12
@@ -1568,14 +2051,16 @@ PKCS8
              des3, and rc2.  It is recommended that des3 is used.
 
 PKCS12
-     openssl pkcs12 [-aes128 | -aes192 | -aes256 | -des | -des3] [-cacerts]
-                    [-CAfile file] [-caname name] [-CApath directory]
-                    [-certfile file] [-certpbe alg] [-chain] [-clcerts]
-                    [-CSP name] [-descert] [-export] [-in file] [-info]
-                    [-inkey file] [-keyex] [-keypbe alg] [-keysig] [-macalg alg]
-                    [-maciter] [-name name] [-nocerts] [-nodes] [-noiter]
-                    [-nokeys] [-nomac] [-nomaciter] [-nomacver] [-noout]
-                    [-out file] [-passin arg] [-passout arg] [-twopass]
+     openssl pkcs12  [-aes128 | -aes192 | -aes256 | -camellia128 |
+                     -camellia192 | -camellia256 | -des | -des3 | -idea]
+                     [-cacerts] [-CAfile file] [-caname name]
+                     [-CApath directory] [-certfile file] [-certpbe alg]
+                     [-chain] [-clcerts] [-CSP name] [-descert] [-export]
+                     [-in file] [-info] [-inkey file] [-keyex] [-keypbe alg]
+                     [-keysig] [-LMK] [-macalg alg] [-maciter] [-name name]
+                     [-nocerts] [-nodes] [-noiter] [-nokeys] [-nomac]
+                     [-nomaciter] [-nomacver] [-noout] [-out file] [-passin arg]
+                     [-passout arg] [-password arg] [-twopass]
 
      The pkcs12 command allows PKCS#12 files (sometimes referred to as PFX
      files) to be created and parsed.  By default, a PKCS#12 file is parsed; a
@@ -1583,9 +2068,10 @@ PKCS12
 
      The options for parsing a PKCS12 file are as follows:
 
-     -aes128 | -aes192 | -aes256 | -des | -des3
-           Encrypt private keys using AES, DES, or triple DES, respectively.
-           The default is triple DES.
+     -aes128 | -aes192 | -aes256 | -camellia128 | -camellia192 | -camellia256 |
+           -des | -des3 | -idea
+           Encrypt private keys using AES, CAMELLIA, DES, triple DES or the IDEA
+           ciphers, respectively.  The default is triple DES.
 
      -cacerts
            Only output CA certificates (not client certificates).
@@ -1691,6 +2177,8 @@ PKCS12
            signing only.  Signing only keys can be used for S/MIME signing,
            authenticode (ActiveX control signing) and SSL client authentication.
 
+     -LMK  Add local machine keyset attribute to private key.
+
      -macalg alg
            Specify the MAC digest algorithm.  The default is SHA1.
 
@@ -1730,10 +2218,14 @@ PKCS12
      -passout arg
            The output file password source.
 
+     -password arg
+           With -export, -password is equivalent to -passout.  Otherwise,
+           -password is equivalent to -passin.
+
 PKEY
-     openssl pkey [cipher] [-in file] [-inform der | pem] [-noout] [-out file]
-                  [-outform der | pem] [-passin arg] [-passout arg] [-pubin]
-                  [-pubout] [-text] [-text_pub]
+     openssl pkey  [cipher] [-in file] [-inform der | pem] [-noout] [-out file]
+                   [-outform der | pem] [-passin arg] [-passout arg] [-pubin]
+                   [-pubout] [-text] [-text_pub]
 
      The pkey command processes public or private keys.  They can be converted
      between various forms and their components printed out.
@@ -1746,7 +2238,7 @@ PKEY
 
      -in file
              The input file to read from, or standard input if not specified.
-             If the key is encrypted a pass phrase will be prompted for.
+             If the key is encrypted, a pass phrase will be prompted for.
 
      -inform der | pem
              The input format.
@@ -1798,11 +2290,11 @@ PKEYPARAM
      -text   Print the parameters in plain text.
 
 PKEYUTL
-     openssl pkeyutl [-asn1parse] [-certin] [-decrypt] [-derive] [-encrypt]
-                     [-hexdump] [-in file] [-inkey file] [-keyform der | pem]
-                     [-out file] [-passin arg] [-peerform der | pem]
-                     [-peerkey file] [-pkeyopt opt:value] [-pubin] [-rev]
-                     [-sigfile file] [-sign] [-verify] [-verifyrecover]
+     openssl pkeyutl  [-asn1parse] [-certin] [-decrypt] [-derive] [-encrypt]
+                      [-hexdump] [-in file] [-inkey file] [-keyform der | pem]
+                      [-out file] [-passin arg] [-peerform der | pem]
+                      [-peerkey file] [-pkeyopt opt:value] [-pubin] [-rev]
+                      [-sigfile file] [-sign] [-verify] [-verifyrecover]
 
      The pkeyutl command can be used to perform public key operations using any
      supported algorithm.
@@ -1880,10 +2372,10 @@ PKEYUTL
              rsa_pss_saltlen:len
                      For pss mode only this option specifies the salt length.
                      Two special values are supported: -1 sets the salt length
-                     to the digest length.  When signing -2 sets the salt length
-                     to the maximum permissible value.  When verifying -2 causes
-                     the salt length to be automatically determined based on the
-                     PSS block structure.
+                     to the digest length.  When signing, -2 sets the salt
+                     length to the maximum permissible value.  When verifying,
+                     -2 causes the salt length to be automatically determined
+                     based on the PSS block structure.
 
              The DSA algorithm supports the sign and verify operations.
              Currently there are no additional options other than digest.  Only
@@ -1943,7 +2435,7 @@ PRIME
      p       Test if number p is prime.
 
 RAND
-     openssl rand [-base64] [-hex] [-out file] num
+     openssl rand  [-base64] [-hex] [-out file] num
 
      The rand command outputs num pseudo-random bytes.
 
@@ -1958,21 +2450,28 @@ RAND
              The output file to write to, or standard output if not specified.
 
 REQ
-     openssl req [-asn1-kludge] [-batch] [-config file] [-days n]
-                 [-extensions section] [-in file] [-inform der | pem]
-                 [-key keyfile] [-keyform der | pem] [-keyout file]
-                 [-md4 | -md5 | -sha1] [-modulus] [-nameopt option] [-new]
-                 [-newhdr] [-newkey arg] [-no-asn1-kludge] [-nodes] [-noout]
-                 [-out file] [-outform der | pem] [-passin arg] [-passout arg]
-                 [-pubkey] [-reqexts section] [-reqopt option] [-set_serial n]
-                 [-subj arg] [-subject] [-text] [-utf8] [-verbose] [-verify]
-                 [-x509]
+     openssl req  [-addext ext] [-asn1-kludge] [-batch] [-config file] [-days n]
+                  [-extensions section] [-in file] [-inform der | pem]
+                  [-key keyfile] [-keyform der | pem] [-keyout file]
+                  [-md4 | -md5 | -sha1] [-modulus] [-multivalue-rdn]
+                  [-nameopt option] [-new] [-newhdr] [-newkey arg]
+                  [-no-asn1-kludge] [-nodes] [-noout] [-out file]
+                  [-outform der | pem] [-passin arg] [-passout arg]
+                  [-pkeyopt opt:value] [-pubkey] [-reqexts section]
+                  [-reqopt option] [-set_serial n] [-sigopt nm:v] [-subj arg]
+                  [-subject] [-text] [-utf8] [-verbose] [-verify] [-x509]
 
      The req command primarily creates and processes certificate requests in
      PKCS#10 format.  It can additionally create self-signed certificates, for
      use as root CAs, for example.
 
      The options are as follows:
+
+     -addext ext
+             Add a specific extension to the certificate (if the -x509 option is
+             present) or certificate request.  The argument must have the form
+             of a key=value pair as it would appear in a config file.  This
+             option can be given multiple times.
 
      -asn1-kludge
              Produce requests in an invalid format for certain picky CAs.  Very
@@ -2024,6 +2523,13 @@ REQ
              Print the value of the modulus of the public key contained in the
              request.
 
+     -multivalue-rdn
+             This option causes the -subj argument to be interpreted with full
+             support for multivalued RDNs, for example
+             "/DC=org/DC=OpenSSL/DC=users/UID=123456+CN=John Doe".  If
+             -multivalue-rdn is not used, the UID value is set to
+             "123456+CN=John Doe".
+
      -nameopt option, -reqopt option
              Determine how the subject or issuer names are displayed.  option
              can be a single option or multiple options separated by commas.
@@ -2040,7 +2546,7 @@ REQ
 
      -newhdr
              Add the word NEW to the PEM file header and footer lines on the
-             outputed request.  Some software and CAs need this.
+             outputted request.  Some software and CAs need this.
 
      -newkey arg
              Create a new certificate request and a new private key.  The
@@ -2068,7 +2574,7 @@ REQ
      -noout  Do not output the encoded version of the request.
 
      -out file
-             The output file to write to, or standard output if not spceified.
+             The output file to write to, or standard output if not specified.
 
      -outform der | pem
              The output format.
@@ -2078,6 +2584,9 @@ REQ
 
      -passout arg
              The output file password source.
+
+     -pkeyopt opt:value
+             Set the public key algorithm option opt to value.
 
      -pubkey
              Output the public key.
@@ -2092,6 +2601,10 @@ REQ
              This may be specified as a decimal value or a hex value if preceded
              by ‘0x’.  It is possible to use negative serial numbers but this is
              not recommended.
+
+     -sigopt nm:v
+             Pass options to the signature algorithm during sign operation.  The
+             names and values of these options are algorithm-specific.
 
      -subj arg
              Replaces the subject field of an input request with the specified
@@ -2249,10 +2762,12 @@ REQ
      be treated as though they were a DirectoryString.
 
 RSA
-     openssl rsa [-aes128 | -aes192 | -aes256 | -des | -des3] [-check]
-                 [-in file] [-inform der | net | pem] [-modulus] [-noout]
-                 [-out file] [-outform der | net | pem] [-passin arg]
-                 [-passout arg] [-pubin] [-pubout] [-sgckey] [-text]
+     openssl rsa  [-aes128 | -aes192 | -aes256 | -des | -des3] [-check]
+                  [-in file] [-inform der | net | pem | pvk] [-modulus] [-noout]
+                  [-out file] [-outform der | net | pem | pvk] [-passin arg]
+                  [-passout arg] [-pubin] [-pubout]
+                  [-pvk-none | -pvk-strong | -pvk-weak] [-RSAPublicKey_in]
+                  [-RSAPublicKey_out] [-sgckey] [-text]
 
      The rsa command processes RSA keys.  They can be converted between various
      forms and their components printed out.  rsa uses the traditional SSLeay
@@ -2277,7 +2792,7 @@ RSA
              The input file to read from, or standard input if not specified.
              If the key is encrypted, a pass phrase will be prompted for.
 
-     -inform der | net | pem
+     -inform der | net | pem | pvk
              The input format.
 
      -noout  Do not output the encoded version of the key.
@@ -2288,7 +2803,7 @@ RSA
      -out file
              The output file to write to, or standard output if not specified.
 
-     -outform der | net | pem
+     -outform der | net | pem | pvk
              The output format.
 
      -passin arg
@@ -2303,6 +2818,13 @@ RSA
              Output a public key, not a private key.  Automatically set if the
              input is a public key.
 
+     -pvk-none | -pvk-strong | -pvk-weak
+             Enable or disable PVK encoding.  The default is -pvk-strong.
+
+     -RSAPublicKey_in, -RSAPublicKey_out
+             Same as -pubin and -pubout except RSAPublicKey format is used
+             instead.
+
      -sgckey
              Use the modified NET algorithm used with some versions of Microsoft
              IIS and SGC keys.
@@ -2310,10 +2832,10 @@ RSA
      -text   Print the public/private key components in plain text.
 
 RSAUTL
-     openssl rsautl [-asn1parse] [-certin] [-decrypt] [-encrypt] [-hexdump]
-                    [-in file] [-inkey file] [-keyform der | pem]
-                    [-oaep | -pkcs | -raw] [-out file] [-pubin] [-sign]
-                    [-verify]
+     openssl rsautl  [-asn1parse] [-certin] [-decrypt] [-encrypt] [-hexdump]
+                     [-in file] [-inkey file] [-keyform der | pem]
+                     [-oaep | -pkcs | -raw | -x931] [-out file] [-passin arg]
+                     [-pubin] [-rev] [-sign] [-verify]
 
      The rsautl command can be used to sign, verify, encrypt and decrypt data
      using the RSA algorithm.
@@ -2345,15 +2867,20 @@ RSAUTL
      -keyform der | pem
              The private key format.  The default is pem.
 
-     -oaep | -pkcs | -raw
-             The padding to use: PKCS#1 OAEP, PKCS#1 v1.5 (the default), or no
-             padding, respectively.  For signatures, only -pkcs and -raw can be
-             used.
+     -oaep | -pkcs | -raw | -x931
+             The padding to use: PKCS#1 OAEP, PKCS#1 v1.5 (the default), no
+             padding, or ANSI X9.31, respectively.  For signatures, only -pkcs
+             and -raw can be used.
 
      -out file
              The output file to write to, or standard output if not specified.
 
+     -passin arg
+             The key password source.
+
      -pubin  The input file is an RSA public key.
+
+     -rev    Reverse the order of the input buffer.
 
      -sign   Sign the input data and output the signed result.  This requires an
              RSA private key.
@@ -2362,18 +2889,26 @@ RSAUTL
              Verify the input data and output the recovered data.
 
 S_CLIENT
-     openssl s_client [-4 | -6] [-bugs] [-CAfile file] [-CApath directory]
-                      [-cert file] [-check_ss_sig] [-cipher cipherlist]
-                      [-connect host[:port]] [-crl_check] [-crl_check_all]
-                      [-crlf] [-debug] [-extended_crl] [-groups] [-ign_eof]
-                      [-ignore_critical] [-issuer_checks] [-key keyfile] [-msg]
-                      [-nbio] [-nbio_test] [-no_ticket] [-no_tls1] [-no_tls1_1]
-                      [-no_tls1_2] [-pause] [-policy_check] [-prexit]
-                      [-proxy host:port] [-psk key] [-psk_identity identity]
-                      [-quiet] [-reconnect] [-servername name] [-showcerts]
-                      [-starttls protocol] [-state] [-tls1] [-tls1_1] [-tls1_2]
-                      [-tlsextdebug] [-verify depth] [-x509_strict]
-                      [-xmpphost host]
+     openssl s_client  [-4 | -6] [-alpn protocols] [-bugs] [-CAfile file]
+                       [-CApath directory] [-cert file] [-certform der | pem]
+                       [-check_ss_sig] [-cipher cipherlist]
+                       [-connect host[:port]] [-crl_check] [-crl_check_all]
+                       [-crlf] [-debug] [-dtls] [-dtls1] [-dtls1_2]
+                       [-extended_crl] [-groups list] [-host host] [-ign_eof]
+                       [-ignore_critical] [-issuer_checks] [-key keyfile]
+                       [-keyform der | pem] [-keymatexport label]
+                       [-keymatexportlen len] [-legacy_server_connect] [-msg]
+                       [-mtu mtu] [-nbio] [-nbio_test] [-no_comp] [-no_ign_eof]
+                       [-no_legacy_server_connect] [-no_ticket] [-no_tls1]
+                       [-no_tls1_1] [-no_tls1_2] [-no_tls1_3] [-pass arg]
+                       [-pause] [-policy_check] [-port port] [-prexit]
+                       [-proxy host:port] [-quiet] [-reconnect]
+                       [-servername name] [-serverpref] [-sess_in file]
+                       [-sess_out file] [-showcerts] [-starttls protocol]
+                       [-state] [-status] [-timeout] [-tls1] [-tls1_1] [-tls1_2]
+                       [-tls1_3] [-tlsextdebug] [-use_srtp profiles]
+                       [-verify depth] [-verify_return_error] [-x509_strict]
+                       [-xmpphost host]
 
      The s_client command implements a generic SSL/TLS client which connects to
      a remote host using SSL/TLS.
@@ -2391,6 +2926,11 @@ S_CLIENT
 
      -6      Attempt connections using IPv6 only.
 
+     -alpn protocols
+             Enable the Application-Layer Protocol Negotiation.  protocols is a
+             comma-separated list of protocol names that the client should
+             advertise support for.
+
      -bugs   Enable various workarounds for buggy implementations.
 
      -CAfile file
@@ -2407,6 +2947,9 @@ S_CLIENT
      -cert file
              The certificate to use, if one is requested by the server.  The
              default is not to use a certificate.
+
+     -certform der | pem
+             The certificate format.  The default is pem.
 
      -check_ss_sig, -crl_check, -crl_check_all, -extended_crl, -ignore_critical,
              -issuer_checks, -policy_check, -x509_strict
@@ -2431,8 +2974,20 @@ S_CLIENT
      -debug  Print extensive debugging information, including a hex dump of all
              traffic.
 
-     -groups ecgroups
-             Specify a colon-separated list of permitted EC curve groups.
+     -dtls   Permit any version of DTLS.
+
+     -dtls1  Permit only DTLS1.0.
+
+     -dtls1_2
+             Permit only DTLS1.2.
+
+     -groups list
+             Set the supported elliptic curve groups to the colon separated list
+             of group NIDs or names as documented in
+             SSL_CTX_set1_groups_list(3).
+
+     -host host
+             The host to connect to.  The default is localhost.
 
      -ign_eof
              Inhibit shutting down the connection when end of file is reached in
@@ -2442,20 +2997,46 @@ S_CLIENT
              The private key to use.  If not specified, the certificate file
              will be used.
 
+     -keyform der | pem
+             The private key format.  The default is pem.
+
+     -keymatexport label
+             Export keying material using label.
+
+     -keymatexportlen len
+             Export len bytes of keying material (default 20).
+
+     -legacy_server_connect, -no_legacy_server_connect
+             Allow or disallow initial connection to servers that don't support
+             RI.
+
      -msg    Show all protocol messages with hex dump.
+
+     -mtu mtu
+             Set the link layer MTU.
 
      -nbio   Turn on non-blocking I/O.
 
      -nbio_test
              Test non-blocking I/O.
 
-     -no_tls1 | -no_tls1_1 | -no_tls1_2
-             Disable the use of TLS1.0, 1.1, and 1.2, respectively.
+     -no_ign_eof
+             Shut down the connection when end of file is reached in the input.
+             Can be used to override the implicit -ign_eof after -quiet.
+
+     -no_tls1 | -no_tls1_1 | -no_tls1_2 | -no_tls1_3
+             Disable the use of TLS1.0, 1.1, 1.2 and 1.3 respectively.
 
      -no_ticket
              Disable RFC 4507 session ticket support.
 
+     -pass arg
+             The private key password source.
+
      -pause  Pause 1 second between each read and write call.
+
+     -port port
+             The port to connect to.  The default is 4433.
 
      -prexit
              Print session information when the program exits.  This will always
@@ -2475,14 +3056,6 @@ S_CLIENT
              After that, switch the connection through the proxy to the
              destination to TLS.
 
-     -psk key
-             Use the PSK key key when using a PSK cipher suite.  The key is
-             given as a hexadecimal number without the leading 0x, for example
-             -psk 1a2b3c4d.
-
-     -psk_identity identity
-             Use the PSK identity when using a PSK cipher suite.
-
      -quiet  Inhibit printing of session and certificate information.  This
              implicitly turns on -ign_eof as well.
 
@@ -2498,6 +3071,16 @@ S_CLIENT
              Display the whole server certificate chain: normally only the
              server certificate itself is displayed.
 
+     -serverpref
+             Use the server's cipher preferences.
+
+     -sess_in file
+             Load TLS session from file.  The client will attempt to resume a
+             connection from this session.
+
+     -sess_out file
+             Output TLS session to file.
+
      -starttls protocol
              Send the protocol-specific messages to switch to TLS for
              communication.  protocol is a keyword for the intended protocol.
@@ -2506,11 +3089,21 @@ S_CLIENT
 
      -state  Print the SSL session states.
 
-     -tls1 | -tls1_1 | -tls1_2
-             Permit only TLS1.0, 1.1, or 1.2, respectively.
+     -status
+             Send a certificate status request to the server (OCSP stapling).
+             The server response (if any) is printed out.
+
+     -timeout
+             Enable send/receive timeout on DTLS connections.
+
+     -tls1 | -tls1_1 | -tls1_2 | -tls1_3
+             Permit only TLS1.0, 1.1, 1.2 or 1.3 respectively.
 
      -tlsextdebug
              Print a hex dump of any TLS extensions received from the server.
+
+     -use_srtp profiles
+             Offer SRTP key management with a colon-separated profile list.
 
      -verify depth
              Turn on server certificate verification, with a maximum length of
@@ -2519,22 +3112,35 @@ S_CLIENT
              effect the connection will never fail due to a server certificate
              verify failure.
 
+     -verify_return_error
+             Return verification error.
+
      -xmpphost hostname
              When used with -starttls xmpp, specify the host for the "to"
              attribute of the stream element.  If this option is not specified
              then the host specified with -connect will be used.
 
 S_SERVER
-     openssl s_server [-accept port] [-bugs] [-CAfile file] [-CApath directory]
-                      [-cert file] [-cipher cipherlist] [-context id]
-                      [-crl_check] [-crl_check_all] [-crlf] [-dcert file]
-                      [-debug] [-dhparam file] [-dkey file] [-hack] [-HTTP]
-                      [-id_prefix arg] [-key keyfile] [-msg] [-nbio]
-                      [-nbio_test] [-no_dhe] [-no_tls1] [-no_tls1_1]
-                      [-no_tls1_2] [-no_tmp_rsa] [-nocert] [-psk key]
-                      [-psk_hint hint] [-quiet] [-serverpref] [-state] [-tls1]
-                      [-tls1_1] [-tls1_2] [-Verify depth] [-verify depth] [-WWW]
-                      [-www]
+     openssl s_server  [-accept port] [-alpn protocols] [-bugs] [-CAfile file]
+                       [-CApath directory] [-cert file] [-cert2 file]
+                       [-certform der | pem] [-cipher cipherlist] [-context id]
+                       [-crl_check] [-crl_check_all] [-crlf] [-dcert file]
+                       [-dcertform der | pem] [-debug] [-dhparam file]
+                       [-dkey file] [-dkeyform der | pem] [-dpass arg] [-dtls]
+                       [-dtls1] [-dtls1_2] [-groups list] [-HTTP]
+                       [-id_prefix arg] [-key keyfile] [-key2 keyfile]
+                       [-keyform der | pem] [-keymatexport label]
+                       [-keymatexportlen len] [-msg] [-mtu mtu]
+                       [-named_curve arg] [-nbio] [-nbio_test] [-no_cache]
+                       [-no_dhe] [-no_ecdhe] [-no_ticket] [-no_tls1]
+                       [-no_tls1_1] [-no_tls1_2] [-no_tls1_3] [-no_tmp_rsa]
+                       [-nocert] [-pass arg] [-quiet] [-servername name]
+                       [-servername_fatal] [-serverpref] [-state] [-status]
+                       [-status_timeout nsec] [-status_url url]
+                       [-status_verbose] [-timeout] [-tls1] [-tls1_1] [-tls1_2]
+                       [-tls1_3] [-tlsextdebug] [-use_srtp profiles]
+                       [-Verify depth] [-verify depth] [-verify_return_error]
+                       [-WWW] [-www]
 
      The s_server command implements a generic SSL/TLS server which listens for
      connections on a given port using SSL/TLS.
@@ -2556,6 +3162,10 @@ S_SERVER
      -accept port
              Listen on TCP port for connections.  The default is port 4433.
 
+     -alpn protocols
+             Enable the Application-Layer Protocol Negotiation.  protocols is a
+             comma-separated list of supported protocol names.
+
      -bugs   Enable various workarounds for buggy implementations.
 
      -CAfile file
@@ -2576,6 +3186,12 @@ S_SERVER
              public key type.  For example, the DSS cipher suites require a
              certificate containing a DSS (DSA) key.  If not specified, the file
              server.pem will be used.
+
+     -cert2 file
+             The certificate to use for servername.
+
+     -certform der | pem
+             The certificate format.  The default is pem.
 
      -cipher cipherlist
              Modify the cipher list used by the server.  This allows the cipher
@@ -2603,6 +3219,10 @@ S_SERVER
              support clients which only support RSA or DSS cipher suites by
              using an appropriate certificate.
 
+     -dcertform der | pem, -dkeyform der | pem, -dpass arg
+             Additional certificate and private key format, and private key
+             password source, respectively.
+
      -debug  Print extensive debugging information, including a hex dump of all
              traffic.
 
@@ -2613,7 +3233,17 @@ S_SERVER
              file.  If this fails, a static set of parameters hard coded into
              the s_server program will be used.
 
-     -hack   Enables a further workaround for some early Netscape SSL code.
+     -dtls   Permit any version of DTLS.
+
+     -dtls1  Permit only DTLS1.0.
+
+     -dtls1_2
+             Permit only DTLS1.2.
+
+     -groups list
+             Set the supported elliptic curve groups to the colon separated list
+             of group NIDs or names as documented in
+             SSL_CTX_set1_groups_list(3).
 
      -HTTP   Emulate a simple web server.  Pages are resolved relative to the
              current directory.  For example if the URL https://myhost/page.html
@@ -2632,18 +3262,46 @@ S_SERVER
              The private key to use.  If not specified, the certificate file
              will be used.
 
+     -key2 keyfile
+             The private key to use for servername.
+
+     -keyform der | pem
+             The private key format.  The default is pem.
+
+     -keymatexport label
+             Export keying material using label.
+
+     -keymatexportlen len
+             Export len bytes of keying material (default 20).
+
      -msg    Show all protocol messages with hex dump.
+
+     -mtu mtu
+             Set the link layer MTU.
+
+     -named_curve arg
+             Specify the elliptic curve name to use for ephemeral ECDH keys.
+             This option is deprecated; use -groups instead.
 
      -nbio   Turn on non-blocking I/O.
 
      -nbio_test
              Test non-blocking I/O.
 
+     -no_cache
+             Disable session caching.
+
      -no_dhe
              Disable ephemeral DH cipher suites.
 
-     -no_tls1 | -no_tls1_1 | -no_tls1_2
-             Disable the use of TLS1.0, 1.1, and 1.2, respectively.
+     -no_ecdhe
+             Disable ephemeral ECDH cipher suites.
+
+     -no_ticket
+             Disable RFC 4507 session ticket support.
+
+     -no_tls1 | -no_tls1_1 | -no_tls1_2 | -no_tls1_3
+             Disable the use of TLS1.0, 1.1, 1.2, and 1.3, respectively.
 
      -no_tmp_rsa
              Disable temporary RSA key generation.
@@ -2652,23 +3310,53 @@ S_SERVER
              Do not use a certificate.  This restricts the cipher suites
              available to the anonymous ones (currently just anonymous DH).
 
-     -psk key
-             Use the PSK key key when using a PSK cipher suite.  The key is
-             given as a hexadecimal number without the leading 0x, for example
-             -psk 1a2b3c4d.
-
-     -psk_hint hint
-             Use the PSK identity hint hint when using a PSK cipher suite.
+     -pass arg
+             The private key password source.
 
      -quiet  Inhibit printing of session and certificate information.
+
+     -servername name
+             Set the TLS Server Name Indication (SNI) extension with name.
+
+     -servername_fatal
+             Send fatal alert if servername does not match.  The default is
+             warning alert.
 
      -serverpref
              Use server's cipher preferences.
 
      -state  Print the SSL session states.
 
-     -tls1 | -tls1_1 | -tls1_2
-             Permit only TLS1.0, 1.1, or 1.2, respectively.
+     -status
+             Enables certificate status request support (OCSP stapling).
+
+     -status_timeout nsec
+             Sets the timeout for OCSP response in seconds.
+
+     -status_url url
+             Sets a fallback responder URL to use if no responder URL is present
+             in the server certificate.  Without this option, an error is
+             returned if the server certificate does not contain a responder
+             address.
+
+     -status_verbose
+             Enables certificate status request support (OCSP stapling) and
+             gives a verbose printout of the OCSP response.
+
+     -timeout
+             Enable send/receive timeout on DTLS connections.
+
+     -tls1 | -tls1_1 | -tls1_2 | -tls1_3
+             Permit only TLS1.0, 1.1, 1.2, or 1.3, respectively.
+
+     -tlsextdebug
+             Print a hex dump of any TLS extensions received from the server.
+
+     -use_srtp profiles
+             Offer SRTP key management with a colon-separated profile list.
+
+     -verify_return_error
+             Return verification error.
 
      -WWW    Emulate a simple web server.  Pages are resolved relative to the
              current directory.  For example if the URL https://myhost/page.html
@@ -2686,10 +3374,10 @@ S_SERVER
              client does not have to send one.
 
 S_TIME
-     openssl s_time [-bugs] [-CAfile file] [-CApath directory] [-cert file]
-                    [-cipher cipherlist] [-connect host[:port]] [-key keyfile]
-                    [-nbio] [-new] [-no_shutdown] [-reuse] [-time seconds]
-                    [-verify depth] [-www page]
+     openssl s_time  [-bugs] [-CAfile file] [-CApath directory] [-cert file]
+                     [-cipher cipherlist] [-connect host[:port]] [-key keyfile]
+                     [-nbio] [-new] [-no_shutdown] [-reuse] [-time seconds]
+                     [-verify depth] [-www page]
 
      The s_time command implements a generic SSL/TLS client which connects to a
      remote host using SSL/TLS.  It can request a page from the server and
@@ -2762,8 +3450,8 @@ S_TIME
              transfer any payload data.
 
 SESS_ID
-     openssl sess_id [-cert] [-context ID] [-in file] [-inform der | pem]
-                     [-noout] [-out file] [-outform der | pem] [-text]
+     openssl sess_id  [-cert] [-context ID] [-in file] [-inform der | pem]
+                      [-noout] [-out file] [-outform der | pem] [-text]
 
      The sess_id program processes the encoded version of the SSL session
      structure and optionally prints out SSL session details (for example the
@@ -2817,19 +3505,20 @@ SESS_ID
      strongly discouraged and should only be used for debugging purposes.
 
 SMIME
-     openssl smime [-aes128 | -aes192 | -aes256 | -des |
-                   -des3 | -rc2-40 | -rc2-64 | -rc2-128] [-binary]
-                   [-CAfile file] [-CApath directory] [-certfile file]
-                   [-check_ss_sig] [-content file] [-crl_check] [-crl_check_all]
-                   [-decrypt] [-encrypt] [-extended_crl] [-from addr]
-                   [-ignore_critical] [-in file] [-indef]
-                   [-inform der | pem | smime] [-inkey file] [-issuer_checks]
-                   [-keyform pem] [-md digest] [-noattr] [-nocerts] [-nochain]
-                   [-nodetach] [-noindef] [-nointern] [-nosigs] [-noverify]
-                   [-out file] [-outform der | pem | smime] [-passin arg]
-                   [-pk7out] [-policy_check] [-recip file] [-resign] [-sign]
-                   [-signer file] [-stream] [-subject s] [-text] [-to addr]
-                   [-verify] [-x509_strict] [cert.pem ...]
+     openssl smime  [-aes128 | -aes192 | -aes256 | -des |
+                    -des3 | -rc2-40 | -rc2-64 | -rc2-128] [-binary]
+                    [-CAfile file] [-CApath directory] [-certfile file]
+                    [-check_ss_sig] [-content file] [-crl_check]
+                    [-crl_check_all] [-decrypt] [-encrypt] [-extended_crl]
+                    [-from addr] [-ignore_critical] [-in file] [-indef]
+                    [-inform der | pem | smime] [-inkey file] [-issuer_checks]
+                    [-keyform der | pem] [-md digest] [-noattr] [-nocerts]
+                    [-nochain] [-nodetach] [-noindef] [-nointern] [-nosigs]
+                    [-nosmimecap] [-noverify] [-out file]
+                    [-outform der | pem | smime] [-passin arg] [-pk7out]
+                    [-policy_check] [-recip file] [-resign] [-sign]
+                    [-signer file] [-stream] [-subject s] [-text] [-to addr]
+                    [-verify] [-x509_strict] [cert.pem ...]
 
      The smime command handles S/MIME mail.  It can encrypt, decrypt, sign, and
      verify S/MIME messages.
@@ -2886,7 +3575,7 @@ SMIME
      -binary
            Normally, the input message is converted to "canonical" format which
            uses CR/LF as end of line, as required by the S/MIME specification.
-           When this option is present no translation occurs.  This is useful
+           When this option is present, no translation occurs.  This is useful
            when handling binary data which may not be in MIME format.
 
      -CAfile file
@@ -2947,8 +3636,8 @@ SMIME
            the -recip or -signer file.  When signing, this option can be used
            multiple times to specify successive keys.
 
-     -keyform pem
-           Input private key format.
+     -keyform der | pem
+           Input private key format.  The default is pem.
 
      -md digest
            The digest algorithm to use when signing or resigning.  If not
@@ -2984,6 +3673,11 @@ SMIME
 
      -nosigs
            Do not try to verify the signatures on the message.
+
+     -nosmimecap
+           Exclude the list of supported algorithms from signed attributes,
+           other options such as signing time and content type are still
+           included.
 
      -noverify
            Do not verify the signer's certificate of a signed message.
@@ -3032,8 +3726,8 @@ SMIME
         5     An error occurred writing certificates.
 
 SPEED
-     openssl speed [algorithm] [-decrypt] [-elapsed] [-evp algorithm] [-mr]
-                   [-multi number]
+     openssl speed  [algorithm] [-decrypt] [-elapsed] [-evp algorithm] [-mr]
+                    [-multi number]
 
      The speed command is used to test the performance of cryptographic
      algorithms.
@@ -3058,9 +3752,9 @@ SPEED
            Run number benchmarks in parallel.
 
 SPKAC
-     openssl spkac [-challenge string] [-in file] [-key keyfile] [-noout]
-                   [-out file] [-passin arg] [-pubkey] [-spkac spkacname]
-                   [-spksect section] [-verify]
+     openssl spkac  [-challenge string] [-in file] [-key keyfile] [-noout]
+                    [-out file] [-passin arg] [-pubkey] [-spkac spkacname]
+                    [-spksect section] [-verify]
 
      The spkac command processes signed public key and challenge (SPKAC) files.
      It can print out their contents, verify the signature, and produce its own
@@ -3102,20 +3796,20 @@ SPKAC
              Verify the digital signature on the supplied SPKAC.
 
 TS
-     openssl ts -query [-md4 | -md5 | -ripemd160 | -sha1] [-cert]
-                [-config configfile] [-data file_to_hash] [-digest digest_bytes]
-                [-in request.tsq] [-no_nonce] [-out request.tsq]
-                [-policy object_id] [-text]
+     openssl ts  -query [-md4 | -md5 | -ripemd160 | -sha1] [-cert]
+                 [-config configfile] [-data file_to_hash]
+                 [-digest digest_bytes] [-in request.tsq] [-no_nonce]
+                 [-out request.tsq] [-policy object_id] [-text]
 
-     openssl ts -reply [-chain certs_file.pem] [-config configfile]
-                [-in response.tsr] [-inkey private.pem] [-out response.tsr]
-                [-passin arg] [-policy object_id] [-queryfile request.tsq]
-                [-section tsa_section] [-signer tsa_cert.pem] [-text]
-                [-token_in] [-token_out]
+     openssl ts  -reply [-chain certs_file.pem] [-config configfile]
+                 [-in response.tsr] [-inkey private.pem] [-out response.tsr]
+                 [-passin arg] [-policy object_id] [-queryfile request.tsq]
+                 [-section tsa_section] [-signer tsa_cert.pem] [-text]
+                 [-token_in] [-token_out]
 
-     openssl ts -verify [-CAfile trusted_certs.pem] [-CApath trusted_cert_path]
-                [-data file_to_hash] [-digest digest_bytes] [-in response.tsr]
-                [-queryfile request.tsq] [-token_in] [-untrusted cert_file.pem]
+     openssl ts  -verify [-CAfile trusted_certs.pem] [-CApath trusted_cert_path]
+                 [-data file_to_hash] [-digest digest_bytes] [-in response.tsr]
+                 [-queryfile request.tsq] [-token_in] [-untrusted cert_file.pem]
 
      The ts command is a basic Time Stamping Authority (TSA) client and server
      application as specified in RFC 3161 (Time-Stamp Protocol, TSP).  A TSA can
@@ -3173,7 +3867,7 @@ TS
      -md4 | -md5 | -ripemd160 | -sha | -sha1
              The message digest to apply to the data file.  It supports all the
              message digest algorithms that are supported by the dgst command.
-             The default is SHA-1.
+             The default is SHA1.
 
      -no_nonce
              Specify no nonce in the request.  The default, to include a 64-bit
@@ -3186,7 +3880,7 @@ TS
      -policy object_id
              The policy that the client expects the TSA to use for creating the
              time stamp token.  Either dotted OID notation or OID names defined
-             in the config file can be used.  If no policy is requested the TSA
+             in the config file can be used.  If no policy is requested, the TSA
              uses its own default policy.
 
      -text   Output in human-readable text format instead of DER.
@@ -3270,7 +3964,7 @@ TS
              option or -CApath must be specified.
 
      -CApath trusted_cert_path
-             The directory containing the trused CA certificates of the client.
+             The directory containing the trusted CA certificates of the client.
              See verify for additional details.  Either this option or -CAfile
              must be specified.
 
@@ -3382,20 +4076,17 @@ TS
              identifier is included.  The default is no.
 
 VERIFY
-     openssl verify [-CAfile file] [-CApath directory] [-check_ss_sig]
-                    [-crl_check] [-crl_check_all] [-explicit_policy]
-                    [-extended_crl] [-help] [-ignore_critical] [-inhibit_any]
-                    [-inhibit_map] [-issuer_checks] [-policy_check]
-                    [-purpose purpose] [-untrusted file] [-verbose]
-                    [-x509_strict] [certificates]
+     openssl verify  [-CAfile file] [-CApath directory] [-check_ss_sig]
+                     [-CRLfile file] [-crl_check] [-crl_check_all]
+                     [-explicit_policy] [-extended_crl] [-help]
+                     [-ignore_critical] [-inhibit_any] [-inhibit_map]
+                     [-issuer_checks] [-legacy_verify] [-policy_check]
+                     [-purpose purpose] [-trusted file] [-untrusted file]
+                     [-verbose] [-x509_strict] [certificates]
 
      The verify command verifies certificate chains.
 
      The options are as follows:
-
-     -check_ss_sig
-             Verify the signature on the self-signed root CA.  This is disabled
-             by default because it doesn't add any security.
 
      -CAfile file
              A file of trusted certificates.  The file should contain multiple
@@ -3407,9 +4098,16 @@ VERIFY
              the hashed certificate subject name (see the -hash option of the
              x509 utility).
 
+     -check_ss_sig
+             Verify the signature on the self-signed root CA.  This is disabled
+             by default because it doesn't add any security.
+
+     -CRLfile file
+             The file should contain one or more CRLs in PEM format.
+
      -crl_check
              Check end entity certificate validity by attempting to look up a
-             valid CRL.  If a valid CRL cannot be found an error occurs.
+             valid CRL.  If a valid CRL cannot be found, an error occurs.
 
      -crl_check_all
              Check the validity of all certificates in the chain by attempting
@@ -3440,6 +4138,9 @@ VERIFY
              not itself imply that anything is wrong: during the normal verify
              process several rejections may take place.
 
+     -legacy_verify
+             Use the legacy X.509 certificate chain verification code.
+
      -policy_check
              Enable certificate policy processing.
 
@@ -3448,6 +4149,10 @@ VERIFY
              verification will be done.  Currently accepted uses are sslclient,
              sslserver, nssslserver, smimesign, smimeencrypt, crlsign, any, and
              ocsphelper.
+
+     -trusted file
+             A file of trusted certificates.  The file should contain multiple
+             certificates.
 
      -untrusted file
              A file of untrusted certificates.  The file should contain multiple
@@ -3675,19 +4380,20 @@ VERSION
      -v      The current openssl version.
 
 X509
-     openssl x509 [-C] [-addreject arg] [-addtrust arg] [-alias] [-CA file]
-                  [-CAcreateserial] [-CAform der | pem] [-CAkey file]
-                  [-CAkeyform der | pem] [-CAserial file] [-certopt option]
-                  [-checkend arg] [-clrext] [-clrreject] [-clrtrust] [-dates]
-                  [-days arg] [-email] [-enddate] [-extensions section]
-                  [-extfile file] [-fingerprint] [-hash] [-in file]
-                  [-inform der | net | pem] [-issuer] [-issuer_hash]
-                  [-issuer_hash_old] [-keyform der | pem] [-md5 | -sha1]
-                  [-modulus] [-nameopt option] [-noout] [-ocsp_uri] [-ocspid]
-                  [-out file] [-outform der | net | pem] [-passin arg] [-pubkey]
-                  [-purpose] [-req] [-serial] [-set_serial n] [-setalias arg]
-                  [-signkey file] [-startdate] [-subject] [-subject_hash]
-                  [-subject_hash_old] [-text] [-trustout] [-x509toreq]
+     openssl x509  [-C] [-addreject arg] [-addtrust arg] [-alias] [-CA file]
+                   [-CAcreateserial] [-CAform der | pem] [-CAkey file]
+                   [-CAkeyform der | pem] [-CAserial file] [-certopt option]
+                   [-checkend arg] [-clrext] [-clrreject] [-clrtrust] [-dates]
+                   [-days arg] [-email] [-enddate] [-extensions section]
+                   [-extfile file] [-fingerprint] [-hash] [-in file]
+                   [-inform der | net | pem] [-issuer] [-issuer_hash]
+                   [-issuer_hash_old] [-keyform der | pem] [-md5 | -sha1]
+                   [-modulus] [-nameopt option] [-next_serial] [-noout]
+                   [-ocsp_uri] [-ocspid] [-out file] [-outform der | net | pem]
+                   [-passin arg] [-pubkey] [-purpose] [-req] [-serial]
+                   [-set_serial n] [-setalias arg] [-signkey file]
+                   [-sigopt nm:v] [-startdate] [-subject] [-subject_hash]
+                   [-subject_hash_old] [-text] [-trustout] [-x509toreq]
 
      The x509 command is a multi-purpose certificate utility.  It can be used to
      display certificate information, convert certificates to various forms,
@@ -3890,6 +4596,9 @@ X509
                  and \WXXXXXXXX for 32 bits, and any UTF8Strings are converted
                  to their character form first.
 
+     -next_serial
+           Print the next serial number.
+
      -noout
            Do not output the encoded version of the request.
 
@@ -3904,6 +4613,11 @@ X509
 
      -serial
            Print the certificate serial number.
+
+     -sigopt nm:v
+           Pass options to the signature algorithm during sign or certify
+           operations.  The names and values of these options are algorithm-
+           specific.
 
      -startdate
            Print the start date of the certificate; that is, the notBefore date.
@@ -3925,7 +4639,7 @@ X509
 
      A trusted certificate is a certificate which has several additional pieces
      of information attached to it such as the permitted and prohibited uses of
-     the certificate and an alias.  When a certificate is being verified at
+     the certificate and an alias.  When a certificate is being verified, at
      least one certificate must be trusted.  By default, a trusted certificate
      must be stored locally and be a root CA.  The following are x509 trust
      settings options:
@@ -4192,6 +4906,7 @@ COMMON NOTATION
            der     Distinguished Encoding Rules (DER) is a binary format.
            net     Insecure legacy format.
            pem     Privacy Enhanced Mail (PEM) is base64-encoded.
+           pvk     Private Key format.
            smime   An SMIME format message.
            txt     Plain ASCII text.
 

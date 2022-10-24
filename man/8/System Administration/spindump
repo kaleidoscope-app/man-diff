@@ -17,27 +17,28 @@ DESCRIPTION
 
      -------------------------------------
 
-     When run manually, spindump samples user and kernel stacks for every
-     process in the system. Spindump supports two display formats for stacks,
-     heavy and timeline, and includes a binary representation of its data at the
-     end of reports for re-reporting with different options (see -i ). Spindump
-     can also parse reports in timeline format even without a binary
+     When run manually, spindump samples user and kernel callstacks for every
+     process in the system. Spindump supports two display formats for
+     callstacks, heavy and timeline, and includes a binary representation of its
+     data at the end of reports for re-reporting with different options (see -i
+     ). Spindump can also parse reports in timeline format even without a binary
      representation to re-report them in heavy format.
 
-     When displayed in heavy format, stacks are sorted by count and each unique
-     stack is displayed once. In this snippet:
+     When displayed in heavy format, callstacks are sorted by count and each
+     unique callstack is displayed once. In this snippet:
 
      84  __CFRunLoopRun + 1161 (CoreFoundation + 460665) [0x7fff8d662779]
 
      Address 0x7fff8d662779 was sampled 84 times in total, not necessarily
      consecutively. The address corresponds __CFRunLoopRun in CoreFoundation.
 
-     When displayed in timeline format, samples are sorted so that the leaf
-     frames in the sample tree are presented in chronological order. Each frame
-     includes a time range of consecutive samples in which the frame was seen,
-     which can be compared with the range of other frames to determine
-     concurrency. If multiple samples of the same stack were not consecutive,
-     the stack will be displayed multiple times. In this snippet:
+     When displayed in timeline format, callstacks are sorted so that the leaf
+     frames in the call tree are presented in chronological order. Each frame
+     includes a time range of consecutive callstacks in which the frame was
+     seen, which can be compared with the range of other frames to determine
+     concurrency. If multiple samples of the same callstack were not
+     consecutive, the callstack will be displayed multiple times. In this
+     snippet:
 
      23  __CFRunLoopRun + 1161 (CoreFoundation + 460665) [0x7fff8d662779] 50-72
 
@@ -73,7 +74,7 @@ ARGUMENTS
 
          * Spindump text files containing a spindump binary format
          * Spindump text files without a spindump binaty format written in
-     timeline mode (with limited options, and only stacks will be updated;
+     timeline mode (with limited options, and only callstacks will be updated;
      summary information will not change)
          * Tailspin files
          * Concatenated kcdata stackshots
@@ -92,16 +93,16 @@ ARGUMENTS
 
      -endIndex e Omit frames after sample number e
 
-     -heavy Sort stacks by count (default)
+     -heavy Sort callstacks by count (default)
 
-     -timeline Sort stacks chronologically
+     -timeline Sort callstacks chronologically
 
      -wait Wait for the process to exist before sampling. If the process already
      exists, spindump will begin sampling immediately.
 
-     -onlyRunnable Only display runnable stacks
+     -onlyRunnable Only display runnable callstacks
 
-     -onlyBlocked Only display non-runnable stacks
+     -onlyBlocked Only display non-runnable callstacks
 
      -onlyTarget Only sample the target process (allows faster sampling rates)
 
@@ -143,10 +144,11 @@ ARGUMENTS
      -displayIdleWorkQueueThreads Display idle work queue threads in the textual
      report (by default they are omitted)
 
-     -aggregateStacksByThread Group stacks by thread ID rather than by dispatch
-     queue
+     -aggregateCallTreesByThread Group call trees by thread ID rather than by
+     dispatch queue
 
-     -aggregateStacksByProcess Each process gets one stack for all threads
+     -aggregateCallTreesByProcess Each process gets one call tree for all
+     threads
 
      -omitFramesBelowSampleCount c Omit frames with count below c
 

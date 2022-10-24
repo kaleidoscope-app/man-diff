@@ -56,6 +56,10 @@ OPTIONS
 
        -x     Do not cross volume boundaries when archiving.
 
+       -p     Generate destination path automatically based on source path. For
+              example 'aa archive -d foo -p' becomes 'aa archive -d foo -o
+              foo.aar'.
+
        -a algorithm
               Compression algorithm used when creating archives. One of lzfse,
               lzma, lz4, zlib, raw. Default is lzfse.
@@ -296,6 +300,14 @@ EXAMPLES
        password from the Keychain (requires local authentication)
 
               aa extract -o foo.aea -d dst -keychain
+
+       Archive directory foo to archive foo.aar
+
+              aa archive -p -d foo
+
+       Extract archive foo.aar to directory foo
+
+              aa extract -p -i foo.aar
 
 
 

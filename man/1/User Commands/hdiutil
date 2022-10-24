@@ -349,14 +349,6 @@ VERBS
                 -imagekey di-sparse-puma-compatible=TRUE and -imagekey
                 di-shadow-puma-compatible=TRUE will create, respectively, sparse
                 and shadow images that can be attached on Mac OS X 10.1.
-                -imagekey encrypted-encoding-version can select between version
-                1 and version 2 of the encrypted encoding.  The framework
-                preferences have a corresponding key to change the default for
-                all images.  Version 2 is not compatible with Mac OS X 10.2 but
-                is more robust for SPARSE (UDSP) images.  Version 1 is the
-                default for non-sparse images.  As of Mac OS X 10.4.7, sparse
-                encrypted images always use version 2 and as of Mac OS X 10.5,
-                all encrypted images default to version 2.
 
                 General options:
                 -align alignment
@@ -1596,13 +1588,18 @@ COMPATIBILITY
 
      macOS 12.0:
 
-           •   Deprecated UDBZ format (bzip2 compression)
+           •   Deprecated UDBZ format (bzip2 compression).
 
            •   Deprecated segmented UDIF images (hdiutil segment, -segmentSize
-               argument in hdiutil create & convert)
+               argument in hdiutil create & convert).
 
            •   Deprecated hdiutil udifrez/udifderez (embed and extract
-               resources)
+               resources).
+
+     macOS 13.0:
+
+           •   Removed the option "encrypted-encoding-version". All new
+               encrypted images are created with encrypted encoding version 2.
 
 HISTORY
      Disk images were first invented to electronically store and transmit

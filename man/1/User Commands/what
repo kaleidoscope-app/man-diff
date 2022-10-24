@@ -4,19 +4,35 @@ NAME
      what – show what versions of object modules were used to construct a file
 
 SYNOPSIS
-     what name ...
+     what [-qs] [file ...]
 
 DESCRIPTION
-     what reads each file name and searches for sequences of the form “@(#)”, as
-     inserted by the source code control system.  It prints the remainder of the
-     string following this marker, up to a null character, newline, double
-     quote, or “> character.”
+     The what utility searches each specified file for sequences of the form
+     “@(#)” as inserted by the SCCS source code control system.  It prints the
+     remainder of the string following this marker, up to a NUL character,
+     newline, double quote, ‘>’ character, or backslash.
 
-BUGS
-     As BSD is not licensed to distribute SCCS.  This is a rewrite of the what
-     command which is part of SCCS; it may not behave in exactly the same manner
-     as that command does.
+     The following options are available:
+
+     -q      Only output the match text, rather than formatting it.
+
+     -s      Stop searching each file after the first match.
+
+EXIT STATUS
+     Exit status is 0 if any matches were found, otherwise 1.
+
+SEE ALSO
+     ident(1), strings(1)
+
+STANDARDS
+     The what utility conforms to IEEE Std 1003.1-2001 (“POSIX.1”).  The -q
+     option is a non-standard FreeBSD extension which may not be available on
+     other operating systems.
 
 HISTORY
      The what command appeared in 4.0BSD.
+
+BUGS
+     This is a rewrite of the SCCS command of the same name, and behavior may
+     not be identical.
 

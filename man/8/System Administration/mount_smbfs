@@ -55,6 +55,38 @@ DESCRIPTION
                      Force share encryption to be used for that share and also
                      for IPC$ traffic
 
+             filemode
+                     Specify permissions that should be assigned to files. The
+                     value must be specified as an octal number. Default value
+                     is taken from mount point.
+
+                      Note that these permissions can differ from the rights
+                     granted by SMB server.
+
+             dirmode
+                     Specify permissions that should be assigned to directories.
+                     The value must be specified as an octal number. Default
+                     value adds execute permission where the file mode gives
+                     read permission.
+
+                      Note that these permissions can differ from the rights
+                     granted by SMB server.
+
+             snapshot
+                     Do a read only mount using the specific snapshot of the
+                     share.  A new session is created to allow multiple
+                     snapshots of the same share to be mounted.  Value must be
+                     in GMT format e.g. @GMT-YYYY.MM.DD-HH.MM.SS
+
+             nopassprompt
+                     Do not ask for a password.  At run time, mount_smbfs reads
+                     the ~/Library/Preferences/nsmb.conf file for additional
+                     configuration parameters and a password.  If no password is
+                     found, mount_smbfs prompts for it.
+
+             forcenewsession
+                     Force a new session to be created to the server.
+
      -f mode, -d mode
              Specify permissions that should be assigned to files and
              directories.  The values must be specified as octal numbers.

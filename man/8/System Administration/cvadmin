@@ -285,6 +285,22 @@ COMMANDS
               an mdarchive build, file recovery, or metadata restore is in
               progress.
 
+       mdarchive throttle set <threshold> <delay>
+              Set the threshold (number of bundles) and delay (milliseconds) for
+              throttling incoming metadata changes to allow an update backlog to
+              dissipate. Throttling is disabled when delay is equal to 0 which
+              is the default.  In addition to using the cvadmin mdarchive
+              command, throttling can be set at FSM startup using the
+              MDARCHIVE_THROTTLE_THRESHOLD and MDARCHIVE_THROTTLE_DELAY
+              environment variables.  Note: this option is not intended for
+              general use. Only enable throttling when recommended by Technical
+              Support.  Note: the throttling capability may change or be removed
+              in a future release.
+
+       mdarchive throttle show
+              Display current mdarchive throttle settings. See "mdarchive
+              throttle set" above.
+
        paths  Display the Xsan disk volumes visible to the local system.  The
               display is grouped by <controller> identity, and will indicate the
               "Active" or "Passive" nature of the path if the Raid Controller

@@ -42,7 +42,19 @@ DESCRIPTION
               different CPU cores on a multi-core or multi-processor system
               might be running at different speeds, or might not have time
               counters all synchronized, so packets time-stamped by different
-              cores might not have consistent time stamps.
+              cores might not have consistent time stamps;
+
+              some time sources, such as those that supply POSIX "seconds since
+              the Epoch" time, do not count leap seconds, meaning that the
+              seconds portion (tv_sec) of the time stamp might not be
+              incremented for a leap second, so that the fraction-of-a-second
+              part of the time stamp might roll over past zero but the second
+              part would not change, or the clock might run slightly more slowly
+              for a period before the leap second.
+
+       For these reasons, time differences between packet time stamps will not
+       necessarily accurately reflect the time differences between the receipt
+       or transmission times of the packets.
 
        In addition, packets time-stamped by different cores might be time-
        stamped in one order and added to the queue of packets for libpcap to
@@ -57,6 +69,9 @@ DESCRIPTION
        synchronized with the host operating system's clock, so that, for
        example, the time stamp of a packet might not correspond to the time
        stamp of an event on the host triggered by the arrival of that packet.
+       If they are synchronized with the host operating system's clock, some of
+       the issues listed above with time stamps supplied by the host operating
+       system may also apply to time stamps supplied by the capture device.
 
        Depending on the capture device and the software on the host, libpcap
        might allow different types of time stamp to be used.  The
@@ -85,9 +100,15 @@ DESCRIPTION
 
             PCAP_TSTAMP_HOST_HIPREC - host_hiprec
                  Time stamp provided by the host on which the capture is being
-                 done.  This is a high-precision time stamp; it might or might
-                 not be synchronized with the host operating system's clock.  It
-                 might be more expensive to fetch than PCAP_TSTAMP_HOST_LOWPREC.
+                 done.  This is a high-precision time stamp, synchronized with
+                 the host operating system's clock. It might be more expensive
+                 to fetch than PCAP_TSTAMP_HOST_LOWPREC.
+
+            PCAP_TSTAMP_HOST_HIPREC_UNSYNCED - host_hiprec_unsynced
+                 Time stamp provided by the host on which the capture is being
+                 done.  This is a high-precision time stamp, not synchronized
+                 with the host operating system's clock. It might be more
+                 expensive to fetch than PCAP_TSTAMP_HOST_LOWPREC.
 
             PCAP_TSTAMP_ADAPTER - adapter
                  Time stamp provided by the network adapter on which the capture
@@ -98,6 +119,17 @@ DESCRIPTION
                  Time stamp provided by the network adapter on which the capture
                  is being done.  This is a high-precision time stamp; it is not
                  synchronized with the host operating system's clock.
+
+       Time stamps synchronized with the system clock can go backwards, as the
+       system clock can go backwards. If a clock is not in sync with the system
+       clock, that could be because the system clock isn't keeping accurate
+       time, because the other clock isn't keeping accurate time, or both.
+
+       Host-provided time stamps generally correspond to the time when the time-
+       stamping code sees the packet; this could be some unknown amount of time
+       after the first or last bit of the packet is received by the network
+       adapter, due to batching of interrupts for packet arrival, queueing
+       delays, etc..
 
        By default, when performing a live capture or reading from a savefile,
        time stamps are supplied as seconds since January 1, 1970, 00:00:00 UTC,

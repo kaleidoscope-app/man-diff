@@ -1,2206 +1,2105 @@
-GROFF_MDOC(7)           Miscellaneous Information Manual           GROFF_MDOC(7)
+MDOC(7)                 Miscellaneous Information Manual                 MDOC(7)
 
 NAME
-     groff_mdoc – reference for groff's mdoc implementation
-
-SYNOPSIS
-     groff -mdoc file ...
+     mdoc – semantic markup language for formatting manual pages
 
 DESCRIPTION
-     A complete reference for writing UNIX manual pages with the -mdoc macro
-     package; a content-based and domain-based formatting package for GNU
-     troff(1).  Its predecessor, the -man(7) package, addressed page layout
-     leaving the manipulation of fonts and other typesetting details to the
-     individual author.  In -mdoc, page layout macros make up the page structure
-     domain which consists of macros for titles, section headers, displays and
-     lists - essentially items which affect the physical position of text on a
-     formatted page.  In addition to the page structure domain, there are two
-     more domains, the manual domain and the general text domain.  The general
-     text domain is defined as macros which perform tasks such as quoting or
-     emphasizing pieces of text.  The manual domain is defined as macros that
-     are a subset of the day to day informal language used to describe commands,
-     routines and related UNIX files.  Macros in the manual domain handle
-     command names, command line arguments and options, function names, function
-     parameters, pathnames, variables, cross references to other manual pages,
-     and so on.  These domain items have value for both the author and the
-     future user of the manual page.  Hopefully, the consistency gained across
-     the manual set will provide easier translation to future documentation
-     tools.
+     The mdoc language supports authoring of manual pages for the man(1) utility
+     by allowing semantic annotations of words, phrases, page sections and
+     complete manual pages.  Such annotations are used by formatting tools to
+     achieve a uniform presentation across all manuals written in mdoc, and to
+     support hyperlinking if supported by the output medium.
 
-     Throughout the UNIX manual pages, a manual entry is simply referred to as a
-     man page, regardless of actual length and without sexist intention.
+     This reference document describes the structure of manual pages and the
+     syntax and usage of the mdoc language.  The reference implementation of a
+     parsing and formatting tool is mandoc(1); the COMPATIBILITY section
+     describes compatibility with other implementations.
 
-GETTING STARTED
-     The material presented in the remainder of this document is outlined as
-     follows:
+     In an mdoc document, lines beginning with the control character ‘.’ are
+     called “macro lines”.  The first word is the macro name.  It consists of
+     two or three letters.  Most macro names begin with a capital letter.  For a
+     list of available macros, see MACRO OVERVIEW.  The words following the
+     macro name are arguments to the macro, optionally including the names of
+     other, callable macros; see MACRO SYNTAX for details.
 
-           1.   TROFF IDIOSYNCRASIES
-                Macro Usage
-                Passing Space Characters in an Argument
-                Trailing Blank Space Characters
-                Escaping Special Characters
-                Other Possible Pitfalls
+     Lines not beginning with the control character are called “text lines”.
+     They provide free-form text to be printed; the formatting of the text
+     depends on the respective processing context:
 
-           2.   A MANUAL PAGE TEMPLATE
+           .Sh Macro lines change control state.
+           Text lines are interpreted within the current state.
 
-           3.   CONVENTIONS
+     Many aspects of the basic syntax of the mdoc language are based on the
+     roff(7) language; see the LANGUAGE SYNTAX and MACRO SYNTAX sections in the
+     roff(7) manual for details, in particular regarding comments, escape
+     sequences, whitespace, and quoting.  However, using roff(7) requests in
+     mdoc documents is discouraged; mandoc(1) supports some of them merely for
+     backward compatibility.
 
-           4.   TITLE MACROS
+MANUAL STRUCTURE
+     A well-formed mdoc document consists of a document prologue followed by one
+     or more sections.
 
-           5.   INTRODUCTION OF MANUAL AND GENERAL TEXT DOMAINS
-                What's in a Name...
-                General Syntax
+     The prologue, which consists of the Dd, Dt, and Os macros in that order, is
+     required for every document.
 
-           6.   MANUAL DOMAIN
-                Addresses
-                Author Name
-                Arguments
-                Configuration Declarations (Section Four Only)
-                Command Modifiers
-                Defined Variables
-                Errno's
-                Environment Variables
-                Flags
-                Function Declarations
-                Function Types
-                Functions (Library Routines)
-                Function Arguments
-                Return Values
-                Exit Status
-                Interactive Commands
-                Library Names
-                Literals
-                Names
-                Options
-                Pathnames
-                Standards
-                Variable Types
-                Variables
-                Manual Page Cross References
+     The first section (sections are denoted by Sh) must be the NAME section,
+     consisting of at least one Nm followed by Nd.
 
-           7.   GENERAL TEXT DOMAIN
-                AT&T Macro
-                BSD Macro
-                NetBSD Macro
-                FreeBSD Macro
-                OpenBSD Macro
-                BSD/OS Macro
-                UNIX Macro
-                Emphasis Macro
-                Font Mode
-                Enclosure and Quoting Macros
-                No-Op or Normal Text Macro
-                No-Space Macro
-                Section Cross References
-                Symbolics
-                Mathematical Symbols
-                References and Citations
-                Trade Names (or Acronyms and Type Names)
-                Extended Arguments
+     Following that, convention dictates specifying at least the SYNOPSIS and
+     DESCRIPTION sections, although this varies between manual sections.
 
-           8.   PAGE STRUCTURE DOMAIN
-                Section Headers
-                Subsection Headers
-                Paragraphs and Line Spacing
-                Keeps
-                Examples and Displays
-                Lists and Columns
+     The following is a well-formed skeleton mdoc file for a utility "progname":
 
-           9.   MISCELLANEOUS MACROS
-
-           10.  PREDEFINED STRINGS
-
-           11.  DIAGNOSTICS
-
-           12.  FORMATTING WITH GROFF, TROFF, AND NROFF
-
-           13.  FILES
-
-           14.  SEE ALSO
-
-           15.  BUGS
-
-TROFF IDIOSYNCRASIES
-     The -mdoc package attempts to simplify the process of writing a man page.
-     Theoretically, one should not have to learn the tricky details of GNU
-     troff(1) to use -mdoc; however, there are a few limitations which are
-     unavoidable and best gotten out of the way.  And, too, be forewarned, this
-     package is not fast.
-
-   Macro Usage
-     As in GNU troff(1), a macro is called by placing a ‘.’ (dot character) at
-     the beginning of a line followed by the two-character (or three-character)
-     name for the macro.  There can be space or tab characters between the dot
-     and the macro name.  Arguments may follow the macro separated by spaces
-     (but no tabs).  It is the dot character at the beginning of the line which
-     causes GNU troff(1) to interpret the next two (or more) characters as a
-     macro name.  A single starting dot followed by nothing is ignored.  To
-     place a ‘.’ (dot character) at the beginning of an input line in some
-     context other than a macro invocation, precede the ‘.’ (dot) with the ‘\&’
-     escape sequence which translates literally to a zero-width space, and is
-     never displayed in the output.
-
-     In general, GNU troff(1) macros accept an unlimited number of arguments
-     (contrary to other versions of troff which can't handle more than nine
-     arguments).  In limited cases, arguments may be continued or extended on
-     the next line (See Extended Arguments below).  Almost all macros handle
-     quoted arguments (see Passing Space Characters in an Argument below).
-
-     Most of the -mdoc general text domain and manual domain macros are special
-     in that their argument lists are parsed for callable macro names.  This
-     means an argument on the argument list which matches a general text or
-     manual domain macro name (and which is defined to be callable) will be
-     executed or called when it is processed.  In this case the argument,
-     although the name of a macro, is not preceded by a ‘.’ (dot).  This makes
-     it possible to nest macros; for example the option macro, ‘.Op’, may call
-     the flag and argument macros, ‘Fl’ and ‘Ar’, to specify an optional flag
-     with an argument:
-
-           [-s bytes]         is produced by ‘.Op Fl s Ar bytes’
-
-     To prevent a string from being interpreted as a macro name, precede the
-     string with the escape sequence ‘\&’:
-
-           [Fl s Ar bytes]    is produced by ‘.Op \&Fl s \&Ar bytes’
-
-     Here the strings ‘Fl’ and ‘Ar’ are not interpreted as macros.  Macros whose
-     argument lists are parsed for callable arguments are referred to as parsed
-     and macros which may be called from an argument list are referred to as
-     callable throughout this document.  This is a technical faux pas as almost
-     all of the macros in -mdoc are parsed, but as it was cumbersome to
-     constantly refer to macros as being callable and being able to call other
-     macros, the term parsed has been used.
-
-     In the following, we call an -mdoc macro which starts a line (with a
-     leading dot) a command if this distinction is necessary.
-
-   Passing Space Characters in an Argument
-     Sometimes it is desirable to give as an argument a string containing one or
-     more blank space characters, say, to specify arguments to commands which
-     expect particular arrangement of items in the argument list.  Additionally,
-     it makes -mdoc working faster.  For example, the function command ‘.Fn’
-     expects the first argument to be the name of a function and any remaining
-     arguments to be function parameters.  As ANSI C stipulates the declaration
-     of function parameters in the parenthesized parameter list, each parameter
-     is guaranteed to be at minimum a two word string.  For example, int foo.
-
-     There are two possible ways to pass an argument which contains an embedded
-     space.  One way of passing a string containing blank spaces is to use the
-     hard or unpaddable space character ‘\ ’, that is, a blank space preceded by
-     the escape character ‘\’.  This method may be used with any macro but has
-     the side effect of interfering with the adjustment of text over the length
-     of a line.  Troff sees the hard space as if it were any other printable
-     character and cannot split the string into blank or newline separated
-     pieces as one would expect.  This method is useful for strings which are
-     not expected to overlap a line boundary.  An alternative is to use ‘\~’, a
-     paddable (i.e. stretchable), unbreakable space (this is a GNU troff(1)
-     extension).  The second method is to enclose the string with double quotes.
-
-     For example:
-
-           fetch(char_*str)     is created by ‘.Fn fetch char\ *str’
-
-           fetch(char *str)     can also be created by ‘.Fn fetch "char *str"’
-
-     If the ‘\’ before the space in the first example or double quotes in the
-     second example were omitted, ‘.Fn’ would see three arguments, and the
-     result would be:
-
-           fetch(char, *str)
-
-   Trailing Blank Space Characters
-     Troff can be confused by blank space characters at the end of a line.  It
-     is a wise preventive measure to globally remove all blank spaces from
-     ⟨blank-space⟩⟨end-of-line⟩ character sequences.  Should the need arise to
-     use a blank character at the end of a line, it may be forced with an
-     unpaddable space and the ‘\&’ escape character.  For example, ‘string\ \&’.
-
-   Escaping Special Characters
-     Special characters like the newline character ‘\n’ are handled by replacing
-     the ‘\’ with ‘\e’ (e.g. ‘\en’) to preserve the backslash.
-
-   Other Possible Pitfalls
-     A warning is emitted when an empty input line is found outside of displays
-     (see below).  Use ‘.sp’ instead.  (Well, it is even better to use -mdoc
-     macros to avoid the usage of low-level commands.)
-
-     Leading spaces will cause a break and are output directly.  Avoid this
-     behaviour if possible.  Similarly, do not use more than one space character
-     between words in an ordinary text line; contrary to other text formatters,
-     they are not replaced with a single space.
-
-     You can't pass ‘"’ directly as an argument.  Use ‘\*[q]’ (or ‘\*q’)
-     instead.
-
-     By default, troff(1) inserts two space characters after a punctuation mark
-     closing a sentence; characters like ‘)’ or ‘'’ are treated transparently,
-     not influencing the sentence-ending behaviour.  To change this, insert ‘\&’
-     before or after the dot:
-
-           The
-           .Ql .
-           character.
-           .Pp
-           The
-           .Ql \&.
-           character.
-           .Pp
-           .No test .
-           test
-           .Pp
-           .No test.
-           test
-
-     gives
-
-           The ‘’.  character
-
-           The ‘.’ character.
-
-           test.  test
-
-           test. test
-
-     As can be seen in the first and third line, -mdoc handles punctuation
-     characters specially in macro arguments.  This will be explained in section
-     General Syntax below.  In the same way, you have to protect trailing full
-     stops of abbreviations with a trailing zero-width space: ‘e.g.\&’.
-
-     A comment in the source file of a man page can be either started with ‘.\"’
-     on a single line, ‘\"’ after some input, or ‘\#’ anywhere (the latter is a
-     GNU troff(1) extension); the rest of such a line is ignored.
-
-A MANUAL PAGE TEMPLATE
-     The body of a man page is easily constructed from a basic template:
-
-           .\" The following commands are required for all man pages.
-           .Dd Month day, year
-           .Os [OPERATING_SYSTEM] [version/release]
-           .Dt DOCUMENT_TITLE [section number] [architecture/volume]
+           .Dd $Mdocdate$
+           .Dt PROGNAME section
+           .Os
            .Sh NAME
-           .Nm name
-           .Nd one line description of name
-           .\" This next command is for sections 2 and 3 only.
+           .Nm progname
+           .Nd one line about what it does
            .\" .Sh LIBRARY
+           .\" For sections 2, 3, and 9 only.
+           .\" Not used in OpenBSD.
            .Sh SYNOPSIS
+           .Nm progname
+           .Op Fl options
+           .Ar
            .Sh DESCRIPTION
-           .\" The following commands should be uncommented and
-           .\" used where appropriate.
+           The
+           .Nm
+           utility processes files ...
+           .\" .Sh CONTEXT
+           .\" For section 9 functions only.
            .\" .Sh IMPLEMENTATION NOTES
-           .\" This next command is for sections 2, 3 and 9 function
-           .\" return values only.
+           .\" Not used in OpenBSD.
            .\" .Sh RETURN VALUES
-           .\" This next command is for sections 1, 6, 7 and 8 only.
+           .\" For sections 2, 3, and 9 function return values only.
            .\" .Sh ENVIRONMENT
+           .\" For sections 1, 6, 7, and 8 only.
            .\" .Sh FILES
+           .\" .Sh EXIT STATUS
+           .\" For sections 1, 6, and 8 only.
            .\" .Sh EXAMPLES
-           .\" This next command is for sections 1, 6, 7, 8 and 9 only
-           .\"     (command return values (to shell) and
-           .\"     fprintf/stderr type diagnostics).
            .\" .Sh DIAGNOSTICS
-           .\" .Sh COMPATIBILITY
-           .\" This next command is for sections 2, 3 and 9 error
-           .\"     and signal handling only.
+           .\" For sections 1, 4, 6, 7, 8, and 9 printf/stderr messages only.
            .\" .Sh ERRORS
+           .\" For sections 2, 3, 4, and 9 errno settings only.
            .\" .Sh SEE ALSO
+           .\" .Xr foobar 1
            .\" .Sh STANDARDS
            .\" .Sh HISTORY
            .\" .Sh AUTHORS
+           .\" .Sh CAVEATS
            .\" .Sh BUGS
+           .\" .Sh SECURITY CONSIDERATIONS
+           .\" Not used in OpenBSD.
 
-     The first items in the template are the commands ‘.Dd’, ‘.Os’, and ‘.Dt’;
-     the document date, the operating system the man page or subject source is
-     developed or modified for, and the man page title (in upper case) along
-     with the section of the manual the page belongs in.  These commands
-     identify the page and are discussed below in TITLE MACROS.
+     The sections in an mdoc document are conventionally ordered as they appear
+     above.  Sections should be composed as follows:
 
-     The remaining items in the template are section headers (.Sh); of which
-     NAME, SYNOPSIS, and DESCRIPTION are mandatory.  The headers are discussed
-     in PAGE STRUCTURE DOMAIN, after presentation of MANUAL DOMAIN.  Several
-     content macros are used to demonstrate page layout macros; reading about
-     content macros before page layout macros is recommended.
+           NAME
+           The name(s) and a one line description of the documented material.
+           The syntax for this as follows:
 
-CONVENTIONS
-     In the description of all macros below, optional arguments are put into
-     brackets.  An ellipsis (‘...’) represents zero or more additional
-     arguments.  Alternative values for a parameter are separated with ‘|’.  If
-     there are alternative values for a mandatory parameter, braces are used
-     (together with ‘|’) to enclose the value set.  Meta-variables are specified
-     within angles.
+                 .Nm name0 ,
+                 .Nm name1 ,
+                 .Nm name2
+                 .Nd a one line description
 
-     Example:
+           Multiple ‘Nm’ names should be separated by commas.
 
-           .Xx ⟨foo⟩ {bar1 | bar2} [-test1 [-test2 | -test3]] ...
+           The Nm macro(s) must precede the Nd macro.
 
-     Except stated explicitly, all macros are parsed and callable.
+           See Nm and Nd.
 
-     Note that a macro takes effect up to the next nested macro.  For example,
-     ‘.Ic foo Aq bar’ doesn't produce ‘foo <bar>’ but ‘foo ⟨bar⟩’.
-     Consequently, a warning message is emitted for most commands if the first
-     argument is a macro itself since it cancels the effect of the calling
-     command completely.  Another consequence is that quoting macros never
-     insert literal quotes; ‘foo <bar>’ has been produced by ‘.Ic "foo <bar>"’.
+           LIBRARY
+           The name of the library containing the documented material, which is
+           assumed to be a function in a section 2, 3, or 9 manual.  The syntax
+           for this is as follows:
 
-     Most macros have a default width value which can be used to specify a label
-     width (-width) or offset (-offset) for the ‘.Bl’ and ‘.Bd’ macros.  It is
-     recommended not to use this rather obscure feature to avoid dependencies on
-     local modifications of the -mdoc package.
+                 .Lb libarm
 
-TITLE MACROS
-     The title macros are part of the page structure domain but are presented
-     first and separately for someone who wishes to start writing a man page
-     yesterday.  Three header macros designate the document title or manual page
-     title, the operating system, and the date of authorship.  These macros are
-     called once at the very beginning of the document and are used to construct
-     headers and footers only.
+           See Lb.
 
-     .Dt [⟨document title⟩] [⟨section number⟩] [⟨volume⟩]
-             The document title is the subject of the man page and must be in
-             CAPITALS due to troff limitations.  If omitted, ‘UNTITLED’ is used.
-             The section number may be a number in the range 1, ..., 9 or
-             ‘unass’, ‘draft’, or ‘paper’.  If it is specified, and no volume
-             name is given, a default volume name is used.
+           SYNOPSIS
+           Documents the utility invocation syntax, function call syntax, or
+           device configuration.
 
-             Under , the following sections are defined:
+           For the first, utilities (sections 1, 6, and 8), this is generally
+           structured as follows:
 
-                   1
-                   2
-                   3
-                   4
-                   5
-                   6
-                   7
-                   8
-                   9
+                 .Nm bar
+                 .Op Fl v
+                 .Op Fl o Ar file
+                 .Op Ar
+                 .Nm foo
+                 .Op Fl v
+                 .Op Fl o Ar file
+                 .Op Ar
 
-             A volume name may be arbitrary or one of the following:
+           Commands should be ordered alphabetically.
 
-                   USD
-                   PS1
-                   AMD
-                   SMM
-                   URM
-                   PRM
-                   KM
-                   IND
-                   LOCAL
-                   CON
+           For the second, function calls (sections 2, 3, 9):
 
-             For compatibility, ‘MMI’ can be used for ‘IND’, and ‘LOC’ for
-             ‘LOCAL’.  Values from the previous table will specify a new volume
-             name.  If the third parameter is a keyword designating a computer
-             architecture, its value is prepended to the default volume name as
-             specified by the second parameter.  By default, the following
-             architecture keywords are defined:
+                 .In header.h
+                 .Vt extern const char *global;
+                 .Ft "char *"
+                 .Fn foo "const char *src"
+                 .Ft "char *"
+                 .Fn bar "const char *src"
 
-                   alpha, acorn26, acorn32, algor, amd64, amiga, arc, arm26,
-                   arm32, atari, bebox, cats, cesfic, cobalt, dreamcast, evbarm,
-                   evbmips, evbppc, evbsh3, hp300, hp700, hpcmips, i386,
-                   luna68k, m68k, mac68k, macppc, mips, mmeye, mvme68k, mvmeppc,
-                   netwinder, news68k, newsmips, next68k, ofppc, pc532, pmax,
-                   pmppc, powerpc, prep, sandpoint, sgimips, sh3, shark, sparc,
-                   sparc64, sun3, tahoe, vax, x68k, x86_64
+           Ordering of In, Vt, Fn, and Fo macros should follow C header-file
+           conventions.
 
-             If the section number is neither a numeric expression in the range
-             1 to 9 nor one of the above described keywords, the third parameter
-             is used verbatim as the volume name.
+           And for the third, configurations (section 4):
 
-             In the following examples, the left (which is identical to the
-             right) and the middle part of the manual page header strings are
-             shown.  Note how ‘\&’ prevents the digit 7 from being a valid
-             numeric expression.
+                 .Cd "it* at isa? port 0x2e"
+                 .Cd "it* at isa? port 0x4e"
 
-                   .Dt FOO 7           ‘FOO(7)’ ‘’
-                   .Dt FOO 7 bar       ‘FOO(7)’ ‘’
-                   .Dt FOO \&7 bar     ‘FOO(7)’ ‘bar’
-                   .Dt FOO 2 i386      ‘FOO(2)’ ‘/’
-                   .Dt FOO "" bar      ‘FOO’ ‘bar’
+           Manuals not in these sections generally don't need a SYNOPSIS.
 
-             Local, OS-specific additions might be found in the file mdoc.local;
-             look for strings named ‘volume-ds-XXX’ (for the former type) and
-             ‘volume-as-XXX’ (for the latter type); ‘XXX’ then denotes the
-             keyword to be used with the ‘.Dt’ macro.
+           Some macros are displayed differently in the SYNOPSIS section,
+           particularly Nm, Cd, Fd, Fn, Fo, In, Vt, and Ft.  All of these macros
+           are output on their own line.  If two such dissimilar macros are
+           pairwise invoked (except for Ft before Fo or Fn), they are separated
+           by a vertical space, unless in the case of Fo, Fn, and Ft, which are
+           always separated by vertical space.
 
-             This macro is neither callable nor parsed.
+           When text and macros following an Nm macro starting an input line
+           span multiple output lines, all output lines but the first will be
+           indented to align with the text immediately following the Nm macro,
+           up to the next Nm, Sh, or Ss macro or the end of an enclosing block,
+           whichever comes first.
 
-     .Os [⟨operating system⟩] [⟨release⟩]
-             If the first parameter is empty, the default ‘’ is used.  This may
-             be overridden in the local configuration file, mdoc.local.  In
-             general, the name of the operating system should be the common
-             acronym, e.g. BSD or ATT.  The release should be the standard
-             release nomenclature for the system specified.  In the following
-             table, the possible second arguments for some predefined operating
-             systems are listed.  Similar to ‘.Dt’, local additions might be
-             defined in mdoc.local; look for strings named
-             ‘operating-system-XXX-YYY’, where ‘XXX’ is the acronym for the
-             operating system and ‘YYY’ the release ID.
+           DESCRIPTION
+           This begins with an expansion of the brief, one line description in
+           NAME:
 
-                   ATT          7th, 7, III, 3, V, V.2, V.3, V.4
+                 The
+                 .Nm
+                 utility does this, that, and the other.
 
-                   BSD          3, 4, 4.1, 4.2, 4.3, 4.3t, 4.3T, 4.3r, 4.3R, 4.4
+           It usually follows with a breakdown of the options (if documenting a
+           command), such as:
 
-                   NetBSD       0.8, 0.8a, 0.9, 0.9a, 1.0, 1.0a, 1.1, 1.2, 1.2a,
-                                1.2b, 1.2c, 1.2d, 1.2e, 1.3, 1.3a, 1.4, 1.4.1,
-                                1.4.2, 1.4.3, 1.5, 1.5.1, 1.5.2, 1.5.3, 1.6,
-                                1.6.1, 1.6.2, 2.0, 2.0.1, 2.0.2, 2.1
-
-                   FreeBSD      1.0, 1.1, 1.1.5, 1.1.5.1, 2.0, 2.0.5, 2.1,
-                                2.1.5, 2.1.6, 2.1.7, 2.2, 2.2.1, 2.2.2, 2.2.5,
-                                2.2.6, 2.2.7, 2.2.8, 3.0, 3.1, 3.2, 3.3, 3.4,
-                                3.5, 4.0, 4.1, 4.1.1, 4.2, 4.3, 4.4, 4.5, 4.6,
-                                4.6.2, 4.7, 4.8, 4.9, 4.10, 5.0, 5.1, 5.2,
-                                5.2.1, 5.3
-
-             For ATT, an unknown second parameter will be replaced with the
-             string UNIX; for the other predefined acronyms it will be ignored
-             and a warning message emitted.  Unrecognized arguments are
-             displayed as given in the page footer.  For instance, a typical
-             footer might be:
-
-                   .Os BSD 4.3
-
-             giving ‘4.3 Berkeley Distribution’, or for a locally produced set
-
-                   .Os CS Department
-
-             which will produce ‘CS Department’.
-
-             If the ‘.Os’ macro is not present, the bottom left corner of the
-             manual page will be ugly.
-
-             This macro is neither callable nor parsed.
-
-     .Dd [⟨month⟩ ⟨day⟩, ⟨year⟩]
-             If ‘Dd’ has no arguments, ‘Epoch’ is used for the date string.  If
-             it has exactly three arguments, they are concatenated, separated
-             with unbreakable space:
-
-                   .Dd January 25, 2001
-
-             The month's name shall not be abbreviated.
-
-             With any other number of arguments, the current date is used,
-             ignoring the parameters.
-
-             This macro is neither callable nor parsed.
-
-INTRODUCTION OF MANUAL AND GENERAL TEXT DOMAINS
-   What's in a Name...
-     The manual domain macro names are derived from the day to day informal
-     language used to describe commands, subroutines and related files.
-     Slightly different variations of this language are used to describe the
-     three different aspects of writing a man page.  First, there is the
-     description of -mdoc macro command usage.  Second is the description of a
-     UNIX command with -mdoc macros, and third, the description of a command to
-     a user in the verbal sense; that is, discussion of a command in the text of
-     a man page.
-
-     In the first case, troff(1) macros are themselves a type of command; the
-     general syntax for a troff command is:
-
-           .Xx argument1 argument2 ...
-
-     ‘.Xx’ is a macro command, and anything following it are arguments to be
-     processed.  In the second case, the description of a UNIX command using the
-     content macros is a bit more involved; a typical SYNOPSIS command line
-     might be displayed as:
-
-           filter [-flag] ⟨infile⟩ ⟨outfile⟩
-
-     Here, filter is the command name and the bracketed string -flag is a flag
-     argument designated as optional by the option brackets.  In -mdoc terms,
-     ⟨infile⟩ and ⟨outfile⟩ are called meta arguments; in this example, the user
-     has to replace the meta expressions given in angle brackets with real file
-     names.  Note that in this document meta arguments are used to describe
-     -mdoc commands; in most man pages, meta variables are not specifically
-     written with angle brackets.  The macros which formatted the above example:
-
-           .Nm filter
-           .Op Fl flag
-           .Ao Ar infile Ac Ao Ar outfile Ac
-
-     In the third case, discussion of commands and command syntax includes both
-     examples above, but may add more detail.  The arguments ⟨infile⟩ and
-     ⟨outfile⟩ from the example above might be referred to as operands or file
-     arguments.  Some command line argument lists are quite long:
-
-           make      [-eiknqrstv] [-D variable] [-d flags] [-f makefile] [-I
-                     directory] [-j max_jobs] [variable=value] [target ...]
-
-     Here one might talk about the command make and qualify the argument,
-     makefile, as an argument to the flag, -f, or discuss the optional file
-     operand target.  In the verbal context, such detail can prevent confusion,
-     however the -mdoc package does not have a macro for an argument to a flag.
-     Instead the ‘Ar’ argument macro is used for an operand or file argument
-     like target as well as an argument to a flag like variable.  The make
-     command line was produced from:
-
-           .Nm make
-           .Op Fl eiknqrstv
-           .Op Fl D Ar variable
-           .Op Fl d Ar flags
-           .Op Fl f Ar makefile
-           .Op Fl I Ar directory
-           .Op Fl j Ar max_jobs
-           .Op Ar variable Ns = Ns Ar value
-           .Bk
-           .Op Ar target ...
-           .Ek
-
-     The ‘.Bk’ and ‘.Ek’ macros are explained in Keeps.
-
-   General Syntax
-     The manual domain and general text domain macros share a similar syntax
-     with a few minor deviations; most notably, ‘.Ar’, ‘.Fl’, ‘.Nm’, and ‘.Pa’
-     differ only when called without arguments; and ‘.Fn’ and ‘.Xr’ impose an
-     order on their argument lists.  All content macros are capable of
-     recognizing and properly handling punctuation, provided each punctuation
-     character is separated by a leading space.  If a command is given:
-
-           .Ar sptr, ptr),
-
-     The result is:
-
-           sptr, ptr),
-
-     The punctuation is not recognized and all is output in the font used by
-     ‘.Ar’.  If the punctuation is separated by a leading white space:
-
-           .Ar sptr , ptr ) ,
-
-     The result is:
-
-           sptr, ptr),
-
-     The punctuation is now recognized and output in the default font
-     distinguishing it from the argument strings.  To remove the special meaning
-     from a punctuation character escape it with ‘\&’.
-
-     The following punctuation characters are recognized by -mdoc:
-
-               .         ,         :         ;         (
-               )         [         ]         ?         !
-
-     Troff is limited as a macro language, and has difficulty when presented
-     with a string containing a member of the mathematical, logical or quotation
-     set:
-
-                 {+,-,/,*,%,<,>,<=,>=,=,==,&,`,',"}
-
-     The problem is that troff may assume it is supposed to actually perform the
-     operation or evaluation suggested by the characters.  To prevent the
-     accidental evaluation of these characters, escape them with ‘\&’.  Typical
-     syntax is shown in the first content macro displayed below, ‘.Ad’.
-
-MANUAL DOMAIN
-   Addresses
-     The address macro identifies an address construct.
-
-           Usage: .Ad ⟨address⟩ ...
-
-                    .Ad addr1               addr1
-                    .Ad addr1 .             addr1.
-                    .Ad addr1 , file2       addr1, file2
-                    .Ad f1 , f2 , f3 :      f1, f2, f3:
-                    .Ad addr ) ) ,          addr)),
-
-     The default width is 12n.
-
-   Author Name
-     The ‘.An’ macro is used to specify the name of the author of the item being
-     documented, or the name of the author of the actual manual page.
-
-           Usage: .An ⟨author name⟩ ...
-
-                    .An "Joe Author"            Joe Author
-
-                    .An "Joe Author" ,          Joe Author,
-
-                    .An "Joe Author" Aq nobody@FreeBSD.org
-                                                Joe Author ⟨nobody@FreeBSD.org⟩
-
-                    .An "Joe Author" ) ) ,      Joe Author)),
-
-     The default width is 12n.
-
-     In the AUTHORS section, the ‘.An’ command causes a line break allowing each
-     new name to appear on its own line.  If this is not desirable,
-
-           .An -nosplit
-
-     call will turn this off.  To turn splitting back on, write
-
-           .An -split
-
-   Arguments
-     The .Ar argument macro may be used whenever an argument is referenced.  If
-     called without arguments, the ‘file ...’ string is output.
-
-           Usage: .Ar [⟨argument⟩] ...
-
-                    .Ar                  file ...
-                    .Ar file1            file1
-                    .Ar file1 .          file1.
-                    .Ar file1 file2      file1 file2
-                    .Ar f1 f2 f3 :       f1 f2 f3:
-                    .Ar file ) ) ,       file)),
-
-     The default width is 12n.
-
-   Configuration Declaration (Section Four Only)
-     The ‘.Cd’ macro is used to demonstrate a config(8) declaration for a device
-     interface in a section four manual.
-
-           Usage: .Cd ⟨argument⟩ ...
-
-                    .Cd "device le0 at scode?"      device le0 at scode?
-
-     In the SYNOPSIS section a ‘.Cd’ command causes a line break before and
-     after its arguments are printed.
-
-     The default width is 12n.
-
-   Command Modifiers
-     The command modifier is identical to the ‘.Fl’ (flag) command with the
-     exception that the ‘.Cm’ macro does not assert a dash in front of every
-     argument.  Traditionally flags are marked by the preceding dash, however,
-     some commands or subsets of commands do not use them.  Command modifiers
-     may also be specified in conjunction with interactive commands such as
-     editor commands.  See Flags.
-
-     The default width is 10n.
-
-   Defined Variables
-     A variable (or constant) which is defined in an include file is specified
-     by the macro ‘.Dv’.
-
-           Usage: .Dv ⟨defined variable⟩ ...
-
-                    .Dv MAXHOSTNAMELEN      MAXHOSTNAMELEN
-                    .Dv TIOCGPGRP )         TIOCGPGRP)
-
-     The default width is 12n.
-
-   Errno's
-     The ‘.Er’ errno macro specifies the error return value for section 2, 3,
-     and 9 library routines.  The second example below shows ‘.Er’ used with the
-     ‘.Bq’ general text domain macro, as it would be used in a section two
-     manual page.
-
-           Usage: .Er ⟨errno type⟩ ...
-
-                    .Er ENOENT          ENOENT
-                    .Er ENOENT ) ;      ENOENT);
-                    .Bq Er ENOTDIR      [ENOTDIR]
-
-     The default width is 17n.
-
-   Environment Variables
-     The ‘.Ev’ macro specifies an environment variable.
-
-           Usage: .Ev ⟨argument⟩ ...
-
-                    .Ev DISPLAY            DISPLAY
-                    .Ev PATH .             PATH.
-                    .Ev PRINTER ) ) ,      PRINTER)),
-
-     The default width is 15n.
-
-   Flags
-     The ‘.Fl’ macro handles command line flags.  It prepends a dash, ‘-’, to
-     the flag.  For interactive command flags, which are not prepended with a
-     dash, the ‘.Cm’ (command modifier) macro is identical, but without the
-     dash.
-
-           Usage: .Fl ⟨argument⟩ ...
-
-                    .Fl              -
-                    .Fl cfv          -cfv
-                    .Fl cfv .        -cfv.
-                    .Cm cfv .        cfv.
-                    .Fl s v t        -s -v -t
-                    .Fl - ,          --,
-                    .Fl xyz ) ,      -xyz),
-                    .Fl |            - |
-
-     The ‘.Fl’ macro without any arguments results in a dash representing
-     stdin/stdout.  Note that giving ‘.Fl’ a single dash will result in two
-     dashes.
-
-     The default width is 12n.
-
-   Function Declarations
-     The ‘.Fd’ macro is used in the SYNOPSIS section with section two or three
-     functions.  It is neither callable nor parsed.
-
-           Usage: .Fd ⟨argument⟩ ...
-
-                    .Fd "#include <sys/types.h>"      #include <sys/types.h>
-
-     In the SYNOPSIS section a ‘.Fd’ command causes a line break if a function
-     has already been presented and a break has not occurred.  This leaves a
-     nice vertical space in between the previous function call and the
-     declaration for the next function.
-
-     The ‘.In’ macro, while in the SYNOPSIS section, represents the #include
-     statement, and is the short form of the above example.  It specifies the
-     C header file as being included in a C program.  It also causes a line
-     break.
-
-     While not in the SYNOPSIS section, it represents the header file enclosed
-     in angle brackets.
-
-           Usage: .In ⟨header file⟩
-
-                    .In stdio.h      <stdio.h>
-                    .In stdio.h      <stdio.h>
-
-   Function Types
-     This macro is intended for the SYNOPSIS section.  It may be used anywhere
-     else in the man page without problems, but its main purpose is to present
-     the function type in kernel normal form for the SYNOPSIS of sections two
-     and three (it causes a line break, allowing the function name to appear on
-     the next line).
-
-           Usage: .Ft ⟨type⟩ ...
-
-                    .Ft struct stat      struct stat
-
-   Functions (Library Routines)
-     The ‘.Fn’ macro is modeled on ANSI C conventions.
-
-           Usage: .Fn ⟨function⟩ [⟨parameter⟩] ...
-
-                    .Fn getchar                  getchar()
-                    .Fn strlen ) ,               strlen()),
-                    .Fn align "char *ptr" ,      align(char *ptr),
-
-     Note that any call to another macro signals the end of the ‘.Fn’ call (it
-     will insert a closing parenthesis at that point).
-
-     For functions with many parameters (which is rare), the macros ‘.Fo’
-     (function open) and ‘.Fc’ (function close) may be used with ‘.Fa’ (function
-     argument).
-
-     Example:
-
-           .Ft int
-           .Fo res_mkquery
-           .Fa "int op"
-           .Fa "char *dname"
-           .Fa "int class"
-           .Fa "int type"
-           .Fa "char *data"
-           .Fa "int datalen"
-           .Fa "struct rrec *newrr"
-           .Fa "char *buf"
-           .Fa "int buflen"
-           .Fc
-
-     Produces:
-
-           int res_mkquery(int op, char *dname, int class, int type, char *data,
-           int datalen, struct rrec *newrr, char *buf, int buflen)
-
-     In the SYNOPSIS section, the function will always begin at the beginning of
-     line.  If there is more than one function presented in the SYNOPSIS section
-     and a function type has not been given, a line break will occur, leaving a
-     nice vertical space between the current function name and the one prior.
-
-     The default width values of ‘.Fn’ and ‘.Fo’ are 12n and 16n, respectively.
-
-   Function Arguments
-     The ‘.Fa’ macro is used to refer to function arguments (parameters) outside
-     of the SYNOPSIS section of the manual or inside the SYNOPSIS section if the
-     enclosure macros ‘.Fo’ and ‘.Fc’ instead of ‘.Fn’ are used.  ‘.Fa’ may also
-     be used to refer to structure members.
-
-           Usage: .Fa ⟨function argument⟩ ...
-
-                    .Fa d_namlen ) ) ,      d_namlen)),
-                    .Fa iov_len             iov_len
-
-     The default width is 12n.
-
-   Return Values
-     The ‘.Rv’ macro generates text for use in the RETURN VALUES section.
-
-           Usage: .Rv [-std] [⟨function⟩ ...]
-
-     For example, ‘.Rv -std atexit’ produces:
-
-            The atexit() function returns the value 0 if successful; otherwise
-            the value -1 is returned and the global variable errno is set to
-            indicate the error.
-
-     The -std option is valid only for manual page sections 2 and 3.  Currently,
-     this macro does nothing if used without the -std flag.
-
-   Exit Status
-     The ‘.Ex’ macro generates text for use in the DIAGNOSTICS section.
-
-           Usage: .Ex [-std] [⟨utility⟩ ...]
-
-     For example, ‘.Ex -std cat’ produces:
-
-            The cat utility exits 0 on success, and >0 if an error occurs.
-
-     The -std option is valid only for manual page sections 1, 6 and 8.
-     Currently, this macro does nothing if used without the -std flag.
-
-   Interactive Commands
-     The ‘.Ic’ macro designates an interactive or internal command.
-
-           Usage: .Ic ⟨argument⟩ ...
-
-                    .Ic :wq                    :wq
-                    .Ic "do while {...}"       do while {...}
-                    .Ic setenv , unsetenv      setenv, unsetenv
-
-     The default width is 12n.
-
-   Library Names
-     The ‘.Lb’ macro is used to specify the library where a particular function
-     is compiled in.
-
-           Usage: .Lb ⟨argument⟩ ...
-
-     Available arguments to ‘.Lb’ and their results are:
-
-           libarm           ARM Architecture Library (libarm, -larm)
-           libarm32         ARM32 Architecture Library (libarm32, -larm32)
-           libc             Standard C Library (libc, -lc)
-           libcdk           Curses Development Kit Library (libcdk, -lcdk)
-           libcompat        Compatibility Library (libcompat, -lcompat)
-           libcrypt         Crypt Library (libcrypt, -lcrypt)
-           libcurses        Curses Library (libcurses, -lcurses)
-           libedit          Command Line Editor Library (libedit, -ledit)
-           libevent         Event Notification Library (libevent, -levent)
-           libform          Curses Form Library (libform, -lform)
-           libi386          i386 Architecture Library (libi386, -li386)
-           libintl          Internationalized Message Handling Library (libintl,
-                            -lintl)
-           libipsec         IPsec Policy Control Library (libipsec, -lipsec)
-           libkvm           Kernel Data Access Library (libkvm, -lkvm)
-           libm             Math Library (libm, -lm)
-           libm68k          m68k Architecture Library (libm68k, -lm68k)
-           libmagic         Magic Number Recognition Library (libmagic, -lmagic)
-           libmenu          Curses Menu Library (libmenu, -lmenu)
-           libossaudio      OSS Audio Emulation Library (libossaudio,
-                            -lossaudio)
-           libpam           Pluggable Authentication Module Library (libpam,
-                            -lpam)
-           libpcap          Packet capture Library (libpcap, -lpcap)
-           libpci           PCI Bus Access Library (libpci, -lpci)
-           libpmc           Performance Counters Library (libpmc, -lpmc)
-           libposix         POSIX Compatibility Library (libposix, -lposix)
-           libpthread       POSIX Threads Library (libpthread, -lpthread)
-           libresolv        DNS Resolver Library (libresolv, -lresolv)
-           librt            POSIX Real-time Library (librt, -lrt)
-           libtermcap       Termcap Access Library (libtermcap, -ltermcap)
-           libusbhid        USB Human Interface Devices Library (libusbhid,
-                            -lusbhid)
-           libutil          System Utilities Library (libutil, -lutil)
-           libx86_64        x86_64 Architecture Library (libx86_64, -lx86_64)
-           libz             Compression Library (libz, -lz)
-
-     Local, OS-specific additions might be found in the file mdoc.local; look
-     for strings named ‘str-Lb-XXX’.  ‘XXX’ then denotes the keyword to be used
-     with the ‘.Lb’ macro.
-
-     In the LIBRARY section an ‘.Lb’ command causes a line break before and
-     after its arguments are printed.
-
-   Literals
-     The ‘.Li’ literal macro may be used for special characters, variable
-     constants, etc. -- anything which should be displayed as it would be typed.
-
-           Usage: .Li ⟨argument⟩ ...
-
-                    .Li \en              \n
-                    .Li M1 M2 M3 ;       M1 M2 M3;
-                    .Li cntrl-D ) ,      cntrl-D),
-                    .Li 1024 ...         1024 ...
-
-     The default width is 16n.
-
-   Names
-     The ‘.Nm’ macro is used for the document title or subject name.  It has the
-     peculiarity of remembering the first argument it was called with, which
-     should always be the subject name of the page.  When called without
-     arguments, ‘.Nm’ regurgitates this initial name for the sole purpose of
-     making less work for the author.  Note: A section two or three document
-     function name is addressed with the ‘.Nm’ in the NAME section, and with
-     ‘.Fn’ in the SYNOPSIS and remaining sections.  For interactive commands,
-     such as the ‘while’ command keyword in csh(1), the ‘.Ic’ macro should be
-     used.  While ‘.Ic’ is nearly identical to ‘.Nm’, it can not recall the
-     first argument it was invoked with.
-
-           Usage: .Nm [⟨argument⟩] ...
-
-                    .Nm groff_mdoc      groff_mdoc
-                    .Nm \-mdoc          -mdoc
-                    .Nm foo ) ) ,       foo)),
-                    .Nm :               groff_mdoc:
-
-     The default width is 10n.
-
-   Options
-     The ‘.Op’ macro places option brackets around any remaining arguments on
-     the command line, and places any trailing punctuation outside the brackets.
-     The macros ‘.Oo’ and ‘.Oc’ (which produce an opening and a closing option
-     bracket respectively) may be used across one or more lines or to specify
-     the exact position of the closing parenthesis.
-
-           Usage: .Op [⟨option⟩] ...
-
-                    .Op                                    []
-                    .Op Fl k                               [-k]
-                    .Op Fl k ) .                           [-k]).
-                    .Op Fl k Ar kookfile                   [-k kookfile]
-                    .Op Fl k Ar kookfile ,                 [-k kookfile],
-                    .Op Ar objfil Op Ar corfil             [objfil [corfil]]
-                    .Op Fl c Ar objfil Op Ar corfil ,      [-c objfil [corfil]],
-                    .Op word1 word2                        [word1 word2]
-                    .Li .Op Oo Ao option Ac Oc ...         .Op [⟨option⟩] ...
-
-     Here a typical example of the ‘.Oo’ and ‘.Oc’ macros:
-
-           .Oo
-           .Op Fl k Ar kilobytes
-           .Op Fl i Ar interval
-           .Op Fl c Ar count
-           .Oc
-
-     Produces:
-
-           [[-k kilobytes] [-i interval] [-c count]]
-
-     The default width values of ‘.Op’ and ‘.Oo’ are 14n and 10n, respectively.
-
-   Pathnames
-     The ‘.Pa’ macro formats path or file names.  If called without arguments,
-     the ‘~’ string is output, which represents the current user's home
-     directory.
-
-           Usage: .Pa [⟨pathname⟩] ...
-
-                    .Pa                        ~
-                    .Pa /usr/share             /usr/share
-                    .Pa /tmp/fooXXXXX ) .      /tmp/fooXXXXX).
-
-     The default width is 32n.
-
-   Standards
-     The ‘.St’ macro replaces standard abbreviations with their formal names.
-
-           Usage: .St ⟨abbreviation⟩ ...
-
-     Available pairs for “Abbreviation/Formal Name” are:
-
-     ANSI/ISO C
-
-           -ansiC             ANSI X3.159-1989 (“ANSI C89”)
-           -ansiC-89          ANSI X3.159-1989 (“ANSI C89”)
-           -isoC              ISO/IEC 9899:1990 (“ISO C90”)
-           -isoC-90           ISO/IEC 9899:1990 (“ISO C90”)
-           -isoC-99           ISO/IEC 9899:1999 (“ISO C99”)
-
-     POSIX Part 1: System API
-
-           -iso9945-1-90       ISO/IEC 9945-1:1990 (“POSIX.1”)
-           -iso9945-1-96       ISO/IEC 9945-1:1996 (“POSIX.1”)
-           -p1003.1            IEEE Std 1003.1 (“POSIX.1”)
-           -p1003.1-88         IEEE Std 1003.1-1988 (“POSIX.1”)
-           -p1003.1-90         IEEE Std 1003.1-1990 (“POSIX.1”)
-           -p1003.1-96         ISO/IEC 9945-1:1996 (“POSIX.1”)
-           -p1003.1b-93        IEEE Std 1003.1b-1993 (“POSIX.1b”)
-           -p1003.1c-95        IEEE Std 1003.1c-1995 (“POSIX.1c”)
-           -p1003.1g-2000      IEEE Std 1003.1g-2000 (“POSIX.1g”)
-           -p1003.1i-95        IEEE Std 1003.1i-1995 (“POSIX.1i”)
-           -p1003.1-2001       IEEE Std 1003.1-2001 (“POSIX.1”)
-           -p1003.1-2004       IEEE Std 1003.1-2004 (“POSIX.1”)
-
-     POSIX Part 2: Shell and Utilities
-
-           -iso9945-2-93       ISO/IEC 9945-2:1993 (“POSIX.2”)
-           -p1003.2            IEEE Std 1003.2 (“POSIX.2”)
-           -p1003.2-92         IEEE Std 1003.2-1992 (“POSIX.2”)
-           -p1003.2a-92        IEEE Std 1003.2a-1992 (“POSIX.2”)
-
-     X/Open
-
-           -susv2              Version 2 of the Single UNIX Specification
-                               (“SUSv2”)
-           -susv3              Version 3 of the Single UNIX Specification
-                               (“SUSv3”)
-           -svid4              System V Interface Definition, Fourth Edition
-                               (“SVID4”)
-           -xbd5               X/Open Base Definitions Issue 5 (“XBD5”)
-           -xcu5               X/Open Commands and Utilities Issue 5 (“XCU5”)
-           -xcurses4.2         X/Open Curses Issue 4, Version 2 (“XCURSES4.2”)
-           -xns5               X/Open Networking Services Issue 5 (“XNS5”)
-           -xns5.2             X/Open Networking Services Issue 5.2 (“XNS5.2”)
-           -xpg3               X/Open Portability Guide Issue 3 (“XPG3”)
-           -xpg4               X/Open Portability Guide Issue 4 (“XPG4”)
-           -xpg4.2             X/Open Portability Guide Issue 4, Version 2
-                               (“XPG4.2”)
-           -xsh5               X/Open System Interfaces and Headers Issue 5
-                               (“XSH5”)
-
-     Miscellaneous
-
-           -ieee754            IEEE Std 754-1985
-           -iso8802-3          ISO 8802-3: 1989
-
-   Variable Types
-     The ‘.Vt’ macro may be used whenever a type is referenced.  In the SYNOPSIS
-     section, it causes a line break (useful for old style variable
-     declarations).
-
-           Usage: .Vt ⟨type⟩ ...
-
-                    .Vt extern char *optarg ;      extern char *optarg;
-                    .Vt FILE *                     FILE *
-
-   Variables
-     Generic variable reference.
-
-           Usage: .Va ⟨variable⟩ ...
-
-                    .Va count                 count
-                    .Va settimer ,            settimer,
-                    .Va "int *prt" ) :        int *prt):
-                    .Va "char s" ] ) ) ,      char s])),
-
-     The default width is 12n.
-
-   Manual Page Cross References
-     The ‘.Xr’ macro expects the first argument to be a manual page name.  The
-     optional second argument, if a string (defining the manual section), is put
-     into parentheses.
-
-           Usage: .Xr ⟨man page name⟩ [⟨section⟩] ...
-
-                    .Xr mdoc            mdoc
-                    .Xr mdoc ,          mdoc,
-                    .Xr mdoc 7          mdoc(7)
-                    .Xr xinit 1x ;      xinit(1x);
-
-     The default width is 10n.
-
-GENERAL TEXT DOMAIN
-   AT&T Macro
-           Usage: .At [⟨version⟩] ...
-
-                    .At           AT&T UNIX
-                    .At v6 .      Version 6 AT&T UNIX.
-
-     The following values for ⟨version⟩ are possible:
-
-           32v, v1, v2, v3, v4, v5, v6, v7, V, V.1, V.2, V.3, V.4
-
-   BSD Macro
-           Usage: .Bx {-alpha | -beta | -devel} ...
-                  .Bx [⟨version⟩ [⟨release⟩]] ...
-
-                    .Bx             BSD
-                    .Bx 4.3 .       4.3BSD.
-                    .Bx -devel      -develBSD
-
-     ⟨version⟩ will be prepended to the string ‘BSD’.  The following values for
-     ⟨release⟩ are possible:
-
-           Reno, reno, Tahoe, tahoe, Lite, lite, Lite2, lite2
-
-   NetBSD Macro
-           Usage: .Nx [⟨version⟩] ...
-
-                    .Nx            NetBSD
-                    .Nx 1.4 .      NetBSD 1.4.
-
-     For possible values of ⟨version⟩ see the description of the ‘.Os’ command
-     above in section TITLE MACROS.
-
-   FreeBSD Macro
-           Usage: .Fx [⟨version⟩] ...
-
-                    .Fx            FreeBSD
-                    .Fx 2.2 .      FreeBSD 2.2.
-
-     For possible values of ⟨version⟩ see the description of the ‘.Os’ command
-     above in section TITLE MACROS.
-
-   OpenBSD Macro
-           Usage: .Ox [⟨version⟩] ...
-
-                    .Ox 1.0      OpenBSD 1.0
-
-   BSD/OS Macro
-           Usage: .Bsx [⟨version⟩] ...
-
-                    .Bsx 1.0      BSD/OS 1.0
-
-   UNIX Macro
-           Usage: .Ux ...
-
-                    .Ux      UNIX
-
-   Emphasis Macro
-     Text may be stressed or emphasized with the ‘.Em’ macro.  The usual font
-     for emphasis is italic.
-
-           Usage: .Em ⟨argument⟩ ...
-
-                    .Em does not              does not
-                    .Em exceed 1024 .         exceed 1024.
-                    .Em vide infra ) ) ,      vide infra)),
-
-     The default width is 10n.
-
-   Font Mode
-     The ‘.Bf’ font mode must be ended with the ‘.Ef’ macro (the latter takes no
-     arguments).  Font modes may be nested within other font modes.
-
-     ‘.Bf’ has the following syntax:
-
-           .Bf ⟨font mode⟩
-
-     ⟨font mode⟩ must be one of the following three types:
-
-           Em | -emphasis        Same as if the ‘.Em’ macro was used for the
-                                 entire block of text.
-           Li | -literal         Same as if the ‘.Li’ macro was used for the
-                                 entire block of text.
-           Sy | -symbolic        Same as if the ‘.Sy’ macro was used for the
-                                 entire block of text.
-
-     Both macros are neither callable nor parsed.
-
-   Enclosure and Quoting Macros
-     The concept of enclosure is similar to quoting.  The object being to
-     enclose one or more strings between a pair of characters like quotes or
-     parentheses.  The terms quoting and enclosure are used interchangeably
-     throughout this document.  Most of the one-line enclosure macros end in
-     small letter ‘q’ to give a hint of quoting, but there are a few
-     irregularities.  For each enclosure macro there is also a pair of open and
-     close macros which end in small letters ‘o’ and ‘c’ respectively.
-
-
-         Quote   Open    Close  Function                  Result
-         .Aq     .Ao     .Ac    Angle Bracket Enclosure   ⟨string⟩
-         .Bq     .Bo     .Bc    Bracket Enclosure         [string]
-         .Brq    .Bro    .Brc   Brace Enclosure           {string}
-         .Dq     .Do     .Dc    Double Quote              “string”
-         .Eq     .Eo     .Ec    Enclose String (in XX)    XXstringXX
-         .Pq     .Po     .Pc    Parenthesis Enclosure     (string)
-         .Ql                    Quoted Literal            ‘string’ or string
-         .Qq     .Qo     .Qc    Straight Double Quote     "string"
-         .Sq     .So     .Sc    Single Quote              ‘string’
-
-     All macros ending with ‘q’ and ‘o’ have a default width value of 12n.
-
-     .Eo, .Ec       These macros expect the first argument to be the opening and
-                    closing strings respectively.
-
-     .Es, .En       Due to the nine-argument limit in the original troff program
-                    two other macros have been implemented which are now rather
-                    obsolete: ‘.Es’ takes the first and second parameter as the
-                    left and right enclosure string, which are then used to
-                    enclose the arguments of ‘.En’.  The default width value is
-                    12n for both macros.
-
-     .Eq            The first and second arguments of this macro are the opening
-                    and closing strings respectively, followed by the arguments
-                    to be enclosed.
-
-     .Ql            The quoted literal macro behaves differently in troff and
-                    nroff mode.  If formatted with nroff, a quoted literal is
-                    always quoted.  If formatted with troff, an item is only
-                    quoted if the width of the item is less than three constant
-                    width characters.  This is to make short strings more
-                    visible where the font change to literal (constant width) is
-                    less noticeable.
-
-                    The default width is 16n.
-
-     .Pf            The prefix macro suppresses the whitespace between its first
-                    and second argument:
-
-                          .Pf ( Fa name2      (name2
-
-                    The default width is 12n.
-
-                    The ‘.Ns’ macro (see below) performs the analogous suffix
-                    function.
-
-     .Ap            The ‘.Ap’ macro inserts an apostrophe and exits any special
-                    text modes, continuing in ‘.No’ mode.
-
-     Examples of quoting:
-
-           .Aq                          ⟨⟩
-           .Aq Pa ctype.h ) ,           ⟨ctype.h⟩),
-           .Bq                          []
-           .Bq Em Greek , French .      [Greek, French].
-           .Dq                          “”
-           .Dq string abc .             “string abc”.
-           .Dq ´^[A-Z]´                 “´^[A-Z]´”
-           .Ql man mdoc                 ‘man mdoc’
-           .Qq                          ""
-           .Qq string ) ,               "string"),
-           .Qq string Ns ),             "string),"
-           .Sq                          ‘’
-           .Sq string                   ‘string’
-           .Em or Ap ing                or'ing
-
-     For a good example of nested enclosure macros, see the ‘.Op’ option macro.
-     It was created from the same underlying enclosure macros as those presented
-     in the list above.  The ‘.Xo’ and ‘.Xc’ extended argument list macros are
-     discussed below.
-
-   No-Op or Normal Text Macro
-     The ‘.No’ macro can be used in a macro command line for parameters which
-     should not be formatted.  Be careful to add ‘\&’ to the word ‘No’ if you
-     really want that English word (and not the macro) as a parameter.
-
-           Usage: .No ⟨argument⟩ ...
-
-                    .No test Ta with Ta tabs      test with Ta tabs
-
-     The default width is 12n.
-
-   No-Space Macro
-     The ‘.Ns’ macro suppresses insertion of a space between the current
-     position and its first parameter.  For example, it is useful for old style
-     argument lists where there is no space between the flag and argument:
-
-           Usage: ... ⟨argument⟩ Ns [⟨argument⟩] ...
-                  .Ns ⟨argument⟩ ...
-
-                    .Op Fl I Ns Ar directory      [-Idirectory]
-
-     Note: The ‘.Ns’ macro always invokes the ‘.No’ macro after eliminating the
-     space unless another macro name follows it.  If used as a command (i.e.,
-     the second form above in the ‘Usage’ line), ‘.Ns’ is identical to ‘.No’.
-
-   Section Cross References
-     The ‘.Sx’ macro designates a reference to a section header within the same
-     document.
-
-           Usage: .Sx ⟨section reference⟩ ...
-
-                    .Sx FILES      FILES
-
-     The default width is 16n.
-
-   Symbolics
-     The symbolic emphasis macro is generally a boldface macro in either the
-     symbolic sense or the traditional English usage.
-
-           Usage: .Sy ⟨symbol⟩ ...
-
-                    .Sy Important Notice      Important Notice
-
-     The default width is 6n.
-
-   Mathematical Symbols
-     Use this macro for mathematical symbols and similar things.
-
-           Usage: .Ms ⟨math symbol⟩ ...
-
-                    .Ms sigma      sigma
-
-     The default width is 6n.
-
-   References and Citations
-     The following macros make a modest attempt to handle references.  At best,
-     the macros make it convenient to manually drop in a subset of refer(1)
-     style references.
-
-           .Rs     Reference start (does not take arguments).  Causes a line
-                   break in the SEE ALSO section and begins collection of
-                   reference information until the reference end macro is read.
-           .Re     Reference end (does not take arguments).  The reference is
-                   printed.
-           .%A     Reference author name; one name per invocation.
-           .%B     Book title.
-           .%C     City/place (not implemented yet).
-           .%D     Date.
-           .%I     Issuer/publisher name.
-           .%J     Journal name.
-           .%N     Issue number.
-           .%O     Optional information.
-           .%P     Page number.
-           .%Q     Corporate or foreign author.
-           .%R     Report name.
-           .%T     Title of article.
-           .%V     Volume.
-
-     Macros beginning with ‘%’ are not callable but accept multiple arguments in
-     the usual way.  Only the ‘.Tn’ macro is handled properly as a parameter;
-     other macros will cause strange output.  ‘.%B’ and ‘.%T’ can be used
-     outside of the ‘.Rs/.Re’ environment.
-
-     Example:
-
-           .Rs
-           .%A "Matthew Bar"
-           .%A "John Foo"
-           .%T "Implementation Notes on foobar(1)"
-           .%R "Technical Report ABC-DE-12-345"
-           .%Q "Drofnats College, Nowhere"
-           .%D "April 1991"
-           .Re
-
-     produces
-
-           Matthew Bar and John Foo, Implementation Notes on foobar(1),
-           Technical Report ABC-DE-12-345, Drofnats College, Nowhere, April
-           1991.
-
-   Trade Names (or Acronyms and Type Names)
-     The trade name macro prints its arguments in a smaller font.  Its intended
-     use is to imitate a small caps fonts for uppercase acronyms.
-
-           Usage: .Tn ⟨symbol⟩ ...
-
-                    .Tn DEC        DEC
-                    .Tn ASCII      ASCII
-
-     The default width is 10n.
-
-   Extended Arguments
-     The .Xo and .Xc macros allow one to extend an argument list on a macro
-     boundary for the ‘.It’ macro (see below).  Note that .Xo and .Xc are
-     implemented similarly to all other macros opening and closing an enclosure
-     (without inserting characters, of course).  This means that the following
-     is true for those macros also.
-
-     Here is an example of ‘.Xo’ using the space mode macro to turn spacing off:
-
-           .Sm off
-           .It Xo Sy I Ar operation
-           .No \en Ar count No \en
-           .Xc
-           .Sm on
-
-     produces
-
-           Ioperation\ncount\n
-
-     Another one:
-
-           .Sm off
-           .It Cm S No / Ar old_pattern Xo
-           .No / Ar new_pattern
-           .No / Op Cm g
-           .Xc
-           .Sm on
-
-     produces
-
-           S/old_pattern/new_pattern/[g]
-
-     Another example of ‘.Xo’ and enclosure macros: Test the value of a
-     variable.
-
-           .It Xo
-           .Ic .ifndef
-           .Oo \&! Oc Ns Ar variable Oo
-           .Ar operator variable ...
-           .Oc Xc
-
-     produces
-
-           .ifndef [!]variable [operator variable ...]
-
-PAGE STRUCTURE DOMAIN
-   Section Headers
-     The following ‘.Sh’ section header macros are required in every man page.
-     The remaining section headers are recommended at the discretion of the
-     author writing the manual page.  The ‘.Sh’ macro is parsed but not
-     generally callable.  It can be used as an argument in a call to ‘.Sh’ only;
-     it then reactivates the default font for ‘.Sh’.
-
-     The default width is 8n.
-
-     .Sh NAME               The ‘.Sh NAME’ macro is mandatory.  If not
-                            specified, headers, footers and page layout defaults
-                            will not be set and things will be rather
-                            unpleasant.  The NAME section consists of at least
-                            three items.  The first is the ‘.Nm’ name macro
-                            naming the subject of the man page.  The second is
-                            the name description macro, ‘.Nd’, which separates
-                            the subject name from the third item, which is the
-                            description.  The description should be the most
-                            terse and lucid possible, as the space available is
-                            small.
-
-                            ‘.Nd’ first prints ‘-’, then all its arguments.
-
-     .Sh LIBRARY            This section is for section two and three function
-                            calls.  It should consist of a single ‘.Lb’ macro
-                            call; see Library Names.
-
-     .Sh SYNOPSIS           The SYNOPSIS section describes the typical usage of
-                            the subject of a man page.  The macros required are
-                            either ‘.Nm’, ‘.Cd’, or ‘.Fn’ (and possibly ‘.Fo’,
-                            ‘.Fc’, ‘.Fd’, and ‘.Ft’).  The function name macro
-                            ‘.Fn’ is required for manual page sections 2 and 3;
-                            the command and general name macro ‘.Nm’ is required
-                            for sections 1, 5, 6, 7, and 8.  Section 4 manuals
-                            require a ‘.Nm’, ‘.Fd’ or a ‘.Cd’ configuration
-                            device usage macro.  Several other macros may be
-                            necessary to produce the synopsis line as shown
-                            below:
-
-                                  cat [-benstuv] [-] file ...
-
-                            The following macros were used:
-
-                                  .Nm cat
-                                  .Op Fl benstuv
-                                  .Op Fl
-                                  .Ar
-
-     .Sh DESCRIPTION        In most cases the first text in the DESCRIPTION
-                            section is a brief paragraph on the command,
-                            function or file, followed by a lexical list of
-                            options and respective explanations.  To create such
-                            a list, the ‘.Bl’ (begin list), ‘.It’ (list item)
-                            and ‘.El’ (end list) macros are used (see Lists and
-                            Columns below).
-
-     .Sh IMPLEMENTATION NOTES
-                            Implementation specific information should be placed
-                            here.
-
-     .Sh RETURN VALUES      Sections 2, 3 and 9 function return values should go
-                            here.  The ‘.Rv’ macro may be used to generate text
-                            for use in the RETURN VALUES section for most
-                            section 2 and 3 library functions; see Return
-                            Values.
-
-     The following ‘.Sh’ section headers are part of the preferred manual page
-     layout and must be used appropriately to maintain consistency.  They are
-     listed in the order in which they would be used.
-
-     .Sh ENVIRONMENT        The ENVIRONMENT section should reveal any related
-                            environment variables and clues to their behavior
-                            and/or usage.
-
-     .Sh FILES              Files which are used or created by the man page
-                            subject should be listed via the ‘.Pa’ macro in the
-                            FILES section.
-
-     .Sh EXAMPLES           There are several ways to create examples.  See the
-                            EXAMPLES section below for details.
-
-     .Sh DIAGNOSTICS        Diagnostic messages from a command should be placed
-                            in this section.  The ‘.Ex’ macro may be used to
-                            generate text for use in the DIAGNOSTICS section for
-                            most section 1, 6 and 8 commands; see Exit Status.
-
-     .Sh COMPATIBILITY      Known compatibility issues (e.g. deprecated options
-                            or parameters) should be listed here.
-
-     .Sh ERRORS             Specific error handling, especially from library
-                            functions (man page sections 2, 3, and 9) should go
-                            here.  The ‘.Er’ macro is used to specify an error
-                            (errno).
-
-     .Sh SEE ALSO           References to other material on the man page topic
-                            and cross references to other relevant man pages
-                            should be placed in the SEE ALSO section.  Cross
-                            references are specified using the ‘.Xr’ macro.
-                            Currently refer(1) style references are not
-                            accommodated.
-
-                            It is recommended that the cross references are
-                            sorted on the section number, then alphabetically on
-                            the names within a section, and placed in that order
-                            and comma separated.  Example:
-
-                            ls(1), ps(1), group(5), passwd(5)
-
-     .Sh STANDARDS          If the command, library function or file adheres to
-                            a specific implementation such as IEEE Std 1003.2
-                            (“POSIX.2”) or ANSI X3.159-1989 (“ANSI C89”) this
-                            should be noted here.  If the command does not
-                            adhere to any standard, its history should be noted
-                            in the HISTORY section.
-
-     .Sh HISTORY            Any command which does not adhere to any specific
-                            standards should be outlined historically in this
-                            section.
-
-     .Sh AUTHORS            Credits should be placed here.  Use the ‘.An’ macro
-                            for names and the ‘.Aq’ macro for e-mail addresses
-                            within optional contact information.  Explicitly
-                            indicate whether the person authored the initial
-                            manual page or the software or whatever the person
-                            is being credited for.
-
-     .Sh BUGS               Blatant problems with the topic go here.
-
-     User-specified ‘.Sh’ sections may be added; for example, this section was
-     set with:
-
-                    .Sh "PAGE STRUCTURE DOMAIN"
-
-   Subsection Headers
-     Subsection headers have exactly the same syntax as section headers: ‘.Ss’
-     is parsed but not generally callable.  It can be used as an argument in a
-     call to ‘.Ss’ only; it then reactivates the default font for ‘.Ss’.
-
-     The default width is 8n.
-
-   Paragraphs and Line Spacing
-     .Pp      The ‘.Pp’ paragraph command may be used to specify a line space
-              where necessary.  The macro is not necessary after a ‘.Sh’ or
-              ‘.Ss’ macro or before a ‘.Bl’ or ‘.Bd’ macro (which both assert a
-              vertical distance unless the -compact flag is given).
-
-              The macro is neither callable nor parsed and takes no arguments;
-              an alternative name is ‘.Lp’.
-
-   Keeps
-     The only keep that is implemented at this time is for words.  The macros
-     are ‘.Bk’ (begin keep) and ‘.Ek’ (end keep).  The only option that ‘.Bk’
-     accepts currently is -words (this is also the default if no option is
-     given) which is useful for preventing line breaks in the middle of options.
-     In the example for the make command line arguments (see What's in a Name),
-     the keep prevented nroff from placing up the flag and the argument on
-     separate lines.
-
-     Both macros are neither callable nor parsed.
-
-     More work needs to be done with the keep macros; specifically, a -line
-     option should be added.
-
-   Examples and Displays
-     There are seven types of displays.
-
-     .D1      (This is D-one.)  Display one line of indented text.  This macro
-              is parsed but not callable.
-
-                    -ldghfstru
-
-              The above was produced by: .D1 Fl ldghfstru.
-
-     .Dl      (This is D-ell.)  Display one line of indented literal text.  The
-              ‘.Dl’ example macro has been used throughout this file.  It allows
-              the indentation (display) of one line of text.  Its default font
-              is set to constant width (literal).  ‘.Dl’ is parsed but not
-              callable.
-
-                    % ls -ldg /usr/local/bin
-
-              The above was produced by: .Dl % ls -ldg /usr/local/bin.
-
-     .Bd      Begin display.  The ‘.Bd’ display must be ended with the ‘.Ed’
-              macro.  It has the following syntax:
-
-
-                    .Bd {-literal | -filled | -unfilled | -ragged | -centered}
-                             [-offset ⟨string⟩] [-file ⟨file name⟩] [-compact]
-
-              -ragged                       Fill, but do not adjust the right
-                                            margin (only left-justify).
-              -centered                     Center lines between the current
-                                            left and right margin.  Note that
-                                            each single line is centered.
-              -unfilled                     Do not fill; display a block of text
-                                            as typed, using line breaks as
-                                            specified by the user.  This can
-                                            produce overlong lines without
-                                            warning messages.
-              -filled                       Display a filled block.  The block
-                                            of text is formatted (i.e., the text
-                                            is justified on both the left and
-                                            right side).
-              -literal                      Display block with literal font
-                                            (usually fixed-width).  Useful for
-                                            source code or simple tabbed or
-                                            spaced text.
-              -file ⟨file name⟩             The file whose name follows the
-                                            -file flag is read and displayed
-                                            before any data enclosed with ‘.Bd’
-                                            and ‘.Ed’, using the selected
-                                            display type.  Any troff/-mdoc
-                                            commands in the file will be
-                                            processed.
-              -offset ⟨string⟩              If -offset is specified with one of
-                                            the following strings, the string is
-                                            interpreted to indicate the level of
-                                            indentation for the forthcoming
-                                            block of text:
-
-                                            left            Align block on the
-                                                            current left margin;
-                                                            this is the default
-                                                            mode of ‘.Bd’.
-                                            center          Supposedly center
-                                                            the block.  At this
-                                                            time unfortunately,
-                                                            the block merely
-                                                            gets left aligned
-                                                            about an imaginary
-                                                            center margin.
-                                            indent          Indent by one
-                                                            default indent value
-                                                            or tab.  The default
-                                                            indent value is also
-                                                            used for the ‘.D1’
-                                                            and ‘.Dl’ macros, so
-                                                            one is guaranteed
-                                                            the two types of
-                                                            displays will line
-                                                            up.  The indentation
-                                                            value is normally
-                                                            set to 6n or about
-                                                            two thirds of an
-                                                            inch (six constant
-                                                            width characters).
-                                            indent-two      Indent two times the
-                                                            default indent
-                                                            value.
-                                            right           This left aligns the
-                                                            block about two
-                                                            inches from the
-                                                            right side of the
-                                                            page.  This macro
-                                                            needs work and
-                                                            perhaps may never do
-                                                            the right thing
-                                                            within troff.
-
-                                            If ⟨string⟩ is a valid numeric
-                                            expression instead (with a scale
-                                            indicator other than ‘u’), use that
-                                            value for indentation.  The most
-                                            useful scale indicators are ‘m’ and
-                                            ‘n’, specifying the so-called Em and
-                                            En square.  This is approximately
-                                            the width of the letters ‘m’ and ‘n’
-                                            respectively of the current font
-                                            (for nroff output, both scale
-                                            indicators give the same values).
-                                            If ⟨string⟩ isn't a numeric
-                                            expression, it is tested whether it
-                                            is an -mdoc macro name, and the
-                                            default offset value associated with
-                                            this macro is used.  Finally, if all
-                                            tests fail, the width of ⟨string⟩
-                                            (typeset with a fixed-width font) is
-                                            taken as the offset.
-              -compact                      Suppress insertion of vertical space
-                                            before begin of display.
-
-     .Ed      End display (takes no arguments).
-
-   Lists and Columns
-     There are several types of lists which may be initiated with the ‘.Bl’
-     begin-list macro.  Items within the list are specified with the ‘.It’ item
-     macro, and each list must end with the ‘.El’ macro.  Lists may be nested
-     within themselves and within displays.  The use of columns inside of lists
-     or lists inside of columns is unproven.
-
-     In addition, several list attributes may be specified such as the width of
-     a tag, the list offset, and compactness (blank lines between items allowed
-     or disallowed).  Most of this document has been formatted with a tag style
-     list (-tag).
-
-     It has the following syntax forms:
-
-           .Bl {-hang | -ohang | -tag | -diag | -inset} [-width ⟨string⟩]
-                    [-offset ⟨string⟩] [-compact]
-           .Bl -column [-offset ⟨string⟩] ⟨string1⟩ ⟨string2⟩ ...
-           .Bl {-item | -enum [-nested] | -bullet | -hyphen | -dash} [-offset
-                    ⟨string⟩] [-compact]
-
-     And now a detailed description of the list types.
-
-     -bullet     A bullet list.
-
-                       .Bl -bullet -offset indent -compact
-                       .It
-                       Bullet one goes here.
-                       .It
-                       Bullet two here.
-                       .El
-
-                 Produces:
-
-                       •   Bullet one goes here.
-                       •   Bullet two here.
-
-     -dash (or -hyphen)
-                 A dash list.
-
-                       .Bl -dash -offset indent -compact
-                       .It
-                       Dash one goes here.
-                       .It
-                       Dash two here.
-                       .El
-
-                 Produces:
-
-                       -   Dash one goes here.
-                       -   Dash two here.
-
-     -enum       An enumerated list.
-
-                       .Bl -enum -offset indent -compact
-                       .It
-                       Item one goes here.
-                       .It
-                       And item two here.
-                       .El
-
-                 The result:
-
-                       1.   Item one goes here.
-                       2.   And item two here.
-
-                 If you want to nest enumerated lists, use the -nested flag
-                 (starting with the second-level list):
-
-                       .Bl -enum -offset indent -compact
-                       .It
-                       Item one goes here
-                       .Bl -enum -nested -compact
-                       .It
-                       Item two goes here.
-                       .It
-                       And item three here.
-                       .El
-                       .It
-                       And item four here.
-                       .El
-
-                 Result:
-
-                       1.   Item one goes here.
-                            1.   Item two goes here.
-                            2.   And item three here.
-                       2.   And item four here.
-
-     -item       A list of type -item without list markers.
-
-                       .Bl -item -offset indent
-                       .It
-                       Item one goes here.
-                       Item one goes here.
-                       Item one goes here.
-                       .It
-                       Item two here.
-                       Item two here.
-                       Item two here.
-                       .El
-
-                 Produces:
-
-                       Item one goes here.  Item one goes here.  Item one goes
-                       here.
-
-                       Item two here.  Item two here.  Item two here.
-
-     -tag        A list with tags.  Use -width to specify the tag width.
-
-                       SL    sleep time of the process (seconds blocked)
-                       PAGEIN
-                             number of disk I/O's resulting from references by
-                             the process to pages not loaded in core.
-                       UID   numerical user-id of process owner
-                       PPID  numerical id of parent of process priority (non-
-                             positive when in non-interruptible wait)
-
-                 The raw text:
-
-                       .Bl -tag -width "PPID" -compact -offset indent
-                       .It SL
-                       sleep time of the process (seconds blocked)
-                       .It PAGEIN
-                       number of disk
-                       .Tn I/O Ns 's
-                       resulting from references by the process
-                       to pages not loaded in core.
-                       .It UID
-                       numerical user-id of process owner
-                       .It PPID
-                       numerical id of parent of process priority
-                       (non-positive when in non-interruptible wait)
-                       .El
-
-     -diag       Diag lists create section four diagnostic lists and are similar
-                 to inset lists except callable macros are ignored.  The -width
-                 flag is not meaningful in this context.
-
-                 Example:
-
-                       .Bl -diag
-                       .It You can't use Sy here.
-                       The message says all.
-                       .El
-
-                 produces
-
-                 You can't use Sy here.  The message says all.
-
-     -hang       A list with hanging tags.
-
-                       Hanged  labels appear similar to tagged lists when the
-                               label is smaller than the label width.
-
-                       Longer hanged list labels blend into the paragraph unlike
-                               tagged paragraph labels.
-
-                 And the unformatted text which created it:
-
-                       .Bl -hang -offset indent
-                       .It Em Hanged
-                       labels appear similar to tagged lists when the
-                       label is smaller than the label width.
-                       .It Em Longer hanged list labels
-                       blend into the paragraph unlike
-                       tagged paragraph labels.
-                       .El
-
-     -ohang      Lists with overhanging tags do not use indentation for the
-                 items; tags are written to a separate line.
-
-                       SL
-                       sleep time of the process (seconds blocked)
-
-                       PAGEIN
-                       number of disk I/O's resulting from references by the
-                       process to pages not loaded in core.
-
-                       UID
-                       numerical user-id of process owner
-
-                       PPID
-                       numerical id of parent of process priority (non-positive
-                       when in non-interruptible wait)
-
-                 The raw text:
-
-                       .Bl -ohang -offset indent
-                       .It Sy SL
-                       sleep time of the process (seconds blocked)
-                       .It Sy PAGEIN
-                       number of disk
-                       .Tn I/O Ns 's
-                       resulting from references by the process
-                       to pages not loaded in core.
-                       .It Sy UID
-                       numerical user-id of process owner
-                       .It Sy PPID
-                       numerical id of parent of process priority
-                       (non-positive when in non-interruptible wait)
-                       .El
-
-     -inset      Here is an example of inset labels:
-
-                       Tag The tagged list (also called a tagged paragraph) is
-                       the most common type of list used in the Berkeley
-                       manuals.  Use a -width attribute as described below.
-
-                       Diag Diag lists create section four diagnostic lists and
-                       are similar to inset lists except callable macros are
-                       ignored.
-
-                       Hang Hanged labels are a matter of taste.
-
-                       Ohang Overhanging labels are nice when space is
-                       constrained.
-
-                       Inset Inset labels are useful for controlling blocks of
-                       paragraphs and are valuable for converting -mdoc manuals
-                       to other formats.
-
-                 Here is the source text which produced the above example:
-
-                       .Bl -inset -offset indent
-                       .It Em Tag
-                       The tagged list (also called a tagged paragraph)
-                       is the most common type of list used in the
-                       Berkeley manuals.
-                       .It Em Diag
-                       Diag lists create section four diagnostic lists
-                       and are similar to inset lists except callable
-                       macros are ignored.
-                       .It Em Hang
-                       Hanged labels are a matter of taste.
-                       .It Em Ohang
-                       Overhanging labels are nice when space is constrained.
-                       .It Em Inset
-                       Inset labels are useful for controlling blocks of
-                       paragraphs and are valuable for converting
-                       .Nm -mdoc
-                       manuals to other formats.
-                       .El
-
-     -column     This list type generates multiple columns.  The number of
-                 columns and the width of each column is determined by the
-                 arguments to the -column list, ⟨string1⟩, ⟨string2⟩, etc.  If
-                 ⟨stringN⟩ starts with a ‘.’ (dot) immediately followed by a
-                 valid -mdoc macro name, interpret ⟨stringN⟩ and use the width
-                 of the result.  Otherwise, the width of ⟨stringN⟩ (typeset with
-                 a fixed-width font) is taken as the Nth column width.
-
-                 Each ‘.It’ argument is parsed to make a row, each column within
-                 the row is a separate argument separated by a tab or the ‘.Ta’
-                 macro.
-
-                 The table:
-
-                       String        Nroff        Troff
-                       <=            <=           ≤
-                       >=            >=           ≥
-
-                 was produced by:
-
-                 .Bl -column -offset indent ".Sy String" ".Sy Nroff" ".Sy Troff"
-                 .It Sy String Ta Sy Nroff Ta Sy Troff
-                 .It Li <= Ta <= Ta \*(<=
-                 .It Li >= Ta >= Ta \*(>=
+                 The options are as follows:
+                 .Bl -tag -width Ds
+                 .It Fl v
+                 Print verbose information.
                  .El
 
-     Other keywords:
+           List the options in alphabetical order, uppercase before lowercase
+           for each letter and with no regard to whether an option takes an
+           argument.  Put digits in ascending order before all letter options.
 
-     -width ⟨string⟩             If ⟨string⟩ starts with a ‘.’ (dot) immediately
-                                 followed by a valid -mdoc macro name, interpret
-                                 ⟨string⟩ and use the width of the result.
-                                 Almost all lists in this document use this
-                                 option.
+           Manuals not documenting a command won't include the above fragment.
 
-                                 Example:
+           Since the DESCRIPTION section usually contains most of the text of a
+           manual, longer manuals often use the Ss macro to form subsections.
+           In very long manuals, the DESCRIPTION may be split into multiple
+           sections, each started by an Sh macro followed by a non-standard
+           section name, and each having several subsections, like in the
+           present mdoc manual.
 
-                                       .Bl -tag -width ".Fl test Ao Ar string Ac"
-                                       .It Fl test Ao Ar string Ac
-                                       This is a longer sentence to show how the
-                                       .Fl width
-                                       flag works in combination with a tag list.
-                                       .El
+           CONTEXT
+           This section lists the contexts in which functions can be called in
+           section 9.  The contexts are autoconf, process, or interrupt.
 
-                                 gives:
+           IMPLEMENTATION NOTES
+           Implementation-specific notes should be kept here.  This is useful
+           when implementing standard functions that may have side effects or
+           notable algorithmic implications.
 
-                                 -test ⟨string⟩            This is a longer
-                                                           sentence to show how
-                                                           the -width flag works
-                                                           in combination with a
-                                                           tag list.
+           RETURN VALUES
+           This section documents the return values of functions in sections 2,
+           3, and 9.
 
-                                 (Note that the current state of -mdoc is saved
-                                 before ⟨string⟩ is interpreted; afterwards, all
-                                 variables are restored again.  However, boxes
-                                 (used for enclosures) can't be saved in GNU
-                                 troff(1); as a consequence, arguments must
-                                 always be balanced to avoid nasty errors.  For
-                                 example, do not write ‘.Ao Ar string’ but ‘.Ao
-                                 Ar string Xc’ instead if you really need only
-                                 an opening angle bracket.)
+           See Rv.
 
-                                 Otherwise, if ⟨string⟩ is a valid numeric
-                                 expression (with a scale indicator other than
-                                 ‘u’), use that value for indentation.  The most
-                                 useful scale indicators are ‘m’ and ‘n’,
-                                 specifying the so-called Em and En square.
-                                 This is approximately the width of the letters
-                                 ‘m’ and ‘n’ respectively of the current font
-                                 (for nroff output, both scale indicators give
-                                 the same values).  If ⟨string⟩ isn't a numeric
-                                 expression, it is tested whether it is an -mdoc
-                                 macro name, and the default width value
-                                 associated with this macro is used.  Finally,
-                                 if all tests fail, the width of ⟨string⟩
-                                 (typeset with a fixed-width font) is taken as
-                                 the width.
+           ENVIRONMENT
+           Lists the environment variables used by the utility, and explains the
+           syntax and semantics of their values.  The environ(7) manual provides
+           examples of typical content and formatting.
 
-                                 If a width is not specified for the tag list
-                                 type, every time ‘.It’ is invoked, an attempt
-                                 is made to determine an appropriate width.  If
-                                 the first argument to ‘.It’ is a callable
-                                 macro, the default width for that macro will be
-                                 used; otherwise, the default width of ‘.No’ is
-                                 used.
+           See Ev.
 
-     -offset ⟨string⟩            If ⟨string⟩ is indent, a default indent value
-                                 (normally set to 6n, similar to the value used
-                                 in ‘.Dl’ or ‘.Bd’) is used.  If ⟨string⟩ is a
-                                 valid numeric expression instead (with a scale
-                                 indicator other than ‘u’), use that value for
-                                 indentation.  The most useful scale indicators
-                                 are ‘m’ and ‘n’, specifying the so-called Em
-                                 and En square.  This is approximately the width
-                                 of the letters ‘m’ and ‘n’ respectively of the
-                                 current font (for nroff output, both scale
-                                 indicators give the same values).  If ⟨string⟩
-                                 isn't a numeric expression, it is tested
-                                 whether it is an -mdoc macro name, and the
-                                 default offset value associated with this macro
-                                 is used.  Finally, if all tests fail, the width
-                                 of ⟨string⟩ (typeset with a fixed-width font)
-                                 is taken as the offset.
+           FILES
+           Documents files used.  It's helpful to document both the file name
+           and a short description of how the file is used (created, modified,
+           etc.).
 
-     -compact                    Suppress insertion of vertical space before the
-                                 list and between list items.
+           See Pa.
 
-MISCELLANEOUS MACROS
-     Here a list of the remaining macros which do not fit well into one of the
-     above sections.  We couldn't find real examples for the following macros:
-     ‘.Me’ and ‘.Ot’.  They are documented here for completeness - if you know
-     how to use them properly please send a mail to bug-groff@gnu.org (including
-     an example).
+           EXIT STATUS
+           This section documents the command exit status for section 1, 6, and
+           8 utilities.  Historically, this information was described in
+           DIAGNOSTICS, a practise that is now discouraged.
 
-     .Bt      prints
+           See Ex.
 
-                    is currently in beta test.
+           EXAMPLES
+           Example usages.  This often contains snippets of well-formed, well-
+           tested invocations.  Make sure that examples work properly!
 
-              It is neither callable nor parsed and takes no arguments.
+           DIAGNOSTICS
+           Documents error messages.  In section 4 and 9 manuals, these are
+           usually messages printed by the kernel to the console and to the
+           kernel log.  In section 1, 6, 7, and 8, these are usually messages
+           printed by userland programs to the standard error output.
 
-     .Fr
+           Historically, this section was used in place of EXIT STATUS for
+           manuals in sections 1, 6, and 8; however, this practise is
+           discouraged.
 
-                    Usage: .Fr ⟨function return value⟩ ...
+           See Bl -diag.
 
-              Don't use this macro.  It allows a break right before the return
-              value (usually a single digit) which is bad typographical
-              behaviour.  Use ‘\~’ to tie the return value to the previous word.
+           ERRORS
+           Documents errno(2) settings in sections 2, 3, 4, and 9.
 
-     .Hf      Use this macro to include a (header) file literally.  It first
-              prints ‘File:’ followed by the file name, then the contents of
-              ⟨file⟩.
+           See Er.
 
-                    Usage: .Hf ⟨file⟩
+           SEE ALSO
+           References other manuals with related topics.  This section should
+           exist for most manuals.  Cross-references should conventionally be
+           ordered first by section, then alphabetically (ignoring case).
 
-              It is neither callable nor parsed.
+           References to other documentation concerning the topic of the manual
+           page, for example authoritative books or journal articles, may also
+           be provided in this section.
 
-     .Lk      To be written.
+           See Rs and Xr.
 
-     .Me      Exact usage unknown.  The documentation in the -mdoc source file
-              describes it as a macro for “menu entries”.
+           STANDARDS
+           References any standards implemented or used.  If not adhering to any
+           standards, the HISTORY section should be used instead.
 
-              Its default width is 6n.
+           See St.
 
-     .Mt      To be written.
+           HISTORY
+           A brief history of the subject, including where it was first
+           implemented, and when it was ported to or reimplemented for the
+           operating system at hand.
 
-     .Ot      Exact usage unknown.  The documentation in the -mdoc source file
-              describes it as “old function type (fortran)”.
+           AUTHORS
+           Credits to the person or persons who wrote the code and/or
+           documentation.  Authors should generally be noted by both name and
+           email address.
 
-     .Sm      Activate (toggle) space mode.
+           See An.
 
-                    Usage: .Sm [on | off] ...
+           CAVEATS
+           Common misuses and misunderstandings should be explained in this
+           section.
 
-              If space mode is off, no spaces between macro arguments are
-              inserted.  If called without a parameter (or if the next parameter
-              is neither ‘on’ nor ‘off’, ‘.Sm’ toggles space mode.
+           BUGS
+           Known bugs, limitations, and work-arounds should be described in this
+           section.
 
-     .Ud      prints
+           SECURITY CONSIDERATIONS
+           Documents any security precautions that operators should consider.
 
-                    currently under development.
+MACRO OVERVIEW
+     This overview is sorted such that macros of similar purpose are listed
+     together, to help find the best macro for any given purpose.  Deprecated
+     macros are not included in the overview, but can be found below in the
+     alphabetical MACRO REFERENCE.
 
-              It is neither callable nor parsed and takes no arguments.
+   Document preamble and NAME section macros
+     Dd               document date: $Mdocdate$ | month day, year
+     Dt               document title: TITLE section [arch]
+     Os               operating system version: [system [version]]
+     Nm               document name (one argument)
+     Nd               document description (one line)
 
-PREDEFINED STRINGS
-     The following strings are predefined:
+   Sections and cross references
+     Sh               section header (one line)
+     Ss               subsection header (one line)
+     Sx               internal cross reference to a section or subsection
+     Xr               cross reference to another manual page: name section
+     Tg               tag the definition of a term (<= 1 arguments)
+     Pp               start a text paragraph (no arguments)
 
-           String    Nroff       Troff     Meaning
-           <=        <=          ≤         less equal
-           >=        >=          ≥         greater equal
-           Rq        ''          ”         right double quote
-           Lq        ``          “         left double quote
-           ua        ^           ↑         upwards arrow
-           aa        ´           ´         acute accent
-           ga        `           `         grave accent
-           q         "           "         straight double quote
-           Pi        pi          pi        greek pi
-           Ne        !=          ≠         not equal
-           Le        <=          ≤         less equal
-           Ge        >=          ≥         greater equal
-           Lt        <           <         less than
-           Gt        >           >         greater than
-           Pm        +-          ±         plus minus
-           If        infinity    infinity  infinity
-           Am        &           &         ampersand
-           Na        NaN         NaN       not a number
-           Ba        |           |         vertical bar
+   Displays and lists
+     Bd, Ed           display block: -type [-offset width] [-compact]
+     D1               indented display (one line)
+     Dl               indented literal display (one line)
+     Ql               in-line literal display: ‘text’
+     Bl, El           list block: -type [-width val] [-offset val] [-compact]
+     It               list item (syntax depends on -type)
+     Ta               table cell separator in Bl -column lists
+     Rs, %*, Re       bibliographic block (references)
 
-     The names of the columns Nroff and Troff are a bit misleading; Nroff shows
-     the ASCII representation, while Troff gives the best glyph form available.
-     For example, a Unicode enabled TTY-device will have proper glyph
-     representations for all strings, whereas the enhancement for a Latin1
-     TTY-device is only the plus-minus sign.
+   Spacing control
+     Pf               prefix, no following horizontal space (one argument)
+     Ns               roman font, no preceding horizontal space (no arguments)
+     Ap               apostrophe without surrounding whitespace (no arguments)
+     Sm               switch horizontal spacing mode: [on | off]
+     Bk, Ek           keep block: -words
 
-     String names which consist of two characters can be written as ‘\*(xx’;
-     string names which consist of one character can be written as ‘\*x’.  A
-     generic syntax for a string name of any length is ‘\*[xxx]’ (this is a GNU
-     troff(1) extension).
+   Semantic markup for command line utilities
+     Nm               start a SYNOPSIS block with the name of a utility
+     Fl               command line options (flags) (>=0 arguments)
+     Cm               command modifier (>0 arguments)
+     Ar               command arguments (>=0 arguments)
+     Op, Oo, Oc       optional syntax elements (enclosure)
+     Ic               internal or interactive command (>0 arguments)
+     Ev               environmental variable (>0 arguments)
+     Pa               file system path (>=0 arguments)
 
-DIAGNOSTICS
-     The debugging macro ‘.Db’ available in previous versions of -mdoc has been
-     removed since GNU troff(1) provides better facilities to check parameters;
-     additionally, many error and warning messages have been added to this macro
-     package, making it both more robust and verbose.
+   Semantic markup for function libraries
+     Lb               function library (one argument)
+     In               include file (one argument)
+     Fd               other preprocessor directive (>0 arguments)
+     Ft               function type (>0 arguments)
+     Fo, Fc           function block: funcname
+     Fn               function name: funcname [argument ...]
+     Fa               function argument (>0 arguments)
+     Vt               variable type (>0 arguments)
+     Va               variable name (>0 arguments)
+     Dv               defined variable or preprocessor constant (>0 arguments)
+     Er               error constant (>0 arguments)
+     Ev               environmental variable (>0 arguments)
 
-     The only remaining debugging macro is ‘.Rd’ which yields a register dump of
-     all global registers and strings.  A normal user will never need it.
+   Various semantic markup
+     An               author name (>0 arguments)
+     Lk               hyperlink: uri [display_name]
+     Mt               “mailto” hyperlink: localpart@domain
+     Cd               kernel configuration declaration (>0 arguments)
+     Ad               memory address (>0 arguments)
+     Ms               mathematical symbol (>0 arguments)
 
-FORMATTING WITH GROFF, TROFF, AND NROFF
-     By default, the package inhibits page breaks, headers, and footers if
-     displayed with a TTY device like ‘latin1’ or ‘unicode’, to make the manual
-     more efficient for viewing on-line.  This behaviour can be changed (e.g. to
-     create a hardcopy of the TTY output) by setting the register ‘cR’ to zero
-     while calling groff(1), resulting in multiple pages instead of a single,
-     very long page:
+   Physical markup
+     Em               italic font or underline (emphasis) (>0 arguments)
+     Sy               boldface font (symbolic) (>0 arguments)
+     No               return to roman font (normal) (>0 arguments)
+     Bf, Ef           font block: -type | Em | Li | Sy
 
-           groff -Tlatin1 -rcR=0 -mdoc foo.man > foo.txt
+   Physical enclosures
+     Dq, Do, Dc       enclose in typographic double quotes: “text”
+     Qq, Qo, Qc       enclose in typewriter double quotes: "text"
+     Sq, So, Sc       enclose in single quotes: ‘text’
+     Pq, Po, Pc       enclose in parentheses: (text)
+     Bq, Bo, Bc       enclose in square brackets: [text]
+     Brq, Bro, Brc    enclose in curly braces: {text}
+     Aq, Ao, Ac       enclose in angle brackets: ⟨text⟩
+     Eo, Ec           generic enclosure
 
-     For double-sided printing, set register ‘D’ to 1:
+   Text production
+     Ex -std          standard command exit values: [utility ...]
+     Rv -std          standard function return values: [function ...]
+     St               reference to a standards document (one argument)
+     At               AT&T UNIX
+     Bx               BSD
+     Bsx              BSD/OS
+     Nx               NetBSD
+     Fx               FreeBSD
+     Ox               OpenBSD
+     Dx               DragonFly
 
-           groff -Tps -rD1 -mdoc foo.man > foo.ps
+MACRO REFERENCE
+     This section is a canonical reference of all macros, arranged
+     alphabetically.  For the scoping of individual macros, see MACRO SYNTAX.
 
-     To change the document font size to 11pt or 12pt, set register ‘S’
-     accordingly:
+     %A first_name ... last_name
+          Author name of an Rs block.  Multiple authors should each be accorded
+          their own %A line.  Author names should be ordered with full or
+          abbreviated forename(s) first, then full surname.
 
-           groff -Tdvi -rS11 -mdoc foo.man > foo.dvi
+     %B title
+          Book title of an Rs block.  This macro may also be used in a non-
+          bibliographic context when referring to book titles.
 
-     Register ‘S’ is ignored for TTY devices.
+     %C location
+          Publication city or location of an Rs block.
 
-     The line and title length can be changed by setting the registers ‘LL’ and
-     ‘LT’, respectively:
+     %D [month day,] year
+          Publication date of an Rs block.  Provide the full English name of the
+          month and all four digits of the year.
 
-           groff -Tutf8 -rLL=100n -rLT=100n -mdoc foo.man | less
+     %I name
+          Publisher or issuer name of an Rs block.
 
-     If not set, both registers default to 78n for TTY devices and 6.5i
-     otherwise.
+     %J name
+          Journal name of an Rs block.
 
-FILES
-     doc.tmac          The main manual macro package.
-     mdoc.tmac         A wrapper file to call doc.tmac.
-     mdoc/doc-common   Common strings, definitions, stuff related typographic
-                       output.
-     mdoc/doc-nroff    Definitions used for a TTY output device.
-     mdoc/doc-ditroff  Definitions used for all other devices.
-     mdoc.local        Local additions and customizations.
-     andoc.tmac        This file checks whether the -mdoc or the -man package
-                       should be used.
+     %N number
+          Issue number (usually for journals) of an Rs block.
+
+     %O line
+          Optional information of an Rs block.
+
+     %P number
+          Book or journal page number of an Rs block.  Conventionally, the
+          argument starts with ‘p.’ for a single page or ‘pp.’ for a range of
+          pages, for example:
+
+                .%P pp. 42\(en47
+
+     %Q name
+          Institutional author (school, government, etc.) of an Rs block.
+          Multiple institutional authors should each be accorded their own %Q
+          line.
+
+     %R name
+          Technical report name of an Rs block.
+
+     %T title
+          Article title of an Rs block.  This macro may also be used in a non-
+          bibliographical context when referring to article titles.
+
+     %U protocol://path
+          URI of reference document.
+
+     %V number
+          Volume number of an Rs block.
+
+     Ac   Close an Ao block.  Does not have any tail arguments.
+
+     Ad address
+          Memory address.  Do not use this for postal addresses.
+
+          Examples:
+                .Ad [0,$]
+                .Ad 0x00000000
+
+     An -split | -nosplit | first_name ... last_name
+          Author name.  Can be used both for the authors of the program,
+          function, or driver documented in the manual, or for the authors of
+          the manual itself.  Requires either the name of an author or one of
+          the following arguments:
+
+                -split     Start a new output line before each subsequent
+                           invocation of An.
+                -nosplit   The opposite of -split.
+
+          The default is -nosplit.  The effect of selecting either of the -split
+          modes ends at the beginning of the AUTHORS section.  In the AUTHORS
+          section, the default is -nosplit for the first author listing and
+          -split for all other author listings.
+
+          Examples:
+                .An -nosplit
+                .An Kristaps Dzonsons Aq Mt kristaps@bsd.lv
+
+     Ao block
+          Begin a block enclosed by angle brackets.  Does not have any head
+          arguments.  This macro is almost never useful.  See Aq for more
+          details.
+
+     Ap   Inserts an apostrophe without any surrounding whitespace.  This is
+          generally used as a grammatical device when referring to the verb form
+          of a function.
+
+          Examples:
+                .Fn execve Ap d
+
+     Aq line
+          Enclose the rest of the input line in angle brackets.  The only
+          important use case is for email addresses.  See Mt for an example.
+
+          Occasionally, it is used for names of characters and keys, for
+          example:
+
+                Press the
+                .Aq escape
+                key to ...
+
+          For URIs, use Lk instead, and In for “#include” directives.  Never
+          wrap Ar in Aq.
+
+          Since Aq usually renders with non-ASCII characters in non-ASCII output
+          modes, do not use it where the ASCII characters ‘<’ and ‘>’ are
+          required as syntax elements.  Instead, use these characters directly
+          in such cases, combining them with the macros Pf, Ns, or Eo as needed.
+
+          See also Ao.
+
+     Ar [placeholder ...]
+          Command arguments.  If an argument is not provided, the string “file
+          ...” is used as a default.
+
+          Examples:
+                .Fl o Ar file
+                .Ar
+                .Ar arg1 , arg2 .
+
+          The arguments to the Ar macro are names and placeholders for command
+          arguments; for fixed strings to be passed verbatim as arguments, use
+          Fl or Cm.
+
+     At [version]
+          Formats an AT&T UNIX version.  Accepts one optional argument:
+
+                v[1-7] | 32v   A version of AT&T UNIX.
+                III            AT&T System III UNIX.
+                V | V.[1-4]    A version of AT&T System V UNIX.
+
+          Note that these arguments do not begin with a hyphen.
+
+          Examples:
+                .At
+                .At III
+                .At V.1
+
+          See also Bsx, Bx, Dx, Fx, Nx, and Ox.
+
+     Bc   Close a Bo block.  Does not have any tail arguments.
+
+     Bd -type [-offset width] [-compact]
+          Begin a display block.  Display blocks are used to select a different
+          indentation and justification than the one used by the surrounding
+          text.  They may contain both macro lines and text lines.  By default,
+          a display block is preceded by a vertical space.
+
+          The type must be one of the following:
+
+                -centered      Produce one output line from each input line, and
+                               center-justify each line.  Using this display
+                               type is not recommended; many mdoc
+                               implementations render it poorly.
+
+                -filled        Change the positions of line breaks to fill each
+                               line, and left- and right-justify the resulting
+                               block.
+
+                -literal       Produce one output line from each input line, and
+                               do not justify the block at all.  Preserve white
+                               space as it appears in the input.  Always use a
+                               constant-width font.  Use this for displaying
+                               source code.
+
+                -ragged        Change the positions of line breaks to fill each
+                               line, and left-justify the resulting block.
+
+                -unfilled      The same as -literal, but using the same font as
+                               for normal text, which is a variable width font
+                               if supported by the output device.
+
+          The type must be provided first.  Additional arguments may follow:
+
+                -offset width  Indent the display by the width, which may be one
+                               of the following:
+
+                               One of the pre-defined strings indent, the width
+                               of a standard indentation (six constant width
+                               characters); indent-two, twice indent; left,
+                               which has no effect; right, which justifies to
+                               the right margin; or center, which aligns around
+                               an imagined center axis.
+
+                               A macro invocation, which selects a predefined
+                               width associated with that macro.  The most
+                               popular is the imaginary macro Ds, which resolves
+                               to 6n.
+
+                               A scaling width as described in roff(7).
+
+                               An arbitrary string, which indents by the length
+                               of this string.
+
+                               When the argument is missing, -offset is ignored.
+
+                -compact       Do not assert vertical space before the display.
+
+          Examples:
+
+                .Bd -literal -offset indent -compact
+                   Hello       world.
+                .Ed
+
+          See also D1 and Dl.
+
+     Bf -emphasis | -literal | -symbolic | Em | Li | Sy
+          Change the font mode for a scoped block of text.  The -emphasis and Em
+          argument are equivalent, as are -symbolic and Sy, and -literal and Li.
+          Without an argument, this macro does nothing.  The font mode continues
+          until broken by a new font mode in a nested scope or Ef is
+          encountered.
+
+          See also Li, Ef, Em, and Sy.
+
+     Bk -words
+          For each macro, keep its output together on the same output line,
+          until the end of the macro or the end of the input line is reached,
+          whichever comes first.  Line breaks in text lines are unaffected.
+
+          The -words argument is required; additional arguments are ignored.
+
+          The following example will not break within each Op macro line:
+
+                .Bk -words
+                .Op Fl f Ar flags
+                .Op Fl o Ar output
+                .Ek
+
+          Be careful in using over-long lines within a keep block!  Doing so
+          will clobber the right margin.
+
+     Bl -type [-width val] [-offset val] [-compact] [col ...]
+          Begin a list.  Lists consist of items specified using the It macro,
+          containing a head or a body or both.
+
+          The list type is mandatory and must be specified first.  The -width
+          and -offset arguments accept macro names as described for Bd -offset,
+          scaling widths as described in roff(7), or use the length of the given
+          string.  The -offset is a global indentation for the whole list,
+          affecting both item heads and bodies.  For those list types supporting
+          it, the -width argument requests an additional indentation of item
+          bodies, to be added to the -offset.  Unless the -compact argument is
+          specified, list entries are separated by vertical space.
+
+          A list must specify one of the following list types:
+
+                -bullet       No item heads can be specified, but a bullet will
+                              be printed at the head of each item.  Item bodies
+                              start on the same output line as the bullet and
+                              are indented according to the -width argument.
+
+                -column       A columnated list.  The -width argument has no
+                              effect; instead, the string length of each
+                              argument specifies the width of one column.  If
+                              the first line of the body of a -column list is
+                              not an It macro line, It contexts spanning one
+                              input line each are implied until an It macro line
+                              is encountered, at which point items start being
+                              interpreted as described in the It documentation.
+
+                -dash         Like -bullet, except that dashes are used in place
+                              of bullets.
+
+                -diag         Like -inset, except that item heads are not parsed
+                              for macro invocations.  Most often used in the
+                              DIAGNOSTICS section with error constants in the
+                              item heads.
+
+                -enum         A numbered list.  No item heads can be specified.
+                              Formatted like -bullet, except that cardinal
+                              numbers are used in place of bullets, starting at
+                              1.
+
+                -hang         Like -tag, except that the first lines of item
+                              bodies are not indented, but follow the item heads
+                              like in -inset lists.
+
+                -hyphen       Synonym for -dash.
+
+                -inset        Item bodies follow items heads on the same line,
+                              using normal inter-word spacing.  Bodies are not
+                              indented, and the -width argument is ignored.
+
+                -item         No item heads can be specified, and none are
+                              printed.  Bodies are not indented, and the -width
+                              argument is ignored.
+
+                -ohang        Item bodies start on the line following item heads
+                              and are not indented.  The -width argument is
+                              ignored.
+
+                -tag          Item bodies are indented according to the -width
+                              argument.  When an item head fits inside the
+                              indentation, the item body follows this head on
+                              the same output line.  Otherwise, the body starts
+                              on the output line following the head.
+
+          Lists may be nested within lists and displays.  Nesting of -column and
+          -enum lists may not be portable.
+
+          See also El and It.
+
+     Bo block
+          Begin a block enclosed by square brackets.  Does not have any head
+          arguments.
+
+          Examples:
+                .Bo 1 ,
+                .Dv BUFSIZ Bc
+
+          See also Bq.
+
+     Bq line
+          Encloses its arguments in square brackets.
+
+          Examples:
+                .Bq 1, Dv BUFSIZ
+
+          Remarks: this macro is sometimes abused to emulate optional arguments
+          for commands; the correct macros to use for this purpose are Op, Oo,
+          and Oc.
+
+          See also Bo.
+
+     Brc  Close a Bro block.  Does not have any tail arguments.
+
+     Bro block
+          Begin a block enclosed by curly braces.  Does not have any head
+          arguments.
+
+          Examples:
+                .Bro 1 , ... ,
+                .Va n Brc
+
+          See also Brq.
+
+     Brq line
+          Encloses its arguments in curly braces.
+
+          Examples:
+                .Brq 1, ..., Va n
+
+          See also Bro.
+
+     Bsx [version]
+          Format the BSD/OS version provided as an argument, or a default value
+          if no argument is provided.
+
+          Examples:
+                .Bsx 1.0
+                .Bsx
+
+          See also At, Bx, Dx, Fx, Nx, and Ox.
+
+     Bt   Supported only for compatibility, do not use this in new manuals.
+          Prints “is currently in beta test.”
+
+     Bx [version [variant]]
+          Format the BSD version provided as an argument, or a default value if
+          no argument is provided.
+
+          Examples:
+                .Bx 4.3 Tahoe
+                .Bx 4.4
+                .Bx
+
+          See also At, Bsx, Dx, Fx, Nx, and Ox.
+
+     Cd line
+          This macro is used in FreeBSD to denote kernel configuration
+          declarations.
+
+          Examples:
+                .Cd device le0 at scode?
+
+          Remarks: this macro is commonly abused by using quoted literals to
+          retain whitespace and align consecutive Cd declarations.  This
+          practise is discouraged.
+
+     Cm keyword ...
+          Command modifiers.  Typically used for fixed strings passed as
+          arguments to interactive commands, to commands in interpreted scripts,
+          or to configuration file directives, unless Fl is more appropriate.
+
+          Examples:
+                .Nm mt Fl f Ar device Cm rewind
+                .Nm ps Fl o Cm pid , Ns Cm command
+                .Nm dd Cm if= Ns Ar file1 Cm of= Ns Ar file2
+                .Ic set Fl o Cm vi
+                .Ic lookup Cm file bind
+                .Ic permit Ar identity Op Cm as Ar target
+
+     D1 line
+          One-line indented display.  This is formatted by the default rules and
+          is useful for simple indented statements.  It is followed by a
+          newline.
+
+          Examples:
+                .D1 Fl abcdefgh
+
+          See also Bd and Dl.
+
+     Db   This macro is obsolete.  No replacement is needed.  It is ignored by
+          mandoc(1) and groff including its arguments.  It was formerly used to
+          toggle a debugging mode.
+
+     Dc   Close a Do block.  Does not have any tail arguments.
+
+     Dd $Mdocdate$ | month day, year
+          Document date for display in the page footer, by convention the date
+          of the last change.  This is the mandatory first macro of any mdoc
+          manual.
+
+          The month is the full English month name, the day is an integer
+          number, and the year is the full four-digit year.
+
+          Other arguments are not portable; the mandoc(1) utility handles them
+          as follows:
+             -   To have the date automatically filled in by the OpenBSD version
+                 of cvs(1), the special string “$Mdocdate$” can be given as an
+                 argument.
+             -   The traditional, purely numeric man(7) format year–month–day is
+                 accepted, too.
+             -   If a date string cannot be parsed, it is used verbatim.
+             -   If no date string is given, the current date is used.
+
+          Examples:
+                .Dd $Mdocdate$
+                .Dd $Mdocdate: July 2 2018$
+                .Dd July 2, 2018
+
+          See also Dt and Os.
+
+     Dl line
+          One-line indented display.  This is formatted as literal text and is
+          useful for commands and invocations.  It is followed by a newline.
+
+          Examples:
+                .Dl % mandoc mdoc.7 \(ba less
+
+          See also Ql, Bd -literal, and D1.
+
+     Do block
+          Begin a block enclosed by double quotes.  Does not have any head
+          arguments.
+
+          Examples:
+                .Do
+                April is the cruellest month
+                .Dc
+                \(em T.S. Eliot
+
+          See also Dq.
+
+     Dq line
+          Encloses its arguments in “typographic” double-quotes.
+
+          Examples:
+                .Dq April is the cruellest month
+                \(em T.S. Eliot
+
+          See also Qq, Sq, and Do.
+
+     Dt TITLE section [arch]
+          Document title for display in the page header.  This is the mandatory
+          second macro of any mdoc file.
+
+          Its arguments are as follows:
+
+            TITLE    The document's title (name), defaulting to “UNTITLED” if
+                     unspecified.  To achieve a uniform appearance of page
+                     header lines, it should by convention be all caps.
+
+            section  The manual section.  This may be one of 1 (General
+                     Commands), 2 (System Calls), 3 (Library Functions), 3p
+                     (Perl Library), 4 (Device Drivers), 5 (File Formats), 6
+                     (Games), 7 (Miscellaneous Information), 8 (System Manager's
+                     Manual), or 9 (Kernel Developer's Manual).  It should
+                     correspond to the manual's filename suffix and defaults to
+                     the empty string if unspecified.
+
+            arch     This specifies the machine architecture a manual page
+                     applies to, where relevant, for example alpha, amd64, i386,
+                     or sparc64.  The list of valid architectures varies by
+                     operating system.
+
+          Examples:
+                .Dt FOO 1
+                .Dt FOO 9 i386
+
+          See also Dd and Os.
+
+     Dv identifier ...
+          Defined variables such as preprocessor constants, constant symbols,
+          enumeration values, and so on.
+
+          Examples:
+                .Dv NULL
+                .Dv BUFSIZ
+                .Dv STDOUT_FILENO
+
+          See also Er and Ev for special-purpose constants, Va for variable
+          symbols, and Fd for listing preprocessor variable definitions in the
+          SYNOPSIS.
+
+     Dx [version]
+          Format the DragonFly version provided as an argument, or a default
+          value if no argument is provided.
+
+          Examples:
+                .Dx 2.4.1
+                .Dx
+
+          See also At, Bsx, Bx, Fx, Nx, and Ox.
+
+     Ec [closing_delimiter]
+          Close a scope started by Eo.
+
+          The closing_delimiter argument is used as the enclosure tail, for
+          example, specifying \(rq will emulate Dc.
+
+     Ed   End a display context started by Bd.
+
+     Ef   End a font mode context started by Bf.
+
+     Ek   End a keep context started by Bk.
+
+     El   End a list context started by Bl.  See also It.
+
+     Em word ...
+          Request an italic font.  If the output device does not provide that,
+          underline.
+
+          This is most often used for stress emphasis (not to be confused with
+          importance, see Sy).  In the rare cases where none of the semantic
+          markup macros fit, it can also be used for technical terms and
+          placeholders, except that for syntax elements, Sy and Ar are
+          preferred, respectively.
+
+          Examples:
+                Selected lines are those
+                .Em not
+                matching any of the specified patterns.
+                Some of the functions use a
+                .Em hold space
+                to save the pattern space for subsequent retrieval.
+
+          See also No, Ql, and Sy.
+
+     En word ...
+          This macro is obsolete.  Use Eo or any of the other enclosure macros.
+
+          It encloses its argument in the delimiters specified by the last Es
+          macro.
+
+     Eo [opening_delimiter]
+          An arbitrary enclosure.  The opening_delimiter argument is used as the
+          enclosure head, for example, specifying \(lq will emulate Do.
+
+     Er identifier ...
+          Error constants for definitions of the errno libc global variable.
+          This is most often used in section 2 and 3 manual pages.
+
+          Examples:
+                .Er EPERM
+                .Er ENOENT
+
+          See also Dv for general constants.
+
+     Es opening_delimiter closing_delimiter
+          This macro is obsolete.  Use Eo or any of the other enclosure macros.
+
+          It takes two arguments, defining the delimiters to be used by
+          subsequent En macros.
+
+     Ev identifier ...
+          Environmental variables such as those specified in environ(7).
+
+          Examples:
+                .Ev DISPLAY
+                .Ev PATH
+
+          See also Dv for general constants.
+
+     Ex -std [utility ...]
+          Insert a standard sentence regarding command exit values of 0 on
+          success and >0 on failure.  This is most often used in section 1, 6,
+          and 8 manual pages.
+
+          If utility is not specified, the document's name set by Nm is used.
+          Multiple utility arguments are treated as separate utilities.
+
+          See also Rv.
+
+     Fa argument ...
+          Function argument or parameter.  Each argument may be a name and a
+          type (recommended for the SYNOPSIS section), a name alone (for
+          function invocations), or a type alone (for function prototypes).  If
+          both a type and a name are given or if the type consists of multiple
+          words, all words belonging to the same function argument have to be
+          given in a single argument to the Fa macro.
+
+          This macro is also used to specify the field name of a structure.
+
+          Most often, the Fa macro is used in the SYNOPSIS within Fo blocks when
+          documenting multi-line function prototypes.  If invoked with multiple
+          arguments, the arguments are separated by a comma.  Furthermore, if
+          the following macro is another Fa, the last argument will also have a
+          trailing comma.
+
+          Examples:
+                .Fa "const char *p"
+                .Fa "int a" "int b" "int c"
+                .Fa "char *" size_t
+
+          See also Fo.
+
+     Fc   End a function context started by Fo.
+
+     Fd #directive [argument ...]
+          Preprocessor directive, in particular for listing it in the SYNOPSIS.
+          Historically, it was also used to document include files.  The latter
+          usage has been deprecated in favour of In.
+
+          Examples:
+                .Fd #define sa_handler __sigaction_u.__sa_handler
+                .Fd #define SIO_MAXNFDS
+                .Fd #ifdef FS_DEBUG
+                .Ft void
+                .Fn dbg_open "const char *"
+                .Fd #endif
+
+          See also MANUAL STRUCTURE, In, and Dv.
+
+     Fl [word ...]
+          Command-line flag or option.  Used when listing arguments to command-
+          line utilities.  For each argument, prints an ASCII hyphen-minus
+          character ‘-’, immediately followed by the argument.  If no arguments
+          are provided, a hyphen-minus is printed followed by a space.  If the
+          argument is a macro, a hyphen-minus is prefixed to the subsequent
+          macro output.
+
+          Examples:
+                .Nm du Op Fl H | L | P
+                .Nm ls Op Fl 1AaCcdFfgHhikLlmnopqRrSsTtux
+                .Nm route Cm add Fl inet Ar destination gateway
+                .Nm locate.updatedb Op Fl \-fcodes Ns = Ns Ar dbfile
+                .Nm aucat Fl o Fl
+                .Nm kill Fl Ar signal_number
+
+          For GNU-sytle long options, escaping the additional hyphen-minus is
+          not strictly required, but may be safer with future versions of GNU
+          troff; see mandoc_char(7) for details.
+
+          See also Cm.
+
+     Fn funcname [argument ...]
+          A function name.
+
+          Function arguments are surrounded in parenthesis and are delimited by
+          commas.  If no arguments are specified, blank parenthesis are output.
+          In the SYNOPSIS section, this macro starts a new output line, and a
+          blank line is automatically inserted between function definitions.
+
+          Examples:
+                .Fn "int funcname" "int arg0" "int arg1"
+                .Fn funcname "int arg0"
+                .Fn funcname arg0
+
+                .Ft functype
+                .Fn funcname
+
+          When referring to a function documented in another manual page, use Xr
+          instead.  See also MANUAL STRUCTURE, Fo, and Ft.
+
+     Fo funcname
+          Begin a function block.  This is a multi-line version of Fn.
+
+          Invocations usually occur in the following context:
+
+                .Ft functype
+                .Fo funcname
+                .Fa "argtype argname"
+                ...
+                .Fc
+
+          A Fo scope is closed by Fc.
+
+          See also MANUAL STRUCTURE, Fa, Fc, and Ft.
+
+     Fr number
+          This macro is obsolete.  No replacement markup is needed.
+
+          It was used to show numerical function return values in an italic
+          font.
+
+     Ft functype
+          A function type.
+
+          In the SYNOPSIS section, a new output line is started after this
+          macro.
+
+          Examples:
+                .Ft int
+                .Ft functype
+                .Fn funcname
+
+          See also MANUAL STRUCTURE, Fn, and Fo.
+
+     Fx [version]
+          Format the FreeBSD version provided as an argument, or a default value
+          if no argument is provided.
+
+          Examples:
+                .Fx 7.1
+                .Fx
+
+          See also At, Bsx, Bx, Dx, Nx, and Ox.
+
+     Hf filename
+          This macro is not implemented in mandoc(1).  It was used to include
+          the contents of a (header) file literally.
+
+     Ic keyword ...
+          Internal or interactive command, or configuration instruction in a
+          configuration file.  See also Cm.
+
+          Examples:
+                .Ic :wq
+                .Ic hash
+                .Ic alias
+
+          Note that using Ql, Dl, or Bd -literal is preferred for displaying
+          code samples; the Ic macro is used when referring to an individual
+          command name.
+
+     In filename
+          The name of an include file.  This macro is most often used in section
+          2, 3, and 9 manual pages.
+
+          When invoked as the first macro on an input line in the SYNOPSIS
+          section, the argument is displayed in angle brackets and preceded by
+          "#include", and a blank line is inserted in front if there is a
+          preceding function declaration.  In other sections, it only encloses
+          its argument in angle brackets and causes no line break.
+
+          Examples:
+                .In sys/types.h
+
+          See also MANUAL STRUCTURE.
+
+     It [head]
+          A list item.  The syntax of this macro depends on the list type.
+
+          Lists of type -hang, -ohang, -inset, and -diag have the following
+          syntax:
+
+                .It args
+
+          Lists of type -bullet, -dash, -enum, -hyphen and -item have the
+          following syntax:
+
+                .It
+
+          with subsequent lines interpreted within the scope of the It until
+          either a closing El or another It.
+
+          The -tag list has the following syntax:
+
+                .It [args]
+
+          Subsequent lines are interpreted as with -bullet and family.  The line
+          arguments correspond to the list's left-hand side; body arguments
+          correspond to the list's contents.
+
+          The -column list is the most complicated.  Its syntax is as follows:
+
+                .It cell [Ta cell ...]
+                .It cell [<TAB> cell ...]
+
+          The arguments consist of one or more lines of text and macros
+          representing a complete table line.  Cells within the line are
+          delimited by the special Ta block macro or by literal tab characters.
+
+          Using literal tabs is strongly discouraged because they are very hard
+          to use correctly and mdoc code using them is very hard to read.  In
+          particular, a blank character is syntactically significant before and
+          after the literal tab character.  If a word precedes or follows the
+          tab without an intervening blank, that word is never interpreted as a
+          macro call, but always output literally.
+
+          The tab cell delimiter may only be used within the It line itself; on
+          following lines, only the Ta macro can be used to delimit cells, and
+          portability requires that Ta is called by other macros: some parsers
+          do not recognize it when it appears as the first macro on a line.
+
+          Note that quoted strings may span tab-delimited cells on an It line.
+          For example,
+
+                .It "col1 , <TAB> col2 ," ;
+
+          will preserve the whitespace before both commas, but not the
+          whitespace before the semicolon.
+
+          See also Bl.
+
+     Lb libname
+          Specify a library.
+
+          The name parameter may be a system library, such as z or pam, in which
+          case a small library description is printed next to the linker
+          invocation; or a custom library, in which case the library name is
+          printed in quotes.  This is most commonly used in the SYNOPSIS section
+          as described in MANUAL STRUCTURE.
+
+          Examples:
+                .Lb libz
+                .Lb libmandoc
+
+     Li word ...
+          Request a typewriter (literal) font.  Deprecated because on terminal
+          output devices, this is usually indistinguishable from normal text.
+          For literal displays, use Ql (in-line), Dl (single line), or Bd
+          -literal (multi-line) instead.
+
+     Lk uri [display_name]
+          Format a hyperlink.
+
+          Examples:
+                .Lk https://bsd.lv "The BSD.lv Project"
+                .Lk https://bsd.lv
+
+          See also Mt.
+
+     Lp   Deprecated synonym for Pp.
+
+     Ms name
+          Display a mathematical symbol.
+
+          Examples:
+                .Ms sigma
+                .Ms aleph
+
+     Mt localpart@domain
+          Format a “mailto:” hyperlink.
+
+          Examples:
+                .Mt discuss@manpages.bsd.lv
+                .An Kristaps Dzonsons Aq Mt kristaps@bsd.lv
+
+     Nd line
+          A one line description of the manual's content.  This is the mandatory
+          last macro of the NAME section and not appropriate for other sections.
+
+          Examples:
+                .Nd mdoc language reference
+                .Nd format and display UNIX manuals
+
+          The Nd macro technically accepts child macros and terminates with a
+          subsequent Sh invocation.  Do not assume this behaviour: some
+          whatis(1) database generators are not smart enough to parse more than
+          the line arguments and will display macros verbatim.
+
+          See also Nm.
+
+     Nm [name]
+          The name of the manual page, or — in particular in section 1, 6, and 8
+          pages — of an additional command or feature documented in the manual
+          page.  When first invoked, the Nm macro expects a single argument, the
+          name of the manual page.  Usually, the first invocation happens in the
+          NAME section of the page.  The specified name will be remembered and
+          used whenever the macro is called again without arguments later in the
+          page.  The Nm macro uses Block full-implicit semantics when invoked as
+          the first macro on an input line in the SYNOPSIS section; otherwise,
+          it uses ordinary In-line semantics.
+
+          Examples:
+
+                .Sh SYNOPSIS
+                .Nm cat
+                .Op Fl benstuv
+                .Op Ar
+
+          In the SYNOPSIS of section 2, 3 and 9 manual pages, use the Fn macro
+          rather than Nm to mark up the name of the manual page.
+
+     No word ...
+          Normal text.  Closes the scope of any preceding in-line macro.  When
+          used after physical formatting macros like Em or Sy, switches back to
+          the standard font face and weight.  Can also be used to embed plain
+          text strings in macro lines using semantic annotation macros.
+
+          Examples:
+                .Em italic , Sy bold , No and roman
+
+                .Sm off
+                .Cm :C No / Ar pattern No / Ar replacement No /
+                .Sm on
+
+          See also Em, Ql, and Sy.
+
+     Ns   Suppress a space between the output of the preceding macro and the
+          following text or macro.  Following invocation, input is interpreted
+          as normal text just like after an No macro.
+
+          This has no effect when invoked at the start of a macro line.
+
+          Examples:
+                .Ar name Ns = Ns Ar value
+                .Cm :M Ns Ar pattern
+                .Fl o Ns Ar output
+
+          See also No and Sm.
+
+     Nx [version]
+          Format the NetBSD version provided as an argument, or a default value
+          if no argument is provided.
+
+          Examples:
+                .Nx 5.01
+                .Nx
+
+          See also At, Bsx, Bx, Dx, Fx, and Ox.
+
+     Oc   Close multi-line Oo context.
+
+     Oo block
+          Multi-line version of Op.
+
+          Examples:
+                .Oo
+                .Op Fl flag Ns Ar value
+                .Oc
+
+     Op line
+          Optional part of a command line.  Prints the argument(s) in brackets.
+          This is most often used in the SYNOPSIS section of section 1 and 8
+          manual pages.
+
+          Examples:
+                .Op Fl a Ar b
+                .Op Ar a | b
+
+          See also Oo.
+
+     Os [system [version]]
+          Operating system version for display in the page footer.  This is the
+          mandatory third macro of any mdoc file.
+
+          The optional system parameter specifies the relevant operating system
+          or environment.  It is suggested to leave it unspecified, in which
+          case mandoc(1) uses its -Ios argument or, if that isn't specified
+          either, sysname and release as returned by uname(3).
+
+          Examples:
+                .Os
+                .Os KTH/CSC/TCS
+                .Os BSD 4.3
+
+          See also Dd and Dt.
+
+     Ot functype
+          This macro is obsolete.  Use Ft instead; with mandoc(1), both have the
+          same effect.
+
+          Historical mdoc packages described it as “old function type
+          (FORTRAN)”.
+
+     Ox [version]
+          Format the OpenBSD version provided as an argument, or a default value
+          if no argument is provided.
+
+          Examples:
+                .Ox 4.5
+                .Ox
+
+          See also At, Bsx, Bx, Dx, Fx, and Nx.
+
+     Pa name ...
+          An absolute or relative file system path, or a file or directory name.
+          If an argument is not provided, the character ‘~’ is used as a
+          default.
+
+          Examples:
+                .Pa /usr/bin/mandoc
+                .Pa /usr/share/man/man7/mdoc.7
+
+          See also Lk.
+
+     Pc   Close parenthesised context opened by Po.
+
+     Pf prefix macro [argument ...]
+          Removes the space between its argument and the following macro.  It is
+          equivalent to:
+
+                No \&prefix Ns macro [argument ...]
+
+          The prefix argument is not parsed for macro names or delimiters, but
+          used verbatim as if it were escaped.
+
+          Examples:
+                .Pf $ Ar variable_name
+                .Pf . Ar macro_name
+                .Pf 0x Ar hex_digits
+
+          See also Ns and Sm.
+
+     Po block
+          Multi-line version of Pq.
+
+     Pp   Break a paragraph.  This will assert vertical space between prior and
+          subsequent macros and/or text.
+
+          Paragraph breaks are not needed before or after Sh or Ss macros or
+          before displays (Bd line) or lists (Bl) unless the -compact flag is
+          given.
+
+     Pq line
+          Parenthesised enclosure.
+
+          See also Po.
+
+     Qc   Close quoted context opened by Qo.
+
+     Ql line
+          In-line literal display.  This can be used for complete command
+          invocations and for multi-word code examples when an indented display
+          is not desired.
+
+          See also Dl and Bd -literal.
+
+     Qo block
+          Multi-line version of Qq.
+
+     Qq line
+          Encloses its arguments in "typewriter" double-quotes.  Consider using
+          Dq.
+
+          See also Dq, Sq, and Qo.
+
+     Re   Close an Rs block.  Does not have any tail arguments.
+
+     Rs   Begin a bibliographic (“reference”) block.  Does not have any head
+          arguments.  The block macro may only contain %A, %B, %C, %D, %I, %J,
+          %N, %O, %P, %Q, %R, %T, %U, and %V child macros (at least one must be
+          specified).
+
+          Examples:
+                .Rs
+                .%A J. E. Hopcroft
+                .%A J. D. Ullman
+                .%B Introduction to Automata Theory, Languages, and Computation
+                .%I Addison-Wesley
+                .%C Reading, Massachusetts
+                .%D 1979
+                .Re
+
+          If an Rs block is used within a SEE ALSO section, a vertical space is
+          asserted before the rendered output, else the block continues on the
+          current line.
+
+     Rv -std [function ...]
+          Insert a standard sentence regarding a function call's return value of
+          0 on success and -1 on error, with the errno libc global variable set
+          on error.
+
+          If function is not specified, the document's name set by Nm is used.
+          Multiple function arguments are treated as separate functions.
+
+          See also Ex.
+
+     Sc   Close single-quoted context opened by So.
+
+     Sh TITLE LINE
+          Begin a new section.  For a list of conventional manual sections, see
+          MANUAL STRUCTURE.  These sections should be used unless it's
+          absolutely necessary that custom sections be used.
+
+          Section names should be unique so that they may be keyed by Sx.
+          Although this macro is parsed, it should not consist of child node or
+          it may not be linked with Sx.
+
+          See also Pp, Ss, and Sx.
+
+     Sm [on | off]
+          Switches the spacing mode for output generated from macros.
+
+          By default, spacing is on.  When switched off, no white space is
+          inserted between macro arguments and between the output generated from
+          adjacent macros, but text lines still get normal spacing between words
+          and sentences.
+
+          When called without an argument, the Sm macro toggles the spacing
+          mode.  Using this is not recommended because it makes the code harder
+          to read.
+
+     So block
+          Multi-line version of Sq.
+
+     Sq line
+          Encloses its arguments in ‘typewriter’ single-quotes.
+
+          See also Dq, Qq, and So.
+
+     Ss Title line
+          Begin a new subsection.  Unlike with Sh, there is no convention for
+          the naming of subsections.  Except DESCRIPTION, the conventional
+          sections described in MANUAL STRUCTURE rarely have subsections.
+
+          Sub-section names should be unique so that they may be keyed by Sx.
+          Although this macro is parsed, it should not consist of child node or
+          it may not be linked with Sx.
+
+          See also Pp, Sh, and Sx.
+
+     St -abbreviation
+          Replace an abbreviation for a standard with the full form.  The
+          following standards are recognised.  Where multiple lines are given
+          without a blank line in between, they all refer to the same standard,
+          and using the first form is recommended.
+
+          C language standards
+
+             -ansiC          ANSI X3.159-1989 (“ANSI C89”)
+             -ansiC-89       ANSI X3.159-1989 (“ANSI C89”)
+             -isoC           ISO/IEC 9899:1990 (“ISO C90”)
+             -isoC-90        ISO/IEC 9899:1990 (“ISO C90”)
+                             The original C standard.
+
+             -isoC-amd1      ISO/IEC 9899/AMD1:1995 (“ISO C90, Amendment 1”)
+
+             -isoC-tcor1     ISO/IEC 9899/TCOR1:1994 (“ISO C90, Technical
+                             Corrigendum 1”)
+
+             -isoC-tcor2     ISO/IEC 9899/TCOR2:1995 (“ISO C90, Technical
+                             Corrigendum 2”)
+
+             -isoC-99        ISO/IEC 9899:1999 (“ISO C99”)
+                             The second major version of the C language
+                             standard.
+
+             -isoC-2011      ISO/IEC 9899:2011 (“ISO C11”)
+                             The third major version of the C language standard.
+
+          POSIX.1 before the Single UNIX Specification
+
+             -p1003.1-88     IEEE Std 1003.1-1988 (“POSIX.1”)
+             -p1003.1        IEEE Std 1003.1 (“POSIX.1”)
+                             The original POSIX standard, based on ANSI C.
+
+             -p1003.1-90     IEEE Std 1003.1-1990 (“POSIX.1”)
+             -iso9945-1-90   ISO/IEC 9945-1:1990 (“POSIX.1”)
+                             The first update of POSIX.1.
+
+             -p1003.1b-93    IEEE Std 1003.1b-1993 (“POSIX.1b”)
+             -p1003.1b       IEEE Std 1003.1b (“POSIX.1b”)
+                             Real-time extensions.
+
+             -p1003.1c-95    IEEE Std 1003.1c-1995 (“POSIX.1c”)
+                             POSIX thread interfaces.
+
+             -p1003.1i-95    IEEE Std 1003.1i-1995 (“POSIX.1i”)
+                             Technical Corrigendum.
+
+             -p1003.1-96     ISO/IEC 9945-1:1996 (“POSIX.1”)
+             -iso9945-1-96   ISO/IEC 9945-1:1996 (“POSIX.1”)
+                             Includes POSIX.1-1990, 1b, 1c, and 1i.
+
+          X/Open Portability Guide version 4 and related standards
+
+             -xpg3           X/Open Portability Guide Issue 3 (“XPG3”)
+                             An XPG4 precursor, published in 1989.
+
+             -p1003.2        IEEE Std 1003.2 (“POSIX.2”)
+             -p1003.2-92     IEEE Std 1003.2-1992 (“POSIX.2”)
+             -iso9945-2-93   ISO/IEC 9945-2:1993 (“POSIX.2”)
+                             An XCU4 precursor.
+
+             -p1003.2a-92    IEEE Std 1003.2a-1992 (“POSIX.2”)
+                             Updates to POSIX.2.
+
+             -xpg4           X/Open Portability Guide Issue 4 (“XPG4”)
+                             Based on POSIX.1 and POSIX.2, published in 1992.
+
+          Single UNIX Specification version 1 and related standards
+
+             -susv1          Version 1 of the Single UNIX Specification
+                             (“SUSv1”)
+             -xpg4.2         X/Open Portability Guide Issue 4, Version 2
+                             (“XPG4.2”)
+                             This standard was published in 1994.  It was used
+                             as the basis for UNIX 95 certification.  The
+                             following three refer to parts of it.
+
+             -xsh4.2         X/Open System Interfaces and Headers Issue 4,
+                             Version 2 (“XSH4.2”)
+
+             -xcurses4.2     X/Open Curses Issue 4, Version 2 (“XCURSES4.2”)
+
+             -p1003.1g-2000  IEEE Std 1003.1g-2000 (“POSIX.1g”)
+                             Networking APIs, including sockets.
+
+             -svid4          System V Interface Definition, Fourth Edition
+                             (“SVID4”),
+                             Published in 1995.
+
+          Single UNIX Specification version 2 and related standards
+
+             -susv2          Version 2 of the Single UNIX Specification
+                             (“SUSv2”) This Standard was published in 1997 and
+                             is also called X/Open Portability Guide version 5.
+                             It was used as the basis for UNIX 98 certification.
+                             The following refer to parts of it.
+
+             -xbd5           X/Open Base Definitions Issue 5 (“XBD5”)
+
+             -xsh5           X/Open System Interfaces and Headers Issue 5
+                             (“XSH5”)
+
+             -xcu5           X/Open Commands and Utilities Issue 5 (“XCU5”)
+
+             -xns5           X/Open Networking Services Issue 5 (“XNS5”)
+             -xns5.2         X/Open Networking Services Issue 5.2 (“XNS5.2”)
+
+          Single UNIX Specification version 3
+
+             -p1003.1-2001  IEEE Std 1003.1-2001 (“POSIX.1”)
+             -susv3         Version 3 of the Single UNIX Specification (“SUSv3”)
+                            This standard is based on C99, SUSv2, POSIX.1-1996,
+                            1d, and 1j.  It is also called X/Open Portability
+                            Guide version 6.  It is used as the basis for UNIX
+                            03 certification.
+
+             -p1003.1-2004  IEEE Std 1003.1-2004 (“POSIX.1”)
+                            The second and last Technical Corrigendum.
+
+          Single UNIX Specification version 4
+
+             -p1003.1-2008   IEEE Std 1003.1-2008 (“POSIX.1”)
+             -susv4          Version 4 of the Single UNIX Specification
+                             (“SUSv4”)
+                             This standard is also called X/Open Portability
+                             Guide version 7.
+
+          Other standards
+
+             -ieee754        IEEE Std 754-1985
+                             Floating-point arithmetic.
+
+             -iso8601        ISO 8601
+                             Representation of dates and times, published in
+                             1988.
+
+             -iso8802-3      ISO 8802-3: 1989
+                             Ethernet local area networks.
+
+             -ieee1275-94    IEEE Std 1275-1994 (“Open Firmware”)
+
+     Sx Title line
+          Reference a section or subsection in the same manual page.  The
+          referenced section or subsection name must be identical to the
+          enclosed argument, including whitespace.
+
+          Examples:
+                .Sx MANUAL STRUCTURE
+
+          See also Sh and Ss.
+
+     Sy word ...
+          Request a boldface font.
+
+          This is most often used to indicate importance or seriousness (not to
+          be confused with stress emphasis, see Em).  When none of the semantic
+          macros fit, it is also adequate for syntax elements that have to be
+          given or that appear verbatim.
+
+          Examples:
+                .Sy Warning :
+                If
+                .Sy s
+                appears in the owner permissions, set-user-ID mode is set.
+                This utility replaces the former
+                .Sy dumpdir
+                program.
+
+          See also Em, No, and Ql.
+
+     Ta   Table cell separator in Bl -column lists; can only be used below It.
+
+     Tg [term]
+          Announce that the next input line starts a definition of the term.
+          This macro must appear alone on its own input line.  The argument
+          defaults to the first argument of the first macro on the next line.
+          The argument may not contain whitespace characters, not even when it
+          is quoted.  This macro is a mandoc(1) extension and is typically
+          ignored by other formatters.
+
+          When viewing terminal output with less(1), the interactive :t command
+          can be used to go to the definition of the term as described for the
+          MANPAGER variable in man(1); when producing HTML output, a fragment
+          identifier (id attribute) is generated, to be used for deep linking to
+          this place of the document.
+
+          In most cases, adding a Tg macro would be redundant because mandoc(1)
+          is able to automatically tag most definitions.  This macro is intended
+          for cases where automatic tagging of a term is unsatisfactory, for
+          example if a definition is not tagged automatically (false negative)
+          or if places are tagged that do not define the term (false positives).
+          When there is at least one Tg macro for a term, no other places are
+          automatically marked as definitions of that term.
+
+     Tn word ...
+          Supported only for compatibility, do not use this in new manuals.
+          Even though the macro name (“tradename”) suggests a semantic function,
+          historic usage is inconsistent, mostly using it as a presentation-
+          level macro to request a small caps font.
+
+     Ud   Supported only for compatibility, do not use this in new manuals.
+          Prints out “currently under development.”
+
+     Ux   Supported only for compatibility, do not use this in new manuals.
+          Prints out “UNIX”.
+
+     Va [type] identifier ...
+          A variable name.
+
+          Examples:
+                .Va foo
+                .Va const char *bar;
+
+          For function arguments and parameters, use Fa instead.  For
+          declarations of global variables in the SYNOPSIS section, use Vt.
+
+     Vt type [identifier]
+          A variable type.
+
+          This is also used for indicating global variables in the SYNOPSIS
+          section, in which case a variable name is also specified.  Note that
+          it accepts Block partial-implicit syntax when invoked as the first
+          macro on an input line in the SYNOPSIS section, else it accepts
+          ordinary In-line syntax.  In the former case, this macro starts a new
+          output line, and a blank line is inserted in front if there is a
+          preceding function definition or include directive.
+
+          Examples:
+                .Vt unsigned char
+                .Vt extern const char * const sys_signame[] ;
+
+          For parameters in function prototypes, use Fa instead, for function
+          return types Ft, and for variable names outside the SYNOPSIS section
+          Va, even when including a type with the name.  See also MANUAL
+          STRUCTURE.
+
+     Xc   Close a scope opened by Xo.
+
+     Xo block
+          Extend the header of an It macro or the body of a partial-implicit
+          block macro beyond the end of the input line.  This macro originally
+          existed to work around the 9-argument limit of historic roff(7).
+
+     Xr name section
+          Link to another manual ("cross-reference").
+
+          Cross reference the name and section number of another man page.
+
+          Examples:
+                .Xr mandoc 1
+                .Xr mandoc 1 ;
+                .Xr mandoc 1 Ns s behaviour
+
+MACRO SYNTAX
+     The syntax of a macro depends on its classification.  In this section,
+     ‘-arg’ refers to macro arguments, which may be followed by zero or more
+     ‘parm’ parameters; ‘Yo’ opens the scope of a macro; and if specified, ‘Yc’
+     closes it out.
+
+     The Callable column indicates that the macro may also be called by passing
+     its name as an argument to another macro.  For example, ‘.Op Fl O Ar file’
+     produces ‘[-O file]’.  To prevent a macro call and render the macro name
+     literally, escape it by prepending a zero-width space, ‘\&’.  For example,
+     ‘Op \&Fl O’ produces ‘[Fl O]’.  If a macro is not callable but its name
+     appears as an argument to another macro, it is interpreted as opaque text.
+     For example, ‘.Fl Sh’ produces ‘-Sh’.
+
+     The Parsed column indicates whether the macro may call other macros by
+     receiving their names as arguments.  If a macro is not parsed but the name
+     of another macro appears as an argument, it is interpreted as opaque text.
+
+     The Scope column, if applicable, describes closure rules.
+
+   Block full-explicit
+     Multi-line scope closed by an explicit closing macro.  All macros contains
+     bodies; only Bf and (optionally) Bl contain a head.
+
+           .Yo [-arg [parm...]] [head...]
+           [body...]
+           .Yc
+
+           Macro     Callable     Parsed     Scope
+           Bd        No           No         closed by Ed
+           Bf        No           No         closed by Ef
+           Bk        No           No         closed by Ek
+           Bl        No           No         closed by El
+           Ed        No           No         opened by Bd
+           Ef        No           No         opened by Bf
+           Ek        No           No         opened by Bk
+           El        No           No         opened by Bl
+
+   Block full-implicit
+     Multi-line scope closed by end-of-file or implicitly by another macro.  All
+     macros have bodies; some (It -bullet, -hyphen, -dash, -enum, -item) don't
+     have heads; only one (It in Bl -column) has multiple heads.
+
+           .Yo [-arg [parm...]] [head... [Ta head...]]
+           [body...]
+
+           Macro     Callable     Parsed     Scope
+           It        No           Yes        closed by It, El
+           Nd        No           No         closed by Sh
+           Nm        No           Yes        closed by Nm, Sh, Ss
+           Sh        No           Yes        closed by Sh
+           Ss        No           Yes        closed by Sh, Ss
+
+     Note that the Nm macro is a Block full-implicit macro only when invoked as
+     the first macro in a SYNOPSIS section line, else it is In-line.
+
+   Block partial-explicit
+     Like block full-explicit, but also with single-line scope.  Each has at
+     least a body and, in limited circumstances, a head (Fo, Eo) and/or tail
+     (Ec).
+
+           .Yo [-arg [parm...]] [head...]
+           [body...]
+           .Yc [tail...]
+
+           .Yo [-arg [parm...]] [head...] [body...] Yc [tail...]
+
+           Macro     Callable     Parsed     Scope
+           Ac        Yes          Yes        opened by Ao
+           Ao        Yes          Yes        closed by Ac
+           Bc        Yes          Yes        closed by Bo
+           Bo        Yes          Yes        opened by Bc
+           Brc       Yes          Yes        opened by Bro
+           Bro       Yes          Yes        closed by Brc
+           Dc        Yes          Yes        opened by Do
+           Do        Yes          Yes        closed by Dc
+           Ec        Yes          Yes        opened by Eo
+           Eo        Yes          Yes        closed by Ec
+           Fc        Yes          Yes        opened by Fo
+           Fo        No           No         closed by Fc
+           Oc        Yes          Yes        closed by Oo
+           Oo        Yes          Yes        opened by Oc
+           Pc        Yes          Yes        closed by Po
+           Po        Yes          Yes        opened by Pc
+           Qc        Yes          Yes        opened by Oo
+           Qo        Yes          Yes        closed by Oc
+           Re        No           No         opened by Rs
+           Rs        No           No         closed by Re
+           Sc        Yes          Yes        opened by So
+           So        Yes          Yes        closed by Sc
+           Xc        Yes          Yes        opened by Xo
+           Xo        Yes          Yes        closed by Xc
+
+   Block partial-implicit
+     Like block full-implicit, but with single-line scope closed by the end of
+     the line.
+
+           .Yo [-arg [val...]] [body...] [res...]
+
+           Macro     Callable     Parsed
+           Aq        Yes          Yes
+           Bq        Yes          Yes
+           Brq       Yes          Yes
+           D1        No           Yes
+           Dl        No           Yes
+           Dq        Yes          Yes
+           En        Yes          Yes
+           Op        Yes          Yes
+           Pq        Yes          Yes
+           Ql        Yes          Yes
+           Qq        Yes          Yes
+           Sq        Yes          Yes
+           Vt        Yes          Yes
+
+     Note that the Vt macro is a Block partial-implicit only when invoked as the
+     first macro in a SYNOPSIS section line, else it is In-line.
+
+   Special block macro
+     The Ta macro can only be used below It in Bl -column lists.  It delimits
+     blocks representing table cells; these blocks have bodies, but no heads.
+
+           Macro     Callable     Parsed     Scope
+           Ta        Yes          Yes        closed by Ta, It
+
+   In-line
+     Closed by the end of the line, fixed argument lengths, and/or subsequent
+     macros.  In-line macros have only text children.  If a number (or
+     inequality) of arguments is (n), then the macro accepts an arbitrary number
+     of arguments.
+
+           .Yo [-arg [val...]] [args...] [res...]
+
+           .Yo [-arg [val...]] [args...] Yc...
+
+           .Yo [-arg [val...]] arg0 arg1 argN
+
+           Macro     Callable     Parsed     Arguments
+           %A        No           No         >0
+           %B        No           No         >0
+           %C        No           No         >0
+           %D        No           No         >0
+           %I        No           No         >0
+           %J        No           No         >0
+           %N        No           No         >0
+           %O        No           No         >0
+           %P        No           No         >0
+           %Q        No           No         >0
+           %R        No           No         >0
+           %T        No           No         >0
+           %U        No           No         >0
+           %V        No           No         >0
+           Ad        Yes          Yes        >0
+           An        Yes          Yes        >0
+           Ap        Yes          Yes        0
+           Ar        Yes          Yes        n
+           At        Yes          Yes        1
+           Bsx       Yes          Yes        n
+           Bt        No           No         0
+           Bx        Yes          Yes        n
+           Cd        Yes          Yes        >0
+           Cm        Yes          Yes        >0
+           Db        No           No         1
+           Dd        No           No         n
+           Dt        No           No         n
+           Dv        Yes          Yes        >0
+           Dx        Yes          Yes        n
+           Em        Yes          Yes        >0
+           Er        Yes          Yes        >0
+           Es        Yes          Yes        2
+           Ev        Yes          Yes        >0
+           Ex        No           No         n
+           Fa        Yes          Yes        >0
+           Fd        No           No         >0
+           Fl        Yes          Yes        n
+           Fn        Yes          Yes        >0
+           Fr        Yes          Yes        >0
+           Ft        Yes          Yes        >0
+           Fx        Yes          Yes        n
+           Hf        No           No         n
+           Ic        Yes          Yes        >0
+           In        No           No         1
+           Lb        No           No         1
+           Li        Yes          Yes        >0
+           Lk        Yes          Yes        >0
+           Lp        No           No         0
+           Ms        Yes          Yes        >0
+           Mt        Yes          Yes        >0
+           Nm        Yes          Yes        n
+           No        Yes          Yes        >0
+           Ns        Yes          Yes        0
+           Nx        Yes          Yes        n
+           Os        No           No         n
+           Ot        Yes          Yes        >0
+           Ox        Yes          Yes        n
+           Pa        Yes          Yes        n
+           Pf        Yes          Yes        1
+           Pp        No           No         0
+           Rv        No           No         n
+           Sm        No           No         <2
+           St        No           Yes        1
+           Sx        Yes          Yes        >0
+           Sy        Yes          Yes        >0
+           Tg        No           No         <2
+           Tn        Yes          Yes        >0
+           Ud        No           No         0
+           Ux        Yes          Yes        n
+           Va        Yes          Yes        n
+           Vt        Yes          Yes        >0
+           Xr        Yes          Yes        2
+
+   Delimiters
+     When a macro argument consists of one single input character considered as
+     a delimiter, the argument gets special handling.  This does not apply when
+     delimiters appear in arguments containing more than one character.
+     Consequently, to prevent special handling and just handle it like any other
+     argument, a delimiter can be escaped by prepending a zero-width space
+     (‘\&’).  In text lines, delimiters never need escaping, but may be used as
+     normal punctuation.
+
+     For many macros, when the leading arguments are opening delimiters, these
+     delimiters are put before the macro scope, and when the trailing arguments
+     are closing delimiters, these delimiters are put after the macro scope.
+     Spacing is suppressed after opening delimiters and before closing
+     delimiters.  For example,
+
+           .Aq ( [ word ] ) .
+
+     renders as:
+
+           ([⟨word⟩]).
+
+     Opening delimiters are:
+
+           (       left parenthesis
+           [       left bracket
+
+     Closing delimiters are:
+
+           .       period
+           ,       comma
+           :       colon
+           ;       semicolon
+           )       right parenthesis
+           ]       right bracket
+           ?       question mark
+           !       exclamation mark
+
+     Note that even a period preceded by a backslash (‘\.’) gets this special
+     handling; use ‘\&.’ to prevent that.
+
+     Many in-line macros interrupt their scope when they encounter delimiters,
+     and resume their scope when more arguments follow that are not delimiters.
+     For example,
+
+           .Fl a ( b | c \*(Ba d ) e
+
+     renders as:
+
+           -a (-b | -c | -d) -e
+
+     This applies to both opening and closing delimiters, and also to the middle
+     delimiter, which does not suppress spacing:
+
+           |       vertical bar
+
+     As a special case, the predefined string \*(Ba is handled and rendered in
+     the same way as a plain ‘|’ character.  Using this predefined string is not
+     recommended in new manuals.
+
+     Appending a zero-width space (‘\&’) to the end of an input line is also
+     useful to prevent the interpretation of a trailing period, exclamation or
+     question mark as the end of a sentence, for example when an abbreviation
+     happens to occur at the end of a text or macro input line.
+
+   Font handling
+     In mdoc documents, usage of semantic markup is recommended in order to have
+     proper fonts automatically selected; only when no fitting semantic markup
+     is available, consider falling back to Physical markup macros.  Whenever
+     any mdoc macro switches the roff(7) font mode, it will automatically
+     restore the previous font when exiting its scope.  Manually switching the
+     font using the roff(7) ‘\f’ font escape sequences is never required.
+
+COMPATIBILITY
+     This section provides an incomplete list of compatibility issues between
+     mandoc and GNU troff ("groff").
+
+     The following problematic behaviour is found in groff:
+
+     -   Pa does not format its arguments when used in the FILES section under
+         certain list types.
+     -   Ta can only be called by other macros, but not at the beginning of a
+         line.
+     -   ‘\f’ (font face) and ‘\F’ (font family face) Text Decoration escapes
+         behave irregularly when specified within line-macro scopes.
+     -   Negative scaling units return to prior lines.  Instead, mandoc
+         truncates them to zero.
+
+     The following features are unimplemented in mandoc:
+
+     -   Bd -file file is unsupported for security reasons.
+     -   Bd -filled does not adjust the right margin, but is an alias for Bd
+         -ragged.
+     -   Bd -literal does not use a literal font, but is an alias for Bd
+         -unfilled.
+     -   Bd -offset center and -offset right don't work.  Groff does not
+         implement centered and flush-right rendering either, but produces large
+         indentations.
 
 SEE ALSO
-     groff(1), man(1), troff(1), groff_man(7)
+     man(1), mandoc(1), eqn(7), man(7), mandoc_char(7), roff(7), tbl(7)
 
-BUGS
-     Section 3f has not been added to the header routines.
+     The web page extended documentation for the mdoc language:
+     https://mandoc.bsd.lv/mdoc/ provides a few tutorial-style pages for
+     beginners, an extensive style guide for advanced authors, and an alphabetic
+     index helping to choose the best macros for various kinds of content.
 
-     ‘.Nm’ font should be changed in NAME section.
+     The manual page groff_mdoc(7): https://man.voidlinux.org/groff_mdoc
+     contained in the “groff” package documents exactly the same language in a
+     somewhat different style.
 
-     ‘.Fn’ needs to have a check to prevent splitting up if the line length is
-     too short.  Occasionally it separates the last parenthesis, and sometimes
-     looks ridiculous if a line is in fill mode.
+HISTORY
+     The mdoc language first appeared as a troff macro package in 4.4BSD.  It
+     was later significantly updated by Werner Lemberg and Ruslan Ermilov in
+     groff-1.17.  The standalone implementation that is part of the mandoc(1)
+     utility written by Kristaps Dzonsons appeared in OpenBSD 4.6.
 
-     The list and display macros do not do any keeps and certainly should be
-     able to.
+AUTHORS
+     The mdoc reference was written by Kristaps Dzonsons <kristaps@bsd.lv>.
 

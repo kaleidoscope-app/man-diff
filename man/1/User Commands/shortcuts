@@ -4,9 +4,10 @@ NAME
      shortcuts – Command-line utility for running shortcuts.
 
 SYNOPSIS
-     shortcuts run shortcut-name [--input-path input-path ...]
+     shortcuts run shortcut-name-or-identifier [--input-path input-path ...]
                [--output-path output-path ...] [--output-type output-type]
-     shortcuts list [--folder-name folder-name] [--folders]
+     shortcuts list [--folder-name folder-name-or-identifier] [--folders]
+               [--show-identifiers]
      shortcuts view shortcut-name
      shortcuts sign [--mode mode] --input input --output output
 
@@ -16,7 +17,7 @@ DESCRIPTION
 
 OPTIONS
    shortcuts run
-     shortcut-name
+     shortcut-name-or-identifier
 
      [--input-path input-path ...]
               The input to provide to the shortcut. Can be dropped, or set to
@@ -33,19 +34,26 @@ OPTIONS
               content.
 
    shortcuts list
-     [--folder-name folder-name]
-              List all shortcuts in the folder “folder-name” .
+     [--folder-name folder-name-or-identifier]
+              The folder name or identifier to list shortcuts in, or “none” to
+              list shortcuts not in a folder.
 
      [--folders]
-              List all user-created folders.
+              List folders instead of shortcuts.
+
+     [--show-identifiers]
+              Show identifiers with each result.
 
    shortcuts sign
      [--mode mode]
-              The signing mode. Either “people-who-know-me” or “anyone”
-              .Specifying “people-who-know-me” will sign locally, but only your
+              The signing mode. Either “people-who-know-me” or “anyone”.
+
+              Specifying “people-who-know-me” will sign locally, but only your
               devices, or people who have your contact info in their contacts,
-              will be able to import the shortcut. Specifying “anyone” will
-              notarize via iCloud, and allow anyone to import the shortcut.
+              will be able to import the shortcut.
+
+              Specifying “anyone” will notarize via iCloud, and allow anyone to
+              import the shortcut.
 
      --input input
               The shortcut file to sign.

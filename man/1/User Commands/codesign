@@ -74,17 +74,56 @@ OPTIONS
              file containing a detached signature to be used for verification.
              Any embedded signature in the code is ignored.
 
-     --deep  When signing a bundle, specifies that nested code content such as
-             helpers, frameworks, and plug-ins, should be recursively signed in
-             turn. Beware that all signing options you specify will apply, in
-             turn, to such nested content.
-             When verifying a bundle, specifies that any nested code content
-             will be recursively verified as to its full content. By default,
-             verification of nested content is limited to a shallow
+     --deep  (DEPRECATED for signing as of macOS 13.0) When signing a bundle,
+             specifies that nested code content such as helpers, frameworks, and
+             plug-ins, should be recursively signed in turn.
+             Beware:
+
+             •   All signing options will be applied, in turn, to all nested
+                 content. This is almost never what you want.
+
+             •   Nested code content is a special term that only applies to
+                 macOS style bundles with a Contents folder. Only bare Mach-Os
+                 and well structured bundles qualify as nested code content.
+                 Non-bundle directories in nested code content locations will
+                 cause an error when signing. The codesign tool will only
+                 discover nested code content in the following directories:
+
+                 •   Contents
+
+                 •   Contents/Frameworks
+
+                 •   Contents/SharedFrameworks
+
+                 •   Contents/PlugIns
+
+                 •   Contents/Plug-ins
+
+                 •   Contents/XPCServices
+
+                 •   Contents/Helpers
+
+                 •   Contents/MacOS
+
+                 •   Contents/Library/Automator
+
+                 •   Contents/Library/Spotlight
+
+                 •   Contents/Library/LoginItems
+
+             •   If any code (Mach-Os, bundles) are located outside the above
+                 listed locations they will not be signed by the --deep option
+
+             •   Using the --deep option on an iOS style bundle without a
+                 Contents folder will not cause an error but will only sign the
+                 main binary of the bundle.
+             When verifying a bundle, this option specifies that any nested code
+             content will be recursively verified as to its full content. By
+             default, verification of nested content is limited to a shallow
              investigation that may not detect changes to the nested code.
-             When displaying a signature, specifies that a list of directly
-             nested code should be written to the display output. This lists
-             only code directly nested within the subject; anything nested
+             When displaying a signature, this option specifies that a list of
+             directly nested code should be written to the display output. This
+             lists only code directly nested within the subject; anything nested
              indirectly will require recursive application of the codesign
              command.
 

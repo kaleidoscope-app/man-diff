@@ -4,14 +4,14 @@ NAME
      vis – display non-printable characters in a visual format
 
 SYNOPSIS
-     vis [-cbflnostw] [-F foldwidth] [file ...]
+     vis [-bcfhlMmNnoSstw] [-e extra] [-F foldwidth] [file ...]
 
 DESCRIPTION
-     The vis utility is a filter for converting non-printable characters into a
-     visual representation.  It differs from ‘cat -v’ in that the form is unique
-     and invertible.  By default, all non-graphic characters except space, tab,
-     and newline are encoded.  A detailed description of the various visual
-     formats is given in vis(3).
+     vis is a filter for converting non-printable characters into a visual
+     representation.  It differs from ‘cat -v’ in that the form is unique and
+     invertible.  By default, all non-graphic characters except space, tab, and
+     newline are encoded.  A detailed description of the various visual formats
+     is given in vis(3).
 
      The options are as follows:
 
@@ -19,23 +19,38 @@ DESCRIPTION
              and meta characters, and disables the doubling of backslashes.
              This produces output which is neither invertible or precise, but
              does represent a minimum of change to the input.  It is similar to
-             “cat -v”.
+             “cat -v”.  (VIS_NOSLASH)
 
      -c      Request a format which displays a small subset of the non-printable
-             characters using C-style backslash sequences.
+             characters using C-style backslash sequences.  (VIS_CSTYLE)
 
-     -F      Causes vis to fold output lines to foldwidth columns (default 80),
+     -e extra
+             Also encode characters in extra, per svis(3).
+
+     -F foldwidth
+             Causes vis to fold output lines to foldwidth columns (default 80),
              like fold(1), except that a hidden newline sequence is used, (which
              is removed when inverting the file back to its original form with
              unvis(1)).  If the last character in the encoded file does not end
              in a newline, a hidden newline sequence is appended to the output.
              This makes the output usable with various editors and other
-             utilities which typically do not work with partial lines.
+             utilities which typically don't work with partial lines.
 
      -f      Same as -F.
 
+     -h      Encode using the URI encoding from RFC 1808.  (VIS_HTTPSTYLE)
+
      -l      Mark newlines with the visible sequence ‘\$’, followed by the
              newline.
+
+     -M      Encode all shell meta characters (implies -S, -w, -g) (VIS_META)
+
+     -m      Encode using the MIME Quoted-Printable encoding from RFC 2045.
+             (VIS_MIMESTYLE)
+
+     -N      Turn on the VIS_NOLOCALE flag which encodes using the “C” locale,
+             removing any encoding dependencies caused by the current locale
+             settings specified in the environment.
 
      -n      Turns off any encoding, except for the fact that backslashes are
              still doubled and hidden newline sequences inserted if -f or -F is
@@ -44,24 +59,54 @@ DESCRIPTION
              be unfolded by running the output through unvis(1).
 
      -o      Request a format which displays non-printable characters as an
-             octal number, \ddd.
+             octal number, \ddd.  (VIS_OCTAL)
+
+     -S      Encode shell meta-characters that are non-white space or glob.
+             (VIS_SHELL)
 
      -s      Only characters considered unsafe to send to a terminal are
              encoded.  This flag allows backspace, bell, and carriage return in
-             addition to the default space, tab and newline.
+             addition to the default space, tab and newline.  (VIS_SAFE)
 
-     -t      Tabs are also encoded.
+     -t      Tabs are also encoded.  (VIS_TAB)
 
-     -w      White space (space-tab-newline) is also encoded.
+     -w      White space (space-tab-newline) is also encoded.  (VIS_WHITE)
+
+MULTIBYTE CHARACTER SUPPORT
+     vis supports multibyte character input.  The encoding conversion is
+     influenced by the setting of the LC_CTYPE environment variable which
+     defines the set of characters that can be copied without encoding.
+
+     When 8-bit data is present in the input, LC_CTYPE must be set to the
+     correct locale or to the C locale.  If the locales of the data and the
+     conversion are mismatched, multibyte character recognition may fail and
+     encoding will be performed byte-by-byte instead.
+
+ENVIRONMENT
+     LC_CTYPE      Specify the locale of the input data.  Set to C if the input
+                   data locale is unknown.
+
+EXAMPLES
+     Visualize characters encoding white spaces and tabs:
+
+           $ echo -e "\x10\n\t" | vis -w -t
+           \^P\012\011\012
+
+     Same as above but using `\$' for newline followed by an actual newline:
+
+           $ echo -e "\x10\n\t" | vis -w -t -l
+           \^P\$
+           \011\$
+
+     Visualize string using URI encoding:
+
+           $ echo http://www.freebsd.org | vis -h
+           http%3a%2f%2fwww.freebsd.org%0a
 
 SEE ALSO
-     unvis(1), vis(3)
+     unvis(1), svis(3), vis(3)
 
 HISTORY
-     The vis command appeared in 4.4BSD.
-
-BUGS
-     Due to limitations in the underlying vis(3) function, the vis utility does
-     not recognize multibyte characters, and thus may consider them to be non-
-     printable when they are in fact printable (and vice versa).
+     The vis command appears in 4.4BSD.  Multibyte character support was added
+     in NetBSD 7.0 and FreeBSD 9.2.
 

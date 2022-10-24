@@ -42,30 +42,32 @@ COLLECTIONS
          /Library/Extensions and any other third-party kexts installed on the
          system.  It is dynamically built by kernelmanagerd(8) and prelinked
          against the boot kext collection and, if present, the system kext
-         collection.  For more information on installing third-party kexts into
-         the auxiliary kext collection, see INSTALLING.
+         collection.  On Apple Silicon Macs, the auxiliary kext collection is
+         located in the Preboot volume.  For more information on installing
+         third-party kexts into the auxiliary kext collection, see INSTALLING.
 
 INSTALLING
        As of macOS 11, a kext is only loadable once it has been built into the
        auxiliary kext collection by kernelmanagerd(8), and the system has
        rebooted.  At boot, kernelmanagerd(8) will load this collection into the
-       kernel which allows all of the kexts in the collection to match and load.
-       If kmutil load, kextload(8), or any invocation of a KextManager function
-       attempts to load a kext that is not yet loadable, kernelmanagerd(8) will
-       stage the kext into a protected location, validate it, and prompt the
-       user to approve a rebuild of the auxiliary kext collection.  If the
-       validation and rebuild are successful, the kext will be available on the
-       next boot.
+       kernel, which allows all of the kexts in the collection to match and
+       load.  If kmutil load, kextload(8), or any invocation of a KextManager
+       function attempts to load a kext that is not yet loadable,
+       kernelmanagerd(8) will stage the kext into a protected location, validate
+       it, and prompt the user to approve a rebuild of the auxiliary kext
+       collection.  If the validation and rebuild are successful, the kext will
+       be available on the next boot.
 
 COMMANDS
        Commands and their specific options are listed below.  For other options
        common to most commands, see OPTIONS.
 
        • create: Create a new kext collection according to the options provided.
-         This command is should only be used by developers investigating custom
+         This command should only be used by developers investigating custom
          kernels or replacing the contents of the boot kext collection or system
-         kext collection.  To load or unload kexts already in a collection see
-         the load and unload subcommands.
+         kext collection.  As of macOS 13.0, a KDK is required to create a new
+         boot or system kext collection.  To load or unload kexts already in a
+         collection see the load and unload subcommands.
 
          -n, —new <boot|sys|aux>
                 Specify one or more of boot, sys, or aux to build one or more
@@ -129,6 +131,9 @@ COMMANDS
                 Print the metadata of the collection(s), such as their prelink
                 uuids, the uuids of collections they link against, and the build
                 version that produced the collection.
+
+         —show-mach-boot-properties
+                Print derived Mach-O boot properties of the collection(s).
 
          —json  Output the section layout as JSON.
 
@@ -386,7 +391,7 @@ RECOVERY COMMANDS
          Permissive Security, and you will be prompted to confirm this action.
 
          -c, —custom-boot-object
-                The mach-o that the booter will load and start.  The file can be
+                The Mach-O that the booter will load and start.  The file can be
                 optionally compressed and wrapped in an img4.
 
          -C, —compress
@@ -394,6 +399,17 @@ RECOVERY COMMANDS
 
          -v, —volume
                 Install the custom boot object for the specified volume
+
+         —raw   Treat custom boot object as a raw file to be installed.  The
+                object will be installed with custom Mach-O boot properties
+                derived from –lowest-virtual-address and –entry-point
+
+         —lowest-virtual-address
+                Lowest virtual memory address of the raw boot object.  (iBoot
+                will map the raw boot object at this virtual address)
+
+         —entry-point
+                Virtual memory address of entry point into the raw boot object
 
 OPTIONS
    GLOBAL OPTIONS
@@ -452,6 +468,14 @@ OPTIONS
               properties of an extension to be included in the input or output.
               This argument can not be overridden by other arguments for
               specifying and including extensions.
+
+       –kdk   The KDK path to use for discovering kexts when creating a new boot
+              or sys kext collection.
+
+       –build Use with caution. This specifies the build version number to use
+              when discovering kexts and building kext collections.  If no build
+              version is specified, the current system build version number is
+              used.
 
        For more information on predicate filter syntax, see the predicate
        programming guide available in the Apple developer documentation.

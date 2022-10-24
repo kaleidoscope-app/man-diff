@@ -54,7 +54,7 @@ DESCRIPTION
      section for more details.
 
 OPTIONS
-     -h            Print full usage.
+     -h, --help    Print full usage.
 
      -v            Print a line of output to stderr for each source directory
                    copied.
@@ -90,7 +90,7 @@ OPTIONS
                    multiple --arch options are specified then the resulting
                    destination file will contain each of the specified
                    architectures (if they are present in the source file).  arch
-                   should be specified as "i386", "x86_64", etc.
+                   should be specified as "arm64", "x86_64", etc.
 
      --bom bom     Copy only files, links, devices, and directories that are
                    present in the specified BOM.
@@ -128,34 +128,34 @@ OPTIONS
 
      --hfsCompression
                    When copying files or extracting content from an archive, if
-                   the destination is an HFS+ volume that supports compression,
-                   all the content will be compressed if appropriate. This is
-                   only supported on Mac OS X 10.6 or later, and is only
-                   intended to be used in installation and backup scenarios that
-                   involve system files. Since files using HFS+ compression are
-                   not readable on versions of Mac OS X earlier than 10.6, this
-                   flag should not be used when dealing with non-system files or
-                   other user-generated content that will be used on a version
-                   of Mac OS X earlier than 10.6.
+                   the destination is an HFS+ or APFS volume that supports
+                   filesystem compression, all the content will be compressed if
+                   appropriate. This is only supported on Mac OS X 10.6 or
+                   later, and is only intended to be used in installation and
+                   backup scenarios that involve system files. Since files using
+                   filesystem compression are not readable on versions of Mac OS
+                   X earlier than 10.6, this flag should not be used when
+                   dealing with non-system files or other user-generated content
+                   that will be used on a version of Mac OS X earlier than 10.6.
 
      --nohfsCompression
-                   Do not compress files with HFS+ compression when copying or
-                   extracting content from an archive unless the content is
-                   already compressed with HFS+ compression.  This flag is only
-                   supported on Mac OS X 10.6 or later.  --nohfsCompression is
-                   the default.
+                   Do not compress files with filesystem compression when
+                   copying or extracting content from an archive unless the
+                   content is already compressed with filesystem compression.
+                   This flag is only supported on Mac OS X 10.6 or later.
+                   --nohfsCompression is the default.
 
      --preserveHFSCompression
-                   When copying files to an HFS+ volume that supports
-                   compression, ditto will preserve the compression of any
-                   source files that were using HFS+ compression.  This flag is
-                   only supported on Mac OS X 10.6 or later.
+                   When copying files to an HFS+ or APFS volume that supports
+                   filesystem compression, ditto will preserve the compression
+                   of any source files that were using filesystem compression.
+                   This flag is only supported on Mac OS X 10.6 or later.
                    --preserveHFSCompression is the default.
 
      --nopreserveHFSCompression
-                   Do not preserve HFS+ compression when copying files that are
-                   already compressed with HFS+ compression. This is only
-                   supported on Mac OS X 10.6 or later.
+                   Do not preserve filesystem compression when copying files
+                   that are already compressed with filesystem compression. This
+                   is only supported on Mac OS X 10.6 or later.
 
      --sequesterRsrc
                    When creating a PKZip archive, preserve resource forks and
@@ -174,6 +174,53 @@ OPTIONS
                    use to extract the contents of the file. If this option is
                    not provided, and a password-encrypted file is encountered,
                    ditto will emit an error message.
+
+     --persistRootless
+                   If a file being replaced has the SF_RESTRICTED flag or the
+                   com.apple.rootless extended attribute set, retain it even if
+                   the source file may not have had the same flag or attribute.
+
+     --nopersistRootless
+                   Do not persist the SF_RESTRICTED flag or the
+                   com.apple.rootless extended attribute for files being
+                   replaced.
+
+     --nonAtomicCopies
+                   Do not perform atomic copies when replacing existing files.
+                   By default ditto will atomically swap new files into place
+                   when completing a copy.
+
+     --segmentLargeFiles
+                   When copying files to a CPIO archive, segment files larger
+                   than 8 gigabytes into multiple entries.
+
+     --keepBinaries
+                   When copying files ditto will set aside the original Mach-O
+                   binary when it is being replaced.  The file name will be
+                   changed to a random number preceeded by the prefix .BC.T_
+
+     --keepBinariesList path
+                   When ditto keeps binary files it will record the location of
+                   the kept file in the file at the specified path.
+
+     --keepBinariesPattern regex
+                   Keep any regular file that matches the specified regular
+                   expression. Note that this file must not be a Mach-O binary.
+
+     --lang lang   When copying files with an index bom specified via -b option
+                   the user can specify language variants to filter from the
+                   index bom.  By default ditto will create a new index bom at
+                   /tmp/ditto.XXXXX representing the filtered contents.  The
+                   user can direct the output bom via the -o flag.
+
+     --outBom bom  Specify an explicit path for the output bom.  This bom will
+                   only be created if the user specified the -o flag or the -l
+                   flags.
+
+     --option key=value
+                   Specify an arbitrary key value pair to be passed to the
+                   copier.  The value can be a string, boolean, or integer.
+                   Booleans can be specified as 'true', 'false', 'yes', or 'no'.
 
 EXAMPLES
      The command:
@@ -223,13 +270,32 @@ ERRORS
      messages will be printed to standard error.
 
 ENVIRONMENT
-     DITTOABORT  If the environment variable DITTOABORT is set, ditto will call
-                 abort(3) if it encounters a fatal error.
+     DITTOABORT                If the environment variable DITTOABORT is set,
+                               ditto will call abort(3) if it encounters a fatal
+                               error.
 
-     DITTONORSRC
-                 If DITTONORSRC is set but --rsrc, --extattr, and --acl are not
-                 specified, ditto will not preserve those additional types of
-                 metadata.
+     DITTONORSRC               If DITTONORSRC is set but --rsrc, --extattr, and
+                               --acl are not specified, ditto will not preserve
+                               those additional types of metadata.
+
+     DITTOKEEPBINARIESPATTERN  If the environment variable
+                               DITTOKEEPBINARIESPATTERN is set, ditto will keep
+                               files that match the regular expression.  This
+                               matches the behavior of --keepBinariesPattern
+
+     DITTOKEEPBINARIESDIR      By default, ditto will keep the original file
+                               adjacent to its replacement.  If the environment
+                               variable DITTOKEEPBINARIESDIR is set, ditto will
+                               move kept files into the specified directory
+                               path.  The files will be renamed to a random UUID
+                               and the directory will be kept balanced.
+
+     DITTO_TEST_OPTIONS        If DITTO_TEST_OPTIONS is set to 1 ditto will
+                               print the parameters to be passed to
+                               BOMCopierCopyWithOptions for each source and
+                               destination pair, including the contents of the
+                               options dictionary. It will then exit without
+                               performing any copy operation.
 
 BUGS
      ditto doesn't copy directories into directories in the same way as cp(1).
@@ -243,4 +309,7 @@ BUGS
 
 SEE ALSO
      bom(5), lsbom(8), mkbom(8), cpio(1), zip(1), gzip(1), bzip2(1), tar(1).
+
+HISTORY
+     ditto first appeared in Mac OS X (10.0)
 

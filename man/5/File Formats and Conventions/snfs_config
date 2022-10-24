@@ -47,9 +47,7 @@ GLOBAL VARIABLES
        (The FSM is the controlling program that tracks file allocation and
        consistency across the multiple clients that have access to the volume
        via a Storage Area Network.) The following global variables can be
-       modified.  cvupdatefs(8) to fail when a bitmap fragmentation threshold is
-       exceeded.  When that limit is exceeded, FSM memory usage and startup time
-       may be excessive under the older method.
+       modified.
 
      • XML: affinityPreference <true/false>
 
@@ -688,8 +686,8 @@ GLOBAL VARIABLES
        file should grow to. The log file resides in
        /Library/Logs/Xsan/data/<volume_name>/log/cvlog.  When the log file grows
        to the specified size, it is moved to cvlog_<number> and a new cvlog is
-       started. Therefore, maxLogs the space will be consumed as specified in
-       <value>.
+       started. Therefore, the maximum space consumed will be maxLogs multiplied
+       by maxLogSize.
 
      • XML: namedStreams <true|false>
 
@@ -840,7 +838,7 @@ GLOBAL VARIABLES
 
        The metadataArchiveCache statement is used to configure the size of the
        memory cache for the Metadata Archive.  The minimum cache size is 1GB,
-       the maximum is 500GB, and the default is 1GB.
+       the maximum is 500GB, and the default is 2GB.
 
        XML: metadataArchiveDays <value>
 

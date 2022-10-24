@@ -18,6 +18,16 @@ DESCRIPTION
      two of the protocol is considered legacy and should only be used if higher
      versions of the protocol are unavailable.
 
+     As part of macOS Ventura (macOS 13.0), NFS client code was moved out from
+     kernel into kernel extension (kext).  The new kext is now loaded by default
+     on boot. Hence, from the user perspective, there is no difference from the
+     previous releases.  This behavior will change in a future release, i.e.,
+     NFS kext will not be loaded on boot but automatically when mount_nfs is
+     called ( NetFSFramework and autofs use mount_nfs in order to mount) or
+     manually using kextload tool. This means that mount("nfs", ...) syscall
+     would fail with ENODEV and NFS client sysctl parameters will not be
+     available until kext is up.
+
    MacOS Extended Attribute Considerations
      MacOS makes heavy use of extended attributes, resource forks, and possibly
      ACLs.  NFSv2 and NFSv3 do not support these operations over the wire. The
@@ -205,7 +215,7 @@ See Also
      https://developer.apple.com.
 
      dot_clean(1), nfsstat(1), nfs.conf(5), nfs4mapid(8), mount_nfs(8),
-     opendirectoryd(8),
+     opendirectoryd(8), kextload(8)
 
 Standards
      [RFC1094]  B. Nowicki, NFS: Network File System Protocol specification,

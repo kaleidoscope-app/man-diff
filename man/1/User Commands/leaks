@@ -159,7 +159,15 @@ OPTIONS
                    argument, followed by -- and the command to launch.  For
                    example:
 
-                   % leaks -quiet -atExit -- /bin/ls -lt /tmp/
+                   $ leaks -quiet -atExit -- /bin/ls -lt /tmp/
+
+                   Using -atExit will automatically set MallocStackLogging=lite
+                   for the specified command so that stack backtraces can be
+                   shown for leaked allocations. To use a different setting of
+                   that env var, such as YES or NO, you can set the env var
+                   prior to running leaks. For example:
+
+                   $ MallocStackLogging=YES leaks -quiet -atExit -- /bin/ls -lt /tmp/
 
 ENVIRONMENT
      The leaks command may detect more leaks if the target process is run with

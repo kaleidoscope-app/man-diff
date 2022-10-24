@@ -1087,19 +1087,13 @@ VERBS
                            simultaneously; however, the reserve is not allowed
                            to be larger than the quota.
 
-                           APFS Volumes can be tagged with certain role metadata
-                           flags; you can supply the roles parameter with any
-                           combination of one or more of the characters
-                           BRVITSDUNEXHLCYG, or 0 as a no-op for scripting
-                           convenience; the meaning of these characters is,
-                           respectively: B=Preboot (boot loader), R=Recovery,
-                           V=VM (swap space), I=Installer (temporary usage),
-                           T=Backup (Time Machine), S=System, D=Data, U=User,
-                           N=Baseband, E=Update, X=XART (hardware security),
-                           H=Hardware, L=Internal, C=Sidecar (Time Machine),
-                           Y=Enterprise (data), and G=iDiagnostics (EFI).  Note
-                           that you may be limited to only one role at a time
-                           and various other rules.
+                           APFS Volumes can be tagged with certain role meta-
+                           data flags. You can supply the roles parameter with
+                           any combination of one or more of meta-data flags
+                           from APFS VOLUME ROLES section below or 0 as a no-op
+                           for scripting convenience.  Note that you may be
+                           limited to only one role at a time and various other
+                           rules.
 
                            If you specify -groupWith, your new APFS Volume will
                            become a member of the same APFS Volume Group as the
@@ -1172,9 +1166,8 @@ VERBS
                            Volume.
 
                            The roles should be any combination of one or more of
-                           the characters brvitsdunexhlcygBRVITSDUNEXHLCYG in
-                           much the same manner as diskutil apfs addVolume
-                           above, in which unspecified flags are left alone, use
+                           the role meta-data flags from APFS VOLUME ROLES
+                           section below.  Unspecified flags are left alone, use
                            of lower-case causes flags to be cleared, and use of
                            upper-case causes flags to be set.  Alternatively,
                            clear will remove all flags, or 0 can be used as a
@@ -1373,10 +1366,14 @@ VERBS
                            emitted instead of the normal user-readable output.
 
                 deleteSnapshot volumeDevice -uuid snapshotUUID | -xid xid |
-                           -name snapshotName
+                           -name snapshotName [-wait]
                            Remove the given APFS Snapshot from its APFS Volume.
                            The ability to restore the state of the APFS Volume
                            back to that point in its evolution will be lost.
+
+                           Snapshot removal proceeds in the background and might
+                           not be finished when this command exits unless you
+                           specify -wait.
 
                            Ownership of the affected disks is required.
 
@@ -1729,6 +1726,84 @@ VERBS
                            To re-lock the volume, make it offline again by
                            ejecting it, e.g. with diskutil eject.
 
+     image      [-stdinpassphrase] [-verbose] [-plist] diskimageverb
+                diskutil image verb uses DiskImages framework alongside with
+                StorageKit framework to facilitate in manipulating disk images.
+                Currently only attach is supported.
+
+                Add verbose flag for verbose output.
+
+                Add plist flag for the diskimageverb to produce output in a
+                plist format. Intended for other programs to use this flag in
+                order to consume the output instead of attempting to parse
+                human-readable text.
+
+                Add stdinpassphrase to read the passphrase from stdin instead of
+                prompting for one.
+
+                The following is a list of diskutil image sub-verbs with their
+                descriptions and individual arguments.
+
+                attach     [-readOnly] [-nobrowse] [-mountPoint mountPoint]
+                           [-mountOptions opt[,opt]*] [-mountPolicy mountPolicy]
+                           [-noMount] image-url
+                           Attach a disk image as a device. Upon success will
+                           return the disk identifier matching the attached disk
+                           image.
+
+                           image-url can be one of:
+
+                                 •   Path to an existing disk image file
+
+                                 •   HTTPS[S] URL representing a disk image over
+                                     HTTP[S]
+
+                                 •   RAM disk in format ram://<size>. See SIZES.
+                                     If units are not specified, the size will
+                                     be multiplied by block size (512 bytes).
+                                     Note, RAM disks cannot be mounted as they
+                                     do not have the appropriate file system
+                                     during their creation.
+
+                           If readOnly is specified, then the disk image is
+                           attached read-only, even if writing is supported or
+                           allowed by the volume's underlying file system,
+                           device, media, or user (e.g. the super-user).
+
+                           Mount Policy:
+
+                           Can be one of: noMount, autoMount, forceMount.
+
+                           By default, will attempt to mount the disk image
+                           after attaching it (unless it is a ram disk), in case
+                           of no mountable filesystem on the image, the
+                           operation will fail ( forceMount ). Specifying
+                           noMount flag will skip any mount attempts and only
+                           attach the disk image.  Lastly, autoMount will
+                           attempt to perform a mount after successful attach.
+                           In case no mountable filesystem is present the
+                           operation will end successfully.
+
+                           noMount flag behaves the same as specifying
+                           mountPolicy=noMount. Note that you cannot specify
+                           this flag with conflicting mount policies.
+
+                           Mount only related options (cannot be used with
+                           noMount ):
+
+                           In case mountPoint is supplied, then it will be used
+                           as the path to view into the volume; a directory at
+                           the supplied path must already exist.  Note, that
+                           when specifying this option, the disk image should
+                           contain only a single mountable entity, otherwise the
+                           operation will fail.  Additionally, can manipulate
+                           the mount operation by passing mountOptions, see
+                           mount(8). Can supply multiple options seperated by
+                           ','. These options will be used during mount
+                           operation.  Lastly, nobrowse can be supplied to hide
+                           the mounted volume in the disk image from GUI
+                           applications (such as Finder).
+
 DEVICES
      A device parameter for any of the above commands (except where explicitly
      required otherwise) can usually be any of the following:
@@ -1948,6 +2023,34 @@ FORMAT
      Common examples include JHFS+, JHFSX, MS-DOS, etc, as nicknames for the
      canonical forms from the file system bundles such as "Case-sensitive HFS+".
 
+APFS VOLUME ROLES
+     APFS Volumes can be tagged with certain role meta-data flags. Supported
+     flags are:
+
+           •   B - Preboot (boot loader)
+
+           •   R - Recovery
+
+           •   V - VM (swap space)
+
+           •   I - Installer
+
+           •   T - Backup (Time Machine)
+
+           •   S - System
+
+           •   D - Data
+
+           •   E - Update
+
+           •   X - XART (hardware security)
+
+           •   H - Hardware
+
+           •   C - Sidecar (Time Machine)
+
+           •   Y - Enterprise (data)
+
 EXAMPLES
      Erase a whole disk (device)
      diskutil eraseDisk JHFS+ Untitled disk3
@@ -2031,20 +2134,27 @@ EXAMPLES
      diskutil partitionDisk disk3 APM HFS+ vol1 15% Journaled\ HFS+ vol2 R
      Journaled\ HFS+ vol3 25% Free\ Space volX 10g
 
+     Attach a 100MiB RAM disk image
+     diskutil image attach -mountPolicy=noMount ram://100MiB
+
+     Attach a read-only disk image at some specified mount point
+     diskutil image attach -readOnly -mountPoint /tmp/myMountPoint
+     /tmp/myImage.dmg
+
 ERRORS
-     diskutil will exit with status 0 if successful or 1 if it cannot complete
-     the requested operation; this includes cases in which usage text is
-     printed.  Before diskutil returns with status 1, it prints a message which
-     might include an explanation local to diskutil, an error string from the
-     DiskManagement or MediaKit frameworks, an underlying POSIX error, or some
-     combination.
+     diskutil will exit with status based on sysexits (see sysexits(3)) or 1 if
+     it cannot complete the requested operation; this includes cases in which
+     usage text is printed.  Before diskutil returns with non EX_OK status, it
+     prints a message which might include an explanation local to diskutil, an
+     error string from the DiskManagement or MediaKit frameworks, an underlying
+     POSIX error, or some combination.
 
 SEE ALSO
      authopen(1), drutil(1), hdiutil(1), apfs.util(8), corestoraged(8),
      diskarbitrationd(8), diskmanagementd(8), diskmanagementstartup(8),
      fdesetup(8), fsck_apfs(8), fsck_hfs(8), hfs.util(8), ioreg(8), mount(8),
-     mount_apfs(8), msdos.util(8), newfs_apfs(8), newfs_hfs(8), ufs.util(8),
-     umount(8), vsdbutil(8)
+     mount_apfs(8), msdos.util(8), newfs_apfs(8), newfs_hfs(8), sysexits(3),
+     ufs.util(8), umount(8), vsdbutil(8)
 
 HISTORY
      The eraseDisk and partitionDisk verbs had an option to add Mac OS 9 drivers

@@ -10,7 +10,7 @@ DESCRIPTION
      profiles is used to handle various profile types on macOS.   Starting with
      macOS 11.0 (profiles tool 8.0 or later), this tool cannot be
          used to install configuration profiles.  You should add your profiles
-     using the System Preferences Profiles
+     using the System Settings Profiles
          preference pane.    Additionally, startup profiles are no longer
      supported.
 
@@ -26,10 +26,15 @@ VERBS
      list       -type profile_type -user user_name -output output_path
                 List profiles for a user or when running as root, the device.
 
-     show       -type profile_type -user user_name -output output_path
-                Show expanded information for profiles.   For an enrollment,
-                this will show the current DEP configuration, and the call may
-                be rate limited to once every 23 hours.
+     show       -type profile_type -user user_name -output output_path -cached
+                Show expanded information for profiles.   If the type is set to
+                enrollment, this will instead show the current server DEP
+                configuration.  Obtaining the enrollment information may be rate
+                limited to 10 times every 23 hours, at which point it will try
+                to display the information from the local cache.  Should this
+                occur, a note will be displayed with the enrollment information.
+                If the -cached option is set, the enrollment information will
+                only be obtained from the local cache.
 
      remove     -type profile_type -user user_name -identifier identifier -uuid
                 uuid -path file_path -forced -all
@@ -53,7 +58,9 @@ VERBS
                 specified profile.  For Device Enrollment Program (DEP)
                 enrollments, retry to obtain the device enrollment
                 configuration, and re-enable the user notification if enrollment
-                wasn't completed.
+                wasn't completed.   With enrollments, this call may be rate
+                limited to 10 times every 23 hours, though it should try to
+                enroll with cached information if it is available.
 
      validate   -type profile_type -path file_path
                 For provisioning profiles, validate the provisioning profile
@@ -62,7 +69,7 @@ VERBS
                 information, displaying any major changes.  If this information
                 is different from the current enrolled server, this will not
                 unenroll the client from the current server.  This call may be
-                rate limited to once every 23 hours.
+                rate limited to 10 times every 23 hours.
 
      version
                 Displays current tool version.
@@ -115,6 +122,11 @@ OPTIONS
              installed on the system.   When removing profiles, using this
              option will remove all profiles for that user (or device).
 
+     -cached
+             A flag to indicate that information should only be obtained from
+             the local cache.  This is currently used for the show command's
+             enrollment option.
+
      -verbose
              Display additional information.
 
@@ -166,6 +178,10 @@ EXAMPLES
      profiles install -type bootstraptoken
               Creates or updates the Bootstrap Token APFS record and escrows the
               information to the server.
+
+     profiles show -type enrollment -cached
+              Displays the cached information of an existing DEP enrollment
+              configuration.
 
 SEE ALSO
      profiles.old(1)

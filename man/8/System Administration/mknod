@@ -4,53 +4,80 @@ NAME
      mknod – make device special file
 
 SYNOPSIS
-     mknod [-F format] name [c | b] major minor
-     mknod [-F format] name [c | b] major unit subunit
-     mknod name [c | b] number
-     mknod name w
+     mknod [-rR] [-F fmt] [-g gid] [-m mode] name [c | b] [driver | major] minor
+     mknod [-rR] [-F fmt] [-g gid] [-m mode] name [c | b] major unit subunit
+     mknod [-rR] [-g gid] [-m mode] name [c | b] number
+     mknod [-rR] [-g gid] [-m mode] name p
+     mknod -l
 
 DESCRIPTION
-     The mknod command creates device special files.
+     The mknod command creates device special files, or fifos.
 
-     To make nodes manually, the required arguments are:
+     To make nodes manually, the arguments are:
 
-     name    Device name, for example “sd” for a SCSI disk on an HP300 or a
-             “pty” for pseudo-devices.
+     -r       Replace an existing file if its type is incorrect.
 
-     b | c | w
-             Type of device. If the device is a block type device such as a tape
-             or disk drive which needs both cooked and raw special files, the
-             type is b.  Whiteout nodes are type w.  All other devices are
-             character type devices, such as terminal and pseudo devices, and
-             are type c.
+     -R       Replace an existing file if its type is incorrect.  Correct the
+              mode, user and group.
 
-     major   The major device number is an integer number which tells the kernel
-             which device driver entry point to use.
+     -F fmt   Create device nodes that may be used by an operating system which
+              uses device numbers packed in a different format than NetBSD uses.
+              This is necessary when NetBSD is used as an NFS server for
+              netbooted computers running other operating systems.
 
-     minor   The minor device number tells the kernel which one of several
-             similar devices the node corresponds to; for example, it may be a
-             specific serial port or pty.
+              The following values for the fmt are recognized: native, 386bsd,
+              4bsd, bsdos, freebsd, hpux, isc, linux, netbsd, osf1, sco,
+              solaris, sunos, svr3, svr4, and ultrix.
+
+     -g gid   Specify the group for the device node.  The gid operand may be a
+              numeric group ID or a group name.  If a group name is also a
+              numeric group ID, the operand is used as a group name.  Precede a
+              numeric group ID with a # to stop it being treated as a name.
+
+     -m mode  Specify the mode for the device node.  The mode may be absolute or
+              symbolic, see chmod(1).
+
+     name     Device name, for example “sd” for a SCSI disk on an HP300 or a
+              “pty” for pseudo-devices.
+
+     b | c | p
+              Type of device.  If the device is a block type device such as a
+              tape or disk drive which needs both cooked and raw special files,
+              the type is b.  All other devices are character type devices, such
+              as terminal and pseudo devices, and are type c.  Specifying p
+              creates fifo files.
+
+     driver | major
+              The major device number is an integer number which tells the
+              kernel which device driver entry point to use.  If the device
+              driver is configured into the current kernel it may be specified
+              by driver name or major number.
+
+              (e.g.  /usr/src/sys/arch/vax/vax/conf.c).
+
+     minor    The minor device number tells the kernel which one of several
+              similar devices the node corresponds to; for example, it may be a
+              specific serial port or pty.
 
      unit and subunit
-             The unit and subunit numbers select a subset of a device; for
-             example, the unit may specify a particular SCSI disk, and the
-             subunit a partition on that disk.  (Currently this form of
-             specification is only supported by the bsdos format, for
-             compatibility with the BSD/OS mknod(8).)
+              The unit and subunit numbers select a subset of a device; for
+              example, the unit may specify a particular SCSI disk, and the
+              subunit a partition on that disk.  (Currently this form of
+              specification is only supported by the bsdos format, for
+              compatibility with the BSD/OS mknod).
 
-     Device numbers for different operating systems may be packed in a different
-     format.  To create device nodes that may be used by such an operating
-     system (e.g. in an exported file system used for netbooting), the -F option
-     is used.  The following formats are recognized: native, 386bsd, 4bsd,
-     bsdos, freebsd, hpux, isc, linux, netbsd, osf1, sco, solaris, sunos, svr3,
-     svr4 and ultrix.
+     number   A single opaque device number.  Useful for netbooted computers
+              which require device numbers packed in a format that isn't
+              supported by -F.
 
-     Alternatively, a single opaque device number may be specified.
+     -l       List the device drivers configured into the current kernel
+              together with their block and character major numbers.
 
 SEE ALSO
-     mkfifo(1), mkfifo(2), mknod(2)
+     chmod(1), mkfifo(1), mkfifo(2), mknod(2)
 
 HISTORY
-     A mknod command appeared in Version 6 AT&T UNIX.  The -F option appeared in
-     NetBSD 1.4.
+     A mknod command appeared in Version 4 AT&T UNIX.  The -F option appeared in
+     NetBSD 1.4.  The -g, -l, -m, -r, -R, and -u options, and the ability to
+     specify a driver by name appeared in NetBSD 2.0.
 

@@ -1,93 +1,126 @@
-SDIFF(1)                          User Commands                         SDIFF(1)
-
-
+SDIFF(1)                     General Commands Manual                    SDIFF(1)
 
 NAME
-       sdiff - side-by-side merge of file differences
+     sdiff – side-by-side diff
 
 SYNOPSIS
-       sdiff [OPTION]... FILE1 FILE2
+     sdiff [-abdilstHW] [-I regexp] [-o outfile] [-w width] file1 file2
 
 DESCRIPTION
-       Side-by-side merge of file differences.
+     sdiff displays two files side by side, with any differences between the two
+     highlighted as follows: new lines are marked with ‘>’; deleted lines are
+     marked with ‘<’; and changed lines are marked with ‘|’.
 
-       -o FILE  --output=FILE
-              Operate interactively, sending output to FILE.
+     sdiff can also be used to interactively merge two files, prompting at each
+     set of differences.  See the -o option for an explanation.
 
-       -i  --ignore-case
-              Consider upper- and lower-case to be the same.
+     The options are:
 
-       -E  --ignore-tab-expansion
-              Ignore changes due to tab expansion.
+     -l --left-column
+             Only print the left column for identical lines.
 
-       -b  --ignore-space-change
-              Ignore changes in the amount of white space.
+     -o --output outfile
+             Interactively merge file1 and file2 into outfile.  In this mode,
+             the user is prompted for each set of differences.  See EDITOR and
+             VISUAL, below, for details of which editor, if any, is invoked.
 
-       -W  --ignore-all-space
-              Ignore all white space.
+             The commands are as follows:
 
-       -B  --ignore-blank-lines
-              Ignore changes whose lines are all blank.
+             l | 1   Choose left set of diffs.
 
-       -I RE  --ignore-matching-lines=RE
-              Ignore changes whose lines all match RE.
+             r | 2   Choose right set of diffs.
 
-       --strip-trailing-cr
-              Strip trailing carriage return on input.
+             s       Silent mode – identical lines are not printed.
 
-       -a  --text
-              Treat all files as text.
+             v       Verbose mode – identical lines are printed.
 
-       -w NUM  --width=NUM
-              Output at most NUM (default 130) columns per line.
+             e       Start editing an empty file, which will be merged into
+                     outfile upon exiting the editor.
 
-       -l  --left-column
-              Output only the left column of common lines.
+             e l     Start editing file with left set of diffs.
 
-       -s  --suppress-common-lines
-              Do not output common lines.
+             e r     Start editing file with right set of diffs.
 
-       -t  --expand-tabs
-              Expand tabs to spaces in output.
+             e b     Start editing file with both sets of diffs.
 
-       -d  --minimal
-              Try hard to find a smaller set of changes.
+             q       Quit sdiff.
 
-       -H  --speed-large-files
-              Assume large files and many scattered small changes.
+     -s --suppress-common-lines
+             Skip identical lines.
 
-       --diff-program=PROGRAM
-              Use PROGRAM to compare files.
+     -w --width width
+             Print a maximum of width characters on each line.  The default is
+             130 characters.
 
-       -v  --version
-              Output version info.
+     Options passed to diff(1) are:
 
-       --help Output this help.
+     -a --text
+             Treat file1 and file2 as text files.
 
-       If a FILE is `-', read standard input.
+     -b --ignore-space-change
+             Ignore trailing blank spaces.
 
-AUTHOR
-       Written by Thomas Lord.
+     -d --minimal
+             Minimize diff size.
 
-REPORTING BUGS
-       Report bugs to <bug-gnu-utils@gnu.org>.
+     -I --ignore-matching-lines regexp
+             Ignore line changes matching regexp.  All lines in the change must
+             match regexp for the change to be ignored.
 
-COPYRIGHT
-       Copyright © 2002 Free Software Foundation, Inc.
+     -i --ignore-case
+             Do a case-insensitive comparison.
 
-       This program comes with NO WARRANTY, to the extent permitted by law.  You
-       may redistribute copies of this program under the terms of the GNU
-       General Public License.  For more information about these matters, see
-       the file named COPYING.
+     -t --expand-tabs
+             Expand tabs to spaces.
+
+     -W --ignore-all-space
+             Ignore all spaces.
+
+     -B --ignore-blank-lines
+             Ignore blank lines.
+
+     -E --ignore-tab-expansion
+             Treat tabs and eight spaces as the same.
+
+     -t --ignore-tabs
+             Ignore tabs.
+
+     -H --speed-large-files
+             Assume scattered small changes in a large file.
+
+     --ignore-file-name-case
+             Ignore the case of file names.
+
+     --no-ignore-file-name-case
+             Do not ignore file name case.
+
+     --strip-trailing-cr
+             Skip identical lines.
+
+     --tabsize NUM
+             Change the size of tabs (default is 8.)
+
+     --diff-program PROGRAM
+             Use PROGRAM to compare files.
+
+ENVIRONMENT
+     EDITOR, VISUAL
+             Specifies an editor to use with the -o option.  If both EDITOR and
+             VISUAL are set, VISUAL takes precedence.  If neither EDITOR nor
+             VISUAL are set, the default is vi(1).
+
+     TMPDIR  Specifies a directory for temporary files to be created.  The
+             default is /tmp.
 
 SEE ALSO
-       The full documentation for sdiff is maintained as a Texinfo manual.  If
-       the info and sdiff programs are properly installed at your site, the
-       command
+     cmp(1), diff(1), diff3(1), vi(1), re_format(7)
 
-              info diff
+AUTHORS
+     sdiff was written from scratch for the public domain by Ray Lai
+     ⟨ray@cyth.net⟩.
 
-       should give you access to the complete manual.
-
-
+CAVEATS
+     Tabs are treated as anywhere from one to eight characters wide, depending
+     on the current column.  Terminals that treat tabs as eight characters wide
+     will look best.
 

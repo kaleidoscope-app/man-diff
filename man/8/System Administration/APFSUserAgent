@@ -5,13 +5,65 @@ NAME
 
 DESCRIPTION
      The APFSUserAgent watches for IOKit notifications about new APFS containers
-     appearing.
+     appearing, and about volume hash mismatch.
 
-     APFSUserAgent checks APFS containers for encrypted volumes.
+     If APFSUserAgent finds a new container with an encrypted volume, it will
+     pop up a DiskUnlock dialog to ask the user for volume unlock password.
 
-     If found, pops up a DiskUnlock dialog to ask user for volume unlock
-     password.
+     The APFSUserAgent can display the following notifications:
+     Incompatible Features - Mounting the device (volume or container) was
+     rejected because it uses features that are not supported by the current
+     version of macOS. Updating to a newer version of macOS may allow the device
+     to mount.
+     Volume Hash Mismatch - The cryptographic integrity of the volume is not
+     valid. Reinstalling macOS on this volume will fix its integrity.
+
+     The APFSUserAgent uses the defaults bundle com.apple.APFSUserAgent in order
+     to control whether or not to pop notifications or automatically ask the
+     user to unlock an encrypted volume.
+     The settings are controlled globally - for all devices, or locally - for a
+     specific volume or container, identified by its UUID.  In the defaults
+     dictionary, the key is the action that the user would like to mute, and the
+     value is the date to mute up to.  APFSUserAgent Will use the system
+     timezone.
+
+     The values in the defaults dictionary could be updated using the defaults
+     cli as well.
+
+KEYS
+     The bundle keys are as follows:
+
+           IncompatibleFeatures Mute notifications about either a volume or a
+                   container that has features which are not supported with the
+                   current running OS.  APFSUserAgent supports only setting this
+                   property globally.
+
+           HashMismatch Mute notification about volume hash mismatch.
+
+           DontUnlockVolume Disable the DiskUnlock dialog to ask the user for
+                   volume unlock password.
+
+           MuteAllNotifications Mute all APFS notifications. Does not include
+                   the dialog to unlock a volume.
+
+EXAMPLE
+     The following setting mutes the HashMismatch notification only for the
+     volume with UUID F55502F4-1A9E-4B48-8A11-106E1226AE2F up to 2021-08-18
+     15:10:31, and mutes the IncompatibleFeatures notification for any device,
+     up to 2021-08-18 15:09:43
+
+     ~ % defaults read com.apple.APFSUserAgent
+     {
+         "F55502F4-1A9E-4B48-8A11-106E1226AE2F" =     {
+             HashMismatch = "2021-08-18 15:10:31";
+         };
+         IncompatibleFeatures = "2021-08-18 15:09:43";
+     }
+     ~ %
 
 EXIT STATUS
      APFSUserAgent always exits with 0.
+
+SEE ALSO
+     defaults(1), apfsd(8), diskutil(8)
 

@@ -10,7 +10,7 @@ SYNOPSIS
          [-J destination] [-L address] [-l login_name] [-m mac_spec]
          [-O ctl_cmd] [-o option] [-p port] [-Q query_option] [-R address]
          [-S ctl_path] [-W host:port] [-w local_tun[:remote_tun]] destination
-         [command]
+         [command [argument ...]]
 
 DESCRIPTION
      ssh (SSH client) is a program for logging into a remote machine and for
@@ -21,11 +21,14 @@ DESCRIPTION
 
      ssh connects and logs into the specified destination, which may be
      specified as either [user@]hostname or a URI of the form
-     ssh://[user@]hostname[:port].  The user must prove his/her identity to the
+     ssh://[user@]hostname[:port].  The user must prove their identity to the
      remote machine using one of several methods (see below).
 
-     If a command is specified, it is executed on the remote host instead of a
-     login shell.
+     If a command is specified, it will be executed on the remote host instead
+     of a login shell.  A complete command line may be specified as command, or
+     it may have additional arguments.  If supplied, the arguments will be
+     appended to the command, separated by spaces, before it is sent to the
+     server to be executed.
 
      The options are as follows:
 
@@ -118,7 +121,8 @@ DESCRIPTION
              If the ExitOnForwardFailure configuration option is set to “yes”,
              then a client started with -f will wait for all remote port
              forwards to be successfully established before placing itself in
-             the background.
+             the background.  Refer to the description of
+             ForkAfterAuthentication in ssh_config(5) for details.
 
      -G      Causes ssh to print its configuration after evaluating Host and
              Match blocks and exit.
@@ -133,15 +137,17 @@ DESCRIPTION
 
      -i identity_file
              Selects a file from which the identity (private key) for public key
-             authentication is read.  The default is ~/.ssh/id_dsa,
-             ~/.ssh/id_ecdsa, ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519,
-             ~/.ssh/id_ed25519_sk and ~/.ssh/id_rsa.  Identity files may also be
-             specified on a per-host basis in the configuration file.  It is
-             possible to have multiple -i options (and multiple identities
-             specified in configuration files).  If no certificates have been
-             explicitly specified by the CertificateFile directive, ssh will
-             also try to load certificate information from the filename obtained
-             by appending -cert.pub to identity filenames.
+             authentication is read.  You can also specify a public key file to
+             use the corresponding private key that is loaded in ssh-agent(1)
+             when the private key file is not present locally.  The default is
+             ~/.ssh/id_rsa, ~/.ssh/id_ecdsa, ~/.ssh/id_ecdsa_sk,
+             ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk and ~/.ssh/id_dsa.
+             Identity files may also be specified on a per-host basis in the
+             configuration file.  It is possible to have multiple -i options
+             (and multiple identities specified in configuration files).  If no
+             certificates have been explicitly specified by the CertificateFile
+             directive, ssh will also try to load certificate information from
+             the filename obtained by appending -cert.pub to identity filenames.
 
      -J destination
              Connect to the target host by first making a ssh connection to the
@@ -201,7 +207,8 @@ DESCRIPTION
              for more information.
 
      -N      Do not execute a remote command.  This is useful for just
-             forwarding ports.
+             forwarding ports.  Refer to the description of SessionType in
+             ssh_config(5) for details.
 
      -n      Redirects stdin from /dev/null (actually, prevents reading from
              stdin).  This must be used when ssh is run in the background.  A
@@ -210,7 +217,8 @@ DESCRIPTION
              an emacs on shadows.cs.hut.fi, and the X11 connection will be
              automatically forwarded over an encrypted channel.  The ssh program
              will be put in the background.  (This does not work if ssh needs to
-             ask for a password or passphrase; see also the -f option.)
+             ask for a password or passphrase; see also the -f option.)  Refer
+             to the description of StdinNull in ssh_config(5) for details.
 
      -O ctl_cmd
              Control an active connection multiplexing master process.  When the
@@ -238,7 +246,6 @@ DESCRIPTION
                    CanonicalizePermittedCNAMEs
                    CASignatureAlgorithms
                    CertificateFile
-                   ChallengeResponseAuthentication
                    CheckHostIP
                    Ciphers
                    ClearAllForwardings
@@ -252,6 +259,7 @@ DESCRIPTION
                    EscapeChar
                    ExitOnForwardFailure
                    FingerprintHash
+                   ForkAfterAuthentication
                    ForwardAgent
                    ForwardX11
                    ForwardX11Timeout
@@ -300,7 +308,9 @@ DESCRIPTION
                    SendEnv
                    ServerAliveInterval
                    ServerAliveCountMax
+                   SessionType
                    SetEnv
+                   StdinNull
                    StreamLocalBindMask
                    StreamLocalBindUnlink
                    StrictHostKeyChecking
@@ -320,15 +330,15 @@ DESCRIPTION
              per-host basis in the configuration file.
 
      -Q query_option
-             Queries ssh for the algorithms supported for the specified version
-             2.  The available features are: cipher (supported symmetric
-             ciphers), cipher-auth (supported symmetric ciphers that support
-             authenticated encryption), help (supported query terms for use with
-             the -Q flag), mac (supported message integrity codes), kex (key
-             exchange algorithms), key (key types), key-cert (certificate key
-             types), key-plain (non-certificate key types), key-sig (all key
-             types and signature algorithms), protocol-version (supported SSH
-             protocol versions), and sig (supported signature algorithms).
+             Queries for the algorithms supported by one of the following
+             features: cipher (supported symmetric ciphers), cipher-auth
+             (supported symmetric ciphers that support authenticated
+             encryption), help (supported query terms for use with the -Q flag),
+             mac (supported message integrity codes), kex (key exchange
+             algorithms), key (key types), key-cert (certificate key types),
+             key-plain (non-certificate key types), key-sig (all key types and
+             signature algorithms), protocol-version (supported SSH protocol
+             versions), and sig (supported signature algorithms).
              Alternatively, any keyword from ssh_config(5) or sshd_config(5)
              that takes an algorithm list may be used as an alias for the
              corresponding query_option.
@@ -367,7 +377,7 @@ DESCRIPTION
 
              If the port argument is ‘0’, the listen port will be dynamically
              allocated on the server and reported to the client at run time.
-             When used together with -O forward the allocated port will be
+             When used together with -O forward, the allocated port will be
              printed to the standard output.
 
      -S ctl_path
@@ -379,7 +389,8 @@ DESCRIPTION
      -s      May be used to request invocation of a subsystem on the remote
              system.  Subsystems facilitate the use of SSH as a secure transport
              for other applications (e.g. sftp(1)).  The subsystem is specified
-             as the remote command.
+             as the remote command.  Refer to the description of SessionType in
+             ssh_config(5) for details.
 
      -T      Disable pseudo-terminal allocation.
 
@@ -425,9 +436,9 @@ DESCRIPTION
              perform activities such as keystroke monitoring.
 
              For this reason, X11 forwarding is subjected to X11 SECURITY
-             extension restrictions by default.  Please refer to the ssh -Y
-             option and the ForwardX11Trusted directive in ssh_config(5) for
-             more information.
+             extension restrictions by default.  Refer to the ssh -Y option and
+             the ForwardX11Trusted directive in ssh_config(5) for more
+             information.
 
      -x      Disables X11 forwarding.
 
@@ -445,7 +456,7 @@ AUTHENTICATION
      The OpenSSH SSH client supports SSH protocol 2.
 
      The methods available for authentication are: GSSAPI-based authentication,
-     host-based authentication, public key authentication, challenge-response
+     host-based authentication, public key authentication, keyboard-interactive
      authentication, and password authentication.  Authentication methods are
      tried in the order specified above, though PreferredAuthentications can be
      used to change the default order.
@@ -485,8 +496,8 @@ AUTHENTICATION
      different method.  These may be viewed by increasing the LogLevel to DEBUG
      or higher (e.g. by using the -v flag).
 
-     The user creates his/her key pair by running ssh-keygen(1).  This stores
-     the private key in ~/.ssh/id_dsa (DSA), ~/.ssh/id_ecdsa (ECDSA),
+     The user creates their key pair by running ssh-keygen(1).  This stores the
+     private key in ~/.ssh/id_dsa (DSA), ~/.ssh/id_ecdsa (ECDSA),
      ~/.ssh/id_ecdsa_sk (authenticator-hosted ECDSA), ~/.ssh/id_ed25519
      (Ed25519), ~/.ssh/id_ed25519_sk (authenticator-hosted Ed25519), or
      ~/.ssh/id_rsa (RSA) and stores the public key in ~/.ssh/id_dsa.pub (DSA),
@@ -494,10 +505,10 @@ AUTHENTICATION
      ECDSA), ~/.ssh/id_ed25519.pub (Ed25519), ~/.ssh/id_ed25519_sk.pub
      (authenticator-hosted Ed25519), or ~/.ssh/id_rsa.pub (RSA) in the user's
      home directory.  The user should then copy the public key to
-     ~/.ssh/authorized_keys in his/her home directory on the remote machine.
-     The authorized_keys file corresponds to the conventional ~/.rhosts file,
-     and has one key per line, though the lines can be very long.  After this,
-     the user can log in without giving the password.
+     ~/.ssh/authorized_keys in their home directory on the remote machine.  The
+     authorized_keys file corresponds to the conventional ~/.rhosts file, and
+     has one key per line, though the lines can be very long.  After this, the
+     user can log in without giving the password.
 
      A variation on public key authentication is available in the form of
      certificate authentication: instead of a set of public/private keys, signed
@@ -509,10 +520,10 @@ AUTHENTICATION
      be with an authentication agent.  See ssh-agent(1) and (optionally) the
      AddKeysToAgent directive in ssh_config(5) for more information.
 
-     Challenge-response authentication works as follows: The server sends an
-     arbitrary "challenge" text, and prompts for a response.  Examples of
-     challenge-response authentication include BSD Authentication (see
-     login.conf(5)) and PAM (some non-OpenBSD systems).
+     Keyboard-interactive authentication works as follows: The server sends an
+     arbitrary "challenge" text and prompts for a response, possibly multiple
+     times.  Examples of keyboard-interactive authentication include BSD
+     Authentication (see login.conf(5)) and PAM (some non-OpenBSD systems).
 
      Finally, if other authentication methods fail, ssh prompts the user for a
      password.  The password is sent to the remote host for checking; however,
@@ -536,11 +547,11 @@ AUTHENTICATION
      as an interactive session.  All communication with the remote command or
      shell will be automatically encrypted.
 
-     If an interactive session is requested ssh by default will only request a
+     If an interactive session is requested, ssh by default will only request a
      pseudo-terminal (pty) for interactive sessions when the client has one.
      The flags -T and -t can be used to override this behaviour.
 
-     If a pseudo-terminal has been allocated the user may use the escape
+     If a pseudo-terminal has been allocated, the user may use the escape
      characters noted below.
 
      If no pseudo-terminal has been allocated, the session is transparent and

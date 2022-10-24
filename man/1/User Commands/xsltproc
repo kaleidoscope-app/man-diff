@@ -8,13 +8,14 @@ NAME
 SYNOPSIS
        xsltproc [[-V | --version] [-v | --verbose] [{-o | --output} {FILE |
                 DIRECTORY}] | --timing | --repeat | --debug | --novalid |
-                --noout | --maxdepth VALUE | --html | --encoding ENCODING  |
-                --param PARAMNAME PARAMVALUE  |
+                --noout | --maxdepth VALUE | --maxvars VALUE |
+                --maxparserdepth VALUE | --huge | --seed-rand VALUE | --html |
+                --encoding ENCODING  | --param PARAMNAME PARAMVALUE  |
                 --stringparam PARAMNAME PARAMVALUE  | --nonet | --path "PATH(S)"
-                | --load-trace | --catalogs | --xinclude |
+                | --load-trace | --catalogs | --xinclude | --xincludestyle |
                 [--profile | --norman] | --dumpextensions | --nowrite |
                 --nomkdir | --writesubtree PATH | --nodtdattr] [STYLESHEET]
-                {XML-FILE | -}
+                {XML-FILE... | -}
 
 DESCRIPTION
        xsltproc is a command line tool for applying XSLT stylesheets to XML
@@ -25,7 +26,7 @@ DESCRIPTION
        xsltproc is invoked from the command line with the name of the stylesheet
        to be used followed by the name of the file or files to which the
        stylesheet is to be applied. It will use the standard input if a filename
-       provided is -
+       provided is - .
 
        If a stylesheet is included in an XML document with a Stylesheet
        Processing Instruction, no stylesheet need to be named at the command
@@ -61,8 +62,22 @@ OPTIONS
            Adjust the maximum depth of the template stack before libxslt(3)
            concludes it is in an infinite loop. The default is 3000.
 
+       --maxvars VALUE
+           Maximum number of variables. The default is 15000.
+
+       --maxparserdepth VALUE
+           Maximum element nesting level of parsed XML documents. The default is
+           256.
+
+       --huge
+           Relax hardcoded limits of the XML parser by setting the
+           XML_PARSE_HUGE parser option.
+
+       --seed-rand VALUE
+           Initialize pseudo random number generator with specific seed.
+
        --nodtdattr
-           Do not apply default attributes from the document´s DTD.
+           Do not apply default attributes from the document's DTD.
 
        --nomkdir
            Refuses to create directories.
@@ -74,7 +89,7 @@ OPTIONS
            Do not output the result.
 
        --novalid
-           Skip loading the document´s DTD.
+           Skip loading the document's DTD.
 
        --nowrite
            Refuses to write to any file or resource.
@@ -85,13 +100,14 @@ OPTIONS
            useful for multiple outputs (also known as "chunking") or manpage
            processing.
 
-           Important
-           The given directory must already exist.
+               Important
+               The given directory must already exist.
 
-           Note
-           Make sure that FILE and DIRECTORY follow the “URI reference
-           computation” as described in RFC 2396 and laters. This means, that
-           e.g.  -o directory will maybe not work, but -o directory/ will.
+               Note
+               Make sure that FILE and DIRECTORY follow the “URI reference
+               computation” as described in RFC 2396 and laters. This means,
+               that e.g.  -o directory will maybe not work, but -o directory/
+               will.
 
        --encoding ENCODING
            Allow to specify the encoding for the input.
@@ -141,17 +157,20 @@ OPTIONS
            details on this can be found in the XInclude specification:
            http://www.w3.org/TR/xinclude/
 
+       --xincludestyle
+           Process the stylesheet with XInclude.
+
 ENVIRONMENT
        SGML_CATALOG_FILES
            SGML catalog behavior can be changed by redirecting queries to the
-           user´s own set of catalogs. This can be done by setting the
+           user's own set of catalogs. This can be done by setting the
            SGML_CATALOG_FILES environment variable to a list of catalogs. An
            empty one should deactivate loading the default /etc/sgml/catalog
            catalog.
 
        XML_CATALOG_FILES
            XML catalog behavior can be changed by redirecting queries to the
-           user´s own set of catalogs. This can be done by setting the
+           user's own set of catalogs. This can be done by setting the
            XML_CATALOG_FILES environment variable to a list of catalogs. An
            empty one should deactivate loading the default /etc/xml/catalog
            catalog.
@@ -201,14 +220,13 @@ SEE ALSO
 
        More information can be found at
 
-       •   libxml(3) web page http://www.xmlsoft.org/
+       •   libxml(3) web page https://gitlab.gnome.org/GNOME/libxslt
 
        •   W3C XSLT page http://www.w3.org/TR/xslt
 
 
 AUTHOR
        John Fleck <jfleck@inkstain.net>
-
            Author.
 
 COPYRIGHT

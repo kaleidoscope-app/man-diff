@@ -1,305 +1,208 @@
-man(1)                       General Commands Manual                      man(1)
-
-
+MAN(1)                       General Commands Manual                      MAN(1)
 
 NAME
-       man - format and display the on-line manual pages
+     man, apropos, whatis – display online manual documentation pages
 
 SYNOPSIS
-       man [-acdfFhkKtwW] [--path] [-m system] [-p string] [-C config_file] [-M
-       pathlist] [-P pager] [-B browser] [-H htmlpager] [-S section_list]
-       [section] name ...
+     man [-adho] [-t | -w] [-M manpath] [-P pager] [-S mansect]
+         [-m arch[:machine]] [-p [eprtv]] [mansect] page ...
 
+     man -f [-d] [-M manpath] [-P pager] [-S mansect] keyword ...
+     whatis [-d] [-s mansect] keyword ...
+
+     man -k [-d] [-M manpath] [-P pager] [-S mansect] keyword ...
+     apropos [-d] [-s mansect] keyword ...
 
 DESCRIPTION
-       man formats and displays the on-line manual pages.  If you specify
-       section, man only looks in that section of the manual.  name is normally
-       the name of the manual page, which is typically the name of a command,
-       function, or file.  However, if name contains a slash (/) then man
-       interprets it as a file specification, so that you can do man ./foo.5 or
-       even man /cd/foo/bar.1.gz.
+     The man utility finds and displays online manual documentation pages.  If
+     mansect is provided, man restricts the search to the specific section of
+     the manual.
 
-       See below for a description of where man looks for the manual page files.
+     The sections of the manual are:
+           1.   General Commands Manual
+           2.   System Calls Manual
+           3.   Library Functions Manual
+           4.   Kernel Interfaces Manual
+           5.   File Formats Manual
+           6.   Games Manual
+           7.   Miscellaneous Information Manual
+           8.   System Manager's Manual
+           9.   Kernel Developer's Manual
 
+     Options that man understands:
 
-MANUAL SECTIONS
-       The standard sections of the manual include:
+     -M manpath
+             Forces a specific colon separated manual path instead of the
+             default search path.  See manpath(1).  Overrides the MANPATH
+             environment variable.
 
-       1      User Commands
+     -P pager
+             Use specified pager.  Defaults to “less -sR” if color support is
+             enabled, or “less -s”.  Overrides the MANPAGER environment
+             variable, which in turn overrides the PAGER environment variable.
 
-       2      System Calls
+     -S mansect
+             Restricts manual sections searched to the specified colon delimited
+             list.  Defaults to “1:8:2:3:3lua:n:4:5:6:7:9:l”.  Overrides the
+             MANSECT environment variable.
 
-       3      C Library Functions
+     -a      Display all manual pages instead of just the first found for each
+             page argument.
 
-       4      Devices and Special Files
+     -d      Print extra debugging information.  Repeat for increased verbosity.
+             Does not display the manual page.
 
-       5      File Formats and Conventions
+     -f      Emulate whatis(1).  Note that only a subset of options will have
+             any effect when man is invoked in this mode.  See the below
+             description of whatis options for details.
 
-       6      Games et. Al.
+     -h      Display short help message and exit.
 
-       7      Miscellanea
+     -k      Emulate apropos(1).  Note that only a subset of options will have
+             any effect when man is invoked in this mode.  See the below
+             description of apropos options for details.
 
-       8      System Administration tools and Deamons
+     -m arch[:machine]
+             Override the default architecture and machine settings allowing
+             lookup of other platform specific manual pages.  This option is
+             accepted, but not implemented, on macOS.
 
-       Distributions customize the manual section to their specifics, which
-       often include additional sections.
+     -o      Force use of non-localized manual pages.  See IMPLEMENTATION NOTES
+             for how locale specific searches work.  Overrides the LC_ALL,
+             LC_CTYPE, and LANG environment variables.
 
+     -p [eprtv]
+             Use the list of given preprocessors before running nroff(1) or
+             troff(1).  Valid preprocessors arguments:
 
-OPTIONS
-       -C  config_file
-              Specify the configuration file to use; the default is
-              /private/etc/man.conf.  (See man.conf(5).)
+             e       eqn(1)
+             p       pic(1)
+             r       refer(1)
+             t       tbl(1)
+             v       vgrind(1)
 
-       -M  path
-              Specify the list of directories to search for man pages.  Separate
-              the directories with colons.  An empty list is the same as not
-              specifying -M at all.  See SEARCH PATH FOR MANUAL PAGES.
+             Overrides the MANROFFSEQ environment variable.
 
-       -P  pager
-              Specify which pager to use.  This option overrides the MANPAGER
-              environment variable, which in turn overrides the PAGER variable.
-              By default, man uses /usr/bin/less -is.
+     -t      Send manual page source through troff(1) allowing transformation of
+             the manual pages to other formats.
 
-       -B     Specify which browser to use on HTML files.  This option overrides
-              the BROWSER environment variable. By default, man uses
-              /usr/bin/less-is,
+     -w      Display the location of the manual page instead of the contents of
+             the manual page.
 
-       -H     Specify a command that renders HTML files as text.  This option
-              overrides the HTMLPAGER environment variable. By default, man uses
-              /bin/cat,
+     Options that apropos and whatis understand:
 
-       -S  section_list
-              List is a colon separated list of manual sections to search.  This
-              option overrides the MANSECT environment variable.
+     -d      Same as the -d option for man.
 
-       -a     By default, man will exit after displaying the first manual page
-              it finds.  Using this option forces man to display all the manual
-              pages that match name, not just the first.
+     -s      Same as the -S option for man.
 
-       -c     Reformat the source man page, even when an up-to-date cat page
-              exists.  This can be meaningful if the cat page was formatted for
-              a screen with a different number of columns, or if the
-              preformatted page is corrupted.
+     When man is operated in apropos or whatis emulation mode, only a subset of
+     its options will be honored.  Specifically, -d, -M, -P, and -S have
+     equivalent functionality in the apropos and whatis implementation provided.
+     The MANPATH, MANSECT, and MANPAGER environment variables will similarly be
+     honored.
 
-       -d     Don't actually display the man pages, but do print gobs of
-              debugging information.
+IMPLEMENTATION NOTES
+   Locale Specific Searches
+     The man utility supports manual pages in different locales.  The search
+     behavior is dictated by the first of three environment variables with a
+     nonempty string: LC_ALL, LC_CTYPE, or LANG.  If set, man will search for
+     locale specific manual pages using the following logic:
 
-       -D     Both display and print debugging info.
+           lang_country.charset
+           lang.charset
+           en.charset
 
-       -f     Equivalent to whatis.
+     For example, if LC_ALL is set to “ja_JP.eucJP”, man will search the
+     following paths when considering section 1 manual pages in /usr/share/man:
 
-       -F or --preformat
-              Format only - do not display.
+           /usr/share/man/ja_JP.eucJP/man1
+           /usr/share/man/ja.eucJP/man1
+           /usr/share/man/en.eucJP/man1
+           /usr/share/man/man1
 
-       -h     Print a help message and exit.
-
-       -k     Equivalent to apropos.
-
-       -K     Search for the specified string in *all* man pages. Warning: this
-              is probably very slow! It helps to specify a section.  (Just to
-              give a rough idea, on my machine this takes about a minute per 500
-              man pages.)
-
-       -m  system
-              Specify an alternate set of man pages to search based on the
-              system name given.
-
-       -p  string
-              Specify the sequence of preprocessors to run before nroff or
-              troff.  Not all installations will have a full set of
-              preprocessors.  Some of the preprocessors and the letters used to
-              designate them are: eqn (e), grap (g), pic (p), tbl (t), vgrind
-              (v), refer (r).  This option overrides the MANROFFSEQ environment
-              variable.
-
-       -t     Use /usr/bin/groff -Tps -mandoc -c to format the manual page,
-              passing the output to stdout.  The default output format of
-              /usr/bin/groff -Tps -mandoc -c is Postscript, refer to the manual
-              page of /usr/bin/groff -Tps -mandoc -c for ways to pick an
-              alternate format.
-
-       Depending on the selected format and the availability of printing
-       devices, the output may need to be passed through some filter or another
-       before being printed.
-
-       -w or --path
-              Don't actually display the man pages, but do print the location(s)
-              of the files that would be formatted or displayed. If no argument
-              is given: display (on stdout) the list of directories that is
-              searched by man for man pages. If manpath is a link to man, then
-              "manpath" is equivalent to "man --path".
-
-       -W     Like -w, but print file names one per line, without additional
-              information.  This is useful in shell commands like man -aW man |
-              xargs ls -l
-
-
-CAT PAGES
-       Man will try to save the formatted man pages, in order to save formatting
-       time the next time these pages are needed.  Traditionally, formatted
-       versions of pages in DIR/manX are saved in DIR/catX, but other mappings
-       from man dir to cat dir can be specified in /private/etc/man.conf.  No
-       cat pages are saved when the required cat directory does not exist.  No
-       cat pages are saved when they are formatted for a line length different
-       from 80.  No cat pages are saved when man.conf contains the line NOCACHE.
-
-       It is possible to make man suid to a user man. Then, if a cat directory
-       has owner man and mode 0755 (only writable by man), and the cat files
-       have owner man and mode 0644 or 0444 (only writable by man, or not
-       writable at all), no ordinary user can change the cat pages or put other
-       files in the cat directory. If man is not made suid, then a cat directory
-       should have mode 0777 if all users should be able to leave cat pages
-       there.
-
-       The option -c forces reformatting a page, even if a recent cat page
-       exists.
-
-
-HTML PAGES
-       Man will find HTML pages if they live in directories named as expected to
-       be ".html", thus a valid name for an HTML version of the ls(1) man page
-       would be /usr/share/man/htmlman1/ls.1.html.
-
-
-SEARCH PATH FOR MANUAL PAGES
-       man uses a sophisticated method of finding manual page files, based on
-       the invocation options and environment variables, the
-       /private/etc/man.conf configuration file, and some built in conventions
-       and heuristics.
-
-       First of all, when the name argument to man contains a slash (/), man
-       assumes it is a file specification itself, and there is no searching
-       involved.
-
-       But in the normal case where name doesn't contain a slash, man searches a
-       variety of directories for a file that could be a manual page for the
-       topic named.
-
-       If you specify the -M pathlist option, pathlist is a colon-separated list
-       of the directories that man searches.
-
-       If you don't specify -M but set the MANPATH environment variable, the
-       value of that variable is the list of the directories that man searches.
-
-       If you don't specify an explicit path list with -M or MANPATH, man
-       develops its own path list based on the contents of the configuration
-       file /private/etc/man.conf.  The MANPATH statements in the configuration
-       file identify particular directories to include in the search path.
-
-       Furthermore, the MANPATH_MAP statements add to the search path depending
-       on your command search path (i.e. your PATH environment variable).  For
-       each directory that may be in the command search path, a MANPATH_MAP
-       statement specifies a directory that should be added to the search path
-       for manual page files.  man looks at the PATH variable and adds the
-       corresponding directories to the manual page file search path.  Thus,
-       with the proper use of MANPATH_MAP, when you issue the command man xyz,
-       you get a manual page for the program that would run if you issued the
-       command xyz.
-
-       In addition, for each directory in the command search path (we'll call it
-       a "command directory") for which you do not have a MANPATH_MAP statement,
-       man automatically looks for a manual page directory "nearby" namely as a
-       subdirectory in the command directory itself or in the parent directory
-       of the command directory.
-
-       You can disable the automatic "nearby" searches by including a NOAUTOPATH
-       statement in /private/etc/man.conf.
-
-       In each directory in the search path as described above, man searches for
-       a file named topic.section, with an optional suffix on the section number
-       and possibly a compression suffix.  If it doesn't find such a file, it
-       then looks in any subdirectories named manN or catN where N is the manual
-       section number.  If the file is in a catN subdirectory, man assumes it is
-       a formatted manual page file (cat page).  Otherwise, man assumes it is
-       unformatted.  In either case, if the filename has a known compression
-       suffix (like .gz), man assumes it is gzipped.
-
-       If you want to see where (or if) man would find the manual page for a
-       particular topic, use the --path (-w) option.
-
+   Displaying Specific Manual Files
+     The man utility also supports displaying a specific manual page if passed a
+     path to the file as long as it contains a ‘/’ character.
 
 ENVIRONMENT
-       MANPATH
-              If MANPATH is set, man uses it as the path to search for manual
-              page files.  It overrides the configuration file and the automatic
-              search path, but is overridden by the -M invocation option.  See
-              SEARCH PATH FOR MANUAL PAGES.
+     The following environment variables affect the execution of man:
 
-       MANPL  If MANPL is set, its value is used as the display page length.
-              Otherwise, the entire man page will occupy one (long) page.
+     LC_ALL, LC_CTYPE, LANG
+                     Used to find locale specific manual pages.  Valid values
+                     can be found by running the locale(1) command.  See
+                     IMPLEMENTATION NOTES for details.  Influenced by the -o
+                     option.
 
-       MANROFFSEQ
-              If MANROFFSEQ is set, its value is used to determine the set of
-              preprocessors run before running nroff or troff.  By default,
-              pages are passed through the tbl preprocessor before nroff.
+     MACHINE_ARCH, MACHINE
+                     Used to find platform specific manual pages.  If unset, the
+                     output of “sysctl hw.machine_arch” and “sysctl hw.machine”
+                     is used respectively.  See IMPLEMENTATION NOTES for
+                     details.  Corresponds to the -m option.
 
-       MANSECT
-              If MANSECT is set, its value is used to determine which manual
-              sections to search.
+     MANPATH         The standard search path used by man(1) may be changed by
+                     specifying a path in the MANPATH environment variable.
+                     Invalid paths, or paths without manual databases, are
+                     ignored.  Overridden by -M.  If MANPATH begins with a
+                     colon, it is appended to the default list; if it ends with
+                     a colon, it is prepended to the default list; or if it
+                     contains two adjacent colons, the standard search path is
+                     inserted between the colons.  If none of these conditions
+                     are met, it overrides the standard search path.
 
-       MANWIDTH
-              If MANWIDTH is set, its value is used as the width manpages should
-              be displayed.  Otherwise the pages may be displayed over the whole
-              width of your screen.
+     MANROFFSEQ      Used to determine the preprocessors for the manual source
+                     before running nroff(1) or troff(1).  If unset, defaults to
+                     tbl(1).  Corresponds to the -p option.
 
-       MANPAGER
-              If MANPAGER is set, its value is used as the name of the program
-              to use to display the man page.  If not, then PAGER is used. If
-              that has no value either, /usr/bin/less -is is used.
+     MANSECT         Restricts manual sections searched to the specified colon
+                     delimited list.  Corresponds to the -S option.
 
-       BROWSER
-              The name of a browser to use for displaying HTML manual pages.  If
-              it is not set, /usr/bin/less -is is used.
+     MANWIDTH        If set to a numeric value, used as the width manpages
+                     should be displayed.  Otherwise, if set to a special value
+                     “tty”, and output is to a terminal, the pages may be
+                     displayed over the whole width of the screen.
 
-       HTMLPAGER
-              The command to use for rendering HTML manual pages as text.  If it
-              is not set, /bin/cat is used.
+     MANCOLOR        If set, enables color support.
 
-       LANG   If LANG is set, its value defines the name of the subdirectory
-              where man first looks for man pages. Thus, the command `LANG=dk
-              man 1 foo' will cause man to look for the foo man page in
-              .../dk/man1/foo.1, and if it cannot find such a file, then in
-              .../man1/foo.1, where ... is a directory on the search path.
+     MANPAGER        Program used to display files.
 
-       NLSPATH, LC_MESSAGES, LANG
-              The environment variables NLSPATH and LC_MESSAGES (or LANG when
-              the latter does not exist) play a role in locating the message
-              catalog.  (But the English messages are compiled in, and for
-              English no catalog is required.)  Note that programs like col(1)
-              called by man also use e.g. LC_CTYPE.
+                     If unset, and color support is enabled, “less -sR” is used.
 
-       PATH   PATH helps determine the search path for manual page files.  See
-              SEARCH PATH FOR MANUAL PAGES.
+                     If unset, and color support is disabled, then PAGER is
+                     used.  If that has no value either, “less -s” is used.
 
-       SYSTEM SYSTEM is used to get the default alternate system name (for use
-              with the -m option).
+FILES
+     /etc/man.conf
+             System configuration file.
+     /usr/local/etc/man.d/*.conf
+             Local configuration files.
 
-BUGS
-       The -t option only works if a troff-like program is installed.
-       If you see blinking \255 or <AD> instead of hyphens, put
-       `LESSCHARSET=latin1' in your environment.
+EXIT STATUS
+     The man utility exits 0 on success, and >0 if an error occurs.
 
-TIPS
-       If you add the line
+EXAMPLES
+     Show the manual page for stat(2):
 
-        (global-set-key [(f1)] (lambda () (interactive) (manual-entry (current-
-       word))))
+           $ man 2 stat
 
-       to your .emacs file, then hitting F1 will give you the man page for the
-       library call at the current cursor position.
+     Show all manual pages for ‘stat’.
 
-       To get a plain text version of a man page, without backspaces and
-       underscores, try
+           $ man -a stat
 
-         # man foo | col -b > foo.mantxt
+     List manual pages which match the regular expression either in the title or
+     in the body:
 
-AUTHOR
-       John W. Eaton was the original author of man.  Zeyd M. Ben-Halim released
-       man 1.2, and Andries Brouwer followed up with versions 1.3 thru 1.5p.
-       Federico Lucifredi <flucifredi@acm.org> is the current maintainer.
+           $ man -k '\<copy\>.*archive'
+
+     Show the manual page for ls(1) and use cat(1) as pager:
+
+           $ man -P cat ls
+
+     Show the location of the ls(1) manual page:
+
+           $ man -w ls
 
 SEE ALSO
-       apropos(1), whatis(1), less(1), groff(1), man.conf(5).
-
-
+     apropos(1), intro(1), mandoc(1), manpath(1), whatis(1), intro(2), intro(3),
+     intro(3lua), intro(4), intro(5), man.conf(5), intro(6), intro(7), mdoc(7),
+     intro(8), intro(9)
 

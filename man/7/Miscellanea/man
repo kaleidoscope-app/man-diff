@@ -1,0 +1,400 @@
+MAN(7)                  Miscellaneous Information Manual                  MAN(7)
+
+NAME
+     man – legacy formatting language for manual pages
+
+DESCRIPTION
+     The man language was the standard formatting language for AT&T UNIX manual
+     pages from 1979 to 1989.  Do not use it to write new manual pages: it is a
+     purely presentational language and lacks support for semantic markup.  Use
+     the mdoc(7) language, instead.
+
+     In a man document, lines beginning with the control character ‘.’ are
+     called “macro lines”.  The first word is the macro name.  It usually
+     consists of two capital letters.  For a list of portable macros, see MACRO
+     OVERVIEW.  The words following the macro name are arguments to the macro.
+
+     Lines not beginning with the control character are called “text lines”.
+     They provide free-form text to be printed; the formatting of the text
+     depends on the respective processing context:
+
+           .SH Macro lines change control state.
+           Text lines are interpreted within the current state.
+
+     Many aspects of the basic syntax of the man language are based on the
+     roff(7) language; see the LANGUAGE SYNTAX and MACRO SYNTAX sections in the
+     roff(7) manual for details, in particular regarding comments, escape
+     sequences, whitespace, and quoting.
+
+     Each man document starts with the TH macro specifying the document's name
+     and section, followed by the NAME section formatted as follows:
+
+           .TH PROGNAME 1 1979-01-10
+           .SH NAME
+           \fBprogname\fR \(en one line about what it does
+
+MACRO OVERVIEW
+     This overview is sorted such that macros of similar purpose are listed
+     together.  Deprecated and non-portable macros are not included in the
+     overview, but can be found in the alphabetical reference below.
+
+   Page header and footer meta-data
+     TH        set the title: name section date [source [volume]]
+     AT        display AT&T UNIX version in the page footer (<= 1 argument)
+     UC        display BSD version in the page footer (<= 1 argument)
+
+   Sections and paragraphs
+     SH        section header (one line)
+     SS        subsection header (one line)
+     PP        start an undecorated paragraph (no arguments)
+     RS, RE    reset the left margin: [width]
+     IP        indented paragraph: [head [width]]
+     TP        tagged paragraph: [width]
+     PD        set vertical paragraph distance: [height]
+     in        additional indent: [width]
+
+   Physical markup
+     B         boldface font
+     I         italic font
+     SB        small boldface font
+     SM        small roman font
+     BI        alternate between boldface and italic fonts
+     BR        alternate between boldface and roman fonts
+     IB        alternate between italic and boldface fonts
+     IR        alternate between italic and roman fonts
+     RB        alternate between roman and boldface fonts
+     RI        alternate between roman and italic fonts
+
+MACRO REFERENCE
+     This section is a canonical reference to all macros, arranged
+     alphabetically.  For the scoping of individual macros, see MACRO SYNTAX.
+
+     AT   Sets the volume for the footer for compatibility with man pages from
+          AT&T UNIX releases.  The optional arguments specify which release it
+          is from.  This macro is an extension that first appeared in 4.3BSD.
+
+     B    Text is rendered in bold face.
+
+     BI   Text is rendered alternately in bold face and italic.  Thus, ‘.BI this
+          word and that’ causes ‘this’ and ‘and’ to render in bold face, while
+          ‘word’ and ‘that’ render in italics.  Whitespace between arguments is
+          omitted in output.
+
+          Example:
+
+                .BI bold italic bold italic
+
+     BR   Text is rendered alternately in bold face and roman (the default
+          font).  Whitespace between arguments is omitted in output.  See also
+          BI.
+
+     DT   Restore the default tabulator positions.  They are at intervals of 0.5
+          inches.  This has no effect unless the tabulator positions were
+          changed with the roff(7) ta request.
+
+     EE   This is a non-standard Version 9 AT&T UNIX extension later adopted by
+          GNU.  In mandoc(1), it does the same as the roff(7) fi request (switch
+          to fill mode).
+
+     EX   This is a non-standard Version 9 AT&T UNIX extension later adopted by
+          GNU.  In mandoc(1), it does the same as the roff(7) nf request (switch
+          to no-fill mode).
+
+     HP   Begin a paragraph whose initial output line is left-justified, but
+          subsequent output lines are indented, with the following syntax:
+
+                .HP [width]
+
+          The width argument is a roff(7) scaling width.  If specified, it's
+          saved for later paragraph left margins; if unspecified, the saved or
+          default width is used.
+
+          This macro is portable, but deprecated because it has no good
+          representation in HTML output, usually ending up indistinguishable
+          from PP.
+
+     I    Text is rendered in italics.
+
+     IB   Text is rendered alternately in italics and bold face.  Whitespace
+          between arguments is omitted in output.  See also BI.
+
+     IP   Begin an indented paragraph with the following syntax:
+
+                .IP [head [width]]
+
+          The width argument is a roff(7) scaling width defining the left
+          margin.  It's saved for later paragraph left-margins; if unspecified,
+          the saved or default width is used.
+
+          The head argument is used as a leading term, flushed to the left
+          margin.  This is useful for bulleted paragraphs and so on.
+
+     IR   Text is rendered alternately in italics and roman (the default font).
+          Whitespace between arguments is omitted in output.  See also BI.
+
+     LP   A synonym for PP.
+
+     ME   End a mailto block started with MT.  This is a non-standard GNU
+          extension.
+
+     MT   Begin a mailto block.  This is a non-standard GNU extension.  It has
+          the following syntax:
+
+                .MT address
+                link description to be shown
+                .ME
+
+     OP   Optional command-line argument.  This is a non-standard DWB extension.
+          It has the following syntax:
+
+                .OP key [value]
+
+          The key is usually a command-line flag and value its argument.
+
+     P    This synonym for PP is an AT&T System III UNIX extension later adopted
+          by 4.3BSD.
+
+     PD   Specify the vertical space to be inserted before each new paragraph.
+          The syntax is as follows:
+
+                .PD [height]
+
+          The height argument is a roff(7) scaling width.  It defaults to 1v.
+          If the unit is omitted, v is assumed.
+
+          This macro affects the spacing before any subsequent instances of HP,
+          IP, LP, P, PP, SH, SS, SY, and TP.
+
+     PP   Begin an undecorated paragraph.  The scope of a paragraph is closed by
+          a subsequent paragraph, sub-section, section, or end of file.  The
+          saved paragraph left-margin width is reset to the default.
+
+     RB   Text is rendered alternately in roman (the default font) and bold
+          face.  Whitespace between arguments is omitted in output.  See also
+          BI.
+
+     RE   Explicitly close out the scope of a prior RS.  The default left margin
+          is restored to the state before that RS invocation.
+
+          The syntax is as follows:
+
+                .RE [level]
+
+          Without an argument, the most recent RS block is closed out.  If level
+          is 1, all open RS blocks are closed out.  Otherwise, level − 1 nested
+          RS blocks remain open.
+
+     RI   Text is rendered alternately in roman (the default font) and italics.
+          Whitespace between arguments is omitted in output.  See also BI.
+
+     RS   Temporarily reset the default left margin.  This has the following
+          syntax:
+
+                .RS [width]
+
+          The width argument is a roff(7) scaling width.  If not specified, the
+          saved or default width is used.
+
+          See also RE.
+
+     SB   Text is rendered in small size (one point smaller than the default
+          font) bold face.  This macro is an extension that probably first
+          appeared in SunOS 4.0 and was later adopted by GNU and by 4.4BSD.
+
+     SH   Begin a section.  The scope of a section is only closed by another
+          section or the end of file.  The paragraph left-margin width is reset
+          to the default.
+
+     SM   Text is rendered in small size (one point smaller than the default
+          font).
+
+     SS   Begin a sub-section.  The scope of a sub-section is closed by a
+          subsequent sub-section, section, or end of file.  The paragraph left-
+          margin width is reset to the default.
+
+     SY   Begin a synopsis block with the following syntax:
+
+                .SY command
+                arguments
+                .YS
+
+          This is a non-standard GNU extension and very rarely used even in GNU
+          manual pages.  Formatting is similar to IP.
+
+     TH   Set the name of the manual page for use in the page header and footer
+          with the following syntax:
+
+                .TH name section date [source [volume]]
+
+          Conventionally, the document name is given in all caps.  The section
+          is usually a single digit, in a few cases followed by a letter.  The
+          recommended date format is YYYY-MM-DD as specified in the ISO-8601
+          standard; if the argument does not conform, it is printed verbatim.
+          If the date is empty or not specified, the current date is used.  The
+          optional source string specifies the organisation providing the
+          utility.  When unspecified, mandoc(1) uses its -Ios argument.  The
+          volume string replaces the default volume title of the section.
+
+          Examples:
+
+                .TH CVS 5 1992-02-12 GNU
+
+     TP   Begin a paragraph where the head, if exceeding the indentation width,
+          is followed by a newline; if not, the body follows on the same line
+          after advancing to the indentation width.  Subsequent output lines are
+          indented.  The syntax is as follows:
+
+                .TP [width]
+                head \" one line
+                body
+
+          The width argument is a roff(7) scaling width.  If specified, it's
+          saved for later paragraph left-margins; if unspecified, the saved or
+          default width is used.
+
+     TQ   Like TP, except that no vertical spacing is inserted before the
+          paragraph.  This is a non-standard GNU extension and very rarely used
+          even in GNU manual pages.
+
+     UC   Sets the volume for the footer for compatibility with man pages from
+          BSD releases.  The optional first argument specifies which release it
+          is from.  This macro is an extension that first appeared in 3BSD.
+
+     UE   End a uniform resource identifier block started with UR.  This is a
+          non-standard GNU extension.
+
+     UR   Begin a uniform resource identifier block.  This is a non-standard GNU
+          extension.  It has the following syntax:
+
+                .UR uri
+                link description to be shown
+                .UE
+
+     YS   End a synopsis block started with SY.  This is a non-standard GNU
+          extension.
+
+     in   Indent relative to the current indentation:
+
+                .in [width]
+
+          If width is signed, the new offset is relative.  Otherwise, it is
+          absolute.  This value is reset upon the next paragraph, section, or
+          sub-section.
+
+MACRO SYNTAX
+     The man macros are classified by scope: line scope or block scope.  Line
+     macros are only scoped to the current line (and, in some situations, the
+     subsequent line).  Block macros are scoped to the current line and
+     subsequent lines until closed by another block macro.
+
+   Line Macros
+     Line macros are generally scoped to the current line, with the body
+     consisting of zero or more arguments.  If a macro is scoped to the next
+     line and the line arguments are empty, the next line, which must be text,
+     is used instead.  Thus:
+
+           .I
+           foo
+
+     is equivalent to ‘.I foo’.  If next-line macros are invoked consecutively,
+     only the last is used.  If a next-line macro is followed by a non-next-line
+     macro, an error is raised.
+
+     The syntax is as follows:
+
+           .YO [body...]
+           [body...]
+
+           Macro     Arguments     Scope         Notes
+           AT        <=1           current
+           B         n             next-line
+           BI        n             current
+           BR        n             current
+           DT        0             current
+           EE        0             current       Version 9 AT&T UNIX
+           EX        0             current       Version 9 AT&T UNIX
+           I         n             next-line
+           IB        n             current
+           IR        n             current
+           OP        >=1           current       DWB
+           PD        1             current
+           RB        n             current
+           RI        n             current
+           SB        n             next-line
+           SM        n             next-line
+           TH        >1, <6        current
+           UC        <=1           current
+           in        1             current       roff(7)
+
+   Block Macros
+     Block macros comprise a head and body.  As with in-line macros, the head is
+     scoped to the current line and, in one circumstance, the next line (the
+     next-line stipulations as in Line Macros apply here as well).
+
+     The syntax is as follows:
+
+           .YO [head...]
+           [head...]
+           [body...]
+
+     The closure of body scope may be to the section, where a macro is closed by
+     SH; sub-section, closed by a section or SS; or paragraph, closed by a
+     section, sub-section, HP, IP, LP, P, PP, RE, SY, or TP.  No closure refers
+     to an explicit block closing macro.
+
+     As a rule, block macros may not be nested; thus, calling a block macro
+     while another block macro scope is open, and the open scope is not
+     implicitly closed, is syntactically incorrect.
+
+           Macro    Arguments    Head Scope    Body Scope     Notes
+           HP       <2           current       paragraph
+           IP       <3           current       paragraph
+           LP       0            current       paragraph
+           ME       0            none          none           GNU
+           MT       1            current       to ME          GNU
+           P        0            current       paragraph
+           PP       0            current       paragraph
+           RE       <=1          current       none
+           RS       1            current       to RE
+           SH       >0           next-line     section
+           SS       >0           next-line     sub-section
+           SY       1            current       to YS          GNU
+           TP       n            next-line     paragraph
+           TQ       n            next-line     paragraph      GNU
+           UE       0            current       none           GNU
+           UR       1            current       part           GNU
+           YS       0            none          none           GNU
+
+     If a block macro is next-line scoped, it may only be followed by in-line
+     macros for decorating text.
+
+   Font handling
+     In man documents, both Physical markup macros and roff(7) ‘\f’ font escape
+     sequences can be used to choose fonts.  In text lines, the effect of manual
+     font selection by escape sequences only lasts until the next macro
+     invocation; in macro lines, it only lasts until the end of the macro scope.
+     Note that macros like BR open and close a font scope for each argument.
+
+SEE ALSO
+     man(1), mandoc(1), eqn(7), mandoc_char(7), mdoc(7), roff(7), tbl(7)
+
+HISTORY
+     The man language first appeared as a macro package for the roff typesetting
+     system in Version 7 AT&T UNIX.
+
+     The stand-alone implementation that is part of the mandoc(1) utility first
+     appeared in OpenBSD 4.6.
+
+AUTHORS
+     Douglas McIlroy <m.douglas.mcilroy@dartmouth.edu> designed and implemented
+     the original version of these macros, wrote the original version of this
+     manual page, and was the first to use them when he edited volume 1 of the
+     Version 7 AT&T UNIX manual pages.
+
+     James Clark later rewrote the macros for groff.  Eric S. Raymond
+     <esr@thyrsus.com> and Werner Lemberg <wl@gnu.org> added the extended man
+     macros to groff in 2007.
+
+     The mandoc(1) program and this man reference were written by Kristaps
+     Dzonsons <kristaps@bsd.lv>.
+

@@ -1,0 +1,258 @@
+SIRITTS(1)                   General Commands Manual                  SIRITTS(1)
+
+NAME
+     siritts – Command line interface to Siri Text to Speech services
+
+SYNOPSIS
+     siritts subcommand [options]
+
+DESCRIPTION
+     The siritts utility provides access to a variety of services related to the
+     Siri Text to Speech system, and, to a limited extent, Apple's other Text-
+     to-Speech engines (MacinTalk, Polyglot, Gryphon).
+
+SYNTHESIS
+     siritts speak [--text | -t] [--language | -l] [--name | -n] -...
+             Speak a text with the named voice and/or the specified language.
+
+             -l, --language
+                     language
+
+             -t, --text
+                     text
+
+             -n, --name
+                     voice name, e.g. nora
+
+             -p, --private
+                     Indicate if this request is privacy sensitive. When set,
+                     only device synthesis will be used. Otherwise, synthesis is
+                     allowed to happen on server side.
+
+             -o, --output-file
+                     If set, audio will be written to the output file instead of
+                     being played loud.
+
+
+ASSET MANAGEMENT
+     The siritts asset subcommand manages voice and language resource assets,
+     providing a variety of second level subcommands, each with their own set of
+     options (as well as some COMMON ASSET OPTIONS discussed below):
+
+     siritts asset list [-v] [--nonlocal | -a] [--tab] asset ...
+             List asset(s) matching criteria as described in ASSET SELECTION.
+
+             --nonlocal
+                     By default we list locally available assets only. With this
+                     option, lists assets that are not locally available.
+
+             -a, --all
+                     lists all assets, regardless of availability.
+
+             --tab   by default, output is formatted in aligned columns, with
+                     this option, output in tab separated columns instead, for
+                     ease of machine and screen reader processing.
+
+     siritts asset describe [-v] [--nonlocal | -a | -p] asset ...
+             Print verbose information for asset(s) matching criteria as
+             described in ASSET SELECTION.
+
+             --nonlocal
+                     By default we list locally available assets only. With this
+                     option, lists assets that are not locally available.
+
+             -a, --all
+                     lists all assets, regardless of availability.
+
+             -p, --path
+                     only print path to asset bundle. This option only makes
+                     sense for locally available assets.
+
+     siritts asset download [-v] [--clobber] asset ...
+             Download nonlocal asset(s) matching criteria as described in ASSET
+             SELECTION.
+
+             --clobber
+                     Allow more than 3 assets to be downloaded at once.
+
+     siritts asset purge [-v] [--clobber] [--immediately] asset ...
+             Purge local asset(s) matching criteria as described in ASSET
+             SELECTION.
+
+             --clobber
+                     Allow more than 3 assets to be purged at once.
+
+             --immediately
+                     Recover space immediately instead of leaving the decision
+                     to the OS (a distinction mainly relevant to for Turi Trial
+                     assets).
+
+     siritts asset serve [-r root-directory] [-p port | -]
+             Create an asset server (operating a regular HTTP protocol), serving
+             previously staged assets.
+
+             -r root-directory, --root root-directory
+                     Specifies the directory containing the assets. Defaults to
+                     a temporary directory.
+
+             --stdio
+                     Listens for requests on standard input.
+
+             -p port, --port port
+                     Listens to the specified port. Defaults to listening on a
+                     randomly chosen port.
+
+             On the machine on which the server runs, this will also temporarily
+             set the server URLs of the assets present in root-directory to the
+             listening address, and will restore the URLs to their default
+             setting if siritts is quit with SIGINT (Control-C). If you quit
+             with any other method, you'll have to manually restore with
+
+                   sudo defaults delete com.apple.MobileAssets
+
+             If you want to connect from a different machine, follow the
+             instructions printed by the command.
+
+     siritts asset set-server (--url server-url | --production | --livability |
+             --staging | --reset) [--source source] asset ...
+             Override the asset server to use for the specified assets (or all
+             assets if omitted).
+
+             --url server-url
+                     Use an explicitly defined server URL (e.g. for a local
+                     mirror).  server-url can use some shortcuts such as
+                     livability/AzulE or staging/Speedwagon9M5494.
+
+             --production
+                     Use production asset server.
+
+             --livability
+                     Use livability asset server.
+
+             --staging
+                     Use staging asset server.
+
+             --reset
+                     Reset to default asset server.
+
+             -s source, --source source
+                     Specify the download source (mobile or trial)
+
+     siritts asset show-server [--verbose] [--source source] asset ...
+             Show the asset server(s) currently used for the specified assets
+             (or all assets if omitted).
+
+             -s source, --source source
+                     Specify the download source (mobile or trial)
+
+             -v, --verbose
+                     List full URLs for production, livability, and staging
+                     servers.
+
+     siritts asset stage [-o root-directory] path ...
+             Prepare assets to be served by compressing them, computing hashes
+             for them, and compressing them.
+
+             -o root-directory, --output root-directory
+                     Specify the directory in which the assets are staged.
+                     Defaults to the same temporary directory used by siritts
+                     serve.
+
+             path ...
+                     Directories of original assets. Each asset type should be
+                     represented by only one path argument.
+
+COMMON ASSET OPTIONS
+     -v, --verbose
+             By default, siritts suppresses the output that e.g. the MobileAsset
+             framework prints to the console. If this option is given, this
+             output is not suppressed.  Many commands also print further
+             diagnostics if this option is given.
+
+ASSET SELECTION
+     The list, download, and purge subcommands of siritts require specifying one
+     or several assets to apply to. This is done with the following criteria:
+
+     -n name(s), --name name(s)
+             Specify the name(s) we're interested in. This argument can take
+             glob patterns.
+
+     -L language(s), --language language(s)
+             Specify the language(s) we're interested in. This argument may be
+             given multiple times, or languages can be specified as a comma
+             separated list.
+
+     --male, --female, --neutral, --unspecified
+             Specify the gender(s) we're interested in.
+
+     -t technology(s), --technology technology(s)
+             Specify the technology(s) we're interested in among
+
+             vocalizer
+
+             custom
+
+             macintalk
+
+             gryphon
+
+             neural
+
+     -q quality(s), --quality quality(s)
+             Specify the quality(s) we're interested in among
+
+             compact
+
+             premium
+
+             premiumhigh
+
+             beta
+
+     -1, --best
+             Only use the top match among the assets found.
+
+     --obsolete
+             By default, we only list the newest version of an asset. With this
+             option, we list obsolete versions instead.
+
+     -s source(s), --source source(s)
+             Specifies the asset source(s) of interest among
+
+             legacy  macOS voices that were preinstalled or downloaded using
+                     software update.
+
+             mobile  Assets downloaded using Mobile Assets.
+
+             trial   Assets downloaded using Turi Trial.
+
+             adhoc   Assets installed on the device for testing purposes.
+
+             preinstalled
+                     Voices preinstalled on HomePods for initial setup.
+
+     gryphon, custom, macintalk, combined, vocalizer, resources, asset-id
+             Specify the asset type(s) to use.
+
+     voices  Use all voice asset types (this is the default).
+
+     all     Use all predefined asset types (voices and resources).
+
+EXIT STATUS
+     The siritts utility exits 0 on success, and >0 if an error occurs.
+
+EXAMPLES
+     siritts speak -n Aaron --text "Mr. Watson - Come here - I want to see you."
+
+     To run a temporary asset server serving VoiceResources from a checkout of
+     the git repo, run:
+
+           siritts asset stage ~/Work/VoiceServicesVoiceResource
+           siritts asset serve
+
+SEE ALSO
+     assettool(1)
+
+STANDARDS
+     You're kidding, right?
+

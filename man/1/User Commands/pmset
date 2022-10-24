@@ -41,7 +41,7 @@ SETTINGS
      (value in minutes, or 0 to disable)
      sleep - system sleep timer (value in minutes, or 0 to disable)
      womp - wake on ethernet magic packet (value = 0/1). Same as "Wake for
-     network access" in the Energy Saver preferences.
+     network access" in System Settings.
      ring - wake on modem ring (value = 0/1)
      powernap - enable/disable Power Nap on supported machines (value = 0/1)
      proximitywake - On supported systems, this option controls system wake from
@@ -230,8 +230,8 @@ OTHER ARGUMENTS
      idle sleep(while running; hit ctrl-c to cancel). This argument is
      deprecated in favor of caffeinate(8). Please use caffeinate(8) instead.
      sleepnow - causes an immediate system sleep.
-     restoredefaults - Restores Energy Saver settings to their default values.
-     (Like clicking "Restore Defaults" in Energy Saver GUI).
+     restoredefaults - Restores power management settings to their default
+     values.
      displaysleepnow - causes display to go to sleep immediately.
      resetdisplayambientparams - resets the ambient light parameters for certain
      Apple displays.
@@ -252,8 +252,6 @@ EXAMPLES
      appropriate
 
      pmset -a displaysleep 10 disksleep 10 sleep 30 womp 1
-
-     Restores the system's energy settings to their default values.
 
      For a system with an attached and supported UPS, this instructs the system
      to perform an emergency shutdown when UPS battery drains to below 40%.
@@ -288,6 +286,10 @@ EXAMPLES
 
      pmset repeat wakeorpoweron T 12:00:00 sleep MTWRFSU 20:00:00
 
+     Cancels all scheduled system sleep, shutdown, wake, and power on events.
+
+     pmset repeat cancel
+
      Prints the power management settings in use by the system.
 
      pmset -g
@@ -315,5 +317,5 @@ FILES
      Scheduled power on/off events are stored separately in
      /Library/Preferences/SystemConfiguration/com.apple.AutoWake.plist
 
-     pmset modifies the same file that System Preferences Energy Saver modifies.
+     pmset modifies the same file that System Settings modifies.
 
