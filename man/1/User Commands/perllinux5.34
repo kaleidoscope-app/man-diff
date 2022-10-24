@@ -1,0 +1,50 @@
+PERLLINUX(1)            Perl Programmers Reference Guide            PERLLINUX(1)
+
+
+
+
+NAME
+       perllinux - Perl version 5 on Linux systems
+
+DESCRIPTION
+       This document describes various features of Linux that will affect how
+       Perl version 5 (hereafter just Perl) is compiled and/or runs.
+
+   Deploying Perl on Linux
+       Normally one can install /usr/bin/perl on Linux using your distribution's
+       package manager (e.g: "sudo apt-get install perl", or "sudo dnf install
+       perl"). Note that sometimes one needs to install some extra system
+       packages in order to be able to use CPAN frontends, and that messing with
+       the system's perl is not always recommended. One can use perlbrew
+       <https://perlbrew.pl/> to avoid such issues.
+
+       Otherwise, perl should build fine on Linux using the mainstream compilers
+       GCC and clang, while following the usual instructions.
+
+   Experimental Support for Sun Studio Compilers for Linux OS
+       Sun Microsystems has released a port of their Sun Studio compilers for
+       Linux.  As of May 2019, the last stable release took place on 2017, and
+       one can buy support contracts for them.
+
+       There are some special instructions for building Perl with Sun Studio on
+       Linux.  Following the normal "Configure", you have to run make as
+       follows:
+
+           LDLOADLIBS=-lc make
+
+       "LDLOADLIBS" is an environment variable used by the linker to link "/ext"
+       modules to glibc.  Currently, that environment variable is not getting
+       populated by a combination of "Config" entries and "ExtUtil::MakeMaker".
+       While there may be a bug somewhere in Perl's configuration or
+       "ExtUtil::MakeMaker" causing the problem, the most likely cause is an
+       incomplete understanding of Sun Studio by this author.  Further
+       investigation is needed to get this working better.
+
+AUTHOR
+       Steve Peters <steve@fisharerojo.org>
+
+       Please report any errors, updates, or suggestions to
+       <https://github.com/Perl/perl5/issues>.
+
+
+

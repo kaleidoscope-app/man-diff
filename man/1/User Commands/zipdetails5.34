@@ -1,0 +1,133 @@
+ZIPDETAILS(1)           Perl Programmers Reference Guide           ZIPDETAILS(1)
+
+
+
+
+NAME
+       zipdetails - display the internal structure of zip files
+
+SYNOPSIS
+           zipdetails [-v][--scan] zipfile.zip
+           zipdetails -h
+           zipdetails --version
+
+DESCRIPTION
+       Zipdetails displays information about the internal record structure of
+       zip files. It is not concerned with displaying any details of the
+       compressed data stored in the zip file.
+
+       The program assumes prior understanding of the internal structure of a
+       Zip file. You should have a copy of the Zip APPNOTE file at hand to help
+       understand the output from this program ("SEE ALSO" for details).
+
+   Default Behaviour
+       By default the program expects to be given a well-formed zip file.  It
+       will navigate the Zip file by first parsing the zip central directory at
+       the end of the file.  If that is found, it will then walk through the zip
+       records starting at the beginning of the file. Any badly formed zip data
+       structures encountered are likely to terminate the program.
+
+       If the program finds any structural problems with the zip file it will
+       print a summary at the end of the output report. The set of error cases
+       reported is very much a work in progress, so don't rely on this feature
+       to find all the possible errors in a zip file. If you have suggestions
+       for use-cases where this could be enhanced please consider creating an
+       enhancement request (see "SUPPORT").
+
+   Scan-Mode
+       If you do have a potentially corrupt zip file, particulatly where the
+       central directory at the end of the file is absent/incomplete, you can
+       try usng the "--scan" option to search for zip records that are still
+       present.
+
+       When Scan-mode is enabled, the program will walk the zip file from the
+       start blindly looking for the 4-byte signatures that preceed each of the
+       zip data structures. If it finds any of the recognised signatures it will
+       attempt to dump the associated zip record. For very large zip files, this
+       operation can take a long time to run.
+
+       Note that the 4-byte signatures used in zip files can sometimes match
+       with random data stored in the zip file, so care is needed interpreting
+       the results.
+
+   OPTIONS
+       -h   Display help
+
+       --scan
+            Walk the zip file loking for possible zip records. Can be error-
+            prone.  See "Scan-Mode"
+
+       -v   Enable Verbose mode. See "Verbose Output".
+
+       --version
+            Display version number of the program and exit.
+
+   Default Output
+       By default zipdetails will output the details of the zip file in three
+       columns.
+
+       Column 1
+            This contains the offset from the start of the file in hex.
+
+       Column 2
+            This contains a textual description of the field.
+
+       Column 3
+            If the field contains a numeric value it will be displayed in hex.
+            Zip stores most numbers in little-endian format - the value
+            displayed will have the little-endian encoding removed.
+
+            Next, is an optional description of what the value means.
+
+   Verbose Output
+       If the "-v" option is present, column 1 is expanded to include
+
+       •    The offset from the start of the file in hex.
+
+       •    The length of the field in hex.
+
+       •    A hex dump of the bytes in field in the order they are stored in the
+            zip file.
+
+LIMITATIONS
+       The following zip file features are not supported by this program:
+
+       •    Multi-part archives.
+
+       •    The strong encryption features defined in the "APPNOTE" document.
+
+TODO
+       Error handling is a work in progress. If the program encounters a problem
+       reading a zip file it is likely to terminate with an unhelpful error
+       message.
+
+SUPPORT
+       General feedback/questions/bug reports should be sent to
+       <https://github.com/pmqs/IO-Compress/issues> (preferred) or
+       <https://rt.cpan.org/Public/Dist/Display.html?Name=IO-Compress>.
+
+SEE ALSO
+       The primary reference for Zip files is the "APPNOTE" document available
+       at <http://www.pkware.com/documents/casestudies/APPNOTE.TXT>.
+
+       An alternative reference is the Info-Zip appnote. This is available from
+       <ftp://ftp.info-zip.org/pub/infozip/doc/>
+
+       The "zipinfo" program that comes with the info-zip distribution
+       (<http://www.info-zip.org/>) can also display details of the structure of
+       a zip file.
+
+       See also Archive::Zip::SimpleZip, IO::Compress::Zip,
+       IO::Uncompress::Unzip.
+
+AUTHOR
+       Paul Marquess pmqs@cpan.org.
+
+COPYRIGHT
+       Copyright (c) 2011-2021 Paul Marquess. All rights reserved.
+
+       This program is free software; you can redistribute it and/or modify it
+       under the same terms as Perl itself.
+
+
+

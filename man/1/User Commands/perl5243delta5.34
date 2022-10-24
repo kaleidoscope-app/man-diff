@@ -1,0 +1,244 @@
+PERL5243DELTA(1)        Perl Programmers Reference Guide        PERL5243DELTA(1)
+
+
+
+
+NAME
+       perl5243delta - what is new for perl v5.24.3
+
+DESCRIPTION
+       This document describes differences between the 5.24.2 release and the
+       5.24.3 release.
+
+       If you are upgrading from an earlier release such as 5.24.1, first read
+       perl5242delta, which describes differences between 5.24.1 and 5.24.2.
+
+Security
+   [CVE-2017-12837] Heap buffer overflow in regular expression compiler
+       Compiling certain regular expression patterns with the case-insensitive
+       modifier could cause a heap buffer overflow and crash perl.  This has now
+       been fixed.  [GH #16021] <https://github.com/Perl/perl5/issues/16021>
+
+   [CVE-2017-12883] Buffer over-read in regular expression parser
+       For certain types of syntax error in a regular expression pattern, the
+       error message could either contain the contents of a random, possibly
+       large, chunk of memory, or could crash perl.  This has now been fixed.
+       [GH #16025] <https://github.com/Perl/perl5/issues/16025>
+
+   [CVE-2017-12814] $ENV{$key} stack buffer overflow on Windows
+       A possible stack buffer overflow in the %ENV code on Windows has been
+       fixed by removing the buffer completely since it was superfluous anyway.
+       [GH #16051] <https://github.com/Perl/perl5/issues/16051>
+
+Incompatible Changes
+       There are no changes intentionally incompatible with 5.24.2.  If any
+       exist, they are bugs, and we request that you submit a report.  See
+       "Reporting Bugs" below.
+
+Modules and Pragmata
+   Updated Modules and Pragmata
+       •   Module::CoreList has been upgraded from version 5.20170715_24 to
+           5.20170922_24.
+
+       •   POSIX has been upgraded from version 1.65 to 1.65_01.
+
+       •   Time::HiRes has been upgraded from version 1.9733 to 1.9741.
+
+           [GH #15396] <https://github.com/Perl/perl5/issues/15396> [GH #15401]
+           <https://github.com/Perl/perl5/issues/15401> [GH #15524]
+           <https://github.com/Perl/perl5/issues/15524> [cpan #120032]
+           <https://rt.cpan.org/Public/Bug/Display.html?id=120032>
+
+Configuration and Compilation
+       •   When building with GCC 6 and link-time optimization (the -flto option
+           to gcc), Configure was treating all probed symbols as present on the
+           system, regardless of whether they actually exist.  This has been
+           fixed.  [GH #15322] <https://github.com/Perl/perl5/issues/15322>
+
+       •   Configure now aborts if both "-Duselongdouble" and "-Dusequadmath"
+           are requested.  [GH #14944]
+           <https://github.com/Perl/perl5/issues/14944>
+
+       •   Fixed a bug in which Configure could append "-quadmath" to the
+           archname even if it was already present.  [GH #15423]
+           <https://github.com/Perl/perl5/issues/15423>
+
+       •   Clang builds with "-DPERL_GLOBAL_STRUCT" or
+           "-DPERL_GLOBAL_STRUCT_PRIVATE" have been fixed (by disabling Thread
+           Safety Analysis for these configurations).
+
+Platform Support
+   Platform-Specific Notes
+       VMS
+           •   "configure.com" now recognizes the VSI-branded C compiler.
+
+       Windows
+           •   Building XS modules with GCC 6 in a 64-bit build of Perl failed
+               due to incorrect mapping of "strtoll" and "strtoull".  This has
+               now been fixed.  [GH #16074]
+               <https://github.com/Perl/perl5/issues/16074> [cpan #121683]
+               <https://rt.cpan.org/Public/Bug/Display.html?id=121683> [cpan
+               #122353] <https://rt.cpan.org/Public/Bug/Display.html?id=122353>
+
+Selected Bug Fixes
+       •   "/@0{0*->@*/*0" and similar contortions used to crash, but no longer
+           do, but merely produce a syntax error.  [GH #15333]
+           <https://github.com/Perl/perl5/issues/15333>
+
+       •   "do" or "require" with an argument which is a reference or typeglob
+           which, when stringified, contains a null character, started crashing
+           in Perl 5.20, but has now been fixed.  [GH #15337]
+           <https://github.com/Perl/perl5/issues/15337>
+
+       •   Expressions containing an "&&" or "||" operator (or their synonyms
+           "and" and "or") were being compiled incorrectly in some cases.  If
+           the left-hand side consisted of either a negated bareword constant or
+           a negated "do {}" block containing a constant expression, and the
+           right-hand side consisted of a negated non-foldable expression, one
+           of the negations was effectively ignored.  The same was true of "if"
+           and "unless" statement modifiers, though with the left-hand and
+           right-hand sides swapped.  This long-standing bug has now been fixed.
+           [GH #15285] <https://github.com/Perl/perl5/issues/15285>
+
+       •   "reset" with an argument no longer crashes when encountering stash
+           entries other than globs.  [GH #15314]
+           <https://github.com/Perl/perl5/issues/15314>
+
+       •   Assignment of hashes to, and deletion of, typeglobs named *:::::: no
+           longer causes crashes.  [GH #15307]
+           <https://github.com/Perl/perl5/issues/15307>
+
+       •   Assignment variants of any bitwise ops under the "bitwise" feature
+           would crash if the left-hand side was an array or hash.  [GH #15346]
+           <https://github.com/Perl/perl5/issues/15346>
+
+       •   "socket" now leaves the error code returned by the system in $! on
+           failure.  [GH #15383] <https://github.com/Perl/perl5/issues/15383>
+
+       •   Parsing bad POSIX charclasses no longer leaks memory.  [GH #15382]
+           <https://github.com/Perl/perl5/issues/15382>
+
+       •   Since Perl 5.20, line numbers have been off by one when perl is
+           invoked with the -x switch.  This has been fixed.  [GH #15413]
+           <https://github.com/Perl/perl5/issues/15413>
+
+       •   Some obscure cases of subroutines and file handles being freed at the
+           same time could result in crashes, but have been fixed.  The crash
+           was introduced in Perl 5.22.  [GH #15435]
+           <https://github.com/Perl/perl5/issues/15435>
+
+       •   Some regular expression parsing glitches could lead to assertion
+           failures with regular expressions such as "/(?<=/" and "/(?<!/".
+           This has now been fixed.  [GH #15332]
+           <https://github.com/Perl/perl5/issues/15332>
+
+       •   "gethostent" and similar functions now perform a null check
+           internally, to avoid crashing with the torsocks library.  This was a
+           regression from Perl 5.22.  [GH #15478]
+           <https://github.com/Perl/perl5/issues/15478>
+
+       •   Mentioning the same constant twice in a row (which is a syntax error)
+           no longer fails an assertion under debugging builds.  This was a
+           regression from Perl 5.20.  [GH #15017]
+           <https://github.com/Perl/perl5/issues/15017>
+
+       •   In Perl 5.24 "fchown" was changed not to accept negative one as an
+           argument because in some platforms that is an error.  However, in
+           some other platforms that is an acceptable argument.  This change has
+           been reverted.  [GH #15523]
+           <https://github.com/Perl/perl5/issues/15523>.
+
+       •   "@{x" followed by a newline where "x" represents a control or non-
+           ASCII character no longer produces a garbled syntax error message or
+           a crash.  [GH #15518] <https://github.com/Perl/perl5/issues/15518>
+
+       •   A regression in Perl 5.24 with "tr/\N{U+...}/foo/" when the code
+           point was between 128 and 255 has been fixed.  [GH #15475]
+           <https://github.com/Perl/perl5/issues/15475>.
+
+       •   Many issues relating to "printf "%a"" of hexadecimal floating point
+           were fixed.  In addition, the "subnormals" (formerly known as
+           "denormals") floating point numbers are now supported both with the
+           plain IEEE 754 floating point numbers (64-bit or 128-bit) and the x86
+           80-bit "extended precision".  Note that subnormal hexadecimal
+           floating point literals will give a warning about "exponent
+           underflow".  [GH #15495] <https://github.com/Perl/perl5/issues/15495>
+           [GH #15502] <https://github.com/Perl/perl5/issues/15502> [GH #15503]
+           <https://github.com/Perl/perl5/issues/15503> [GH #15504]
+           <https://github.com/Perl/perl5/issues/15504> [GH #15505]
+           <https://github.com/Perl/perl5/issues/15505> [GH #15510]
+           <https://github.com/Perl/perl5/issues/15510> [GH #15512]
+           <https://github.com/Perl/perl5/issues/15512>
+
+       •   The parser could sometimes crash if a bareword came after
+           "evalbytes".  [GH #15586]
+           <https://github.com/Perl/perl5/issues/15586>
+
+       •   Fixed a place where the regex parser was not setting the syntax error
+           correctly on a syntactically incorrect pattern.  [GH #15565]
+           <https://github.com/Perl/perl5/issues/15565>
+
+       •   A vulnerability in Perl's "sprintf" implementation has been fixed by
+           avoiding a possible memory wrap.  [GH #15970]
+           <https://github.com/Perl/perl5/issues/15970>
+
+Acknowledgements
+       Perl 5.24.3 represents approximately 2 months of development since Perl
+       5.24.2 and contains approximately 3,200 lines of changes across 120 files
+       from 23 authors.
+
+       Excluding auto-generated files, documentation and release tools, there
+       were approximately 1,600 lines of changes to 56 .pm, .t, .c and .h files.
+
+       Perl continues to flourish into its third decade thanks to a vibrant
+       community of users and developers.  The following people are known to
+       have contributed the improvements that became Perl 5.24.3:
+
+       Aaron Crane, Craig A. Berry, Dagfinn Ilmari Mannsaaker, Dan Collins,
+       Daniel Dragan, Dave Cross, David Mitchell, Eric Herman, Father
+       Chrysostomos, H.Merijn Brand, Hugo van der Sanden, James E Keenan, Jarkko
+       Hietaniemi, John SJ Anderson, Karl Williamson, Ken Brown, Lukas Mai,
+       Matthew Horsfall, Stevan Little, Steve Hay, Steven Humphrey, Tony Cook,
+       Yves Orton.
+
+       The list above is almost certainly incomplete as it is automatically
+       generated from version control history.  In particular, it does not
+       include the names of the (very much appreciated) contributors who
+       reported issues to the Perl bug tracker.
+
+       Many of the changes included in this version originated in the CPAN
+       modules included in Perl's core.  We're grateful to the entire CPAN
+       community for helping Perl to flourish.
+
+       For a more complete list of all of Perl's historical contributors, please
+       see the AUTHORS file in the Perl source distribution.
+
+Reporting Bugs
+       If you find what you think is a bug, you might check the articles
+       recently posted to the comp.lang.perl.misc newsgroup and the perl bug
+       database at <https://rt.perl.org/> .  There may also be information at
+       <http://www.perl.org/> , the Perl Home Page.
+
+       If you believe you have an unreported bug, please run the perlbug program
+       included with your release.  Be sure to trim your bug down to a tiny but
+       sufficient test case.  Your bug report, along with the output of "perl
+       -V", will be sent off to perlbug@perl.org to be analysed by the Perl
+       porting team.
+
+       If the bug you are reporting has security implications which make it
+       inappropriate to send to a publicly archived mailing list, then see
+       "SECURITY VULNERABILITY CONTACT INFORMATION" in perlsec for details of
+       how to report the issue.
+
+SEE ALSO
+       The Changes file for an explanation of how to view exhaustive details on
+       what changed.
+
+       The INSTALL file for how to build Perl.
+
+       The README file for general stuff.
+
+       The Artistic and Copying files for copyright information.
+
+
+

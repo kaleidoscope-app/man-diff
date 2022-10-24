@@ -1,0 +1,116 @@
+PERL5184DELTA(1)        Perl Programmers Reference Guide        PERL5184DELTA(1)
+
+
+
+
+NAME
+       perl5184delta - what is new for perl v5.18.4
+
+DESCRIPTION
+       This document describes differences between the 5.18.4 release and the
+       5.18.2 release.  Please note:  This document ignores perl 5.18.3, a
+       broken release which existed for a few hours only.
+
+       If you are upgrading from an earlier release such as 5.18.1, first read
+       perl5182delta, which describes differences between 5.18.1 and 5.18.2.
+
+Modules and Pragmata
+   Updated Modules and Pragmata
+       •   Digest::SHA has been upgraded from 5.84_01 to 5.84_02.
+
+       •   perl5db.pl has been upgraded from version 1.39_10 to 1.39_11.
+
+           This fixes a crash in tab completion, where available. [perl #120827]
+           Also, filehandle information is properly reset after a pager is run.
+           [perl #121456]
+
+Platform Support
+   Platform-Specific Notes
+       Win32
+           •   Introduced by [GH #12161]
+               <https://github.com/Perl/perl5/issues/12161>, a memory leak on
+               every call to "system" and backticks (" `` "), on most Win32
+               Perls starting from 5.18.0 has been fixed.  The memory leak only
+               occurred if you enabled pseudo-fork in your build of Win32 Perl,
+               and were running that build on Server 2003 R2 or newer OS.  The
+               leak does not appear on WinXP SP3. [GH #13741]
+               <https://github.com/Perl/perl5/issues/13741>
+
+Selected Bug Fixes
+       •   The debugger now properly resets filehandles as needed. [perl
+           #121456]
+
+       •   A segfault in Digest::SHA has been addressed.  [perl #121421]
+
+       •   perl can again be built with USE_64_BIT_INT, with Visual C 2003, 32
+           bit.  [perl #120925]
+
+       •   A leading { (brace) in formats is properly parsed again. [perl
+           #119973]
+
+       •   Copy the values used to perturb hash iteration when cloning an
+           interpreter.  This was fairly harmless but caused "valgrind" to
+           complain. [perl #121336]
+
+       •   In Perl v5.18 "undef *_; goto &sub" and "local *_; goto &sub" started
+           crashing.  This has been fixed. [perl #119949]
+
+Acknowledgements
+       Perl 5.18.4 represents approximately 9 months of development since Perl
+       5.18.2 and contains approximately 2,000 lines of changes across 53 files
+       from 13 authors.
+
+       Perl continues to flourish into its third decade thanks to a vibrant
+       community of users and developers. The following people are known to have
+       contributed the improvements that became Perl 5.18.4:
+
+       Daniel Dragan, David Mitchell, Doug Bell, Father Chrysostomos, Hiroo
+       Hayashi, James E Keenan, Karl Williamson, Mark Shelor, Ricardo Signes,
+       Shlomi Fish, Smylers, Steve Hay, Tony Cook.
+
+       The list above is almost certainly incomplete as it is automatically
+       generated from version control history. In particular, it does not
+       include the names of the (very much appreciated) contributors who
+       reported issues to the Perl bug tracker.
+
+       Many of the changes included in this version originated in the CPAN
+       modules included in Perl's core. We're grateful to the entire CPAN
+       community for helping Perl to flourish.
+
+       For a more complete list of all of Perl's historical contributors, please
+       see the AUTHORS file in the Perl source distribution.
+
+Reporting Bugs
+       If you find what you think is a bug, you might check the articles
+       recently posted to the comp.lang.perl.misc newsgroup and the perl bug
+       database at http://rt.perl.org/perlbug/ .  There may also be information
+       at http://www.perl.org/ , the Perl Home Page.
+
+       If you believe you have an unreported bug, please run the perlbug program
+       included with your release.  Be sure to trim your bug down to a tiny but
+       sufficient test case.  Your bug report, along with the output of "perl
+       -V", will be sent off to perlbug@perl.org to be analysed by the Perl
+       porting team.
+
+       If the bug you are reporting has security implications, which make it
+       inappropriate to send to a publicly archived mailing list, then please
+       send it to perl5-security-report@perl.org.  This points to a closed
+       subscription unarchived mailing list, which includes all the core
+       committers, who will be able to help assess the impact of issues, figure
+       out a resolution, and help co-ordinate the release of patches to mitigate
+       or fix the problem across all platforms on which Perl is supported.
+       Please only use this address for security issues in the Perl core, not
+       for modules independently distributed on CPAN.
+
+SEE ALSO
+       The Changes file for an explanation of how to view exhaustive details on
+       what changed.
+
+       The INSTALL file for how to build Perl.
+
+       The README file for general stuff.
+
+       The Artistic and Copying files for copyright information.
+
+
+
