@@ -41,6 +41,11 @@ Or quickly lookup a single man page:
 
 ## Changelog
 
+Jan 12, 2023:
+* Added macOS 13.1:  
+  ```git difftool changeset/macOS13.0..changeset/macOS13.1```
+* No changes in macOS 13.0.1
+
 Oct 24, 2022:
 
 * Added macOS 13.0 which includes 611 changed files of which 331 are perl related version changes:
