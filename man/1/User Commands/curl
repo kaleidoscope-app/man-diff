@@ -380,21 +380,24 @@ OPTIONS
               certificate must be in PKCS#12 format if using Secure Transport,
               or PEM format if using any other engine. If the optional password
               is not specified, it will be queried for on the terminal. Note
-              that this option assumes a "certificate" file that is the private
-              key and the client certificate concatenated! See --cert and --key
+              that this option assumes a certificate file that is the private
+              key and the client certificate concatenated. See --cert and --key
               to specify them independently.
+
+              In the <certificate> portion of the argument, you must escape the
+              character ":" as "\:" so that it is not recognized as the password
+              delimiter. Similarly, you must escape the character "\" as "\\" so
+              that it is not recognized as an escape character.
 
               If curl is built against the NSS SSL library then this option can
               tell curl the nickname of the certificate to use within the NSS
               database defined by the environment variable SSL_DIR (or by
               default /etc/pki/nssdb). If the NSS PEM PKCS#11 module
-              (libnsspem.so) is available then PEM files may be loaded. If you
-              want to use a file from the current directory, please precede it
-              with "./" prefix, in order to avoid confusion with a nickname. If
-              the nickname contains ":", it needs to be preceded by "\" so that
-              it is not recognized as password delimiter. If the nickname
-              contains "\", it needs to be escaped as "\\" so that it is not
-              recognized as an escape character.
+              (libnsspem.so) is available then PEM files may be loaded.
+
+              If you provide a path relative to the current directory, you must
+              prefix the path with "./" in order to avoid confusion with an NSS
+              database nickname.
 
               If curl is built against OpenSSL library, and the engine pkcs11 is
               available, then a PKCS#11 URI (RFC 7512) can be used to specify a
@@ -1043,6 +1046,9 @@ OPTIONS
               certificate verification settings are not inherited and can be
               controlled separately via --doh-insecure and --doh-cert-status.
 
+              This option is unset if an empty string "" is used as the URL.
+              (Added in 7.85.0)
+
               If this option is used several times, the last one will be used.
 
               Example:
@@ -1171,7 +1177,8 @@ OPTIONS
               Example:
                curl --fail-with-body https://example.com
 
-              See also -f, --fail. Added in 7.76.0.
+              See also -f, --fail. This option is mutually exclusive to -f,
+              --fail. Added in 7.76.0.
 
        -f, --fail
               (HTTP) Fail fast with no output at all on server errors. This is
@@ -1188,7 +1195,8 @@ OPTIONS
               Example:
                curl --fail https://example.com
 
-              See also --fail-with-body.
+              See also --fail-with-body. This option is mutually exclusive to
+              --fail-with-body.
 
        --false-start
               (TLS) Tells curl to use false start during the TLS handshake.
@@ -1209,7 +1217,7 @@ OPTIONS
               files using backslash-escaping instead of percent-encoding.
 
               Example:
-               curl --form-escape --form 'field\name=curl' 'file=@load"this' https://example.com
+               curl --form-escape -F 'field\name=curl' -F 'file=@load"this' https://example.com
 
               See also -F, --form. Added in 7.81.0.
 
@@ -1855,8 +1863,8 @@ OPTIONS
 
               For SFTP and SCP, this option makes curl skip the known_hosts
               verification.  known_hosts is a file normally stored in the user's
-              home directory in the .ssh subdirectory, which contains host names
-              and their public keys.
+              home directory in the ".ssh" subdirectory, which contains host
+              names and their public keys.
 
               WARNING: using this option makes the transfer insecure.
 
@@ -2344,7 +2352,7 @@ OPTIONS
 
                machine host.domain.com
                login myself
-               password secret"
+               password secret
 
               Example:
                curl --netrc https://example.com
@@ -5135,8 +5143,6 @@ EXIT CODES
 
        49     Malformed telnet option.
 
-       51     The peer's SSL certificate or SSH MD5 fingerprint was not OK.
-
        52     The server did not reply anything, which here is considered an
               error.
 
@@ -5156,8 +5162,6 @@ EXIT CODES
               certificates.
 
        61     Unrecognized transfer encoding.
-
-       62     Invalid LDAP URL.
 
        63     Maximum file size exceeded.
 
@@ -5183,10 +5187,6 @@ EXIT CODES
        73     File already exists (TFTP).
 
        74     No such user (TFTP).
-
-       75     Character conversion failed.
-
-       76     Character conversion functions required.
 
        77     Problem reading the SSL CA cert (path? access rights?).
 

@@ -4,17 +4,18 @@ NAME
      diff – differential file and directory comparator
 
 SYNOPSIS
-     diff [-aBbdipTtw] [-c | -e | -f | -n | -q | -u | -y] [--brief]
-          [--color=when] [--changed-group-format GFMT] [--ed] [--expand-tabs]
-          [--forward-ed] [--ignore-all-space] [--ignore-case]
-          [--ignore-space-change] [--initial-tab] [--minimal]
-          [--no-ignore-file-name-case] [--normal] [--rcs] [--show-c-function]
-          [--starting-file] [--speed-large-files] [--strip-trailing-cr]
-          [--tabsize number] [--text] [--unified]
+     diff [-aBbdipTtw] [-c | -e | -f | -n | -q | -u | -y]
+          [-A algo | --algorithm algo] [--brief] [--color=when]
+          [--changed-group-format GFMT] [--ed] [--expand-tabs] [--forward-ed]
+          [--ignore-all-space] [--ignore-case] [--ignore-space-change]
+          [--initial-tab] [--minimal] [--no-ignore-file-name-case] [--normal]
+          [--rcs] [--show-c-function] [--starting-file] [--speed-large-files]
+          [--strip-trailing-cr] [--tabsize number] [--text] [--unified]
           [-I pattern | --ignore-matching-lines pattern]
           [-F pattern | --show-function-line pattern] [-L label | --label label]
           file1 file2
-     diff [-aBbdilpTtw] [-I pattern | --ignore-matching-lines pattern]
+     diff [-aBbdilpTtw] [-A algo | --algorithm algo]
+          [-I pattern | --ignore-matching-lines pattern]
           [-F pattern | --show-function-line pattern] [-L label | --label label]
           [--brief] [--color=when] [--changed-group-format GFMT] [--ed]
           [--expand-tabs] [--forward-ed] [--ignore-all-space] [--ignore-case]
@@ -23,7 +24,8 @@ SYNOPSIS
           [--show-c-function] [--speed-large-files] [--starting-file]
           [--strip-trailing-cr] [--tabsize number] [--text]
           -C number | -context number file1 file2
-     diff [-aBbdiltw] [-I pattern | --ignore-matching-lines pattern] [--brief]
+     diff [-aBbdiltw] [-A algo | --algorithm algo]
+          [-I pattern | --ignore-matching-lines pattern] [--brief]
           [--color=when] [--changed-group-format GFMT] [--ed] [--expand-tabs]
           [--forward-ed] [--ignore-all-space] [--ignore-case]
           [--ignore-space-change] [--initial-tab] [--minimal]
@@ -31,7 +33,8 @@ SYNOPSIS
           [--show-c-function] [--speed-large-files] [--starting-file]
           [--strip-trailing-cr] [--tabsize number] [--text]
           -D string | --ifdef string file1 file2
-     diff [-aBbdilpTtw] [-I pattern | --ignore-matching-lines pattern]
+     diff [-aBbdilpTtw] [-A algo | --algorithm algo]
+          [-I pattern | --ignore-matching-lines pattern]
           [-F pattern | --show-function-line pattern] [-L label | --label label]
           [--brief] [--color=when] [--changed-group-format GFMT] [--ed]
           [--expand-tabs] [--forward-ed] [--ignore-all-space] [--ignore-case]
@@ -40,9 +43,10 @@ SYNOPSIS
           [--show-c-function] [--speed-large-files] [--starting-file]
           [--strip-trailing-cr] [--tabsize number] [--text]
           -U number | --unified number file1 file2
-     diff [-aBbdilNPprsTtw] [-c | -e | -f | -n | -q | -u] [--brief]
-          [--color=when] [--changed-group-format GFMT] [--context] [--ed]
-          [--expand-tabs] [--forward-ed] [--ignore-all-space] [--ignore-case]
+     diff [-aBbdilNPprsTtw] [-c | -e | -f | -n | -q | -u]
+          [-A algo | --algorithm algo] [--brief] [--color=when]
+          [--changed-group-format GFMT] [--context] [--ed] [--expand-tabs]
+          [--forward-ed] [--ignore-all-space] [--ignore-case]
           [--ignore-space-change] [--initial-tab] [--minimal] [--new-file]
           [--no-ignore-file-name-case] [--normal] [--paginate] [--rcs]
           [--recursive] [--report-identical-files] [--show-c-function]
@@ -131,6 +135,28 @@ DESCRIPTION
                            line.
 
      Comparison options:
+
+     -A algo, -algorithm algo
+             Configure the algorithm used when comparing files.  diff supports 3
+             algorithms:
+
+             myers   Myers diff algorithm performs a O(ND) comparison between
+                     the two files.  An optimisation is present when worst case
+                     files are detected it causes the Myers algorithm to bails
+                     out and produces correct, but non-optimal diff output.
+             patience
+                     The patience variant of the Myers algorithm, this variant
+                     attempts to create more aesthetically pleasing diff output
+                     by logically grouping lines.
+             stone   The Stone algorithm looks for the longest common
+                     subsequence between compared files.  Stone encounters worst
+                     case performance when there are long common subsequences.
+                     In large files this can lead to a significant performance
+                     impact.  The Stone algorithm is maintained for
+                     compatibility.
+             Diff defaults the algorithm to Myers diff, but will fall back to
+             the Stone algorithm if the input or output options are not
+             supported by libdiff.
 
      -a --text
              Treat all files as ASCII text.  Normally diff will simply print
@@ -370,8 +396,11 @@ STANDARDS
      The diff utility is compliant with the IEEE Std 1003.1-2008 (“POSIX.1”)
      specification.
 
-     The flags [-aDdIiLlNnPpqSsTtwXxy] are extensions to that specification.
+     The flags [-AaDdIiLlNnPpqSsTtwXxy] are extensions to that specification.
 
 HISTORY
      A diff command appeared in Version 6 AT&T UNIX.
+
+     libdiff was imported from the Game of Trees version control system and
+     default algorithm was changed to Myers for FreeBSD 14.
 
