@@ -12,8 +12,8 @@ DESCRIPTION
        curl is a tool for transferring data from or to a server. It supports
        these protocols: DICT, FILE, FTP, FTPS, GOPHER, GOPHERS, HTTP, HTTPS,
        IMAP, IMAPS, LDAP, LDAPS, MQTT, POP3, POP3S, RTMP, RTMPS, RTSP, SCP,
-       SFTP, SMB, SMBS, SMTP, SMTPS, TELNET or TFTP. The command is designed to
-       work without user interaction.
+       SFTP, SMB, SMBS, SMTP, SMTPS, TELNET, TFTP, WS and WSS. The command is
+       designed to work without user interaction.
 
        curl offers a busload of useful tricks like proxy support, user
        authentication, FTP upload, HTTP post, SSL connections, cookies, file
@@ -197,6 +197,9 @@ OPTIONS
               socket prefixed with '@', however the <path> argument should not
               have this leading character.
 
+              If --abstract-unix-socket is provided several times, the last set
+              value will be used.
+
               Example:
                curl --abstract-unix-socket socketpath https://example.com
 
@@ -213,6 +216,8 @@ OPTIONS
 
               If this option is used several times, curl will load contents from
               all the files but the last one will be used for saving.
+
+              --alt-svc can be used several times in a command line
 
               Example:
                curl --alt-svc svc.txt https://example.com
@@ -234,6 +239,8 @@ OPTIONS
 
               Used together with -u, --user.
 
+              Providing --anyauth multiple times has no extra effect.
+
               Example:
                curl --anyauth --user me:pwd https://example.com
 
@@ -244,6 +251,9 @@ OPTIONS
               target file instead of overwriting it. If the remote file does not
               exist, it will be created. Note that this flag is ignored by some
               SFTP servers (including OpenSSH).
+
+              Providing --append multiple times has no extra effect.  Disable it
+              again with --no-append.
 
               Example:
                curl --upload-file local --append ftp://example.com/
@@ -264,6 +274,9 @@ OPTIONS
               provided by a cloud (service-code) when the service name is
               omitted from the endpoint.
 
+              If --aws-sigv4 is provided several times, the last set value will
+              be used.
+
               Example:
                curl --aws-sigv4 "aws:amz:east-2:es" --user "key:secret" https://example.com
 
@@ -277,6 +290,8 @@ OPTIONS
               --negotiate).
 
               Used together with -u, --user.
+
+              Providing --basic multiple times has no extra effect.
 
               Example:
                curl -u name:password --basic https://example.com
@@ -316,7 +331,8 @@ OPTIONS
               recommended to use Windows' store of root certificates (the
               default for Schannel).
 
-              If this option is used several times, the last one will be used.
+              If --cacert is provided several times, the last set value will be
+              used.
 
               Example:
                curl --cacert CA-file.txt https://example.com
@@ -333,8 +349,10 @@ OPTIONS
               SSL-connections much more efficiently than using --cacert if the
               --cacert file contains many CA certificates.
 
-              If this option is set, the default capath value will be ignored,
-              and if it is used several times, the last one will be used.
+              If this option is set, the default capath value will be ignored.
+
+              If --capath is provided several times, the last set value will be
+              used.
 
               Example:
                curl --capath /local/directory https://example.com
@@ -354,6 +372,9 @@ OPTIONS
               This is currently only implemented in the OpenSSL, GnuTLS and NSS
               backends.
 
+              Providing --cert-status multiple times has no extra effect.
+              Disable it again with --no-cert-status.
+
               Example:
                curl --cert-status https://example.com
 
@@ -367,7 +388,8 @@ OPTIONS
               however for Secure Transport and Schannel it is P12. If --cert is
               a pkcs11: URI then ENG is the default type.
 
-              If this option is used several times, the last one will be used.
+              If --cert-type is provided several times, the last set value will
+              be used.
 
               Example:
                curl --cert-type PEM --cert file https://example.com
@@ -428,7 +450,8 @@ OPTIONS
               CurrentUserGroupPolicy, LocalMachineGroupPolicy,
               LocalMachineEnterprise.
 
-              If this option is used several times, the last one will be used.
+              If --cert is provided several times, the last set value will be
+              used.
 
               Example:
                curl --cert certfile --key keyfile https://example.com
@@ -442,7 +465,8 @@ OPTIONS
 
                https://curl.se/docs/ssl-ciphers.html
 
-              If this option is used several times, the last one will be used.
+              If --ciphers is provided several times, the last set value will be
+              used.
 
               Example:
                curl --ciphers ECDHE-ECDSA-AES256-CCM8 https://example.com
@@ -452,6 +476,9 @@ OPTIONS
        --compressed-ssh
               (SCP SFTP) Enables built-in SSH compression.  This is a request,
               not an order; the server may or may not do it.
+
+              Providing --compressed-ssh multiple times has no extra effect.
+              Disable it again with --no-compressed-ssh.
 
               Example:
                curl --compressed-ssh sftp://example.com/
@@ -466,6 +493,9 @@ OPTIONS
               If this option is used and the server sends an unsupported
               encoding, curl will report an error. This is a request, not an
               order; the server may or may not deliver data compressed.
+
+              Providing --compressed multiple times has no extra effect.
+              Disable it again with --no-compressed.
 
               Example:
                curl --compressed https://example.com
@@ -543,8 +573,7 @@ OPTIONS
               _curlrc, preferring the former. Older versions on Windows checked
               for _curlrc only.
 
-              This option can be used multiple times to load multiple config
-              files.
+              --config can be used several times in a command line
 
               Example:
                curl --config file.txt https://example.com
@@ -557,7 +586,8 @@ OPTIONS
               the given period it will continue - if not it will exit.  Since
               version 7.32.0, this option accepts decimal values.
 
-              If this option is used several times, the last one will be used.
+              If --connect-timeout is provided several times, the last set value
+              will be used.
 
               Examples:
                curl --connect-timeout 20 https://example.com
@@ -582,7 +612,7 @@ OPTIONS
               numerical such as "127.0.0.1" or the full host name such as
               "example.org".
 
-              This option can be used many times to add many connect rules.
+              --connect-to can be used several times in a command line
 
               Example:
                curl --connect-to example.com:443:example.net:8443 https://example.com
@@ -600,7 +630,8 @@ OPTIONS
               resume the transfer. It then uses the given output/input files to
               figure that out.
 
-              If this option is used several times, the last one will be used.
+              If --continue-at is provided several times, the last set value
+              will be used.
 
               Examples:
                curl -C - https://example.com
@@ -625,8 +656,8 @@ OPTIONS
               --verbose will get a warning displayed, but that is the only
               visible feedback you get about this possibly lethal situation.
 
-              If this option is used several times, the last specified file name
-              will be used.
+              If --cookie-jar is provided several times, the last set value will
+              be used.
 
               Examples:
                curl -c store-here.txt https://example.com
@@ -664,11 +695,11 @@ OPTIONS
               address this, set a domain in Set-Cookie line (doing that will
               include sub-domains) or preferably: use the Netscape format.
 
-              This option can be used multiple times.
-
               Users often want to both read cookies from a file and write
               updated cookies back to a file, so using both --cookie and
               --cookie-jar in the same command line is common.
+
+              --cookie can be used several times in a command line
 
               Examples:
                curl -b cookiefile https://example.com
@@ -689,6 +720,9 @@ OPTIONS
               To create remote directories when using FTP or SFTP, try --ftp-
               create-dirs.
 
+              Providing --create-dirs multiple times has no extra effect.
+              Disable it again with --no-create-dirs.
+
               Example:
                curl --create-dirs --output local/dir/file https://example.com
 
@@ -702,7 +736,8 @@ OPTIONS
 
               This option takes an octal number as argument.
 
-              If this option is used several times, the last one will be used.
+              If --create-file-mode is provided several times, the last set
+              value will be used.
 
               Example:
                curl --create-file-mode 0777 -T localfile sftp://example.com/new
@@ -712,6 +747,9 @@ OPTIONS
        --crlf (FTP SMTP) Convert LF to CRLF in upload. Useful for MVS (OS/390).
 
               (SMTP added in 7.40.0)
+
+              Providing --crlf multiple times has no extra effect.  Disable it
+              again with --no-crlf.
 
               Example:
                curl --crlf -T file ftp://example.com/
@@ -723,7 +761,8 @@ OPTIONS
               Revocation List that may specify peer certificates that are to be
               considered revoked.
 
-              If this option is used several times, the last one will be used.
+              If --crlfile is provided several times, the last set value will be
+              used.
 
               Example:
                curl --crlfile rejects.txt https://example.com
@@ -744,6 +783,9 @@ OPTIONS
               If this option is set, the default curves list built into openssl
               will be ignored.
 
+              If --curves is provided several times, the last set value will be
+              used.
+
               Example:
                curl --curves X25519 https://example.com
 
@@ -751,6 +793,8 @@ OPTIONS
 
        --data-ascii <data>
               (HTTP) This is just an alias for -d, --data.
+
+              --data-ascii can be used several times in a command line
 
               Example:
                curl --data-ascii @file https://example.com
@@ -775,6 +819,8 @@ OPTIONS
               If this option is used several times, the ones following the first
               will append data as described in -d, --data.
 
+              --data-binary can be used several times in a command line
+
               Example:
                curl --data-binary @filename https://example.com
 
@@ -783,6 +829,8 @@ OPTIONS
        --data-raw <data>
               (HTTP) This posts data similarly to --data but without the special
               interpretation of the @ character.
+
+              --data-raw can be used several times in a command line
 
               Examples:
                curl --data-raw "hello" https://example.com
@@ -825,6 +873,8 @@ OPTIONS
                      resulting in name=urlencoded-file-content. Note that the
                      name is expected to be URL-encoded already.
 
+       --data-urlencode can be used several times in a command line
+
        Examples:
         curl --data-urlencode name=val https://example.com
         curl --data-urlencode =encodethis https://example.com
@@ -858,6 +908,8 @@ OPTIONS
               out. If you do not want the @ character to have a special
               interpretation use --data-raw instead.
 
+              --data can be used several times in a command line
+
               Examples:
                curl -d "name=curl" https://example.com
                curl -d "name=curl" -d "tool=cmdline" https://example.com
@@ -879,7 +931,8 @@ OPTIONS
 
               always Unconditionally allow the server to delegate.
 
-       If this option is used several times, the last one will be used.
+       If --delegation is provided several times, the last set value will be
+       used.
 
        Example:
         curl --delegation "none" https://example.com
@@ -892,7 +945,8 @@ OPTIONS
               over the wire in clear text. Use this in combination with the
               normal --user option to set user name and password.
 
-              If this option is used several times, only the first one is used.
+              Providing --digest multiple times has no extra effect.  Disable it
+              again with --no-digest.
 
               Example:
                curl -u name:password --digest https://example.com
@@ -919,6 +973,9 @@ OPTIONS
               switch to passive mode you need to not use --ftp-port or force it
               with --ftp-pasv.
 
+              Providing --disable-eprt multiple times has no extra effect.
+              Disable it again with --no-disable-eprt.
+
               Example:
                curl --disable-eprt ftp://example.com/
 
@@ -939,6 +996,9 @@ OPTIONS
               Disabling EPSV only changes the passive behavior. If you want to
               switch to active mode you need to use -P, --ftp-port.
 
+              Providing --disable-epsv multiple times has no extra effect.
+              Disable it again with --no-disable-epsv.
+
               Example:
                curl --disable-epsv ftp://example.com/
 
@@ -948,6 +1008,9 @@ OPTIONS
               If used as the first parameter on the command line, the curlrc
               config file will not be read and used. See the --config for
               details on the default config file search path.
+
+              Providing --disable multiple times has no extra effect.  Disable
+              it again with --no-disable.
 
               Example:
                curl -q https://example.com
@@ -959,6 +1022,9 @@ OPTIONS
               username. This is probably most useful when the URL is being
               provided at runtime or similar.
 
+              Providing --disallow-username-in-url multiple times has no extra
+              effect.  Disable it again with --no-disallow-username-in-url.
+
               Example:
                curl --disallow-username-in-url https://example.com
 
@@ -969,6 +1035,9 @@ OPTIONS
               This option is a counterpart to --interface (which does not affect
               DNS). The supplied string must be an interface name (not an
               address).
+
+              If --dns-interface is provided several times, the last set value
+              will be used.
 
               Example:
                curl --dns-interface eth0 https://example.com
@@ -982,7 +1051,8 @@ OPTIONS
               requests, so that the DNS requests originate from this address.
               The argument should be a single IPv4 address.
 
-              If this option is used several times, the last one will be used.
+              If --dns-ipv4-addr is provided several times, the last set value
+              will be used.
 
               Example:
                curl --dns-ipv4-addr 10.1.2.3 https://example.com
@@ -996,7 +1066,8 @@ OPTIONS
               requests, so that the DNS requests originate from this address.
               The argument should be a single IPv6 address.
 
-              If this option is used several times, the last one will be used.
+              If --dns-ipv6-addr is provided several times, the last set value
+              will be used.
 
               Example:
                curl --dns-ipv6-addr 2a04:4e42::561 https://example.com
@@ -1011,7 +1082,8 @@ OPTIONS
               commas. Port numbers may also optionally be given as :<port-
               number> after each IP address.
 
-              If this option is used several times, the last one will be used.
+              If --dns-servers is provided several times, the last set value
+              will be used.
 
               Example:
                curl --dns-servers 192.168.0.1,192.168.0.2 https://example.com
@@ -1023,6 +1095,9 @@ OPTIONS
        --doh-cert-status
               Same as --cert-status but used for DoH (DNS-over-HTTPS).
 
+              Providing --doh-cert-status multiple times has no extra effect.
+              Disable it again with --no-doh-cert-status.
+
               Example:
                curl --doh-cert-status --doh-url https://doh.example https://example.com
 
@@ -1030,6 +1105,9 @@ OPTIONS
 
        --doh-insecure
               Same as --insecure but used for DoH (DNS-over-HTTPS).
+
+              Providing --doh-insecure multiple times has no extra effect.
+              Disable it again with --no-doh-insecure.
 
               Example:
                curl --doh-insecure --doh-url https://doh.example https://example.com
@@ -1049,7 +1127,8 @@ OPTIONS
               This option is unset if an empty string "" is used as the URL.
               (Added in 7.85.0)
 
-              If this option is used several times, the last one will be used.
+              If --doh-url is provided several times, the last set value will be
+              used.
 
               Example:
                curl --doh-url https://doh.example https://example.com
@@ -1064,7 +1143,8 @@ OPTIONS
               When used in FTP, the FTP server response lines are considered
               being "headers" and thus are saved there.
 
-              If this option is used several times, the last one will be used.
+              If --dump-header is provided several times, the last set value
+              will be used.
 
               Example:
                curl --dump-header store.txt https://example.com
@@ -1079,6 +1159,9 @@ OPTIONS
               Specify the path name to the Entropy Gathering Daemon socket. The
               socket is used to seed the random engine for SSL connections.
 
+              If --egd-file is provided several times, the last set value will
+              be used.
+
               Example:
                curl --egd-file /random/here https://example.com
 
@@ -1089,6 +1172,9 @@ OPTIONS
               operations. Use --engine list to print a list of build-time
               supported engines. Note that not all (and possibly none) of the
               engines may be available at runtime.
+
+              If --engine is provided several times, the last set value will be
+              used.
 
               Example:
                curl --engine flavor https://example.com
@@ -1108,6 +1194,9 @@ OPTIONS
               and then use this option to compare against the saved ETag in a
               subsequent request.
 
+              If --etag-compare is provided several times, the last set value
+              will be used.
+
               Example:
                curl --etag-compare etag.txt https://example.com
 
@@ -1118,6 +1207,9 @@ OPTIONS
               ETag is a caching related header, usually returned in a response.
 
               If no ETag is sent by the server, an empty file is created.
+
+              If --etag-save is provided several times, the last set value will
+              be used.
 
               Example:
                curl --etag-save storetag.txt https://example.com
@@ -1130,6 +1222,9 @@ OPTIONS
               header in its request. By default curl will wait one second. This
               option accepts decimal values! When curl stops waiting, it will
               continue as if the response has been received.
+
+              If --expect100-timeout is provided several times, the last set
+              value will be used.
 
               Example:
                curl --expect100-timeout 2.5 -T file https://example.com
@@ -1158,6 +1253,9 @@ OPTIONS
               options, however note --fail is not global and is therefore
               contained by -:, --next.
 
+              Providing --fail-early multiple times has no extra effect.
+              Disable it again with --no-fail-early.
+
               Example:
                curl --fail-early https://example.com https://two.example
 
@@ -1173,6 +1271,9 @@ OPTIONS
 
               This is an alternative option to --fail which makes curl fail for
               the same circumstances but without saving the content.
+
+              Providing --fail-with-body multiple times has no extra effect.
+              Disable it again with --no-fail-with-body.
 
               Example:
                curl --fail-with-body https://example.com
@@ -1192,6 +1293,9 @@ OPTIONS
               successful response codes will slip through, especially when
               authentication is involved (response codes 401 and 407).
 
+              Providing --fail multiple times has no extra effect.  Disable it
+              again with --no-fail.
+
               Example:
                curl --fail https://example.com
 
@@ -1207,6 +1311,9 @@ OPTIONS
               This is currently only implemented in the NSS and Secure Transport
               (on iOS 7.0 or later, or OS X 10.9 or later) backends.
 
+              Providing --false-start multiple times has no extra effect.
+              Disable it again with --no-false-start.
+
               Example:
                curl --false-start https://example.com
 
@@ -1215,6 +1322,9 @@ OPTIONS
        --form-escape
               (HTTP) Tells curl to pass on names of multipart form fields and
               files using backslash-escaping instead of percent-encoding.
+
+              If --form-escape is provided several times, the last set value
+              will be used.
 
               Example:
                curl --form-escape -F 'field\name=curl' -F 'file=@load"this' https://example.com
@@ -1228,6 +1338,8 @@ OPTIONS
               meaning. Use this in preference to --form if there's any
               possibility that the string value may accidentally trigger the '@'
               or '<' features of -F, --form.
+
+              --form-string can be used several times in a command line
 
               Example:
                curl --form-string "data" https://example.com
@@ -1364,7 +1476,7 @@ OPTIONS
 
               See further examples and details in the MANUAL.
 
-              This option can be used multiple times.
+              --form can be used several times in a command line
 
               Example:
                curl --form "name=curl" --form "file=@loadthis" https://example.com
@@ -1378,7 +1490,8 @@ OPTIONS
               and password has been provided, this data is sent off using the
               ACCT command.
 
-              If this option is used several times, the last one will be used.
+              If --ftp-account is provided several times, the last set value
+              will be used.
 
               Example:
                curl --ftp-account "mr.robot" ftp://example.com/
@@ -1392,6 +1505,9 @@ OPTIONS
               AUTH" will tell the server to retrieve the username from the
               certificate.
 
+              If --ftp-alternative-to-user is provided several times, the last
+              set value will be used.
+
               Example:
                curl --ftp-alternative-to-user "U53r" ftp://example.com
 
@@ -1402,6 +1518,9 @@ OPTIONS
               not currently exist on the server, the standard behavior of curl
               is to fail. Using this option, curl will instead attempt to create
               missing directories.
+
+              Providing --ftp-create-dirs multiple times has no extra effect.
+              Disable it again with --no-ftp-create-dirs.
 
               Example:
                curl --ftp-create-dirs -T file ftp://example.com/remote/path/file
@@ -1429,6 +1548,9 @@ OPTIONS
                      case). This is somewhat more standards compliant than
                      'nocwd' but without the full penalty of 'multicwd'.
 
+       If --ftp-method is provided several times, the last set value will be
+       used.
+
        Examples:
         curl --ftp-method multicwd ftp://example.com/dir1/dir2/file
         curl --ftp-method nocwd ftp://example.com/dir1/dir2/file
@@ -1441,12 +1563,14 @@ OPTIONS
               internal default behavior, but using this option can be used to
               override a previous --ftp-port option.
 
-              If this option is used several times, only the first one is used.
-              Undoing an enforced passive really is not doable but you must then
-              instead enforce the correct --ftp-port again.
+              Reversing an enforced passive really is not doable but you must
+              then instead enforce the correct --ftp-port again.
 
               Passive mode means that curl will try the EPSV command first and
               then PASV, unless --disable-epsv is used.
+
+              Providing --ftp-pasv multiple times has no extra effect.  Disable
+              it again with --no-ftp-pasv.
 
               Example:
                curl --ftp-pasv ftp://example.com/
@@ -1474,9 +1598,9 @@ OPTIONS
               -      make curl pick the same IP address that is already used for
                      the control connection
 
-       If this option is used several times, the last one will be used. Disable
-       the use of PORT with --ftp-pasv. Disable the attempt to use the EPRT
-       command instead of PORT by using --disable-eprt. EPRT is really PORT++.
+       Disable the use of PORT with --ftp-pasv. Disable the attempt to use the
+       EPRT command instead of PORT by using --disable-eprt. EPRT is really
+       PORT++.
 
        You can also append ":[start]-[end]" to the right of the address, to tell
        curl what TCP port range to use. That means you specify a port range,
@@ -1484,6 +1608,8 @@ OPTIONS
        note that it increases the risk of failure since the port may not be
        available.
 
+
+       If --ftp-port is provided several times, the last set value will be used.
 
        Examples:
         curl -P - ftp:/example.com
@@ -1497,6 +1623,9 @@ OPTIONS
               Certain FTP servers, mainly drftpd, require this non-standard
               command for directory listings as well as up and downloads in PASV
               mode.
+
+              Providing --ftp-pret multiple times has no extra effect.  Disable
+              it again with --no-ftp-pret.
 
               Example:
                curl --ftp-pret ftp://example.com/
@@ -1514,6 +1643,9 @@ OPTIONS
               This option has no effect if PORT, EPRT or EPSV is used instead of
               PASV.
 
+              Providing --ftp-skip-pasv-ip multiple times has no extra effect.
+              Disable it again with --no-ftp-skip-pasv-ip.
+
               Example:
                curl --ftp-skip-pasv-ip ftp://example.com/
 
@@ -1524,6 +1656,9 @@ OPTIONS
               shutdown, but instead wait for the server to do it, and will not
               reply to the shutdown from the server. The active mode initiates
               the shutdown and waits for a reply from the server.
+
+              Providing --ftp-ssl-ccc-mode multiple times has no extra effect.
+              Disable it again with --no-ftp-ssl-ccc-mode.
 
               Example:
                curl --ftp-ssl-ccc-mode active --ftp-ssl-ccc ftps://example.com/
@@ -1536,6 +1671,9 @@ OPTIONS
               communication will be unencrypted. This allows NAT routers to
               follow the FTP transaction. The default mode is passive.
 
+              Providing --ftp-ssl-ccc multiple times has no extra effect.
+              Disable it again with --no-ftp-ssl-ccc.
+
               Example:
                curl --ftp-ssl-ccc ftps://example.com/
 
@@ -1546,6 +1684,9 @@ OPTIONS
               Allows secure authentication, but non-encrypted data transfers for
               efficiency.  Fails the transfer if the server does not support
               SSL/TLS.
+
+              Providing --ftp-ssl-control multiple times has no extra effect.
+              Disable it again with --no-ftp-ssl-control.
 
               Example:
                curl --ftp-ssl-control ftp://example.com
@@ -1561,9 +1702,8 @@ OPTIONS
               If used in combination with -I, --head, the POST data will instead
               be appended to the URL with a HEAD request.
 
-              If this option is used several times, only the first one is used.
-              This is because undoing a GET does not make sense, but you should
-              then instead enforce the alternative method you prefer.
+              Providing --get multiple times has no extra effect.  Disable it
+              again with --no-get.
 
               Examples:
                curl --get https://example.com
@@ -1578,6 +1718,9 @@ OPTIONS
               without having curl itself interpret them. Note that these letters
               are not normal legal URL contents but they should be encoded
               according to the URI standard.
+
+              Providing --globoff multiple times has no extra effect.  Disable
+              it again with --no-globoff.
 
               Example:
                curl -g "https://example.com/{[]}}}}"
@@ -1598,7 +1741,8 @@ OPTIONS
               libcurl currently defaults to 200 ms. Firefox and Chrome currently
               default to 300 ms.
 
-              If this option is used several times, the last one will be used.
+              If --happy-eyeballs-timeout-ms is provided several times, the last
+              set value will be used.
 
               Example:
                curl --happy-eyeballs-timeout-ms 500 https://example.com
@@ -1613,6 +1757,9 @@ OPTIONS
               This option is primarily useful when sending test requests to a
               service that expects this header.
 
+              Providing --haproxy-protocol multiple times has no extra effect.
+              Disable it again with --no-haproxy-protocol.
+
               Example:
                curl --haproxy-protocol https://example.com
 
@@ -1624,17 +1771,28 @@ OPTIONS
               document. When used on an FTP or FILE file, curl displays the file
               size and last modification time only.
 
+              Providing --head multiple times has no extra effect.  Disable it
+              again with --no-head.
+
               Example:
                curl -I https://example.com
 
               See also -G, --get, -v, --verbose and --trace-ascii.
 
        -H, --header <header/@file>
-              (HTTP) Extra header to include in the request when sending HTTP to
-              a server. You may specify any number of extra headers. Note that
-              if you should add a custom header that has the same name as one of
-              the internal ones curl would use, your externally set header will
-              be used instead of the internal one. This allows you to make even
+              (HTTP IMAP SMTP) Extra header to include in information sent. When
+              used within an HTTP request, it is added to the regular request
+              headers.
+
+              For an IMAP or SMTP MIME uploaded mail built with --form options,
+              it is prepended to the resulting MIME document, effectively
+              including it at the mail global level. It does not affect raw
+              uploaded mails (Added in 7.56.0).
+
+              You may specify any number of extra headers. Note that if you
+              should add a custom header that has the same name as one of the
+              internal ones curl would use, your externally set header will be
+              used instead of the internal one.  This allows you to make even
               trickier stuff than curl would normally do. You should not replace
               internally set headers without knowing perfectly well what you are
               doing. Remove an internal header by giving a replacement without
@@ -1652,6 +1810,11 @@ OPTIONS
               adds a header for each line in the input file. Using @- will make
               curl read the header file from stdin. Added in 7.55.0.
 
+              Please note that most anti-spam utilities check the presence and
+              value of several MIME mail headers: these are "From:", "To:",
+              "Date:" and "Subject:" among others and should be added with this
+              option.
+
               You need --proxy-header to send custom headers intended for an
               HTTP proxy. Added in 7.37.0.
 
@@ -1659,14 +1822,13 @@ OPTIONS
               HTTP request with a request body, will make curl send the data
               using chunked encoding.
 
-              WARNING: headers set with this option will be set in all requests
-              - even after redirects are followed, like when told with -L,
-              --location. This can lead to the header being sent to other hosts
-              than the original host, so sensitive headers should be used with
-              caution combined with following redirects.
+              WARNING: headers set with this option will be set in all HTTP
+              requests - even after redirects are followed, like when told with
+              -L, --location. This can lead to the header being sent to other
+              hosts than the original host, so sensitive headers should be used
+              with caution combined with following redirects.
 
-              This option can be used multiple times to add/replace/remove
-              multiple headers.
+              --header can be used several times in a command line
 
               Examples:
                curl -H "X-First-Name: Joe" https://example.com
@@ -1682,6 +1844,9 @@ OPTIONS
               all options available.  If the argument "category" was provided,
               curl will display all categories and their meanings.
 
+              Providing --help multiple times has no extra effect.  Disable it
+              again with --no-help.
+
               Example:
                curl --help all
 
@@ -1693,6 +1858,9 @@ OPTIONS
               public key, curl will refuse the connection with the host unless
               the md5sums match.
 
+              If --hostpubmd5 is provided several times, the last set value will
+              be used.
+
               Example:
                curl --hostpubmd5 e5c1c49020640a5ab0f2034854c321a8 sftp://example.com/
 
@@ -1702,6 +1870,9 @@ OPTIONS
               (SFTP SCP) Pass a string containing a Base64-encoded SHA256 hash
               of the remote host's public key. Curl will refuse the connection
               with the host unless the hashes match.
+
+              If --hostpubsha256 is provided several times, the last set value
+              will be used.
 
               Example:
                curl --hostpubsha256 NDVkMTQxMGQ1ODdmMjQ3MjczYjAyOTY5MmRkMjVmNDQ= sftp://example.com/
@@ -1720,6 +1891,8 @@ OPTIONS
               If this option is used several times, curl will load contents from
               all the files but the last one will be used for saving.
 
+              --hsts can be used several times in a command line
+
               Example:
                curl --hsts cache.txt https://example.com
 
@@ -1735,6 +1908,9 @@ OPTIONS
 
               Since curl 7.66.0, HTTP/0.9 is disabled by default.
 
+              Providing --http0.9 multiple times has no extra effect.  Disable
+              it again with --no-http0.9.
+
               Example:
                curl --http0.9 https://example.com
 
@@ -1743,6 +1919,8 @@ OPTIONS
        -0, --http1.0
               (HTTP) Tells curl to use HTTP version 1.0 instead of using its
               internally preferred HTTP version.
+
+              Providing --http1.0 multiple times has no extra effect.
 
               Example:
                curl --http1.0 https://example.com
@@ -1753,6 +1931,8 @@ OPTIONS
 
        --http1.1
               (HTTP) Tells curl to use HTTP version 1.1.
+
+              Providing --http1.1 multiple times has no extra effect.
 
               Example:
                curl --http1.1 https://example.com
@@ -1767,6 +1947,9 @@ OPTIONS
               server supports HTTP/2 straight away. HTTPS requests will still do
               HTTP/2 the standard way with negotiated protocol version in the
               TLS handshake.
+
+              Providing --http2-prior-knowledge multiple times has no extra
+              effect.  Disable it again with --no-http2-prior-knowledge.
 
               Example:
                curl --http2-prior-knowledge https://example.com
@@ -1789,6 +1972,8 @@ OPTIONS
               1.2 or higher even though that is required by the specification. A
               user can add this version requirement with --tlsv1.2.
 
+              Providing --http2 multiple times has no extra effect.
+
               Example:
                curl --http2 https://example.com
 
@@ -1798,7 +1983,7 @@ OPTIONS
               --http2-prior-knowledge and --http3. Added in 7.33.0.
 
        --http3
-              (HTTP) WARNING: this option is experimental. Do not use in
+              (HTTP) **WARNING**: this option is experimental. Do not use in
               production.
 
               Tells curl to use HTTP version 3 directly to the host and port
@@ -1810,6 +1995,8 @@ OPTIONS
               This option will make curl fail if a QUIC connection cannot be
               established, it cannot fall back to a lower HTTP version on its
               own.
+
+              Providing --http3 multiple times has no extra effect.
 
               Example:
                curl --http3 https://example.com
@@ -1830,6 +2017,9 @@ OPTIONS
               This option does not work for HTTP if libcurl was built to use
               hyper.
 
+              Providing --ignore-content-length multiple times has no extra
+              effect.  Disable it again with --no-ignore-content-length.
+
               Example:
                curl --ignore-content-length https://example.com
 
@@ -1841,6 +2031,9 @@ OPTIONS
               document, HTTP version and more...
 
               To view the request headers, consider the --verbose option.
+
+              Providing --include multiple times has no extra effect.  Disable
+              it again with --no-include.
 
               Example:
                curl -i https://example.com
@@ -1868,6 +2061,9 @@ OPTIONS
 
               WARNING: using this option makes the transfer insecure.
 
+              Providing --insecure multiple times has no extra effect.  Disable
+              it again with --no-insecure.
+
               Example:
                curl --insecure https://example.com
 
@@ -1880,12 +2076,13 @@ OPTIONS
 
                curl --interface eth0:1 https://www.example.com/
 
-              If this option is used several times, the last one will be used.
-
               On Linux it can be used to specify a VRF, but the binary needs to
               either have CAP_NET_RAW or to be run as root. More information
               about Linux VRF:
               https://www.kernel.org/doc/Documentation/networking/vrf.txt
+
+              If --interface is provided several times, the last set value will
+              be used.
 
               Example:
                curl --interface eth0 https://example.com
@@ -1896,6 +2093,9 @@ OPTIONS
               This option tells curl to use IPv4 addresses only, and not for
               example try IPv6.
 
+              Providing --ipv4 multiple times has no extra effect.  Disable it
+              again with --no-ipv4.
+
               Example:
                curl --ipv4 https://example.com
 
@@ -1905,6 +2105,9 @@ OPTIONS
        -6, --ipv6
               This option tells curl to use IPv6 addresses only, and not for
               example try IPv4.
+
+              Providing --ipv6 multiple times has no extra effect.  Disable it
+              again with --no-ipv6.
 
               Example:
                curl --ipv6 https://example.com
@@ -1937,6 +2140,8 @@ OPTIONS
               The headers this option sets can be overridden with --header as
               usual.
 
+              --json can be used several times in a command line
+
               Examples:
                curl --json '{ "drink": "coffe" }' https://example.com
                curl --json '{ "drink":' --json ' "coffe" }' https://example.com
@@ -1954,6 +2159,9 @@ OPTIONS
               Typical browsers always discard session cookies when they are
               closed down.
 
+              Providing --junk-session-cookies multiple times has no extra
+              effect.  Disable it again with --no-junk-session-cookies.
+
               Example:
                curl --junk-session-cookies -b cookies.txt https://example.com
 
@@ -1970,8 +2178,10 @@ OPTIONS
               dependent and is commonly 9 or 10. This option has no effect if
               --no-keepalive is used.
 
-              If this option is used several times, the last one will be used.
               If unspecified, the option defaults to 60 seconds.
+
+              If --keepalive-time is provided several times, the last set value
+              will be used.
 
               Example:
                curl --keepalive-time 20 https://example.com
@@ -1983,7 +2193,8 @@ OPTIONS
               provided private key is. DER, PEM, and ENG are supported. If not
               specified, PEM is assumed.
 
-              If this option is used several times, the last one will be used.
+              If --key-type is provided several times, the last set value will
+              be used.
 
               Example:
                curl --key-type DER --key here https://example.com
@@ -2009,7 +2220,8 @@ OPTIONS
               expect the private key to be already present in the keychain or
               PKCS#12 file containing the certificate.
 
-              If this option is used several times, the last one will be used.
+              If --key is provided several times, the last set value will be
+              used.
 
               Example:
                curl --cert certificate --key here https://example.com
@@ -2022,7 +2234,8 @@ OPTIONS
               'private'. Should you use a level that is not one of these,
               'private' will instead be used.
 
-              If this option is used several times, the last one will be used.
+              If --krb is provided several times, the last set value will be
+              used.
 
               Example:
                curl --krb clear ftp://example.com/
@@ -2038,8 +2251,8 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              If this option is used several times, the last given file name
-              will be used.
+              If --libcurl is provided several times, the last set value will be
+              used.
 
               Example:
                curl --libcurl client.c https://example.com
@@ -2065,7 +2278,8 @@ OPTIONS
               precedence and might cripple the rate-limiting slightly, to help
               keeping the speed-limit logic working.
 
-              If this option is used several times, the last one will be used.
+              If --limit-rate is provided several times, the last set value will
+              be used.
 
               Examples:
                curl --limit-rate 100K https://example.com
@@ -2094,6 +2308,9 @@ OPTIONS
               send a UIDL command instead, so the user may use the email's
               unique identifier rather than its message-id to make the request.
 
+              Providing --list-only multiple times has no extra effect.  Disable
+              it again with --no-list-only.
+
               Example:
                curl --list-only ftp://example.com/dir/
 
@@ -2106,6 +2323,9 @@ OPTIONS
               this range to something too narrow might cause unnecessary
               connection setup failures.
 
+              If --local-port is provided several times, the last set value will
+              be used.
+
               Example:
                curl --local-port 1000-3000 https://example.com
 
@@ -2117,6 +2337,9 @@ OPTIONS
               may not introduce a security breach if the site redirects you to a
               site to which you will send your authentication info (which is
               plaintext in the case of HTTP Basic authentication).
+
+              Providing --location-trusted multiple times has no extra effect.
+              Disable it again with --no-location-trusted.
 
               Example:
                curl --location-trusted -u user:password https://example.com
@@ -2148,6 +2371,9 @@ OPTIONS
               The method set with --request overrides the method curl would
               otherwise select to use.
 
+              Providing --location multiple times has no extra effect.  Disable
+              it again with --no-location.
+
               Example:
                curl -L https://example.com
 
@@ -2163,7 +2389,8 @@ OPTIONS
               options please see RFC 2384, RFC 5092 and IETF draft draft-
               earhart-url-smtp-00.txt
 
-              If this option is used several times, the last one will be used.
+              If --login-options is provided several times, the last set value
+              will be used.
 
               Example:
                curl --login-options 'AUTH=*' imap://example.com
@@ -2175,6 +2402,9 @@ OPTIONS
               authentication address (identity) of a submitted message that is
               being relayed to another server.
 
+              If --mail-auth is provided several times, the last set value will
+              be used.
+
               Example:
                curl --mail-auth user@example.come -T mail smtp://example.com/
 
@@ -2183,6 +2413,9 @@ OPTIONS
        --mail-from <address>
               (SMTP) Specify a single address that the given mail should get
               sent from.
+
+              If --mail-from is provided several times, the last set value will
+              be used.
 
               Example:
                curl --mail-from user@example.com -T mail smtp://example.com/
@@ -2202,6 +2435,9 @@ OPTIONS
               specified, curl will still abort the SMTP conversation and return
               the error received from to the last RCPT TO command.
 
+              Providing --mail-rcpt-allowfails multiple times has no extra
+              effect.  Disable it again with --no-mail-rcpt-allowfails.
+
               Example:
                curl --mail-rcpt-allowfails --mail-rcpt dest@example.com smtp://example.com
 
@@ -2220,6 +2456,8 @@ OPTIONS
               recipient should be specified using the mailing list name, such as
               "Friends" or "London-Office".  (Added in 7.34.0)
 
+              --mail-rcpt can be used several times in a command line
+
               Example:
                curl --mail-rcpt user@example.net smtp://example.com
 
@@ -2227,6 +2465,9 @@ OPTIONS
 
        -M, --manual
               Manual. Display the huge help text.
+
+              Providing --manual multiple times has no extra effect.  Disable it
+              again with --no-manual.
 
               Example:
                curl --manual
@@ -2245,7 +2486,10 @@ OPTIONS
 
               NOTE: The file size is not always known prior to download, and for
               such files this option has no effect even if the file transfer
-              ends up being larger than this given limit.  Example:
+              ends up being larger than this given limit.  If --max-filesize is
+              provided several times, the last set value will be used.
+
+              Example:
                curl --max-filesize 100K https://example.com
 
               See also --limit-rate.
@@ -2256,7 +2500,8 @@ OPTIONS
               redirects, by default, the limit is set to 50 redirects. Set this
               option to -1 to make it unlimited.
 
-              If this option is used several times, the last one will be used.
+              If --max-redirs is provided several times, the last set value will
+              be used.
 
               Example:
                curl --max-redirs 3 --location https://example.com
@@ -2275,7 +2520,8 @@ OPTIONS
               time counter is reset each time the transfer is retried. You can
               use --retry-max-time to limit the retry time.
 
-              If this option is used several times, the last one will be used.
+              If --max-time is provided several times, the last set value will
+              be used.
 
               Examples:
                curl --max-time 10 https://example.com
@@ -2287,6 +2533,9 @@ OPTIONS
               This option was previously used to specify a metalink resource.
               Metalink support has been disabled in curl since 7.78.0 for
               security reasons.
+
+              If --metalink is provided several times, the last set value will
+              be used.
 
               Example:
                curl --metalink file https://example.com
@@ -2306,6 +2555,8 @@ OPTIONS
 
               If this option is used several times, only the first one is used.
 
+              Providing --negotiate multiple times has no extra effect.
+
               Example:
                curl --negotiate -u : https://example.com
 
@@ -2314,11 +2565,12 @@ OPTIONS
        --netrc-file <filename>
               This option is similar to -n, --netrc, except that you provide the
               path (absolute or relative) to the netrc file that curl should
-              use. You can only specify one netrc file per invocation. If
-              several --netrc-file options are provided, the last one will be
-              used.
+              use. You can only specify one netrc file per invocation.
 
               It will abide by --netrc-optional if specified.
+
+              If --netrc-file is provided several times, the last set value will
+              be used.
 
               Example:
                curl --netrc-file netrc https://example.com
@@ -2329,6 +2581,9 @@ OPTIONS
        --netrc-optional
               Similar to -n, --netrc, but this option makes the .netrc usage
               optional and not mandatory as the --netrc option does.
+
+              Providing --netrc-optional multiple times has no extra effect.
+              Disable it again with --no-netrc-optional.
 
               Example:
                curl --netrc-optional https://example.com
@@ -2354,6 +2609,9 @@ OPTIONS
                login myself
                password secret
 
+              Providing --netrc multiple times has no extra effect.  Disable it
+              again with --no-netrc.
+
               Example:
                curl --netrc https://example.com
 
@@ -2375,6 +2633,8 @@ OPTIONS
 
                curl www1.example.com --next -d postthis www2.example.com
 
+              --next can be used several times in a command line
+
               Examples:
                curl https://example.com --next -d postthis www2.example.com
                curl -I https://example.com --next https://example.net/
@@ -2386,6 +2646,9 @@ OPTIONS
               if libcurl was built with an SSL library that supports ALPN. ALPN
               is used by a libcurl that supports HTTP/2 to negotiate HTTP/2
               support with the server during https sessions.
+
+              Providing --no-alpn multiple times has no extra effect.  Disable
+              it again with --alpn.
 
               Example:
                curl --no-alpn https://example.com
@@ -2400,8 +2663,8 @@ OPTIONS
               necessarily exactly when the data arrives.  Using this option will
               disable that buffering.
 
-              Note that this is the negated option name documented. You can thus
-              use --buffer to enforce the buffering.
+              Providing --no-buffer multiple times has no extra effect.  Disable
+              it again with --buffer.
 
               Example:
                curl --no-buffer https://example.com
@@ -2420,6 +2683,9 @@ OPTIONS
               thus use --clobber to enforce the clobbering, even if --remote-
               header-name or -J is specified.
 
+              Providing --no-clobber multiple times has no extra effect.
+              Disable it again with --clobber.
+
               Example:
                curl --no-clobber --output local/dir/file https://example.com
 
@@ -2432,16 +2698,24 @@ OPTIONS
               Note that this is the negated option name documented. You can thus
               use --keepalive to enforce keepalive.
 
+              Providing --no-keepalive multiple times has no extra effect.
+              Disable it again with --keepalive.
+
               Example:
                curl --no-keepalive https://example.com
 
               See also --keepalive-time.
 
        --no-npn
-              (HTTPS) Disable the NPN TLS extension. NPN is enabled by default
-              if libcurl was built with an SSL library that supports NPN. NPN is
+              (HTTPS) In curl 7.86.0 and later, curl never uses NPN.
+
+              Disable the NPN TLS extension. NPN is enabled by default if
+              libcurl was built with an SSL library that supports NPN. NPN is
               used by a libcurl that supports HTTP/2 to negotiate HTTP/2 support
               with the server during https sessions.
+
+              Providing --no-npn multiple times has no extra effect.  Disable it
+              again with --npn.
 
               Example:
                curl --no-npn https://example.com
@@ -2457,6 +2731,9 @@ OPTIONS
               Note that this is the negated option name documented. You can thus
               use --progress-meter to enable the progress meter again.
 
+              Providing --no-progress-meter multiple times has no extra effect.
+              Disable it again with --progress-meter.
+
               Example:
                curl --no-progress-meter -o store https://example.com
 
@@ -2471,6 +2748,9 @@ OPTIONS
 
               Note that this is the negated option name documented. You can thus
               use --sessionid to enforce session-ID caching.
+
+              Providing --no-sessionid multiple times has no extra effect.
+              Disable it again with --sessionid.
 
               Example:
                curl --no-sessionid https://example.com
@@ -2491,6 +2771,9 @@ OPTIONS
               environment variable disabling a proxy, you can set the noproxy
               list to "" to override it.
 
+              If --noproxy is provided several times, the last set value will be
+              used.
+
               Example:
                curl --noproxy "www.example" https://example.com
 
@@ -2500,6 +2783,8 @@ OPTIONS
               (HTTP) Enables NTLM much in the style --ntlm does, but hand over
               the authentication to the separate binary ntlmauth application
               that is executed when needed.
+
+              Providing --ntlm-wb multiple times has no extra effect.
 
               Example:
                curl --ntlm-wb -u user:password https://example.com
@@ -2519,6 +2804,8 @@ OPTIONS
 
               If this option is used several times, only the first one is used.
 
+              Providing --ntlm multiple times has no extra effect.
+
               Example:
                curl --ntlm -u user:password https://example.com
 
@@ -2535,7 +2822,8 @@ OPTIONS
               The Bearer Token and user name are formatted according to RFC
               6750.
 
-              If this option is used several times, the last one will be used.
+              If --oauth2-bearer is provided several times, the last set value
+              will be used.
 
               Example:
                curl --oauth2-bearer "mF_9.B5f-4.1JqM" https://example.com
@@ -2543,7 +2831,6 @@ OPTIONS
               See also --basic, --ntlm and --digest. Added in 7.33.0.
 
        --output-dir <dir>
-
               This option specifies the directory in which files should be
               stored, when --remote-name or --output are used.
 
@@ -2553,8 +2840,8 @@ OPTIONS
               If the specified target directory does not exist, the operation
               will fail unless --create-dirs is also used.
 
-              If this option is used multiple times, the last specified
-              directory will be used.
+              If --output-dir is provided several times, the last set value will
+              be used.
 
               Example:
                curl --output-dir "tmp" -O https://example.com
@@ -2599,6 +2886,8 @@ OPTIONS
 
                 curl example.com -o nul
 
+              --output can be used several times in a command line
+
               Examples:
                curl -o file https://example.com
                curl "http://{one,two}.example.com" -o "file_#1.txt"
@@ -2617,6 +2906,9 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
+              Providing --parallel-immediate multiple times has no extra effect.
+              Disable it again with --no-parallel-immediate.
+
               Example:
                curl --parallel-immediate -Z https://example.com -o file1 https://example.com -o file2
 
@@ -2632,6 +2924,9 @@ OPTIONS
 
               The default is 50.
 
+              If --parallel-max is provided several times, the last set value
+              will be used.
+
               Example:
                curl --parallel-max 100 -Z https://example.com ftp://example.com/
 
@@ -2644,6 +2939,9 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
+              Providing --parallel multiple times has no extra effect.  Disable
+              it again with --no-parallel.
+
               Example:
                curl --parallel https://example.com -o file1 https://example.com -o file2
 
@@ -2652,7 +2950,8 @@ OPTIONS
        --pass <phrase>
               (SSH TLS) Passphrase for the private key.
 
-              If this option is used several times, the last one will be used.
+              If --pass is provided several times, the last set value will be
+              used.
 
               Example:
                curl --pass secret --key file https://example.com
@@ -2663,6 +2962,9 @@ OPTIONS
               Tell curl to not handle sequences of /../ or /./ in the given URL
               path. Normally curl will squash or merge them according to
               standards but with this option set you tell it not to do that.
+
+              Providing --path-as-is multiple times has no extra effect.
+              Disable it again with --no-path-as-is.
 
               Example:
                curl --path-as-is https://example.com/../../etc/passwd
@@ -2697,7 +2999,8 @@ OPTIONS
 
               Other SSL backends not supported.
 
-              If this option is used several times, the last one will be used.
+              If --pinnedpubkey is provided several times, the last set value
+              will be used.
 
               Examples:
                curl --pinnedpubkey keyfile https://example.com
@@ -2713,6 +3016,9 @@ OPTIONS
               may require a POST to remain a POST after such a redirection. This
               option is meaningful only when using -L, --location.
 
+              Providing --post301 multiple times has no extra effect.  Disable
+              it again with --no-post301.
+
               Example:
                curl --post301 --location -d "data" https://example.com
 
@@ -2726,6 +3032,9 @@ OPTIONS
               may require a POST to remain a POST after such a redirection. This
               option is meaningful only when using -L, --location.
 
+              Providing --post302 multiple times has no extra effect.  Disable
+              it again with --no-post302.
+
               Example:
                curl --post302 --location -d "data" https://example.com
 
@@ -2737,6 +3046,9 @@ OPTIONS
               server may require a POST to remain a POST after a 303
               redirection. This option is meaningful only when using -L,
               --location.
+
+              Providing --post303 multiple times has no extra effect.  Disable
+              it again with --no-post303.
 
               Example:
                curl --post303 --location -d "data" https://example.com
@@ -2761,7 +3073,8 @@ OPTIONS
               URL decoded by curl. This allows you to pass in special characters
               such as @ by using %40 or pass in a colon with %3a.
 
-              If this option is used several times, the last one will be used.
+              If --preproxy is provided several times, the last set value will
+              be used.
 
               Example:
                curl --preproxy socks5://proxy.example -x http://http.example https://example.com
@@ -2781,6 +3094,9 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
+              Providing --progress-bar multiple times has no extra effect.
+              Disable it again with --no-progress-bar.
+
               Example:
                curl -# -O https://example.com
 
@@ -2796,6 +3112,9 @@ OPTIONS
 
               Without this option set, curl guesses protocol based on the host
               name, see --url for details.
+
+              If --proto-default is provided several times, the last set value
+              will be used.
 
               Example:
                curl --proto-default https ftp.example.com
@@ -2814,6 +3133,9 @@ OPTIONS
               By default curl will only allow HTTP, HTTPS, FTP and FTPS on
               redirect (since 7.65.2). Specifying all or +all enables all
               protocols on redirects, which is not good for security.
+
+              If --proto-redir is provided several times, the last set value
+              will be used.
 
               Example:
                curl --proto-redir =http,https https://example.com
@@ -2846,14 +3168,17 @@ OPTIONS
               --proto =http,https
                              also only enables http and https
 
-              Unknown protocols produce a warning. This allows scripts to safely
-              rely on being able to disable potentially dangerous protocols,
-              without relying upon support for that protocol being built into
-              curl to avoid an error.
+              Unknown and disabled protocols produce a warning. This allows
+              scripts to safely rely on being able to disable potentially
+              dangerous protocols, without relying upon support for that
+              protocol being built into curl to avoid an error.
 
               This option can be used multiple times, in which case the effect
               is the same as concatenating the protocols into one instance of
               the option.
+
+              If --proto is provided several times, the last set value will be
+              used.
 
               Example:
                curl --proto =http,https,sftp https://example.com
@@ -2864,6 +3189,8 @@ OPTIONS
               Tells curl to pick a suitable authentication method when
               communicating with the given HTTP proxy. This might cause an extra
               request/response round-trip.
+
+              Providing --proxy-anyauth multiple times has no extra effect.
 
               Example:
                curl --proxy-anyauth --proxy-user user:passwd -x proxy https://example.com
@@ -2876,6 +3203,8 @@ OPTIONS
               remote host. Basic is the default authentication method curl uses
               with proxies.
 
+              Providing --proxy-basic multiple times has no extra effect.
+
               Example:
                curl --proxy-basic --proxy-user user:passwd -x proxy https://example.com
 
@@ -2883,6 +3212,9 @@ OPTIONS
 
        --proxy-cacert <file>
               Same as --cacert but used in HTTPS proxy context.
+
+              If --proxy-cacert is provided several times, the last set value
+              will be used.
 
               Example:
                curl --proxy-cacert CA-file.txt -x https://proxy https://example.com
@@ -2893,6 +3225,9 @@ OPTIONS
        --proxy-capath <dir>
               Same as --capath but used in HTTPS proxy context.
 
+              If --proxy-capath is provided several times, the last set value
+              will be used.
+
               Example:
                curl --proxy-capath /local/directory -x https://proxy https://example.com
 
@@ -2902,6 +3237,9 @@ OPTIONS
        --proxy-cert-type <type>
               Same as --cert-type but used in HTTPS proxy context.
 
+              If --proxy-cert-type is provided several times, the last set value
+              will be used.
+
               Example:
                curl --proxy-cert-type PEM --proxy-cert file -x https://proxy https://example.com
 
@@ -2909,6 +3247,9 @@ OPTIONS
 
        --proxy-cert <cert[:passwd]>
               Same as --cert but used in HTTPS proxy context.
+
+              If --proxy-cert is provided several times, the last set value will
+              be used.
 
               Example:
                curl --proxy-cert file -x https://proxy https://example.com
@@ -2918,6 +3259,9 @@ OPTIONS
        --proxy-ciphers <list>
               Same as --ciphers but used in HTTPS proxy context.
 
+              If --proxy-ciphers is provided several times, the last set value
+              will be used.
+
               Example:
                curl --proxy-ciphers ECDHE-ECDSA-AES256-CCM8 -x https://proxy https://example.com
 
@@ -2925,6 +3269,9 @@ OPTIONS
 
        --proxy-crlfile <file>
               Same as --crlfile but used in HTTPS proxy context.
+
+              If --proxy-crlfile is provided several times, the last set value
+              will be used.
 
               Example:
                curl --proxy-crlfile rejects.txt -x https://proxy https://example.com
@@ -2935,6 +3282,8 @@ OPTIONS
               Tells curl to use HTTP Digest authentication when communicating
               with the given proxy. Use --digest for enabling HTTP Digest with a
               remote host.
+
+              Providing --proxy-digest multiple times has no extra effect.
 
               Example:
                curl --proxy-digest --proxy-user user:passwd -x proxy https://example.com
@@ -2963,6 +3312,8 @@ OPTIONS
               This option can be used multiple times to add/replace/remove
               multiple headers.
 
+              --proxy-header can be used several times in a command line
+
               Examples:
                curl --proxy-header "X-First-Name: Joe" -x http://proxy https://example.com
                curl --proxy-header "User-Agent: surprise" -x http://proxy https://example.com
@@ -2973,6 +3324,9 @@ OPTIONS
        --proxy-insecure
               Same as --insecure but used in HTTPS proxy context.
 
+              Providing --proxy-insecure multiple times has no extra effect.
+              Disable it again with --no-proxy-insecure.
+
               Example:
                curl --proxy-insecure -x https://proxy https://example.com
 
@@ -2981,6 +3335,9 @@ OPTIONS
        --proxy-key-type <type>
               Same as --key-type but used in HTTPS proxy context.
 
+              If --proxy-key-type is provided several times, the last set value
+              will be used.
+
               Example:
                curl --proxy-key-type DER --proxy-key here -x https://proxy https://example.com
 
@@ -2988,6 +3345,9 @@ OPTIONS
 
        --proxy-key <key>
               Same as --key but used in HTTPS proxy context.
+
+              If --proxy-key is provided several times, the last set value will
+              be used.
 
               Example:
                curl --proxy-key here -x https://proxy https://example.com
@@ -2999,6 +3359,8 @@ OPTIONS
               communicating with the given proxy. Use --negotiate for enabling
               HTTP Negotiate (SPNEGO) with a remote host.
 
+              Providing --proxy-negotiate multiple times has no extra effect.
+
               Example:
                curl --proxy-negotiate --proxy-user user:passwd -x proxy https://example.com
 
@@ -3008,6 +3370,8 @@ OPTIONS
               Tells curl to use HTTP NTLM authentication when communicating with
               the given proxy. Use --ntlm for enabling NTLM with a remote host.
 
+              Providing --proxy-ntlm multiple times has no extra effect.
+
               Example:
                curl --proxy-ntlm --proxy-user user:passwd -x http://proxy https://example.com
 
@@ -3015,6 +3379,9 @@ OPTIONS
 
        --proxy-pass <phrase>
               Same as --pass but used in HTTPS proxy context.
+
+              If --proxy-pass is provided several times, the last set value will
+              be used.
 
               Example:
                curl --proxy-pass secret --proxy-key here -x https://proxy https://example.com
@@ -3033,7 +3400,8 @@ OPTIONS
               key provided to this option, curl will abort the connection before
               sending or receiving any data.
 
-              If this option is used several times, the last one will be used.
+              If --proxy-pinnedpubkey is provided several times, the last set
+              value will be used.
 
               Examples:
                curl --proxy-pinnedpubkey keyfile https://example.com
@@ -3045,6 +3413,9 @@ OPTIONS
               This option allows you to change the service name for proxy
               negotiation.
 
+              If --proxy-service-name is provided several times, the last set
+              value will be used.
+
               Example:
                curl --proxy-service-name "shrubbery" -x proxy https://example.com
 
@@ -3053,6 +3424,9 @@ OPTIONS
        --proxy-ssl-allow-beast
               Same as --ssl-allow-beast but used in HTTPS proxy context.
 
+              Providing --proxy-ssl-allow-beast multiple times has no extra
+              effect.  Disable it again with --no-proxy-ssl-allow-beast.
+
               Example:
                curl --proxy-ssl-allow-beast -x https://proxy https://example.com
 
@@ -3060,6 +3434,9 @@ OPTIONS
 
        --proxy-ssl-auto-client-cert
               Same as --ssl-auto-client-cert but used in HTTPS proxy context.
+
+              Providing --proxy-ssl-auto-client-cert multiple times has no extra
+              effect.  Disable it again with --no-proxy-ssl-auto-client-cert.
 
               Example:
                curl --proxy-ssl-auto-client-cert -x https://proxy https://example.com
@@ -3079,7 +3456,8 @@ OPTIONS
               you can try setting TLS 1.3 cipher suites by using the --proxy-
               ciphers option.
 
-              If this option is used several times, the last one will be used.
+              If --proxy-tls13-ciphers is provided several times, the last set
+              value will be used.
 
               Example:
                curl --proxy-tls13-ciphers TLS_AES_128_GCM_SHA256 -x proxy https://example.com
@@ -3089,6 +3467,9 @@ OPTIONS
        --proxy-tlsauthtype <type>
               Same as --tlsauthtype but used in HTTPS proxy context.
 
+              If --proxy-tlsauthtype is provided several times, the last set
+              value will be used.
+
               Example:
                curl --proxy-tlsauthtype SRP -x https://proxy https://example.com
 
@@ -3096,6 +3477,9 @@ OPTIONS
 
        --proxy-tlspassword <string>
               Same as --tlspassword but used in HTTPS proxy context.
+
+              If --proxy-tlspassword is provided several times, the last set
+              value will be used.
 
               Example:
                curl --proxy-tlspassword passwd -x https://proxy https://example.com
@@ -3105,6 +3489,9 @@ OPTIONS
        --proxy-tlsuser <name>
               Same as --tlsuser but used in HTTPS proxy context.
 
+              If --proxy-tlsuser is provided several times, the last set value
+              will be used.
+
               Example:
                curl --proxy-tlsuser smith -x https://proxy https://example.com
 
@@ -3112,6 +3499,8 @@ OPTIONS
 
        --proxy-tlsv1
               Same as --tlsv1 but used in HTTPS proxy context.
+
+              Providing --proxy-tlsv1 multiple times has no extra effect.
 
               Example:
                curl --proxy-tlsv1 -x https://proxy https://example.com
@@ -3134,7 +3523,8 @@ OPTIONS
               Such sensitive data should be retrieved from a file instead or
               similar and never used in clear text in a command line.
 
-              If this option is used several times, the last one will be used.
+              If --proxy-user is provided several times, the last set value will
+              be used.
 
               Example:
                curl --proxy-user name:pwd -x proxy https://example.com
@@ -3181,7 +3571,8 @@ OPTIONS
               environment variables, including the protocol prefix (http://) and
               the embedded user + password.
 
-              If this option is used several times, the last one will be used.
+              If --proxy is provided several times, the last set value will be
+              used.
 
               Example:
                curl --proxy http://proxy.example https://example.com
@@ -3195,6 +3586,8 @@ OPTIONS
               The only difference between this and the HTTP proxy option -x,
               --proxy, is that attempts to use CONNECT through the proxy will
               specify an HTTP 1.0 protocol instead of the default HTTP 1.1.
+
+              Providing --proxy1.0 multiple times has no extra effect.
 
               Example:
                curl --proxy1.0 -x http://proxy https://example.com
@@ -3211,6 +3604,9 @@ OPTIONS
               To suppress proxy CONNECT response headers when curl is set to
               output headers use --suppress-connect-headers.
 
+              Providing --proxytunnel multiple times has no extra effect.
+              Disable it again with --no-proxytunnel.
+
               Example:
                curl --proxytunnel -x http://proxy https://example.com
 
@@ -3220,13 +3616,14 @@ OPTIONS
               (SFTP SCP) Public key file name. Allows you to provide your public
               key in this separate file.
 
-              If this option is used several times, the last one will be used.
-
               (As of 7.39.0, curl attempts to automatically extract the public
               key from the private key file, so passing this option is generally
               not required. Note that this public key extraction requires
               libcurl to be linked against a copy of libssh2 1.2.8 or higher
               that is itself linked against OpenSSL.)
+
+              If --pubkey is provided several times, the last set value will be
+              used.
 
               Example:
                curl --pubkey file.pub sftp://example.com/
@@ -3318,6 +3715,8 @@ OPTIONS
               symlink source_file target_file
                      See ln.
 
+       --quote can be used several times in a command line
+
        Example:
         curl --quote "DELE file" ftp://example.com/foo
 
@@ -3331,6 +3730,9 @@ OPTIONS
               Specify the path name to file containing what will be considered
               as random data. The data may be used to seed the random engine for
               SSL connections.
+
+              If --random-file is provided several times, the last set value
+              will be used.
 
               Example:
                curl --random-file rubbish https://example.com
@@ -3373,7 +3775,8 @@ OPTIONS
               syntax (optionally with one of the numbers omitted). FTP use
               depends on the extended FTP command SIZE.
 
-              If this option is used several times, the last one will be used.
+              If --range is provided several times, the last set value will be
+              used.
 
               Example:
                curl --range 22-44 https://example.com
@@ -3408,7 +3811,8 @@ OPTIONS
               When retrying transfers, enabled with --retry, the separate retry
               delay logic is used and not this setting.
 
-              If this option is used several times, the last one will be used.
+              If --rate is provided several times, the last set value will be
+              used.
 
               Examples:
                curl --rate 2/s https://example.com
@@ -3420,6 +3824,9 @@ OPTIONS
        --raw  (HTTP) When used, it disables all internal HTTP decoding of
               content or transfer encodings and instead makes them passed on
               unaltered, raw.
+
+              Providing --raw multiple times has no extra effect.  Disable it
+              again with --no-raw.
 
               Example:
                curl --raw https://example.com
@@ -3434,7 +3841,8 @@ OPTIONS
               Location: header. The ";auto" string can be used alone, even if
               you do not set an initial -e, --referer.
 
-              If this option is used several times, the last one will be used.
+              If --referer is provided several times, the last set value will be
+              used.
 
               Examples:
                curl --referer "https://fake.example" https://example.com
@@ -3467,6 +3875,9 @@ OPTIONS
               file that could be loaded automatically by Windows or some third
               party software.
 
+              Providing --remote-header-name multiple times has no extra effect.
+              Disable it again with --no-remote-header-name.
+
               Example:
                curl -OJ https://example.com/file
 
@@ -3477,6 +3888,9 @@ OPTIONS
               dealt with as if --remote-name were used for each one. So if you
               want to disable that for a specific URL after --remote-name-all
               has been used, you must use "-o -" or --no-remote-name.
+
+              Providing --remote-name-all multiple times has no extra effect.
+              Disable it again with --no-remote-name-all.
 
               Example:
                curl --remote-name-all ftp://example.com/file1 ftp://example.com/file2
@@ -3507,6 +3921,8 @@ OPTIONS
               You may use this option as many times as the number of URLs you
               have.
 
+              --remote-name can be used several times in a command line
+
               Example:
                curl -O https://example.com/filename
 
@@ -3517,6 +3933,9 @@ OPTIONS
               When used, this will make curl attempt to figure out the timestamp
               of the remote file, and if that is available make the local file
               get that same timestamp.
+
+              Providing --remote-time multiple times has no extra effect.
+              Disable it again with --no-remote-time.
 
               Example:
                curl --remote-time -o foo https://example.com
@@ -3531,6 +3950,9 @@ OPTIONS
 
               If the output is not a file, this option has no effect.
 
+              Providing --remove-on-error multiple times has no extra effect.
+              Disable it again with --no-remove-on-error.
+
               Example:
                curl --remove-on-error -o output https://example.com
 
@@ -3541,6 +3963,9 @@ OPTIONS
               using the path as provided in the URL. Particularly useful when
               wanting to issue HTTP requests without leading slash or other data
               that does not follow the regular URL pattern, like "OPTIONS *".
+
+              If --request-target is provided several times, the last set value
+              will be used.
 
               Example:
                curl --request-target "*" -X OPTIONS https://example.com
@@ -3582,7 +4007,8 @@ OPTIONS
               (SMTP) Specifies a custom SMTP command to use instead of HELP or
               VRFY. (Added in 7.34.0)
 
-              If this option is used several times, the last one will be used.
+              If --request is provided several times, the last set value will be
+              used.
 
               Examples:
                curl -X "DELETE" https://example.com
@@ -3628,6 +4054,8 @@ OPTIONS
               This option can be used many times to add many host names to
               resolve.
 
+              --resolve can be used several times in a command line
+
               Example:
                curl --resolve example.com:443:127.0.0.1 https://example.com
 
@@ -3662,6 +4090,9 @@ OPTIONS
               such as 404. If you want to retry on all response codes that
               indicate HTTP errors (4xx and 5xx) then combine with -f, --fail.
 
+              Providing --retry-all-errors multiple times has no extra effect.
+              Disable it again with --no-retry-all-errors.
+
               Example:
                curl --retry 5 --retry-all-errors https://example.com
 
@@ -3671,6 +4102,9 @@ OPTIONS
               In addition to the other conditions, consider ECONNREFUSED as a
               transient error too for --retry. This option is used together with
               --retry.
+
+              Providing --retry-connrefused multiple times has no extra effect.
+              Disable it again with --no-retry-connrefused.
 
               Example:
                curl --retry-connrefused --retry https://example.com
@@ -3684,7 +4118,8 @@ OPTIONS
               interesting if --retry is also used. Setting this delay to zero
               will make curl use the default backoff time.
 
-              If this option is used several times, the last one will be used.
+              If --retry-delay is provided several times, the last set value
+              will be used.
 
               Example:
                curl --retry-delay 5 --retry https://example.com
@@ -3700,7 +4135,8 @@ OPTIONS
               request's maximum time, use -m, --max-time. Set this option to
               zero to not timeout retries.
 
-              If this option is used several times, the last one will be used.
+              If --retry-max-time is provided several times, the last set value
+              will be used.
 
               Example:
                curl --retry-max-time 30 --retry 10 https://example.com
@@ -3725,7 +4161,8 @@ OPTIONS
               Since curl 7.66.0, curl will comply with the Retry-After: response
               header if one was present to know when to issue the next retry.
 
-              If this option is used several times, the last one will be used.
+              If --retry is provided several times, the last set value will be
+              used.
 
               Example:
                curl --retry 7 https://example.com
@@ -3743,6 +4180,9 @@ OPTIONS
               that the user has been granted access to, or a shared mailbox for
               example.
 
+              If --sasl-authzid is provided several times, the last set value
+              will be used.
+
               Example:
                curl --sasl-authzid zid imap://example.com/
 
@@ -3750,6 +4190,9 @@ OPTIONS
 
        --sasl-ir
               Enable initial response in SASL authentication.
+
+              Providing --sasl-ir multiple times has no extra effect.  Disable
+              it again with --no-sasl-ir.
 
               Example:
                curl --sasl-ir imap://example.com/
@@ -3762,6 +4205,9 @@ OPTIONS
               Examples: --negotiate --service-name sockd would use sockd/server-
               name.
 
+              If --service-name is provided several times, the last set value
+              will be used.
+
               Example:
                curl --service-name sockd/server https://example.com
 
@@ -3773,6 +4219,9 @@ OPTIONS
 
               This option is global and does not need to be specified for each
               use of -:, --next.
+
+              Providing --show-error multiple times has no extra effect.
+              Disable it again with --no-show-error.
 
               Example:
                curl --show-error --silent https://example.com
@@ -3787,6 +4236,9 @@ OPTIONS
 
               Use --show-error in addition to this option to disable progress
               meter but still show error messages.
+
+              Providing --silent multiple times has no extra effect.  Disable it
+              again with --no-silent.
 
               Example:
                curl -s https://example.com
@@ -3813,7 +4265,8 @@ OPTIONS
               case curl first connects to the SOCKS proxy and then connects
               (through SOCKS) to the HTTP or HTTPS proxy.
 
-              If this option is used several times, the last one will be used.
+              If --socks4 is provided several times, the last set value will be
+              used.
 
               Example:
                curl --socks4 hostname:4096 https://example.com
@@ -3839,7 +4292,8 @@ OPTIONS
               case curl first connects to the SOCKS proxy and then connects
               (through SOCKS) to the HTTP or HTTPS proxy.
 
-              If this option is used several times, the last one will be used.
+              If --socks4a is provided several times, the last set value will be
+              used.
 
               Example:
                curl --socks4a hostname:4096 https://example.com
@@ -3852,6 +4306,8 @@ OPTIONS
               enabled by default.  Use --socks5-gssapi to force GSS-API
               authentication to SOCKS5 proxies.
 
+              Providing --socks5-basic multiple times has no extra effect.
+
               Example:
                curl --socks5-basic --socks5 hostname:4096 https://example.com
 
@@ -3863,6 +4319,9 @@ OPTIONS
               protected, but the NEC reference implementation does not. The
               option --socks5-gssapi-nec allows the unprotected exchange of the
               protection mode negotiation.
+
+              Providing --socks5-gssapi-nec multiple times has no extra effect.
+              Disable it again with --no-socks5-gssapi-nec.
 
               Example:
                curl --socks5-gssapi-nec --socks5 hostname:4096 https://example.com
@@ -3878,6 +4337,9 @@ OPTIONS
               sockd/real-name would use sockd/real-name for cases where the
               proxy-name does not match the principal name.
 
+              If --socks5-gssapi-service is provided several times, the last set
+              value will be used.
+
               Example:
                curl --socks5-gssapi-service sockd --socks5 hostname:4096 https://example.com
 
@@ -3888,6 +4350,9 @@ OPTIONS
               SOCKS5 proxy.  The GSS-API authentication is enabled by default
               (if curl is compiled with GSS-API support).  Use --socks5-basic to
               force username/password authentication to SOCKS5 proxies.
+
+              Providing --socks5-gssapi multiple times has no extra effect.
+              Disable it again with --no-socks5-gssapi.
 
               Example:
                curl --socks5-gssapi --socks5 hostname:4096 https://example.com
@@ -3913,7 +4378,8 @@ OPTIONS
               case curl first connects to the SOCKS proxy and then connects
               (through SOCKS) to the HTTP or HTTPS proxy.
 
-              If this option is used several times, the last one will be used.
+              If --socks5-hostname is provided several times, the last set value
+              will be used.
 
               Example:
                curl --socks5-hostname proxy.example:7000 https://example.com
@@ -3939,10 +4405,11 @@ OPTIONS
               case curl first connects to the SOCKS proxy and then connects
               (through SOCKS) to the HTTP or HTTPS proxy.
 
-              If this option is used several times, the last one will be used.
-
               This option (as well as --socks4) does not work with IPV6, FTPS or
               LDAP.
+
+              If --socks5 is provided several times, the last set value will be
+              used.
 
               Example:
                curl --socks5 proxy.example:7000 https://example.com
@@ -3954,7 +4421,8 @@ OPTIONS
               second) for speed-time seconds it gets aborted. speed-time is set
               with --speed-time and is 30 if not set.
 
-              If this option is used several times, the last one will be used.
+              If --speed-limit is provided several times, the last set value
+              will be used.
 
               Example:
                curl --speed-limit 300 --speed-time 10 https://example.com
@@ -3971,7 +4439,8 @@ OPTIONS
               affect slow connects etc. If this is a concern for you, try the
               --connect-timeout option.
 
-              If this option is used several times, the last one will be used.
+              If --speed-time is provided several times, the last set value will
+              be used.
 
               Example:
                curl --speed-limit 300 --speed-time 10 https://example.com
@@ -3987,6 +4456,9 @@ OPTIONS
               WARNING: this option loosens the SSL security, and by using this
               flag you ask for exactly that.
 
+              Providing --ssl-allow-beast multiple times has no extra effect.
+              Disable it again with --no-ssl-allow-beast.
+
               Example:
                curl --ssl-allow-beast https://example.com
 
@@ -4001,6 +4473,9 @@ OPTIONS
               supports client authentication in the OS certificate store it
               could be a privacy violation and unexpected.
 
+              Providing --ssl-auto-client-cert multiple times has no extra
+              effect.  Disable it again with --no-ssl-auto-client-cert.
+
               Example:
                curl --ssl-auto-client-cert https://example.com
 
@@ -4010,6 +4485,9 @@ OPTIONS
               (Schannel) This option tells curl to disable certificate
               revocation checks.  WARNING: this option loosens the SSL security,
               and by using this flag you ask for exactly that.
+
+              Providing --ssl-no-revoke multiple times has no extra effect.
+              Disable it again with --no-ssl-no-revoke.
 
               Example:
                curl --ssl-no-revoke https://example.com
@@ -4021,10 +4499,13 @@ OPTIONS
               Terminates the connection if the server does not support SSL/TLS.
 
               This option is handled in LDAP since version 7.81.0. It is fully
-              supported by the openldap backend and rejected by the generic ldap
+              supported by the OpenLDAP backend and rejected by the generic ldap
               backend if explicit TLS is required.
 
               This option was formerly known as --ftp-ssl-reqd.
+
+              Providing --ssl-reqd multiple times has no extra effect.  Disable
+              it again with --no-ssl-reqd.
 
               Example:
                curl --ssl-reqd ftp://example.com
@@ -4036,18 +4517,25 @@ OPTIONS
               checks when they failed due to missing/offline distribution points
               for the revocation check lists.
 
+              Providing --ssl-revoke-best-effort multiple times has no extra
+              effect.  Disable it again with --no-ssl-revoke-best-effort.
+
               Example:
                curl --ssl-revoke-best-effort https://example.com
 
               See also --crlfile and -k, --insecure. Added in 7.70.0.
 
-       --ssl  (FTP IMAP POP3 SMTP LDAP) Try to use SSL/TLS for the connection.
-              Reverts to a non-secure connection if the server does not support
-              SSL/TLS. See also --ftp-ssl-control and --ssl-reqd for different
-              levels of encryption required.
+       --ssl  (FTP IMAP POP3 SMTP LDAP) Warning: this is considered an insecure
+              option. Consider using --ssl-reqd instead to be sure curl upgrades
+              to a secure connection.
+
+              Try to use SSL/TLS for the connection. Reverts to a non-secure
+              connection if the server does not support SSL/TLS. See also --ftp-
+              ssl-control and --ssl-reqd for different levels of encryption
+              required.
 
               This option is handled in LDAP since version 7.81.0. It is fully
-              supported by the openldap backend and ignored by the generic ldap
+              supported by the OpenLDAP backend and ignored by the generic ldap
               backend.
 
               Please note that a server may close the connection if the
@@ -4056,15 +4544,20 @@ OPTIONS
               This option was formerly known as --ftp-ssl. That option name can
               still be used but will be removed in a future version.
 
+              Providing --ssl multiple times has no extra effect.  Disable it
+              again with --no-ssl.
+
               Example:
                curl --ssl pop3://example.com/
 
-              See also -k, --insecure and --ciphers.
+              See also --ssl-reqd, -k, --insecure and --ciphers.
 
        -2, --sslv2
               (SSL) This option previously asked curl to use SSLv2, but starting
               in curl 7.77.0 this instruction is ignored. SSLv2 is widely
               considered insecure (see RFC 6176).
+
+              Providing --sslv2 multiple times has no extra effect.
 
               Example:
                curl --sslv2 https://example.com
@@ -4078,6 +4571,8 @@ OPTIONS
               (SSL) This option previously asked curl to use SSLv3, but starting
               in curl 7.77.0 this instruction is ignored. SSLv3 is widely
               considered insecure (see RFC 7568).
+
+              Providing --sslv3 multiple times has no extra effect.
 
               Example:
                curl --sslv3 https://example.com
@@ -4094,7 +4589,8 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              If this option is used several times, the last one will be used.
+              If --stderr is provided several times, the last set value will be
+              used.
 
               Example:
                curl --stderr output.txt https://example.com
@@ -4109,6 +4605,9 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
+              Providing --styled-output multiple times has no extra effect.
+              Disable it again with --no-styled-output.
+
               Example:
                curl --styled-output -I https://example.com
 
@@ -4121,6 +4620,9 @@ OPTIONS
               protocol headers in the output. It has no effect on debug options
               such as --verbose or --trace, or any statistics.
 
+              Providing --suppress-connect-headers multiple times has no extra
+              effect.  Disable it again with --no-suppress-connect-headers.
+
               Example:
                curl --suppress-connect-headers --include -x proxy https://example.com
 
@@ -4129,6 +4631,9 @@ OPTIONS
 
        --tcp-fastopen
               Enable use of TCP Fast Open (RFC7413).
+
+              Providing --tcp-fastopen multiple times has no extra effect.
+              Disable it again with --no-tcp-fastopen.
 
               Example:
                curl --tcp-fastopen https://example.com
@@ -4141,6 +4646,9 @@ OPTIONS
 
               Since 7.50.2, curl sets this option by default and you need to
               explicitly switch it off if you do not want it on.
+
+              Providing --tcp-nodelay multiple times has no extra effect.
+              Disable it again with --no-tcp-nodelay.
 
               Example:
                curl --tcp-nodelay https://example.com
@@ -4156,6 +4664,8 @@ OPTIONS
 
               NEW_ENV=<var,val> Sets an environment variable.
 
+              --telnet-option can be used several times in a command line
+
               Example:
                curl -t TTYPE=vt100 telnet://example.com/
 
@@ -4166,7 +4676,8 @@ OPTIONS
               size that curl will try to use when transferring data to or from a
               TFTP server. By default 512 bytes will be used.
 
-              If this option is used several times, the last one will be used.
+              If --tftp-blksize is provided several times, the last set value
+              will be used.
 
               Example:
                curl --tftp-blksize 1024 tftp://example.com/file
@@ -4179,6 +4690,9 @@ OPTIONS
               This option improves interop with some legacy servers that do not
               acknowledge or properly implement TFTP options. When this option
               is used --tftp-blksize is ignored.
+
+              Providing --tftp-no-options multiple times has no extra effect.
+              Disable it again with --no-tftp-no-options.
 
               Example:
                curl --tftp-no-options tftp://192.168.0.1/
@@ -4197,7 +4711,8 @@ OPTIONS
               document that is older than the given date/time, default is a
               document that is newer than the specified date/time.
 
-              If this option is used several times, the last one will be used.
+              If --time-cond is provided several times, the last set value will
+              be used.
 
               Examples:
                curl -z "Wed 01 Sep 2021 12:18:00" https://example.com
@@ -4225,6 +4740,8 @@ OPTIONS
 
               1.3    Use up to TLSv1.3.
 
+       If --tls-max is provided several times, the last set value will be used.
+
        Examples:
         curl --tls-max 1.2 https://example.com
         curl --tls-max 1.3 --tlsv1.2 https://example.com
@@ -4245,7 +4762,8 @@ OPTIONS
               you can try setting TLS 1.3 cipher suites by using the --ciphers
               option.
 
-              If this option is used several times, the last one will be used.
+              If --tls13-ciphers is provided several times, the last set value
+              will be used.
 
               Example:
                curl --tls13-ciphers TLS_AES_128_GCM_SHA256 https://example.com
@@ -4260,6 +4778,9 @@ OPTIONS
               built with TLS-SRP support, which requires OpenSSL or GnuTLS with
               TLS-SRP support.
 
+              If --tlsauthtype is provided several times, the last set value
+              will be used.
+
               Example:
                curl --tlsauthtype SRP https://example.com
 
@@ -4271,6 +4792,9 @@ OPTIONS
 
               This option does not work with TLS 1.3.
 
+              If --tlspassword is provided several times, the last set value
+              will be used.
+
               Example:
                curl --tlspassword pwd --tlsuser user https://example.com
 
@@ -4281,6 +4805,9 @@ OPTIONS
               with --tlsauthtype. Requires that --tlspassword also is set.
 
               This option does not work with TLS 1.3.
+
+              If --tlsuser is provided several times, the last set value will be
+              used.
 
               Example:
                curl --tlspassword pwd --tlsuser user https://example.com
@@ -4295,6 +4822,8 @@ OPTIONS
               TLS 1.0.  That behavior was inconsistent depending on the TLS
               library. Use --tls-max if you want to set a maximum TLS version.
 
+              Providing --tlsv1.0 multiple times has no extra effect.
+
               Example:
                curl --tlsv1.0 https://example.com
 
@@ -4308,6 +4837,8 @@ OPTIONS
               TLS 1.1.  That behavior was inconsistent depending on the TLS
               library. Use --tls-max if you want to set a maximum TLS version.
 
+              Providing --tlsv1.1 multiple times has no extra effect.
+
               Example:
                curl --tlsv1.1 https://example.com
 
@@ -4320,6 +4851,8 @@ OPTIONS
               In old versions of curl this option was documented to allow _only_
               TLS 1.2.  That behavior was inconsistent depending on the TLS
               library. Use --tls-max if you want to set a maximum TLS version.
+
+              Providing --tlsv1.2 multiple times has no extra effect.
 
               Example:
                curl --tlsv1.2 https://example.com
@@ -4335,6 +4868,8 @@ OPTIONS
 
               Note that TLS 1.3 is not supported by all TLS backends.
 
+              Providing --tlsv1.3 multiple times has no extra effect.
+
               Example:
                curl --tlsv1.3 https://example.com
 
@@ -4343,6 +4878,8 @@ OPTIONS
        -1, --tlsv1
               (SSL) Tells curl to use at least TLS version 1.x when negotiating
               with a remote TLS server. That means TLS version 1.0 or higher
+
+              Providing --tlsv1 multiple times has no extra effect.
 
               Example:
                curl --tlsv1 https://example.com
@@ -4355,6 +4892,9 @@ OPTIONS
               (HTTP) Request a compressed Transfer-Encoding response using one
               of the algorithms curl supports, and uncompress the data while
               receiving it.
+
+              Providing --tr-encoding multiple times has no extra effect.
+              Disable it again with --no-tr-encoding.
 
               Example:
                curl --tr-encoding https://example.com
@@ -4373,7 +4913,8 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              If this option is used several times, the last one will be used.
+              If --trace-ascii is provided several times, the last set value
+              will be used.
 
               Example:
                curl --trace-ascii log.txt https://example.com
@@ -4387,6 +4928,9 @@ OPTIONS
 
               This option is global and does not need to be specified for each
               use of -:, --next.
+
+              Providing --trace-time multiple times has no extra effect.
+              Disable it again with --no-trace-time.
 
               Example:
                curl --trace-time --trace-ascii output https://example.com
@@ -4402,7 +4946,8 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              If this option is used several times, the last one will be used.
+              If --trace is provided several times, the last set value will be
+              used.
 
               Example:
                curl --trace log.txt https://example.com
@@ -4413,6 +4958,9 @@ OPTIONS
        --unix-socket <path>
               (HTTP) Connect through this Unix domain socket, instead of using
               the network.
+
+              If --unix-socket is provided several times, the last set value
+              will be used.
 
               Example:
                curl --unix-socket socket-path https://example.com
@@ -4445,6 +4993,8 @@ OPTIONS
               headers and mail body formatted correctly by the user as curl will
               not transcode nor encode it further in any way.
 
+              --upload-file can be used several times in a command line
+
               Examples:
                curl -T file https://example.com
                curl -T "img[1-1000].png" ftp://ftp.example.com/
@@ -4463,11 +5013,13 @@ OPTIONS
               used. Since 7.45.0 guessing can be disabled by setting a default
               protocol, see --proto-default for details.
 
-              This option may be used any number of times. To control where this
-              URL is written, use the --output or the --remote-name options.
+              To control where this URL is written, use the --output or the
+              --remote-name options.
 
               WARNING: On Windows, particular file:// accesses can be converted
               to network accesses by the operating system. Beware!
+
+              --url can be used several times in a command line
 
               Example:
                curl --url https://example.com
@@ -4478,6 +5030,9 @@ OPTIONS
               (FTP LDAP) Enable ASCII transfer. For FTP, this can also be
               enforced by using a URL that ends with ";type=A". This option
               causes data sent to stdout to be in text mode for win32 systems.
+
+              Providing --use-ascii multiple times has no extra effect.  Disable
+              it again with --no-use-ascii.
 
               Example:
                curl -B ftp://example.com/README
@@ -4494,7 +5049,8 @@ OPTIONS
               remove the header completely from the request. If you prefer a
               blank header, you can set it to a single space (" ").
 
-              If this option is used several times, the last one will be used.
+              If --user-agent is provided several times, the last set value will
+              be used.
 
               Example:
                curl -A "Agent 007" https://example.com
@@ -4537,7 +5093,8 @@ OPTIONS
               curl to select the user name and password from your environment by
               specifying a single colon with this option: "-u :".
 
-              If this option is used several times, the last one will be used.
+              If --user is provided several times, the last set value will be
+              used.
 
               Example:
                curl -u user:secret https://example.com
@@ -4561,6 +5118,9 @@ OPTIONS
               use of -:, --next.
 
               Use --silent to make curl really quiet.
+
+              Providing --verbose multiple times has no extra effect.  Disable
+              it again with --no-verbose.
 
               Example:
                curl --verbose https://example.com
@@ -4660,6 +5220,9 @@ OPTIONS
 
               zstd   Automatic decompression (via zstd) of compressed files over
                      HTTP is supported.
+
+       Providing --version multiple times has no extra effect.  Disable it again
+       with --no-version.
 
        Example:
         curl --version
@@ -4861,7 +5424,9 @@ OPTIONS
                              meaningful if you have told curl to follow
                              location: headers.
 
-              If this option is used several times, the last one will be used.
+
+              If --write-out is provided several times, the last set value will
+              be used.
 
               Example:
                curl -w '%{http_code}\n' https://example.com
@@ -4874,6 +5439,9 @@ OPTIONS
               URL is stored in the xdg.origin.url attribute and, for HTTP, the
               content type is stored in the mime_type attribute. If the file
               system does not support extended attributes, a warning is issued.
+
+              Providing --xattr multiple times has no extra effect.  Disable it
+              again with --no-xattr.
 
               Example:
                curl --xattr -o storage https://example.com
