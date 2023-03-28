@@ -221,9 +221,9 @@ HISTORY EXPANSION
               history expansion.
 
        P      Turn a file name into an absolute path, like realpath(3).  The
-              resulting path will be absolute, have neither `.' nor `..'
-              components, and refer to the same directory entry as the input
-              filename.
+              resulting path will be absolute, will refer to the same directory
+              entry as the input filename, and none of its components will be
+              symbolic links or equal to `.' or `..'.
 
               Unlike realpath(3), non-existent trailing components are permitted
               and preserved.
@@ -408,8 +408,7 @@ PROCESS SUBSTITUTION
        Also note that the previous example can be more compactly and efficiently
        written (provided the MULTIOS option is set) as:
 
-              paste <(cut -f1 file1) <(cut -f3 file2) \
-              > >(process1) > >(process2)
+              paste <(cut -f1 file1) <(cut -f3 file2) > >(process1) > >(process2)
 
        The shell uses pipes instead of FIFOs to implement the latter two process
        substitutions in the above example.
@@ -746,6 +745,7 @@ PARAMETER EXPANSION
               braces are required for the # to be treated in this fashion.
 
        ${^spec}
+       ${^^spec}
               Turn on the RC_EXPAND_PARAM option for the evaluation of spec; if
               the `^' is doubled, turn it off.  When this option is set, array
               expansions of the form foo${xx}bar, where the parameter xx is set
@@ -762,6 +762,7 @@ PARAMETER EXPANSION
               themselves be split into different list elements.
 
        ${=spec}
+       ${==spec}
               Perform word splitting using the rules for SH_WORD_SPLIT during
               the evaluation of spec, but regardless of whether the parameter
               appears in double quotes; if the `=' is doubled, turn it off.
@@ -774,6 +775,7 @@ PARAMETER EXPANSION
               result of array assignments with the A flag.
 
        ${~spec}
+       ${~~spec}
               Turn on the GLOB_SUBST option for the evaluation of spec; if the
               `~' is doubled, turn it off.  When this option is set, the string
               resulting from the expansion will be interpreted as a pattern
@@ -814,9 +816,10 @@ PARAMETER EXPANSION
        need not be consecutive; for example, `(q%q%q)' means the same thing as
        the more readable `(%%qqq)'.  The following flags are supported:
 
-       #      Evaluate the resulting words as numeric expressions and output the
-              characters corresponding to the resulting integer.  Note that this
-              form is entirely distinct from use of the # without parentheses.
+       #      Evaluate the resulting words as numeric expressions and interpret
+              these as character codes.  Output the corresponding characters.
+              Note that this form is entirely distinct from use of the # without
+              parentheses.
 
               If the MULTIBYTE option is set and the number is greater than 127
               (i.e. not an ASCII character) it is treated as a Unicode
@@ -928,19 +931,26 @@ PARAMETER EXPANSION
 
        n      Sort decimal integers numerically; if the first differing
               characters of two test strings are not digits, sorting is lexical.
-              Integers with more initial zeroes are sorted before those with
-              fewer or none.  Hence the array `foo1 foo02 foo2 foo3 foo20 foo23'
-              is sorted into the order shown.  May be combined with `i' or `O'.
+              `+' and `-' are not treated specially; they are treated as any
+              other non-digit.  Integers with more initial zeroes are sorted
+              before those with fewer or none.  Hence the array `foo+24 foo1
+              foo02 foo2 foo3 foo20 foo23' is sorted into the order shown.  May
+              be combined with `i' or `O'.
+
+       -      As n, but a leading minus sign indicates a negative decimal
+              integer.  A leading minus sign not followed by an integer does not
+              trigger numeric sorting.  Note that `+' signs are not handled
+              specially (this may change in the future).
 
        o      Sort the resulting words in ascending order; if this appears on
               its own the sorting is lexical and case-sensitive (unless the
               locale renders it case-insensitive).  Sorting in ascending order
               is the default for other forms of sorting, so this is ignored if
-              combined with `a', `i' or `n'.
+              combined with `a', `i', `n' or `-'.
 
-       O      Sort the resulting words in descending order; `O' without `a', `i'
-              or `n' sorts in reverse lexical order.  May be combined with `a',
-              `i' or `n' to reverse the order of sorting.
+       O      Sort the resulting words in descending order; `O' without `a',
+              `i', `n' or `-' sorts in reverse lexical order.  May be combined
+              with `a', `i', `n' or `-' to reverse the order of sorting.
 
        P      This forces the value of the parameter name to be interpreted as a
               further parameter name, whose value will be used where
@@ -1015,6 +1025,10 @@ PARAMETER EXPANSION
                      for readonly parameters
 
               tag    for tagged parameters
+
+              tied   for parameters tied to another parameter in the manner of
+                     PATH (colon-separated list) and path (array), whether these
+                     are special parameters or user-defined with `typeset -T'
 
               export for exported parameters
 
@@ -1184,16 +1198,23 @@ PARAMETER EXPANSION
        Z:opts:
               As z but takes a combination of option letters between a following
               pair of delimiter characters.  With no options the effect is
-              identical to z.  (Z+c+) causes comments to be parsed as a string
-              and retained; any field in the resulting array beginning with an
-              unquoted comment character is a comment.  (Z+C+) causes comments
-              to be parsed and removed.  The rule for comments is standard:
-              anything between a word starting with the third character of
-              $HISTCHARS, default #, up to the next newline is a comment.
+              identical to z.  The following options are available:
+
+              (Z+c+) causes comments to be parsed as a string and retained; any
+                     field in the resulting array beginning with an unquoted
+                     comment character is a comment.
+
+              (Z+C+) causes comments to be parsed and removed.  The rule for
+                     comments is standard: anything between a word starting with
+                     the third character of $HISTCHARS, default #, up to the
+                     next newline is a comment.
+
               (Z+n+) causes unquoted newlines to be treated as ordinary
-              whitespace, else they are treated as if they are shell code
-              delimiters and converted to semicolons.  Options are combined
-              within the same set of delimiters, e.g. (Z+Cn+).
+                     whitespace, else they are treated as if they are shell code
+                     delimiters and converted to semicolons.
+
+              Options are combined within the same set of delimiters, e.g.
+              (Z+Cn+).
 
        _:flags:
               The underscore (_) flag is reserved for future use.  As of this
@@ -1202,7 +1223,7 @@ PARAMETER EXPANSION
               an error, and the flag itself has no effect.
 
        The following flags are meaningful with the ${...#...} or ${...%...}
-       forms.  The S and I flags may also be used with the ${.../...} forms.
+       forms.  The S, I, and * flags may also be used with the ${.../...} forms.
 
        S      With # or ##, search for the match that starts closest to the
               start of the string (a `substring match'). Of all matches at a
@@ -1264,6 +1285,9 @@ PARAMETER EXPANSION
               remove the same matches as for `#', but in reverse order, and the
               form using `%%' will remove the same matches as for `##' in
               reverse order.
+
+       *      Enable EXTENDED_GLOB for substitution via ${.../...} or
+              ${...//...}.  Note that `**' does not disable extendedglob.
 
        B      Include the index of the beginning of the match in the result.
 
@@ -1591,7 +1615,7 @@ BRACE EXPANSION
        which is treated as a single pattern but otherwise has similar effects.
 
        To combine brace expansion with array expansion, see the ${^spec} form
-       described in the section Parameter Expansion above.
+       described in the section `Parameter Expansion' above.
 
 FILENAME EXPANSION
        Each word is checked to see if it begins with an unquoted `~'.  If it
@@ -1820,7 +1844,8 @@ FILENAME GENERATION
 
               [:IDENT:]
                      The character is allowed to form part of a shell
-                     identifier, such as a parameter name
+                     identifier, such as a parameter name; this test respects
+                     the POSIX_IDENTIFIERS option
 
               [:IFS:]
                      The character is used as an input field separator, i.e. is
@@ -2425,7 +2450,9 @@ FILENAME GENERATION
        ^      negates all qualifiers following it
 
        -      toggles between making the qualifiers work on symbolic links (the
-              default) and the files they point to
+              default) and the files they point to, if any; any symbolic link
+              for whose target the `stat' system call fails (whatever the cause
+              of the failure) is treated as a file in its own right
 
        M      sets the MARK_DIRS option for the current pattern
 
@@ -2444,21 +2471,28 @@ FILENAME GENERATION
 
               Implies oN when no oc qualifier is used.
 
-       oc     specifies how the names of the files should be sorted. If c is n
-              they are sorted by name; if it is L they are sorted depending on
-              the size (length) of the files; if l they are sorted by the number
-              of links; if a, m, or c they are sorted by the time of the last
-              access, modification, or inode change respectively; if d, files in
-              subdirectories appear before those in the current directory at
-              each level of the search -- this is best combined with other
-              criteria, for example `odon' to sort on names for files within the
-              same directory; if N, no sorting is performed.  Note that a, m,
-              and c compare the age against the current time, hence the first
-              name in the list is the youngest file. Also note that the
-              modifiers ^ and - are used, so `*(^-oL)' gives a list of all files
-              sorted by file size in descending order, following any symbolic
-              links.  Unless oN is used, multiple order specifiers may occur to
-              resolve ties.
+       oc     specifies how the names of the files should be sorted. The
+              following values of c sort in the following ways:
+
+              n      By name.
+              L      By the size (length) of the files.
+              l      By number of links.
+              a      By time of last access, youngest first.
+              m      By time of last modification, youngest first.
+              c      By time of last inode change, youngest first.
+              d      By directories: files in subdirectories appear before those
+                     in the current directory at each level of the search --
+                     this is best combined with other criteria, for example
+                     `odon' to sort on names for files within the same
+                     directory.
+              N      No sorting is performed.
+              estring
+              +cmd   Sort by shell code (see below).
+
+              Note that the modifiers ^ and - are used, so `*(^-oL)' gives a
+              list of all files sorted by file size in descending order,
+              following any symbolic links.  Unless oN is used, multiple order
+              specifiers may occur to resolve ties.
 
               The default sorting is n (by name) unless the Y glob qualifier is
               used, in which case it is N (unsorted).

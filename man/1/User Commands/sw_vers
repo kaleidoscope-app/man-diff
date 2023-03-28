@@ -1,14 +1,14 @@
 SW_VERS(1)                   General Commands Manual                  SW_VERS(1)
 
 NAME
-     sw_vers – print macOS version information
+     sw_vers – print macOS system version information
 
 SYNOPSIS
      sw_vers
-     sw_vers -productName
-     sw_vers -productVersion
-     sw_vers -productVersionExtra
-     sw_vers -buildVersion
+     sw_vers --productName
+     sw_vers --productVersion
+     sw_vers --productVersionExtra
+     sw_vers --buildVersion
 
 DESCRIPTION
      sw_vers prints macOS version information for the currently running
@@ -24,8 +24,8 @@ DESCRIPTION
            BuildVersion:             22A100
 
      The ProductName property provides the name of the operating system release
-     (typically "macOS").  The ProductVersion property defines the version of
-     the operating system release (for example, "11.3" or "12.0").  The
+     (typically "macOS"). The ProductVersion property defines the version of the
+     operating system release (for example, "11.3" or "12.0"). The
      ProductVersionExtra property defines the Rapid Security Response version,
      if one is installed on the operating system (for example, "(a)" or "(b)").
      The BuildVersion property provides the specific revision of the operating
@@ -35,26 +35,26 @@ OPTIONS
      The output of sw_vers can be refined by the following options. These long-
      form options can also be passed in lowercase for convenience.
 
-     -productName     Print only the value of the ProductName property.
+     --productName          Print only the value of the ProductName property.
 
-     -productVersion  Print only the value of the ProductVersion property.
+     --productVersion       Print only the value of the ProductVersion property.
 
-     -productVersionExtra
-                      Print only the value of the ProductVersionExtra property.
+     --productVersionExtra  Print only the value of the ProductVersionExtra
+                            property.
 
-     -buildVersion    Print only the value of the BuildVersion property.
+     --buildVersion         Print only the value of the BuildVersion property.
 
 EXAMPLES
-     % sw_vers -productName
+     % sw_vers --productName
      macOS
 
-     % sw_vers -productVersion
+     % sw_vers --productVersion
      13.0
 
-     % sw_vers -productVersionExtra
+     % sw_vers --productVersionExtra
      (a)
 
-     % sw_vers -buildVersion
+     % sw_vers --buildVersion
      22A100
 
 COMPATIBILITY
@@ -63,6 +63,11 @@ COMPATIBILITY
      which did not support the macOS 11.0+ version transition. This is no longer
      supported, versions returned by sw_vers will always reflect the real system
      version.
+
+     sw_vers is backwards compatible with previous versions which expect options
+     passed with a single dash, as in:
+
+     -productName
 
 FILES
      /System/Library/CoreServices/SystemVersion.plist

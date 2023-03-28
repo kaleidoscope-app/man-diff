@@ -4,11 +4,12 @@ NAME
      date – display or set date and time
 
 SYNOPSIS
-     date [-jnRu] [-r seconds | filename] [-v [+|-]val[ymwdHMS]] ...
+     date [-nRu] [-I[FMT]] [-r filename] [-r seconds]
+          [-v[+|-]val[y|m|w|d|H|M|S]] [+output_fmt]
+     date [-jnRu] [-I[FMT]] [-v[+|-]val[y|m|w|d|H|M|S]]
+          [[[mm]dd]HH]MM[[cc]yy][.SS] [+output_fmt]
+     date [-jnRu] [-I[FMT]] [-v[+|-]val[y|m|w|d|H|M|S]] -f input_fmt new_date
           [+output_fmt]
-     date [-ju] [[[mm]dd]HH]MM[[cc]yy][.ss]
-     date [-jRu] -f input_fmt new_date [+output_fmt]
-     date [-jnu] [-I[FMT]] [-f input_fmt] [-r ...] [-v ...] [new_date]
 
 DESCRIPTION
      When invoked without arguments, the date utility displays the current date
@@ -25,16 +26,17 @@ DESCRIPTION
 
      The options are as follows:
 
-     -f      Use input_fmt as the format string to parse the new_date provided
-             rather than using the default [[[mm]dd]HH]MM[[cc]yy][.ss] format.
+     -f input_fmt
+             Use input_fmt as the format string to parse the new_date provided
+             rather than using the default [[[mm]dd]HH]MM[[cc]yy][.SS] format.
              Parsing is done using strptime(3).
 
      -I[FMT]
              Use ISO 8601 output format.  FMT may be omitted, in which case the
-             default is ‘date’.  Valid FMT values are ‘date’, ‘hours’,
-             ‘minutes’, and ‘seconds’.  The date and time is formatted to the
-             specified precision.  When FMT is ‘hours’ (or the more precise
-             ‘minutes’ or ‘seconds’), the ISO 8601 format includes the timezone.
+             default is date.  Valid FMT values are date, hours, minutes, and
+             seconds.  The date and time is formatted to the specified
+             precision.  When FMT is hours (or the more precise minutes or
+             seconds), the ISO 8601 format includes the timezone.
 
      -j      Do not try to set the date.  This allows you to use the -f flag in
              addition to the + option to convert one date format to another.
@@ -55,9 +57,12 @@ DESCRIPTION
      -r filename
              Print the date and time of the last modification of filename.
 
-     -u      Display or set the date in UTC (Coordinated Universal) time.
+     -u      Display or set the date in UTC (Coordinated Universal) time.  By
+             default date displays the time in the time zone described by
+             /etc/localtime or the TZ environment variable.
 
-     -v      Adjust (i.e., take the current date and display the result of the
+     -v [+|-]val[y|m|w|d|H|M|S]
+             Adjust (i.e., take the current date and display the result of the
              adjustment; not actually set the date) the second, minute, hour,
              month day, week day, month or year according to val.  If val is
              preceded with a plus or minus sign, the date is adjusted forwards
@@ -70,7 +75,16 @@ DESCRIPTION
              the range 0-59, minutes are in the range 0-59, hours are in the
              range 0-23, month days are in the range 1-31, week days are in the
              range 0-6 (Sun-Sat), months are in the range 1-12 (Jan-Dec) and
-             years are in the range 80-38 or 1980-2038.
+             years are in a limited range depending on the platform.
+
+             On i386, years are in the range 69-38 representing 1969-2038.  On
+             every other platform, years 0-68 are accepted and represent
+             2000-2068, and 69-99 are accepted and represent 1969-1999.  In both
+             cases, years between 100 and 1900 (both included) are accepted and
+             interpreted as relative to 1900 of the Gregorian calendar with a
+             limit of 138 on i386 and a much higher limit on every other
+             platform.  Years starting at 1901 are also accepted, and are
+             interpreted as absolute years.
 
              If val is numeric, one of either y, m, w, d, H, M or S must be used
              to specify which part of the date is to be adjusted.
@@ -137,24 +151,53 @@ DESCRIPTION
            dd      Day, a number from 1 to 31.
            HH      Hour, a number from 0 to 23.
            MM      Minutes, a number from 0 to 59.
-           ss      Seconds, a number from 0 to 60 (59 plus a potential leap
+           SS      Seconds, a number from 0 to 60 (59 plus a potential leap
                    second).
 
      Everything but the minutes is optional.
 
-     Time changes for Daylight Saving Time, standard time, leap seconds, and
-     leap years are handled automatically.
+     date understands the time zone definitions from the IANA Time Zone
+     Database, tzdata, located in /usr/share/zoneinfo.  Time changes for
+     Daylight Saving Time, standard time, leap seconds and leap years are
+     handled automatically.
+
+     There are two ways to specify the time zone:
+
+     If the file or symlink /etc/localtime exists, it is interpreted as a time
+     zone definition file, usually in the directory hierarchy
+     /usr/share/zoneinfo, which contains the time zone definitions from tzdata.
+
+     If the environment variable TZ is set, its value is interpreted as the name
+     of a time zone definition file, either an absolute path or a relative path
+     to a time zone definition in /usr/share/zoneinfo.  The TZ variable
+     overrides /etc/localtime.
+
+     If the time zone definition file is invalid, date silently reverts to UTC.
+
+     Previous versions of date included the -d (set daylight saving time flag)
+     and -t (set negative time zone offset) options, but these details are now
+     handled automatically by tzdata.  Modern offsets are positive for time
+     zones ahead of UTC and negative for time zones behind UTC, but like the
+     obsolete -t option, the tzdata files in the subdirectory
+     /usr/share/zoneinfo/Etc still use an older convention where times ahead of
+     UTC are considered negative.
 
 ENVIRONMENT
-     The following environment variables affect the execution of date:
+     The following environment variable affects the execution of date:
 
      TZ      The timezone to use when displaying dates.  The normal format is a
              pathname relative to /usr/share/zoneinfo.  For example, the command
              “TZ=America/Los_Angeles date” displays the current time in
-             California.  See environ(7) for more information.
+             California.  The variable can also specify an absolute path.  See
+             environ(7) for more information.
 
 FILES
-     /var/log/messages  record of the user setting the time
+     /etc/localtime     Time zone information file for default system time zone.
+                        May be omitted, in which case the default time zone is
+                        UTC.
+     /usr/share/zoneinfo
+                        Directory containing time zone information files.
+     /var/log/messages  Record of the user setting the time.
 
 EXIT STATUS
      The date utility exits 0 on success, 1 if unable to set the date, and 2 if
@@ -231,37 +274,44 @@ EXAMPLES
 
      Finally the command:
 
-           date -j -f "%a %b %d %T %Z %Y" "`date`" "+%s"
+           date -j -f "%a %b %d %T %Z %Y" "`LC_ALL=C date`" "+%s"
 
      can be used to parse the output from date and express it in Epoch time.
 
 DIAGNOSTICS
      It is invalid to combine the -I flag with either -R or an output format
      (“+...”) operand.  If this occurs, date prints: ‘multiple output formats
-     specified’ and exits with an error status.
+     specified’ and exits with status 1.
 
 LEGACY SYNOPSIS
      As above, except for the second line, which is:
 
-     date [-jnu] [[[[[cc]yy]mm]dd]HH]MM[.ss]
+     date [-jnu] [[[[[cc]yy]mm]dd]HH]MM[.SS]
 
      For more information about legacy mode, see compat(5).
 
 SEE ALSO
-     locale(1), gettimeofday(2), getutxent(3), strftime(3), strptime(3)
+     locale(1), gettimeofday(2), getutxent(3), strftime(3), strptime(3),
+     tzset(3)
 
      R. Gusella and S. Zatti, TSP: The Time Synchronization Protocol for UNIX
      4.3BSD.
 
+     Time Zone Database, https://iana.org/time-zones.
+
 STANDARDS
      The date utility is expected to be compatible with IEEE Std 1003.2
-     (“POSIX.2”).  The -d, -f, -I, -j, -r, -t, and -v options are all extensions
-     to the standard.
+     (“POSIX.2”).  With the exception of the -u option, all options are
+     extensions to the standard.
 
      The format selected by the -I flag is compatible with ISO 8601.
 
 HISTORY
      A date command appeared in Version 1 AT&T UNIX.
+
+     A number of options were added and then removed again, including the -d
+     (set DST flag) and -t (set negative time zone offset).  Time zones are now
+     handled by code bundled with tzdata.
 
      The -I flag was added in FreeBSD 12.0.
 

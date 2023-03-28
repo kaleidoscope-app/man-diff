@@ -229,16 +229,18 @@ COMPONENT PROPERTY LIST
      previously existing bundles to be propagated forward.
 
      BundleOverwriteAction specifies how an existing version of the bundle on
-     disk should be handled when the version in the package is installed. If you
-     specify upgrade, the bundle in the package atomically replaces any version
-     on disk; this has the effect of deleting old paths that no longer exist in
-     the new version of the bundle.  If you specify update, the bundle in the
-     package overwrites the version on disk, and any files not contained in the
-     package will be left intact; this is appropriate when you are delivering an
-     update-only package.  Another effect of update is that the package bundle
-     will not be installed at all if there is not already a version on disk;
-     this allows a package to deliver an update for an app that the user might
-     have deleted.
+     disk should be handled if the version in the package is installed. Despite
+     the name, both upgrade and update do no version checking. Conditionally
+     installing based on version is controlled entirely by
+     BundleIsVersionChecked. If you specify upgrade, the bundle in the package
+     atomically replaces any version on disk; this has the effect of deleting
+     old paths that no longer exist in the new version of the bundle.  If you
+     specify update, the bundle in the package overwrites the version on disk,
+     and any files not contained in the package will be left intact; this is
+     appropriate when you are delivering an update-only package.  Another effect
+     of update is that the package bundle will not be installed at all if there
+     is not already a version on disk; this allows a package to deliver an
+     update for an app that the user might have deleted.
 
      BundlePreInstallScriptPath and BundlePostInstallScriptPath are meaningful
      only if --scripts was used to specify a scripts directory. The paths given

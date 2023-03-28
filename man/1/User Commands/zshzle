@@ -352,7 +352,7 @@ ZLE BUILTINS
        zle -F [ -L | -w ] [ fd [ handler ] ]
        zle -I
        zle -T [ tc function | -r tc | -L ]
-       zle widget [ -n num ] [ -Nw ] [ -K keymap ] args ...
+       zle widget [ -n num ] [ -f flag ] [ -Nw ] [ -K keymap ] args ...
               The zle builtin performs a number of different actions concerning
               ZLE.
 
@@ -440,21 +440,20 @@ ZLE BUILTINS
                      zshcompwid(1).
 
               -R [ -c ] [ display-string ] [ string ... ]
-                     Redisplay the command line; this is to be called from
-                     within a user-defined widget to allow changes to become
-                     visible.  If a display-string is given and not empty, this
-                     is shown in the status line (immediately below the line
-                     being edited).
+                     Redisplay the command line.  If a display-string is given
+                     and not empty, this is shown in the status line
+                     (immediately below the line being edited).
 
                      If the optional strings are given they are listed below the
                      prompt in the same way as completion lists are printed. If
                      no strings are given but the -c option is used such a list
                      is cleared.
 
-                     Note that this option is only useful for widgets that do
-                     not exit immediately after using it because the strings
-                     displayed will be erased immediately after return from the
-                     widget.
+                     Note that immediately after returning from running widgets,
+                     the command line will be redisplayed and the strings
+                     displayed will be erased.  Therefore, this option is only
+                     useful for widgets that do not exit immediately after using
+                     it.
 
                      This command can safely be called outside user defined
                      widgets; if zle is active, the display will be refreshed,
@@ -639,7 +638,7 @@ ZLE BUILTINS
                      applied to other non-printing characters such as carriage
                      returns and newlines.
 
-              widget [ -n num ] [ -Nw ] [ -K keymap ] args ...
+              widget [ -n num ] [ -f flag ] [ -Nw ] [ -K keymap ] args ...
                      Invoke the specified widget.  This can only be done when
                      ZLE is active; normally this will be within a user-defined
                      widget.
@@ -660,6 +659,10 @@ ZLE BUILTINS
                      by the user were still active.  With the option -w, WIDGET
                      and related parameters are set to reflect the widget being
                      executed by the zle call.
+
+                     Normally, when widget returns the special parameter
+                     LASTWIDGET will point to it.  This can be inhibited by
+                     passing the option -f nolast.
 
                      Any further arguments will be passed to the widget; note
                      that as standard argument handling is performed, any
@@ -684,18 +687,18 @@ ZLE BUILTINS
                      defined widget requires an immediate beep, it should call
                      the beep widget directly.
 
-WIDGETS
+ZLE WIDGETS
        All actions in the editor are performed by `widgets'.  A widget's job is
        simply to perform some small action.  The ZLE commands that key sequences
        in keymaps are bound to are in fact widgets.  Widgets can be user-defined
        or built in.
 
-       The standard widgets built into ZLE are listed in Standard Widgets below.
-       Other built-in widgets can be defined by other modules (see
-       zshmodules(1)).  Each built-in widget has two names: its normal canonical
-       name, and the same name preceded by a `.'.  The `.' name is special: it
-       can't be rebound to a different widget.  This makes the widget available
-       even when its usual name has been redefined.
+       The standard widgets built into ZLE are listed in the section `Standard
+       Widgets' below.  Other built-in widgets can be defined by other modules
+       (see zshmodules(1)).  Each built-in widget has two names: its normal
+       canonical name, and the same name preceded by a `.'.  The `.' name is
+       special: it can't be rebound to a different widget.  This makes the
+       widget available even when its usual name has been redefined.
 
        User-defined widgets are defined using `zle -N', and implemented as shell
        functions.  When the widget is executed, the corresponding shell function
@@ -895,34 +898,52 @@ USER-DEFINED WIDGETS
               PREDISPLAY and POSTDISPLAY are possible, but note that the P flag
               is needed for character indexing to include PREDISPLAY.
 
-              Each string consists of the following parts:
+              Each string consists of the following whitespace-separated parts:
 
               •      Optionally, a `P' to signify that the start and end offset
                      that follow include any string set by the PREDISPLAY
                      special parameter; this is needed if the predisplay string
-                     itself is to be highlighted.  Whitespace may follow the
-                     `P'.
+                     itself is to be highlighted.  Whitespace between the `P'
+                     and the start offset is optional.
 
-              •      A start offset in the same units as CURSOR, terminated by
-                     whitespace.
+              •      A start offset in the same units as CURSOR.
 
-              •      An end offset in the same units as CURSOR, terminated by
-                     whitespace.
+              •      An end offset in the same units as CURSOR.
 
               •      A highlight specification in the same format as used for
                      contexts in the parameter zle_highlight, see the section
                      `Character Highlighting' below; for example, standout or
-                     fg=red,bold
+                     fg=red,bold.
+
+              •      Optionally, a string of the form `memo=token'.  The token
+                     consists of everything between the `=' and the next
+                     whitespace, comma, NUL, or the end of the string.  The
+                     token is preserved verbatim but not parsed in any way.
+
+                     Plugins may use this to identify array elements they have
+                     added: for example, a plugin might set token to its (the
+                     plugin's) name and then use `region_highlight=(
+                     ${region_highlight:#*memo=token} )' in order to remove
+                     array elements it have added.
+
+                     (This example uses the `${name:#pattern}' array-grepping
+                     syntax described in the section `Parameter Expansion' in
+                     zshexpn(1).)
 
               For example,
 
-                     region_highlight=("P0 20 bold")
+                     region_highlight=("P0 20 bold memo=foobar")
 
               specifies that the first twenty characters of the text including
               any predisplay string should be highlighted in bold.
 
               Note that the effect of region_highlight is not saved and
               disappears as soon as the line is accepted.
+
+              Note that zsh 5.8 and older do not support the `memo=token' field
+              and may misparse the third (highlight specification) field when a
+              memo is given.
+
 
               The final highlighting on the command line depends on both
               region_highlight and zle_highlight; see the section CHARACTER
@@ -1911,7 +1932,7 @@ STANDARD WIDGETS
 
        beep   Beep, unless the BEEP option is unset.
 
-       bracketed-paste
+       bracketed-paste (^[[200~) (^[[200~) (^[[200~)
               This widget is invoked when text is pasted to the terminal
               emulator. It is not intended to be bound to actual keys but
               instead to the special sequence generated by the terminal emulator

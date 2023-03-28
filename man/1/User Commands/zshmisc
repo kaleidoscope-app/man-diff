@@ -218,7 +218,9 @@ COMPLEX COMMANDS
 
        ( list )
               Execute list in a subshell.  Traps set by the trap builtin are
-              reset to their default values while executing list.
+              reset to their default values while executing list; an exception
+              is that ignored signals will continue to be ignored if the option
+              POSIXTRAPS is set.
 
        { list }
               Execute list.
@@ -280,7 +282,7 @@ COMPLEX COMMANDS
               in try-list will cause the execution of always-list, just like
               break and continue.
 
-       function word ... [ () ] [ term ] { list }
+       function [ -T ] word ... [ () ] [ term ] { list }
        word ... () [ term ] { list }
        word ... () [ term ] command
               where term is one or more newline or ;.  Define a function which
@@ -288,6 +290,12 @@ COMPLEX COMMANDS
               provided; multiple words are usually only useful for setting
               traps.  The body of the function is the list between the { and }.
               See the section `Functions'.
+
+              The options of function have the following meanings:
+
+              -T     Enable tracing for this function, as though with functions
+                     -T.  See the documentation of the -f option to the typeset
+                     builtin, in zshbuiltins(1).
 
               If the option SH_GLOB is set for compatibility with other shells,
               then whitespace may appear between the left and right parentheses
@@ -328,7 +336,8 @@ ALTERNATE FORMS FOR COMPLEX COMMANDS
        of the test will not be recognized.  For the for, repeat, case and select
        commands no such special form for the arguments is necessary, but the
        other condition (the special form of sublist or use of the SHORT_LOOPS
-       option) still applies.
+       option) still applies.  The SHORT_REPEAT option is available to enable
+       the short version only for the repeat command.
 
        if list { list } [ elif list { list } ] ... [ else { list } ]
               An alternate form of if.  The rules mean that
@@ -473,8 +482,14 @@ ALIASING
        it is in command position (if it could be the first word of a simple
        command), or if the alias is global.  If the replacement text ends with a
        space, the next word in the shell input is always eligible for purposes
-       of alias expansion.  An alias is defined using the alias builtin; global
-       aliases may be defined using the -g option to that builtin.
+       of alias expansion.
+
+       It is an error for the function name, word, in the sh-compatible function
+       definition syntax `word () ...' to be a word that resulted from alias
+       expansion, unless the ALIAS_FUNC_DEF option is set.
+
+       An alias is defined using the alias builtin; global aliases may be
+       defined using the -g option to that builtin.
 
        A word is defined as:
 
@@ -498,6 +513,15 @@ ALIASING
        foo, alias expansion may be avoided by quoting part of the word, e.g.
        \foo.  Any form of quoting works, although there is nothing to prevent an
        alias being defined for the quoted form such as \foo as well.
+
+       In particular, note that quoting must be used when using unalias to
+       remove global aliases:
+
+              % alias -g foo=bar
+              % unalias foo
+              unalias: no such hash table element: bar
+              % unalias \foo
+              %
 
        When POSIX_ALIASES is set, only plain unquoted strings are eligible for
        aliasing.  The alias builtin does not reject ineligible aliases, but they
@@ -544,26 +568,6 @@ ALIASING
        scripts, functions, and code executed with `source' or `.'.
        Consequently, use of functions rather than aliases is recommended in
        non-interactive code.
-
-       Note also the unhelpful interaction of aliases and function definitions:
-
-              alias func='noglob func'
-              func() {
-                  echo Do something with $*
-              }
-
-       Because aliases are expanded in function definitions, this causes the
-       following command to be executed:
-
-              noglob func() {
-                  echo Do something with $*
-              }
-
-       which defines noglob as well as func as functions with the body given.
-       To avoid this, either quote the name func or use the alternative function
-       definition form `function func'.  Ensuring the alias is defined after the
-       function works but is problematic if the code fragment might be
-       re-executed.
 
 QUOTING
        A character may be quoted (that is, made to stand for itself) by
@@ -657,7 +661,7 @@ REDIRECTION
               Perform shell expansion on word and pass the result to standard
               input.  This is known as a here-string.  Compare the use of word
               in here-documents above, where word does not undergo shell
-              expansion.
+              expansion.  The result will have a trailing newline after it.
 
        <& number
        >& number
@@ -905,9 +909,17 @@ COMMAND EXECUTION
        that name, the builtin is invoked.
 
        Otherwise, the shell searches each element of $path for a directory
-       containing an executable file by that name.  If the search is
-       unsuccessful, the shell prints an error message and returns a nonzero
-       exit status.
+       containing an executable file by that name.
+
+       If execution fails: an error message is printed, and one of the following
+       values is returned.
+
+       127    The search was unsuccessful.  The error message is `command not
+              found: cmd'.
+       126    The executable file has insufficient permissions, is a directory
+              or special file, or is not a script and is in a format
+              unrecognized by the operating system.  The exact conditions and
+              error message are operating system-dependent; see execve(2).
 
        If execution fails because the file is not in executable format, and the
        file is not a directory, it is assumed to be a shell script.  /bin/sh is
@@ -918,12 +930,10 @@ COMMAND EXECUTION
 
        If no external command is found but a function command_not_found_handler
        exists the shell executes this function with all command line arguments.
-       The return status of the function becomes the status of the command.  If
-       the function wishes to mimic the behaviour of the shell when the command
-       is not found, it should print the message `command not found: cmd' to
-       standard error and return status 127.  Note that the handler is executed
-       in a subshell forked to execute an external command, hence changes to
-       directories, shell parameters, etc. have no effect on the main shell.
+       The return status of the function becomes the status of the command.
+       Note that the handler is executed in a subshell forked to execute an
+       external command, hence changes to directories, shell parameters, etc.
+       have no effect on the main shell.
 
 FUNCTIONS
        Shell functions are defined with the function reserved word or the
@@ -1108,16 +1118,16 @@ SPECIAL FUNCTIONS
        For the functions below, it is possible to define an array that has the
        same name as the function with `_functions' appended.  Any element in
        such an array is taken as the name of a function to execute; it is
-       executed in the same context and with the same arguments as the basic
-       function.  For example, if $chpwd_functions is an array containing the
-       values `mychpwd', `chpwd_save_dirstack', then the shell attempts to
-       execute the functions `chpwd', `mychpwd' and `chpwd_save_dirstack', in
-       that order.  Any function that does not exist is silently ignored.  A
-       function found by this mechanism is referred to elsewhere as a `hook
-       function'.  An error in any function causes subsequent functions not to
-       be run.  Note further that an error in a precmd hook causes an
-       immediately following periodic function not to run (though it may run at
-       the next opportunity).
+       executed in the same context and with the same arguments and same initial
+       value of $? as the basic function.  For example, if $chpwd_functions is
+       an array containing the values `mychpwd', `chpwd_save_dirstack', then the
+       shell attempts to execute the functions `chpwd', `mychpwd' and
+       `chpwd_save_dirstack', in that order.  Any function that does not exist
+       is silently ignored.  A function found by this mechanism is referred to
+       elsewhere as a hook function.  An error in any function causes subsequent
+       functions not to be run.  Note further that an error in a precmd hook
+       causes an immediately following periodic function not to run (though it
+       may run at the next opportunity).
 
        chpwd  Executed whenever the current working directory is changed.
 
@@ -1162,10 +1172,10 @@ SPECIAL FUNCTIONS
               value is taken.
 
               A hook function may call `fc -p ...' to switch the history context
-              so that the history is saved in a different file from the that in
-              the global HISTFILE parameter.  This is handled specially: the
-              history context is automatically restored after the processing of
-              the history line is finished.
+              so that the history is saved in a different file from that in the
+              global HISTFILE parameter.  This is handled specially: the history
+              context is automatically restored after the processing of the
+              history line is finished.
 
               The following example function works with one of the options
               INC_APPEND_HISTORY or SHARE_HISTORY set, in order that the line is
@@ -1359,7 +1369,7 @@ JOBS
        the HUP option is set.
 
        To avoid having the shell terminate the running jobs, either use the
-       nohup command (see nohup(1)) or the disown builtin.
+       nohup(1) command or the disown builtin.
 
 SIGNALS
        The INT and QUIT signals for an invoked command are ignored if the
@@ -1391,7 +1401,7 @@ ARITHMETIC EVALUATION
        is evaluated separately.  Since many of the arithmetic operators, as well
        as spaces, require quoting, an alternative form is provided: for any
        command which begins with a `((', all the characters until a matching
-       `))' are treated as a quoted expression and arithmetic expansion
+       `))' are treated as a double-quoted expression and arithmetic expansion
        performed as for an argument of let.  More precisely, `((...))' is
        equivalent to `let "..."'.  The return status is 0 if the arithmetic
        value of the expression is non-zero, 1 if it is zero, and 2 if an error

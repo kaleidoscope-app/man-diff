@@ -42,7 +42,7 @@ DESCRIPTION
        Styles modify various operations of the completion system, such as output
        formatting, but also what kinds of completers are used (and in what
        order), or which tags are examined.  Styles may accept arguments and are
-       manipulated using the zstyle command described in see zshmodules(1).
+       manipulated using the zstyle command described in zshmodules(1).
 
        In summary, tags describe what the completion objects are, and style how
        they are to be completed.  At various points of execution, the completion
@@ -158,7 +158,7 @@ INITIALIZATION
        avoid these tests and make all files found be used without asking, use
        the option -u, and to make compinit silently ignore all insecure files
        and directories use the option -i.  This security check is skipped
-       entirely when the -C option is given.
+       entirely when the -C option is given, provided the dumpfile exists.
 
        The security check can be retried at any time by running the function
        compaudit.  This is the same check used by compinit, but when it is
@@ -277,12 +277,12 @@ INITIALIZATION
        -array-value-
               The right hand side of an array-assignment (`name=(...)')
 
-       -brace-parameter-
-              The name of a parameter expansion within braces (`${...}')
-
        -assign-parameter-
               The name of a parameter in an assignment, i.e. on the left hand
               side of an `='
+
+       -brace-parameter-
+              The name of a parameter expansion within braces (`${...}')
 
        -command-
               A word in command position
@@ -571,10 +571,10 @@ COMPLETION SYSTEM CONFIGURATION
        When looking up styles the completion system uses full context names,
        including the tag.  Looking up the value of a style therefore consists of
        two things: the context, which is matched to the most specific (best
-       fitting) style pattern, and the name of the style itself, which must be
-       matched exactly.  The following examples demonstrate that style patterns
-       may be loosely defined for styles that apply broadly, or as tightly
-       defined as desired for styles that apply in narrower circumstances.
+       fitting) pattern, and the name of the style itself, which must be matched
+       exactly.  The following examples demonstrate that patterns may be loosely
+       defined for styles that apply broadly, or as tightly defined as desired
+       for styles that apply in narrower circumstances.
 
        For example, many completion functions can generate matches in a simple
        and a verbose form and use the verbose style to decide which form should
@@ -585,7 +585,7 @@ COMPLETION SYSTEM CONFIGURATION
        in a startup file (probably .zshrc).  This gives the verbose style the
        value yes in every context inside the completion system, unless that
        context has a more specific definition.  It is best to avoid giving the
-       context as `*' in case the style has some meaning outside the completion
+       pattern as `*' in case the style has some meaning outside the completion
        system.
 
        Many such general purpose styles can be configured simply by using the
@@ -618,15 +618,18 @@ COMPLETION SYSTEM CONFIGURATION
 
        Note that the order in which styles are defined does not matter; the
        style mechanism uses the most specific possible match for a particular
-       style to determine the set of values.  More precisely, strings are
-       preferred over patterns (for example, `:completion::complete:::foo' is
-       more specific than `:completion::complete:::*'), and longer patterns are
-       preferred over shorter patterns.
+       style to determine the set of values.  Strings are preferred over
+       patterns (for example, `:completion::complete:::foo' is more specific
+       than `:completion::complete:::*'), and longer patterns are preferred over
+       the pattern `*'. See zmodules(1) for details.
 
-       A good rule of thumb is that any completion style pattern that needs to
-       include more than one wildcard (*) and that does not end in a tag name,
-       should include all six colons (:), possibly surrounding additional
-       wildcards.
+       Context patterns that use something other than a wildcard (*) to match
+       the middle parts of the context -- the completer, command, and argument
+       in :completion:function:completer:command:argument:tag -- should include
+       all six colons (:) explicitly. Without this, a pattern such as
+       :completion:*:foo:* could match foo against a component other than the
+       intended one (for example, against completer when a match against command
+       was intended).
 
        Style names like those of tags are arbitrary and depend on the completion
        function.  However, the following two sections list some of the most
@@ -753,10 +756,10 @@ COMPLETION SYSTEM CONFIGURATION
        indexes
               for array indexes
 
-       jobs   for jobs (as listed by the `jobs' builtin)
-
        interfaces
               for network interfaces
+
+       jobs   for jobs (as listed by the `jobs' builtin)
 
        keymaps
               for names of zsh keymaps
@@ -775,11 +778,11 @@ COMPLETION SYSTEM CONFIGURATION
               builtin commands (compare path-directories) -- when the cdpath
               array is unset, directories is used instead
 
-       manuals
-              for names of manual pages
-
        mailboxes
               for e-mail folders
+
+       manuals
+              for names of manual pages
 
        maps   for map names (e.g. NIS maps)
 
@@ -815,10 +818,6 @@ COMPLETION SYSTEM CONFIGURATION
 
        other-accounts
               used to look up the users-hosts style
-
-       other-files
-              for the names of any non-directory files.  This is used instead of
-              all-files when the list-dirs-first style is in effect.
 
        packages
               for packages (e.g. rpm or installed Debian packages)
@@ -1168,6 +1167,11 @@ COMPLETION SYSTEM CONFIGURATION
               possible.  However, menu completion can be used to cycle through
               all matches.
 
+       extra-verbose
+              If set, the completion listing is more verbose at the cost of a
+              probable decrease in completion speed.  Completion performance
+              will suffer if this style is set to `true'.
+
        fake   This style may be set for any completion context.  It specifies
               additional strings that will always be completed in that context.
               The form of each string is `value:description'; the colon and
@@ -1294,9 +1298,10 @@ COMPLETION SYSTEM CONFIGURATION
               The tag may also be followed by an optional second colon and a
               description, which will be used for the `%d' in the value of the
               format style (if that is set) instead of the default description
-              supplied by the completion function.  If the description given
-              here contains itself a `%d', that is replaced with the description
-              supplied by the completion function.
+              supplied by the completion function.  The inclusion of a
+              description also gives precedence to associated options such as
+              for completion grouping so it can be used where files should be
+              separated.
 
               For example, to make the rm command first complete only names of
               object files and then the names of all files if there is no
@@ -1317,6 +1322,15 @@ COMPLETION SYSTEM CONFIGURATION
               all files using the pattern `*' at the first step and stops when
               it sees this pattern.  Note also it will never try a pattern more
               than once for a single completion attempt.
+
+              To separate directories into a separate group from the files but
+              still complete them at the first attempt, a description needs to
+              be given.  Note that directories need to be explicitly excluded
+              from the globbed-files because `*' will match directories. For
+              grouping, it is also necessary to set the group-name style.
+
+                     zstyle ':completion:*' file-patterns \
+                         '%p(^-/):globbed-files *(-/):directories:location'
 
               During the execution of completion functions, the EXTENDED_GLOB
               option is in effect, so the characters `#', `~' and `^' have
@@ -1398,6 +1412,14 @@ COMPLETION SYSTEM CONFIGURATION
               `%d' and similar escape sequences.  This is handled by the zformat
               builtin command from the zsh/zutil module, see zshmodules(1).
 
+       gain-privileges
+              If set to true, this style enables the use of commands like sudo
+              or doas to gain extra privileges when retrieving information for
+              completion. This is only done when a command such as sudo appears
+              on the command-line. To force the use of, e.g. sudo or to override
+              any prefix that might be added due to gain-privileges, the command
+              style can be used with a value that begins with a hyphen.
+
        glob   This is used by the _expand completer.  If it is set to `true'
               (the default), globbing will be attempted on the words resulting
               from a previous substitution (see the substitute style) or else
@@ -1431,6 +1453,9 @@ COMPLETION SYSTEM CONFIGURATION
 
               All matches for which no group name is defined will be put in a
               group named -default-.
+
+              To display the group name in the output, see the format style
+              (q.v.) under the descriptions tag.
 
        group-order
               This style is additional to the group-name style to specify the
@@ -1519,11 +1544,6 @@ COMPLETION SYSTEM CONFIGURATION
               ignored-patterns style, so they can be restored to consideration
               by the _ignored completer.
 
-       extra-verbose
-              If set, the completion listing is more verbose at the cost of a
-              probable decrease in completion speed.  Completion performance
-              will suffer if this style is set to `true'.
-
        ignored-patterns
               A list of patterns; any trial completion matching one of the
               patterns will be excluded from consideration.  The _ignored
@@ -1554,6 +1574,28 @@ COMPLETION SYSTEM CONFIGURATION
               unsuccessful until that point.  If the value is any other string,
               menu completion will be started when the string typed by the user
               is longer than the common prefix to the corresponding IDs.
+
+       insert-sections
+              This style is used with tags of the form `manuals.X' when
+              completing names of manual pages. If set and the X in the tag name
+              matches the section number of the page being completed, the
+              section number is inserted along with the page name. For example,
+              given
+
+                     zstyle ':completion:*:manuals.*' insert-sections true
+
+              man ssh_<TAB> may be completed to man 5 ssh_config.
+
+              The value may also be set to one of `prepend', or `suffix'.
+              `prepend' behaves the same as `true' as in the above example,
+              while `suffix' would complete man ssh_<TAB> as man ssh_config.5.
+
+              This is especially useful in conjunction with separate-sections,
+              as it ensures that the page requested of man corresponds to the
+              one displayed in the completion listing when there are multiple
+              pages with the same name (e.g., printf(1) and printf(3)).
+
+              The default for this style is `false'.
 
        insert-tab
               If this is set to `true', the completion system will insert a TAB
@@ -1592,14 +1634,6 @@ COMPLETION SYSTEM CONFIGURATION
               the string `pattern'.  Then the pattern on the line is left
               unchanged if it does not match unambiguously.
 
-       gain-privileges
-              If set to true, this style enables the use of commands like sudo
-              or doas to gain extra privileges when retrieving information for
-              completion. This is only done when a command such as sudo appears
-              on the command-line. To force the use of, e.g. sudo or to override
-              any prefix that might be added due to gain-privileges, the command
-              style can be used with a value that begins with a hyphen.
-
        keep-prefix
               This style is used by the _expand completer.  If it is `true', the
               completer will try to keep a prefix containing a tilde or
@@ -1615,6 +1649,12 @@ COMPLETION SYSTEM CONFIGURATION
               prefix is the same as the original; hence any remaining completers
               may be called.
 
+       known-hosts-files
+              This style should contain a list of files to search for host names
+              and (if the use-ip style is set) IP addresses in a format
+              compatible with ssh known_hosts files.  If it is not set, the
+              files /etc/ssh/ssh_known_hosts and ~/.ssh/known_hosts are used.
+
        last-prompt
               This is a more flexible form of the ALWAYS_LAST_PROMPT option.  If
               it is `true', the completion system will try to return the cursor
@@ -1624,12 +1664,6 @@ COMPLETION SYSTEM CONFIGURATION
               line if this style is `true' for all types of match.  Note that
               unlike the ALWAYS_LAST_PROMPT option this is independent of the
               numeric argument.
-
-       known-hosts-files
-              This style should contain a list of files to search for host names
-              and (if the use-ip style is set) IP addresses in a format
-              compatible with ssh known_hosts files.  If it is not set, the
-              files /etc/ssh/ssh_known_hosts and ~/.ssh/known_hosts are used.
 
        list   This style is used by the _history_complete_word bindable command.
               If it is set to `true' it has no effect.  If it is set to `false'
@@ -1665,11 +1699,10 @@ COMPLETION SYSTEM CONFIGURATION
               be obtained by setting the style to an empty string (i.e. '').
 
        list-dirs-first
-              This is used by file completion.  If set, directories to be
-              completed are listed separately from and before completion for
-              other files, regardless of tag ordering.  In addition, the tag
-              other-files is used in place of all-files for the remaining files,
-              to indicate that no directories are presented with that tag.
+              This is used by file completion and corresponds to a particular
+              setting of the file-patterns style.  If set, the default
+              directories to be completed are listed separately from and before
+              completion for other files.
 
        list-grouped
               If this style is `true' (the default), the completion system will
@@ -1717,17 +1750,17 @@ COMPLETION SYSTEM CONFIGURATION
               determines whether matches are to be listed in a rows-first
               fashion as if the LIST_ROWS_FIRST option were set.
 
+       list-separator
+              The value of this style is used in completion listing to separate
+              the string to complete from a description when possible (e.g. when
+              completing options).  It defaults to `--' (two hyphens).
+
        list-suffixes
               This style is used by the function that completes filenames.  If
               it is `true', and completion is attempted on a string containing
               multiple partially typed pathname components, all ambiguous
               components will be shown.  Otherwise, completion stops at the
               first ambiguous component.
-
-       list-separator
-              The value of this style is used in completion listing to separate
-              the string to complete from a description when possible (e.g. when
-              completing options).  It defaults to `--' (two hyphens).
 
        local  This is for use with functions that complete URLs for which the
               corresponding files are available directly from the file system.
@@ -2126,8 +2159,8 @@ COMPLETION SYSTEM CONFIGURATION
 
                      zstyle ':completion:*' recursive-files '*/zsh/*'
 
-              If the current directory is /home/pws/zsh/Src, then zle_trTAB can
-              be completed to Zle/zle_tricky.c.
+              If the current directory is /home/pws/zsh/Src, then zle_tr<TAB>
+              can be completed to Zle/zle_tricky.c.
 
        regular
               This style is used by the _expand_alias completer and bindable
@@ -2177,13 +2210,15 @@ COMPLETION SYSTEM CONFIGURATION
        separate-sections
               This style is used with the manuals tag when completing names of
               manual pages.  If it is `true', entries for different sections are
-              added separately using tag names of the form `manual.X', where X
+              added separately using tag names of the form `manuals.X', where X
               is the section number.  When the group-name style is also in
               effect, pages from different sections will appear separately.
               This style is also used similarly with the words style when
               completing words for the dict command. It allows words from
-              different dictionary databases to be added separately.  The
-              default for this style is `false'.
+              different dictionary databases to be added separately. See also
+              insert-sections.
+
+              The default for this style is `false'.
 
        show-ambiguity
               If the zsh/complist module is loaded, this style can be used to
@@ -3167,8 +3202,15 @@ UTILITY FUNCTIONS
               `tag:descr:action'.  The tags are offered using _tags and if the
               tag is requested, the action is executed with the given
               description descr.  The actions are those accepted by the
-              _arguments function (described below), excluding the `->state' and
-              `=...' forms.
+              _arguments function (described below), with the following
+              exceptions:
+              •      The `->state' and `=...' forms are not supported.
+
+
+              •      The `((a\:bar b\:baz))' form does not need the colon to be
+                     escaped, since the specs have no colon-separated fields
+                     after the action.
+
 
               For example, the action may be a simple function call:
 
@@ -3290,6 +3332,12 @@ UTILITY FUNCTIONS
                      word completion after `_' and `-', such as completing
                      `-f-b' to `-foo-bar'.  The default matchspec is:
                      r:|[_-]=* r:|=*
+
+              -0     When populating values of the `opt_args' associative array,
+                     don't backslash-escape colons and backslashes and use NUL
+                     rather than colon for joining multiple values. This option
+                     is described in more detail below, under the heading specs:
+                     actions.
 
               specs: overview
 
@@ -3472,6 +3520,7 @@ UTILITY FUNCTIONS
 
               specs: actions
 
+
               In each of the forms above the action determines how completions
               should be generated.  Except for the `->string' form below, the
               action will be executed by calling the _all_labels function to
@@ -3593,10 +3642,21 @@ UTILITY FUNCTIONS
               the command line after the command name excluding all options and
               their arguments.  Options are stored in the associative array
               `opt_args' with option names as keys and their arguments as the
-              values.  For options that have more than one argument these are
-              given as one string, separated by colons.  All colons and
-              backslashes in the original arguments are preceded with
-              backslashes.
+              values.  By default, all colons and backslashes in the value are
+              escaped with backslashes, and if an option has multiple arguments
+              (for example, when using an optspec of the form `*optspec'), they
+              are joined with (unescaped) colons.  However, if the -0 option was
+              passed, no backslash escaping is performed, and multiple values
+              are joined with NUL bytes.  For example, after `zsh -o foo:foo -o
+              bar:bar -o <TAB>', the contents of `opt_args' would be
+
+                     typeset -A opt_args=( [-o]='foo\:foo:bar\:bar:' )
+
+              by default, and
+
+                     typeset -A opt_args=( [-o]=$'foo:foo\x00bar:bar\x00' )
+
+              if _arguments had been called with the -0 option.
 
               The parameter `context' is set when returning to the calling
               function to perform an action of the form `->string'.  It is set
@@ -3813,7 +3873,7 @@ UTILITY FUNCTIONS
               arguments.  The first describes the first argument as a
               `postscript file' and makes files ending in `ps' or `eps' be
               completed.  The last description gives all other arguments the
-              description `page numbers' but does not offer completions.
+              description `page number' but does not offer completions.
 
        _cache_invalid cache_identifier
               This function returns status zero if the completions cache
@@ -3930,6 +3990,14 @@ UTILITY FUNCTIONS
 
               -p     Include the leading underscore (`_') in the matches.
 
+       _default
+              This function corresponds to the -default- special context which
+              is applied where no completion is defined.  It is useful to call
+              it under certain error conditions such as completion after an
+              unrecognised subcommand.  This applies the concept of graceful
+              degradation to the completion system, allowing it to fallback on
+              basic completion of commonly useful things like filenames.
+
 
        _describe [-12JVx] [ -oO | -t tag ] descr name1 [ name2 ] [ opt ... ]
                  [ -- name1 [ name2 ] [ opt ... ] ... ]
@@ -4001,7 +4069,22 @@ UTILITY FUNCTIONS
               If _description is called with more than three arguments, the
               additional specs should be of the form `char:str'.  These supply
               escape sequence replacements for the format style: every
-              appearance of `%char' will be replaced by string.
+              appearance of `%char' will be replaced by string.  If no
+              additional specs are given but the description in descr conforms
+              to a common form then further escape sequences are set for
+              elements of that description.  These elements correspond to a
+              default value (`%o'), the units (`%m') range of acceptable values
+              (`%r') and the remaining initial part of the description (`%h').
+              The form the description takes consists of specifying the units
+              and range in parentheses and the default value in square brackets,
+              for example:
+
+                     _description times expl 'timeout (seconds) (0-60) [20]'
+
+              It is possible to use zformat conditional expressions when styling
+              these elements. So, for example, to add `default:' as a tag but
+              only when there is a default value to show, the format style might
+              include `%(o.default: %o.)'.
 
               If the -x option is given, the description will be passed to
               compadd using the -x option instead of the default -X.  This means
@@ -4243,6 +4326,62 @@ UTILITY FUNCTIONS
               If it is set completion is terminated at that point even if no
               matches have been found.  This is the same effect as in the
               -first- context.
+
+       _numbers [ option ... ] [ description ] [ suffix ... ]
+              This can be used where a number is followed by a suffix to
+              indicate the units.  The unit suffixes are completed and can also
+              be included in the description used when completion is invoked for
+              the preceding number.
+
+              In addition to common compadd options, _numbers accepts the
+              following options:
+
+              -t tag Specify a tag to use instead of the default of numbers.
+
+              -u units
+                     Indicate the default units for the number, e.g. bytes.
+
+              -l min Specify the lowest possible value for the number.
+
+              -m max Specify the highest possible value for the number.
+
+              -d default
+                     Specify the default value.
+
+              -N     Allow negative numbers.  This is implied if the range
+                     includes a negative.
+
+              -f     Allow decimal numbers.
+
+              Where a particular suffix represents the default units for a
+              number, it should be prefixed with a colon.  Additionally,
+              suffixes can be followed by a colon and a description.  So for
+              example, the following allows the age of something to be
+              specified, either in seconds or with an optional suffix with a
+              longer unit of time:
+
+                     _numbers -u seconds age :s:seconds m:minutes h:hours d:days
+
+              It is typically helpful for units to be presented in order of
+              magnitude when completed.  To facilitate this, the order in which
+              they are given is preserved.
+
+              When the format style is looked up with the descriptions tag or
+              the tag specified with -t, the list of suffixes is available as a
+              `%x' escape sequence. This is in addition to the usual sequences
+              documented under the format style. The form this list takes can
+              also be configured. To this end, the format style is first looked
+              up with the tag unit-suffixes. The retrieved format is applied to
+              each suffix in turn and the results are then concatenated to form
+              the completed list. For the unit-suffixes format, `%x' expands to
+              the individual suffix and `%X' to its description. %d' indicates a
+              default suffix and can be used in a condition. The index and
+              reverse index are set in `%i' and `%r' respectively and are useful
+              for text included only with the first and last suffixes in the
+              list. So for example, the following joins the suffixes together as
+              a comma-separated list:
+
+                     zstyle ':completion:*:unit-suffixes' format '%x%(r::,)'
 
        _options
               This can be used to complete the names of shell options.  It
@@ -4759,7 +4898,10 @@ UTILITY FUNCTIONS
 
                      local expl
                      _wanted tag expl 'description' \
-                         compadd matches...
+                         compadd -- match1 match2...
+
+              See also the use of _wanted in the example function in the
+              subsection `Dynamic named directories' in zshexpn(1).
 
               Note that, as for _requested, the command must be able to accept
               options to be passed down to compadd.
@@ -4790,17 +4932,16 @@ COMPLETION SYSTEM VARIABLES
               underscores, are mapped to one or other of the strings `on' and
               `off'.
 
-              _comp_priv_prefix
-                     Completion functions such as _sudo can set the
-                     _comp_priv_prefix array to a command prefix that may then
-                     be used by _call_program to match the privileges when
-                     calling programs to generate matches.
+       _comp_priv_prefix
+              Completion functions such as _sudo can set the _comp_priv_prefix
+              array to a command prefix that may then be used by _call_program
+              to match the privileges when calling programs to generate matches.
 
-              Two more features are offered by the _main_complete function.  The
-              arrays compprefuncs and comppostfuncs may contain names of
-              functions that are to be called immediately before or after
-              completion has been tried.  A function will only be called once
-              unless it explicitly reinserts itself into the array.
+       Two more features are offered by the _main_complete function.  The arrays
+       compprefuncs and comppostfuncs may contain names of functions that are to
+       be called immediately before or after completion has been tried.  A
+       function will only be called once unless it explicitly reinserts itself
+       into the array.
 
 COMPLETION DIRECTORIES
        In the source distribution, the files are contained in various

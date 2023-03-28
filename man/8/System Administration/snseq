@@ -1,0 +1,93 @@
+SNSEQ(8)                     System Manager's Manual                    SNSEQ(8)
+
+
+
+NAME
+       snseq - Xsan cvdb "perf" trace analyzer
+
+SYNOPSIS
+       snseq {read,write,rdwr} {--persec,--details,--csv} [filer_options]
+       files(s)
+
+       snseq devread file(s)
+
+       snseq devwrite file(s)
+
+       snseq -h, --help
+
+DESCRIPTION
+       snseq is a tool for analyzing cvdb "perf" traces. It is useful for
+       determining file access patterns of applications as well as measuring I/O
+       latency and performance at both VFS and device levels.
+
+       Running snseq first requires capturing client traces using the cvdb
+       command.  snseq emits to "stdout" so capturing output to a file requires
+       shell redirection.
+
+       By default, snseq displays a human-readable ASCII format. However, some
+       snseq command lines allow the specification of --csv that will cause it
+       to emit CSV format that can be used with spreadsheet applications.  This
+       is especially useful for producing graphs. Visualizing data in this
+       manner can provide insight into how an application is performing I/O.
+
+
+OPTIONS
+       Analysis mode:
+
+       read   Process VFS reads.
+
+       write  Process VFS writes.
+
+       rdwr   Process VFS reads and writes.
+
+       devread
+              Process device reads.
+
+       devwrite
+              Process device writes.
+
+       filter_options:
+
+       --seq  track largest sequential I/O stream
+
+       --start
+              start time offset
+
+       --end  end time offset
+
+       --proc filter by process name
+
+       --minsize
+              filter out files smaller than byte_count
+
+       help:
+
+       -h, --help
+              Just display help and exit
+
+
+EXAMPLE
+              # mkdir /tmp/cvdb
+              # cd /tmp/cvdb
+              # cvdbset perf
+              # cvdb -g -C -F &
+              test is run here
+              # killall cvdb
+              # snseq read --details cvdbout* > seq.out
+
+NOTES
+       snseq uses python. If for some reason the Python package available on the
+       system is incompatible with snseq, installing an additional Python
+       package may be required to run snseq. Alternatively, cvdb "perf" traces
+       captured on one system can often be processed on another system.  It is
+       often possible to capture cvdb perf traces on a client and then copy them
+       over to the MDC and run snseq there. This technique can also be used to
+       process perf traces taken from a backrev client, subject to certain
+       limitations. For example, older cvdb perf traces do not contain enough
+       information to display file names.
+
+SEE ALSO
+       cvdbset(8), cvdb(8)
+
+
+

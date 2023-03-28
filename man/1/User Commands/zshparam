@@ -80,7 +80,7 @@ ARRAY PARAMETERS
        quoted, and key may not consist of the unquoted string ]=, but is
        otherwise treated as a simple string.  The enhanced forms of subscript
        expression that may be used when directly subscripting a variable name,
-       described in the section Array Subscripts below, are not available.
+       described in the section `Array Subscripts' below, are not available.
 
        The syntaxes with and without the explicit key may be mixed.  An implicit
        key is deduced by incrementing the index from the previously assigned
@@ -341,10 +341,19 @@ ARRAY PARAMETERS
               length of the array plus one, as discussed under the description
               of `r', or the empty string for an associative array.
 
+              Note: Although `i' may be applied to a scalar substitution to find
+              the offset of a substring, the results are likely to be misleading
+              when searching within substitutions that yield an empty string, or
+              when searching for the empty substring.
+
        I      Like `i', but gives the index of the last match, or all possible
               matching keys in an associative array.  On failure substitutes 0,
               or the empty string for an associative array.  This flag is best
               when testing for values or keys that do not exist.
+
+              Note: If the option KSH_ARRAYS is in effect and no match is found,
+              the result is indistinguishable from the case when the first
+              element of the array matches.
 
        k      If used in a subscript on an associative array, this flag causes
               the keys to be interpreted as patterns, and returns the value for
@@ -544,6 +553,12 @@ PARAMETERS SET BY THE SHELL
        parameter is special.  `<Z>' indicates that the parameter does not exist
        when the shell initializes in sh or ksh emulation mode.
 
+       The parameters `!', `#', `*', `-', `?', `@', `$', `ARGC', `HISTCMD',
+       `LINENO', `PPID', `status', `TTYIDLE', `zsh_eval_context',
+       `ZSH_EVAL_CONTEXT', and `ZSH_SUBSHELL' are read-only and thus cannot be
+       restored by the user, so they are not output by `typeset -p'.  This also
+       applies to many read-only parameters loaded from modules.
+
        The following parameters are automatically set by the shell:
 
        ! <S>  The process ID of the last command started in the background with
@@ -559,10 +574,11 @@ PARAMETERS SET BY THE SHELL
        ARGC <S> <Z>
               Same as #.
 
-       $ <S>  The process ID of this shell.  Note that this indicates the
-              original shell started by invoking zsh; all processes forked from
-              the shells without executing a new program, such as subshells
-              started by (...), substitute the same value.
+       $ <S>  The process ID of this shell, set when the shell initializes.
+              Processes forked from the shell without executing a new program,
+              such as command substitutions and commands grouped with (...), are
+              subshells that duplicate the current shell, and thus substitute
+              the same value for $$ as their parent shell.
 
        - <S>  Flags supplied to the shell on invocation or by the set or setopt
               commands.
@@ -629,6 +645,10 @@ PARAMETERS SET BY THE SHELL
               zsh/system module which allows the number to be turned into a name
               or message.
 
+              To use this parameter, it must first be assigned a value
+              (typically 0 (zero)).  It is initially unset for scripting
+              compatibility.
+
        FUNCNEST <S>
               Integer.  If greater than or equal to zero, the maximum nesting
               depth of shell functions.  When it is exceeded, an error is raised
@@ -690,9 +710,9 @@ PARAMETERS SET BY THE SHELL
        OSTYPE The operating system, as determined at compile time.
 
        PPID <S>
-              The process ID of the parent of the shell.  As for $$, the value
-              indicates the parent of the original shell and does not change in
-              subshells.
+              The process ID of the parent of the shell, set when the shell
+              initializes.  As with $$, the value does not change in subshells
+              created as a duplicate of the current shell.
 
        PWD    The present working directory.  This is set when the shell
               initializes and whenever the directory changes.
@@ -715,13 +735,13 @@ PARAMETERS SET BY THE SHELL
               the assignment.
 
               Unlike other special parameters, the type of the SECONDS parameter
-              can be changed using the typeset command.  Only integer and one of
-              the floating point types are allowed.  For example, `typeset -F
-              SECONDS' causes the value to be reported as a floating point
-              number.  The value is available to microsecond accuracy, although
-              the shell may show more or fewer digits depending on the use of
-              typeset.  See the documentation for the builtin typeset in
-              zshbuiltins(1) for more details.
+              can be changed using the typeset command.  The type may be changed
+              only to one of the floating point types or back to integer.  For
+              example, `typeset -F SECONDS' causes the value to be reported as a
+              floating point number.  The value is available to microsecond
+              accuracy, although the shell may show more or fewer digits
+              depending on the use of typeset.  See the documentation for the
+              builtin typeset in zshbuiltins(1) for more details.
 
        SHLVL <S>
               Incremented by one each time a new shell is started.
@@ -1120,10 +1140,6 @@ PARAMETERS USED BY THE SHELL
               set to zero, the shell asks only if the top of the listing would
               scroll off the screen.
 
-       LOGCHECK
-              The interval in seconds between checks for login/logout activity
-              using the watch parameter.
-
        MAIL   If this parameter is set and mailpath is not set, the shell looks
               for mail in the specified file.
 
@@ -1310,6 +1326,11 @@ PARAMETERS USED BY THE SHELL
               that STTY should not be used for window size specifications; these
               will not be local to the command.
 
+              If the parameter is set and empty, all of the above applies except
+              that stty is not run. This can be useful as a way to freeze the
+              tty around a single command, blocking its changes to tty settings,
+              similar to the ttyctl builtin.
+
        TERM <S>
               The type of terminal in use.  This is used when looking up termcap
               sequences.  An assignment to TERM causes zsh to re-initialize the
@@ -1392,97 +1413,6 @@ PARAMETERS USED BY THE SHELL
               interpreted as a file extension.  The default is not to append any
               suffix, thus this parameter should be assigned only when needed
               and then unset again.
-
-       watch <S> <Z> (WATCH <S>)
-              An array (colon-separated list) of login/logout events to report.
-
-              If it contains the single word `all', then all login/logout events
-              are reported.  If it contains the single word `notme', then all
-              events are reported as with `all' except $USERNAME.
-
-              An entry in this list may consist of a username, an `@' followed
-              by a remote hostname, and a `%' followed by a line (tty).  Any of
-              these may be a pattern (be sure to quote this during the
-              assignment to watch so that it does not immediately perform file
-              generation); the setting of the EXTENDED_GLOB option is respected.
-              Any or all of these components may be present in an entry; if a
-              login/logout event matches all of them, it is reported.
-
-              For example, with the EXTENDED_GLOB option set, the following:
-
-                     watch=('^(pws|barts)')
-
-              causes reports for activity associated with any user other than
-              pws or barts.
-
-       WATCHFMT
-              The format of login/logout reports if the watch parameter is set.
-              Default is `%n has %a %l from %m'.  Recognizes the following
-              escape sequences:
-
-              %n     The name of the user that logged in/out.
-
-              %a     The observed action, i.e. "logged on" or "logged off".
-
-              %l     The line (tty) the user is logged in on.
-
-              %M     The full hostname of the remote host.
-
-              %m     The hostname up to the first `.'.  If only the IP address
-                     is available or the utmp field contains the name of an
-                     X-windows display, the whole name is printed.
-
-                     NOTE: The `%m' and `%M' escapes will work only if there is
-                     a host name field in the utmp on your machine.  Otherwise
-                     they are treated as ordinary strings.
-
-              %S (%s)
-                     Start (stop) standout mode.
-
-              %U (%u)
-                     Start (stop) underline mode.
-
-              %B (%b)
-                     Start (stop) boldface mode.
-
-              %t
-              %@     The time, in 12-hour, am/pm format.
-
-              %T     The time, in 24-hour format.
-
-              %w     The date in `day-dd' format.
-
-              %W     The date in `mm/dd/yy' format.
-
-              %D     The date in `yy-mm-dd' format.
-
-              %D{string}
-                     The date formatted as string using the strftime function,
-                     with zsh extensions as described by EXPANSION OF PROMPT
-                     SEQUENCES in zshmisc(1).
-
-              %(x:true-text:false-text)
-                     Specifies a ternary expression.  The character following
-                     the x is arbitrary; the same character is used to separate
-                     the text for the "true" result from that for the "false"
-                     result.  Both the separator and the right parenthesis may
-                     be escaped with a backslash.  Ternary expressions may be
-                     nested.
-
-                     The test character x may be any one of `l', `n', `m' or
-                     `M', which indicate a `true' result if the corresponding
-                     escape sequence would return a non-empty value; or it may
-                     be `a', which indicates a `true' result if the watched user
-                     has logged in, or `false' if he has logged out.  Other
-                     characters evaluate to neither true nor false; the entire
-                     expression is omitted in this case.
-
-                     If the result is `true', then the true-text is formatted
-                     according to the rules above and printed, and the
-                     false-text is skipped.  If `false', the true-text is
-                     skipped and the false-text is formatted and printed.
-                     Either or both of the branches may be empty, but both
-                     separators must be present in any case.
 
        WORDCHARS <S>
               A list of non-alphanumeric characters considered part of a word by

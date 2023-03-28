@@ -83,8 +83,8 @@ URL
 
 OUTPUT
        If not told otherwise, curl writes the received data to stdout. It can be
-       instructed to instead save that data into a local file, using the
-       --output or --remote-name options. If curl is given multiple URLs to
+       instructed to instead save that data into a local file, using the -o,
+       --output or -O, --remote-name options. If curl is given multiple URLs to
        transfer on the command line, it similarly needs multiple options for
        where to save them.
 
@@ -153,9 +153,9 @@ PROTOCOLS
 PROGRESS METER
        curl normally displays a progress meter during operations, indicating the
        amount of transferred data, transfer speeds and estimated time left, etc.
-       The progress meter displays number of bytes and the speeds are in bytes
-       per second. The suffixes (k, M, G, T, P) are 1024 based. For example 1k
-       is 1024 bytes. 1M is 1048576 bytes.
+       The progress meter displays the transfer rate in bytes per second. The
+       suffixes (k, M, G, T, P) are 1024 based. For example 1k is 1024 bytes. 1M
+       is 1048576 bytes.
 
        curl displays this data to the terminal by default, so if you invoke curl
        to do an operation and it is about to write data to the terminal, it
@@ -163,15 +163,15 @@ PROGRESS METER
        mixing progress meter and response data.
 
        If you want a progress meter for HTTP POST or PUT requests, you need to
-       redirect the response output to a file, using shell redirect (>),
+       redirect the response output to a file, using shell redirect (>), -o,
        --output or similar.
 
        This does not apply to FTP upload as that operation does not spit out any
        response data to the terminal.
 
-       If you prefer a progress "bar" instead of the regular meter, --progress-
-       bar is your friend. You can also disable the progress meter completely
-       with the --silent option.
+       If you prefer a progress "bar" instead of the regular meter, -#,
+       --progress-bar is your friend. You can also disable the progress meter
+       completely with the -s, --silent option.
 
 OPTIONS
        Options start with one or two dashes. Many of the options require an
@@ -179,8 +179,8 @@ OPTIONS
 
        The short "single-dash" form of the options, -d for example, may be used
        with or without a space between it and its value, although a space is a
-       recommended separator. The long "double-dash" form, --data for example,
-       requires a space between it and its value.
+       recommended separator. The long "double-dash" form, -d, --data for
+       example, requires a space between it and its value.
 
        Short version options that do not need any additional values can be used
        immediately next to each other, like for example you can specify all the
@@ -252,8 +252,8 @@ OPTIONS
               exist, it will be created. Note that this flag is ignored by some
               SFTP servers (including OpenSSH).
 
-              Providing --append multiple times has no extra effect.  Disable it
-              again with --no-append.
+              Providing -a, --append multiple times has no extra effect.
+              Disable it again with --no-append.
 
               Example:
                curl --upload-file local --append ftp://example.com/
@@ -385,8 +385,8 @@ OPTIONS
               using. PEM, DER, ENG and P12 are recognized types.
 
               The default type depends on the TLS backend and is usually PEM,
-              however for Secure Transport and Schannel it is P12. If --cert is
-              a pkcs11: URI then ENG is the default type.
+              however for Secure Transport and Schannel it is P12. If -E, --cert
+              is a pkcs11: URI then ENG is the default type.
 
               If --cert-type is provided several times, the last set value will
               be used.
@@ -403,8 +403,8 @@ OPTIONS
               or PEM format if using any other engine. If the optional password
               is not specified, it will be queried for on the terminal. Note
               that this option assumes a certificate file that is the private
-              key and the client certificate concatenated. See --cert and --key
-              to specify them independently.
+              key and the client certificate concatenated. See -E, --cert and
+              --key to specify them independently.
 
               In the <certificate> portion of the argument, you must escape the
               character ":" as "\:" so that it is not recognized as the password
@@ -450,8 +450,8 @@ OPTIONS
               CurrentUserGroupPolicy, LocalMachineGroupPolicy,
               LocalMachineEnterprise.
 
-              If --cert is provided several times, the last set value will be
-              used.
+              If -E, --cert is provided several times, the last set value will
+              be used.
 
               Example:
                curl --cert certfile --key keyfile https://example.com
@@ -525,8 +525,8 @@ OPTIONS
 
               Only write one option per physical line in the config file.
 
-              Specify the filename to --config as '-' to make curl read the file
-              from stdin.
+              Specify the filename to -K, --config as '-' to make curl read the
+              file from stdin.
 
               Note that to be able to specify a URL in the config file, you need
               to specify it using the --url option, and not by simply writing
@@ -546,9 +546,9 @@ OPTIONS
                referer = "http://nowhereatall.example.com/"
                # --- End of example file ---
 
-              When curl is invoked, it (unless --disable is used) checks for a
-              default config file and uses it if found, even when --config is
-              used. The default config file is checked for in the following
+              When curl is invoked, it (unless -q, --disable is used) checks for
+              a default config file and uses it if found, even when -K, --config
+              is used. The default config file is checked for in the following
               places in this order:
 
               1) "$CURL_HOME/.curlrc"
@@ -573,7 +573,7 @@ OPTIONS
               _curlrc, preferring the former. Older versions on Windows checked
               for _curlrc only.
 
-              --config can be used several times in a command line
+              -K, --config can be used several times in a command line
 
               Example:
                curl --config file.txt https://example.com
@@ -585,6 +585,13 @@ OPTIONS
               This only limits the connection phase, so if curl connects within
               the given period it will continue - if not it will exit.  Since
               version 7.32.0, this option accepts decimal values.
+
+              The "connection phase" is considered complete when the requested
+              TCP, TLS or QUIC handshakes are done.
+
+              The decimal value needs to provided using a dot (.) as decimal
+              separator - not the local version even if it might be using
+              another separator.
 
               If --connect-timeout is provided several times, the last set value
               will be used.
@@ -630,7 +637,7 @@ OPTIONS
               resume the transfer. It then uses the given output/input files to
               figure that out.
 
-              If --continue-at is provided several times, the last set value
+              If -C, --continue-at is provided several times, the last set value
               will be used.
 
               Examples:
@@ -649,15 +656,15 @@ OPTIONS
 
               This command line option will activate the cookie engine that
               makes curl record and use cookies. Another way to activate it is
-              to use the --cookie option.
+              to use the -b, --cookie option.
 
               If the cookie jar cannot be created or written to, the whole curl
-              operation will not fail or even report an error clearly. Using
+              operation will not fail or even report an error clearly. Using -v,
               --verbose will get a warning displayed, but that is the only
               visible feedback you get about this possibly lethal situation.
 
-              If --cookie-jar is provided several times, the last set value will
-              be used.
+              If -c, --cookie-jar is provided several times, the last set value
+              will be used.
 
               Examples:
                curl -c store-here.txt https://example.com
@@ -678,7 +685,7 @@ OPTIONS
               a filename to read previously stored cookie from. This option also
               activates the cookie engine which will make curl record incoming
               cookies, which may be handy if you are using this in combination
-              with the --location option or do multiple URL transfers on the
+              with the -L, --location option or do multiple URL transfers on the
               same invoke. If the file name is exactly a minus ("-"), curl will
               instead read the contents from stdin.
 
@@ -686,9 +693,9 @@ OPTIONS
               HTTP headers (Set-Cookie style) or the Netscape/Mozilla cookie
               file format.
 
-              The file specified with --cookie is only used as input. No cookies
-              will be written to the file. To store cookies, use the --cookie-
-              jar option.
+              The file specified with -b, --cookie is only used as input. No
+              cookies will be written to the file. To store cookies, use the -c,
+              --cookie-jar option.
 
               If you use the Set-Cookie file format and do not specify a domain
               then the cookie is not sent since the domain will never match. To
@@ -696,10 +703,10 @@ OPTIONS
               include sub-domains) or preferably: use the Netscape format.
 
               Users often want to both read cookies from a file and write
-              updated cookies back to a file, so using both --cookie and
+              updated cookies back to a file, so using both -b, --cookie and -c,
               --cookie-jar in the same command line is common.
 
-              --cookie can be used several times in a command line
+              -b, --cookie can be used several times in a command line
 
               Examples:
                curl -b cookiefile https://example.com
@@ -708,12 +715,12 @@ OPTIONS
               See also -c, --cookie-jar and -j, --junk-session-cookies.
 
        --create-dirs
-              When used in conjunction with the --output option, curl will
+              When used in conjunction with the -o, --output option, curl will
               create the necessary local directory hierarchy as needed. This
-              option creates the directories mentioned with the --output option,
-              nothing else. If the --output file name uses no directory, or if
-              the directories it mentions already exist, no directories will be
-              created.
+              option creates the directories mentioned with the -o, --output
+              option, nothing else. If the -o, --output file name uses no
+              directory, or if the directories it mentions already exist, no
+              directories will be created.
 
               Created dirs are made with mode 0750 on unix style file systems.
 
@@ -806,11 +813,11 @@ OPTIONS
               processing whatsoever.
 
               If you start the data with the letter @, the rest should be a
-              filename. Data is posted in a similar manner as --data does,
+              filename. Data is posted in a similar manner as -d, --data does,
               except that newlines and carriage returns are preserved and
               conversions are never done.
 
-              Like --data the default content-type sent to the server is
+              Like -d, --data the default content-type sent to the server is
               application/x-www-form-urlencoded. If you want the data to be
               treated as arbitrary binary data by the server then set the
               content-type to octet-stream: -H "Content-Type: application/octet-
@@ -827,8 +834,8 @@ OPTIONS
               See also --data-ascii.
 
        --data-raw <data>
-              (HTTP) This posts data similarly to --data but without the special
-              interpretation of the @ character.
+              (HTTP) This posts data similarly to -d, --data but without the
+              special interpretation of the @ character.
 
               --data-raw can be used several times in a command line
 
@@ -839,8 +846,8 @@ OPTIONS
               See also -d, --data. Added in 7.43.0.
 
        --data-urlencode <data>
-              (HTTP) This posts data, similar to the other --data options with
-              the exception that this performs URL-encoding.
+              (HTTP) This posts data, similar to the other -d, --data options
+              with the exception that this performs URL-encoding.
 
               To be CGI-compliant, the <data> part should begin with a name
               followed by a separator and a content specification. The <data>
@@ -903,12 +910,12 @@ OPTIONS
               If you start the data with the letter @, the rest should be a file
               name to read the data from, or - if you want curl to read the data
               from stdin. Posting data from a file named 'foobar' would thus be
-              done with -d, --data @foobar. When --data is told to read from a
-              file like that, carriage returns and newlines will be stripped
+              done with -d, --data @foobar. When -d, --data is told to read from
+              a file like that, carriage returns and newlines will be stripped
               out. If you do not want the @ character to have a special
               interpretation use --data-raw instead.
 
-              --data can be used several times in a command line
+              -d, --data can be used several times in a command line
 
               Examples:
                curl -d "name=curl" https://example.com
@@ -943,7 +950,7 @@ OPTIONS
               (HTTP) Enables HTTP Digest authentication. This is an
               authentication scheme that prevents the password from being sent
               over the wire in clear text. Use this in combination with the
-              normal --user option to set user name and password.
+              normal -u, --user option to set user name and password.
 
               Providing --digest multiple times has no extra effect.  Disable it
               again with --no-digest.
@@ -970,8 +977,8 @@ OPTIONS
               effect as EPRT is necessary then.
 
               Disabling EPRT only changes the active behavior. If you want to
-              switch to passive mode you need to not use --ftp-port or force it
-              with --ftp-pasv.
+              switch to passive mode you need to not use -P, --ftp-port or force
+              it with --ftp-pasv.
 
               Providing --disable-eprt multiple times has no extra effect.
               Disable it again with --no-disable-eprt.
@@ -1006,11 +1013,11 @@ OPTIONS
 
        -q, --disable
               If used as the first parameter on the command line, the curlrc
-              config file will not be read and used. See the --config for
+              config file will not be read and used. See the -K, --config for
               details on the default config file search path.
 
-              Providing --disable multiple times has no extra effect.  Disable
-              it again with --no-disable.
+              Providing -q, --disable multiple times has no extra effect.
+              Disable it again with --no-disable.
 
               Example:
                curl -q https://example.com
@@ -1104,7 +1111,7 @@ OPTIONS
               See also --doh-insecure. Added in 7.76.0.
 
        --doh-insecure
-              Same as --insecure but used for DoH (DNS-over-HTTPS).
+              Same as -k, --insecure but used for DoH (DNS-over-HTTPS).
 
               Providing --doh-insecure multiple times has no extra effect.
               Disable it again with --no-doh-insecure.
@@ -1143,7 +1150,11 @@ OPTIONS
               When used in FTP, the FTP server response lines are considered
               being "headers" and thus are saved there.
 
-              If --dump-header is provided several times, the last set value
+              Having multiple transfers in one set of operations (i.e. the URLs
+              in one -:, --next clause), will append them to the same file,
+              seperated by a blank line.
+
+              If -D, --dump-header is provided several times, the last set value
               will be used.
 
               Example:
@@ -1223,6 +1234,10 @@ OPTIONS
               option accepts decimal values! When curl stops waiting, it will
               continue as if the response has been received.
 
+              The decimal value needs to provided using a dot (.) as decimal
+              separator - not the local version even if it might be using
+              another separator.
+
               If --expect100-timeout is provided several times, the last set
               value will be used.
 
@@ -1250,7 +1265,7 @@ OPTIONS
 
               This option does not imply -f, --fail, which causes transfers to
               fail due to the server's HTTP status code. You can combine the two
-              options, however note --fail is not global and is therefore
+              options, however note -f, --fail is not global and is therefore
               contained by -:, --next.
 
               Providing --fail-early multiple times has no extra effect.
@@ -1269,8 +1284,8 @@ OPTIONS
               allow curl to output and save that content but also to return
               error 22.
 
-              This is an alternative option to --fail which makes curl fail for
-              the same circumstances but without saving the content.
+              This is an alternative option to -f, --fail which makes curl fail
+              for the same circumstances but without saving the content.
 
               Providing --fail-with-body multiple times has no extra effect.
               Disable it again with --no-fail-with-body.
@@ -1293,8 +1308,8 @@ OPTIONS
               successful response codes will slip through, especially when
               authentication is involved (response codes 401 and 407).
 
-              Providing --fail multiple times has no extra effect.  Disable it
-              again with --no-fail.
+              Providing -f, --fail multiple times has no extra effect.  Disable
+              it again with --no-fail.
 
               Example:
                curl --fail https://example.com
@@ -1332,12 +1347,12 @@ OPTIONS
               See also -F, --form. Added in 7.81.0.
 
        --form-string <name=string>
-              (HTTP SMTP IMAP) Similar to --form except that the value string
-              for the named parameter is used literally. Leading '@' and '<'
-              characters, and the ';type=' string in the value have no special
-              meaning. Use this in preference to --form if there's any
-              possibility that the string value may accidentally trigger the '@'
-              or '<' features of -F, --form.
+              (HTTP SMTP IMAP) Similar to -F, --form except that the value
+              string for the named parameter is used literally. Leading '@' and
+              '<' characters, and the ';type=' string in the value have no
+              special meaning. Use this in preference to -F, --form if there's
+              any possibility that the string value may accidentally trigger the
+              '@' or '<' features of -F, --form.
 
               --form-string can be used several times in a command line
 
@@ -1476,7 +1491,7 @@ OPTIONS
 
               See further examples and details in the MANUAL.
 
-              --form can be used several times in a command line
+              -F, --form can be used several times in a command line
 
               Example:
                curl --form "name=curl" --form "file=@loadthis" https://example.com
@@ -1561,10 +1576,10 @@ OPTIONS
        --ftp-pasv
               (FTP) Use passive mode for the data connection. Passive is the
               internal default behavior, but using this option can be used to
-              override a previous --ftp-port option.
+              override a previous -P, --ftp-port option.
 
               Reversing an enforced passive really is not doable but you must
-              then instead enforce the correct --ftp-port again.
+              then instead enforce the correct -P, --ftp-port again.
 
               Passive mode means that curl will try the EPSV command first and
               then PASV, unless --disable-epsv is used.
@@ -1609,7 +1624,8 @@ OPTIONS
        available.
 
 
-       If --ftp-port is provided several times, the last set value will be used.
+       If -P, --ftp-port is provided several times, the last set value will be
+       used.
 
        Examples:
         curl -P - ftp:/example.com
@@ -1702,8 +1718,8 @@ OPTIONS
               If used in combination with -I, --head, the POST data will instead
               be appended to the URL with a HEAD request.
 
-              Providing --get multiple times has no extra effect.  Disable it
-              again with --no-get.
+              Providing -G, --get multiple times has no extra effect.  Disable
+              it again with --no-get.
 
               Examples:
                curl --get https://example.com
@@ -1719,8 +1735,8 @@ OPTIONS
               are not normal legal URL contents but they should be encoded
               according to the URI standard.
 
-              Providing --globoff multiple times has no extra effect.  Disable
-              it again with --no-globoff.
+              Providing -g, --globoff multiple times has no extra effect.
+              Disable it again with --no-globoff.
 
               Example:
                curl -g "https://example.com/{[]}}}}"
@@ -1771,8 +1787,8 @@ OPTIONS
               document. When used on an FTP or FILE file, curl displays the file
               size and last modification time only.
 
-              Providing --head multiple times has no extra effect.  Disable it
-              again with --no-head.
+              Providing -I, --head multiple times has no extra effect.  Disable
+              it again with --no-head.
 
               Example:
                curl -I https://example.com
@@ -1784,10 +1800,10 @@ OPTIONS
               used within an HTTP request, it is added to the regular request
               headers.
 
-              For an IMAP or SMTP MIME uploaded mail built with --form options,
-              it is prepended to the resulting MIME document, effectively
-              including it at the mail global level. It does not affect raw
-              uploaded mails (Added in 7.56.0).
+              For an IMAP or SMTP MIME uploaded mail built with -F, --form
+              options, it is prepended to the resulting MIME document,
+              effectively including it at the mail global level. It does not
+              affect raw uploaded mails (Added in 7.56.0).
 
               You may specify any number of extra headers. Note that if you
               should add a custom header that has the same name as one of the
@@ -1828,7 +1844,7 @@ OPTIONS
               hosts than the original host, so sensitive headers should be used
               with caution combined with following redirects.
 
-              --header can be used several times in a command line
+              -H, --header can be used several times in a command line
 
               Examples:
                curl -H "X-First-Name: Joe" https://example.com
@@ -1844,8 +1860,8 @@ OPTIONS
               all options available.  If the argument "category" was provided,
               curl will display all categories and their meanings.
 
-              Providing --help multiple times has no extra effect.  Disable it
-              again with --no-help.
+              Providing -h, --help multiple times has no extra effect.  Disable
+              it again with --no-help.
 
               Example:
                curl --help all
@@ -1920,7 +1936,7 @@ OPTIONS
               (HTTP) Tells curl to use HTTP version 1.0 instead of using its
               internally preferred HTTP version.
 
-              Providing --http1.0 multiple times has no extra effect.
+              Providing -0, --http1.0 multiple times has no extra effect.
 
               Example:
                curl --http1.0 https://example.com
@@ -2030,10 +2046,10 @@ OPTIONS
               headers can include things like server name, cookies, date of the
               document, HTTP version and more...
 
-              To view the request headers, consider the --verbose option.
+              To view the request headers, consider the -v, --verbose option.
 
-              Providing --include multiple times has no extra effect.  Disable
-              it again with --no-include.
+              Providing -i, --include multiple times has no extra effect.
+              Disable it again with --no-include.
 
               Example:
                curl -i https://example.com
@@ -2061,8 +2077,8 @@ OPTIONS
 
               WARNING: using this option makes the transfer insecure.
 
-              Providing --insecure multiple times has no extra effect.  Disable
-              it again with --no-insecure.
+              Providing -k, --insecure multiple times has no extra effect.
+              Disable it again with --no-insecure.
 
               Example:
                curl --insecure https://example.com
@@ -2093,8 +2109,8 @@ OPTIONS
               This option tells curl to use IPv4 addresses only, and not for
               example try IPv6.
 
-              Providing --ipv4 multiple times has no extra effect.  Disable it
-              again with --no-ipv4.
+              Providing -4, --ipv4 multiple times has no extra effect.  Disable
+              it again with --no-ipv4.
 
               Example:
                curl --ipv4 https://example.com
@@ -2106,8 +2122,8 @@ OPTIONS
               This option tells curl to use IPv6 addresses only, and not for
               example try IPv4.
 
-              Providing --ipv6 multiple times has no extra effect.  Disable it
-              again with --no-ipv6.
+              Providing -6, --ipv6 multiple times has no extra effect.  Disable
+              it again with --no-ipv6.
 
               Example:
                curl --ipv6 https://example.com
@@ -2137,8 +2153,8 @@ OPTIONS
               the additional data pieces will be concatenated to the previous
               before sending.
 
-              The headers this option sets can be overridden with --header as
-              usual.
+              The headers this option sets can be overridden with -H, --header
+              as usual.
 
               --json can be used several times in a command line
 
@@ -2159,7 +2175,7 @@ OPTIONS
               Typical browsers always discard session cookies when they are
               closed down.
 
-              Providing --junk-session-cookies multiple times has no extra
+              Providing -j, --junk-session-cookies multiple times has no extra
               effect.  Disable it again with --no-junk-session-cookies.
 
               Example:
@@ -2274,9 +2290,9 @@ OPTIONS
               The rate limiting logic works on averaging the transfer speed to
               no more than the set threshold over a period of multiple seconds.
 
-              If you also use the --speed-limit option, that option will take
-              precedence and might cripple the rate-limiting slightly, to help
-              keeping the speed-limit logic working.
+              If you also use the -Y, --speed-limit option, that option will
+              take precedence and might cripple the rate-limiting slightly, to
+              help keeping the speed-limit logic working.
 
               If --limit-rate is provided several times, the last set value will
               be used.
@@ -2286,7 +2302,7 @@ OPTIONS
                curl --limit-rate 1000 https://example.com
                curl --limit-rate 10M https://example.com
 
-              See also -Y, --speed-limit and -y, --speed-time.
+              See also --rate, -Y, --speed-limit and -y, --speed-time.
 
        -l, --list-only
               (FTP POP3) (FTP) When listing an FTP directory, this switch forces
@@ -2308,8 +2324,8 @@ OPTIONS
               send a UIDL command instead, so the user may use the email's
               unique identifier rather than its message-id to make the request.
 
-              Providing --list-only multiple times has no extra effect.  Disable
-              it again with --no-list-only.
+              Providing -l, --list-only multiple times has no extra effect.
+              Disable it again with --no-list-only.
 
               Example:
                curl --list-only ftp://example.com/dir/
@@ -2350,13 +2366,13 @@ OPTIONS
               (HTTP) If the server reports that the requested page has moved to
               a different location (indicated with a Location: header and a 3XX
               response code), this option will make curl redo the request on the
-              new place. If used together with --include or -I, --head, headers
-              from all requested pages will be shown. When authentication is
-              used, curl only sends its credentials to the initial host. If a
-              redirect takes curl to a different host, it will not be able to
-              intercept the user+password. See also --location-trusted on how to
-              change this. You can limit the amount of redirects to follow by
-              using the --max-redirs option.
+              new place. If used together with -i, --include or -I, --head,
+              headers from all requested pages will be shown. When
+              authentication is used, curl only sends its credentials to the
+              initial host. If a redirect takes curl to a different host, it
+              will not be able to intercept the user+password. See also
+              --location-trusted on how to change this. You can limit the amount
+              of redirects to follow by using the --max-redirs option.
 
               When curl follows a redirect and if the request is a POST, it will
               send the following request with a GET if the HTTP response was
@@ -2368,11 +2384,11 @@ OPTIONS
               response by using the dedicated options for that: --post301,
               --post302 and --post303.
 
-              The method set with --request overrides the method curl would
+              The method set with -X, --request overrides the method curl would
               otherwise select to use.
 
-              Providing --location multiple times has no extra effect.  Disable
-              it again with --no-location.
+              Providing -L, --location multiple times has no extra effect.
+              Disable it again with --no-location.
 
               Example:
                curl -L https://example.com
@@ -2466,8 +2482,8 @@ OPTIONS
        -M, --manual
               Manual. Display the huge help text.
 
-              Providing --manual multiple times has no extra effect.  Disable it
-              again with --no-manual.
+              Providing -M, --manual multiple times has no extra effect.
+              Disable it again with --no-manual.
 
               Example:
                curl --manual
@@ -2495,7 +2511,7 @@ OPTIONS
               See also --limit-rate.
 
        --max-redirs <num>
-              (HTTP) Set maximum number of redirections to follow. When
+              (HTTP) Set maximum number of redirections to follow. When -L,
               --location is used, to prevent curl from following too many
               redirects, by default, the limit is set to 50 redirects. Set this
               option to -1 to make it unlimited.
@@ -2520,8 +2536,12 @@ OPTIONS
               time counter is reset each time the transfer is retried. You can
               use --retry-max-time to limit the retry time.
 
-              If --max-time is provided several times, the last set value will
-              be used.
+              The decimal value needs to provided using a dot (.) as decimal
+              separator - not the local version even if it might be using
+              another separator.
+
+              If -m, --max-time is provided several times, the last set value
+              will be used.
 
               Examples:
                curl --max-time 10 https://example.com
@@ -2546,12 +2566,13 @@ OPTIONS
               (HTTP) Enables Negotiate (SPNEGO) authentication.
 
               This option requires a library built with GSS-API or SSPI support.
-              Use --version to see if your curl supports GSS-API/SSPI or SPNEGO.
+              Use -V, --version to see if your curl supports GSS-API/SSPI or
+              SPNEGO.
 
-              When using this option, you must also provide a fake --user option
-              to activate the authentication code properly. Sending a '-u :' is
-              enough as the user name and password from the --user option are
-              not actually used.
+              When using this option, you must also provide a fake -u, --user
+              option to activate the authentication code properly. Sending a '-u
+              :' is enough as the user name and password from the -u, --user
+              option are not actually used.
 
               If this option is used several times, only the first one is used.
 
@@ -2580,7 +2601,7 @@ OPTIONS
 
        --netrc-optional
               Similar to -n, --netrc, but this option makes the .netrc usage
-              optional and not mandatory as the --netrc option does.
+              optional and not mandatory as the -n, --netrc option does.
 
               Providing --netrc-optional multiple times has no extra effect.
               Disable it again with --no-netrc-optional.
@@ -2609,13 +2630,14 @@ OPTIONS
                login myself
                password secret
 
-              Providing --netrc multiple times has no extra effect.  Disable it
-              again with --no-netrc.
+              Providing -n, --netrc multiple times has no extra effect.  Disable
+              it again with --no-netrc.
 
               Example:
                curl --netrc https://example.com
 
-              See also --netrc-file, -K, --config and -u, --user.
+              See also --netrc-file, -K, --config and -u, --user. This option is
+              mutually exclusive to --netrc-file and --netrc-optional.
 
        -:, --next
               Tells curl to use a separate operation for the following URL and
@@ -2623,9 +2645,9 @@ OPTIONS
               each with their own specific options, for example, such as
               different user names or custom requests for each.
 
-              --next will reset all local options and only global ones will have
-              their values survive over to the operation following the --next
-              instruction. Global options include -v, --verbose, --trace,
+              -:, --next will reset all local options and only global ones will
+              have their values survive over to the operation following the -:,
+              --next instruction. Global options include -v, --verbose, --trace,
               --trace-ascii and --fail-early.
 
               For example, you can do both a GET and a POST in a single command
@@ -2633,7 +2655,7 @@ OPTIONS
 
                curl www1.example.com --next -d postthis www2.example.com
 
-              --next can be used several times in a command line
+              -:, --next can be used several times in a command line
 
               Examples:
                curl https://example.com --next -d postthis www2.example.com
@@ -2663,8 +2685,8 @@ OPTIONS
               necessarily exactly when the data arrives.  Using this option will
               disable that buffering.
 
-              Providing --no-buffer multiple times has no extra effect.  Disable
-              it again with --buffer.
+              Providing -N, --no-buffer multiple times has no extra effect.
+              Disable it again with --buffer.
 
               Example:
                curl --no-buffer https://example.com
@@ -2680,8 +2702,8 @@ OPTIONS
               file.
 
               Note that this is the negated option name documented.  You can
-              thus use --clobber to enforce the clobbering, even if --remote-
-              header-name or -J is specified.
+              thus use --clobber to enforce the clobbering, even if -J,
+              --remote-header-name or -J is specified.
 
               Providing --no-clobber multiple times has no extra effect.
               Disable it again with --clobber.
@@ -2725,7 +2747,7 @@ OPTIONS
 
        --no-progress-meter
               Option to switch off the progress meter output without muting or
-              otherwise affecting warning and informational messages like
+              otherwise affecting warning and informational messages like -s,
               --silent does.
 
               Note that this is the negated option name documented. You can thus
@@ -2770,6 +2792,12 @@ OPTIONS
               disable the proxy ('no_proxy' and 'NO_PROXY'). If there's an
               environment variable disabling a proxy, you can set the noproxy
               list to "" to override it.
+
+              Since 7.86.0, IP addresses specified to this option can be
+              provided using CIDR notation: an appended slash and number
+              specifies the number of "network bits" out of the address to use
+              in the comparison. For example "192.168.0.0/16" would match all
+              addresses starting with "192.168".
 
               If --noproxy is provided several times, the last set value will be
               used.
@@ -2817,7 +2845,7 @@ OPTIONS
               (IMAP LDAP POP3 SMTP HTTP) Specify the Bearer Token for OAUTH 2.0
               server authentication. The Bearer Token is used in conjunction
               with the user name which can be specified as part of the --url or
-              --user options.
+              -u, --user options.
 
               The Bearer Token and user name are formatted according to RFC
               6750.
@@ -2832,7 +2860,7 @@ OPTIONS
 
        --output-dir <dir>
               This option specifies the directory in which files should be
-              stored, when --remote-name or --output are used.
+              stored, when -O, --remote-name or -o, --output are used.
 
               The given output directory is used for all URLs and output options
               on the command line, up until the first -:, --next.
@@ -2886,7 +2914,7 @@ OPTIONS
 
                 curl example.com -o nul
 
-              --output can be used several times in a command line
+              -o, --output can be used several times in a command line
 
               Examples:
                curl -o file https://example.com
@@ -2939,8 +2967,8 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              Providing --parallel multiple times has no extra effect.  Disable
-              it again with --no-parallel.
+              Providing -Z, --parallel multiple times has no extra effect.
+              Disable it again with --no-parallel.
 
               Example:
                curl --parallel https://example.com -o file1 https://example.com -o file2
@@ -3094,7 +3122,7 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              Providing --progress-bar multiple times has no extra effect.
+              Providing -#, --progress-bar multiple times has no extra effect.
               Disable it again with --no-progress-bar.
 
               Example:
@@ -3246,7 +3274,7 @@ OPTIONS
               See also --proxy-cert. Added in 7.52.0.
 
        --proxy-cert <cert[:passwd]>
-              Same as --cert but used in HTTPS proxy context.
+              Same as -E, --cert but used in HTTPS proxy context.
 
               If --proxy-cert is provided several times, the last set value will
               be used.
@@ -3293,9 +3321,9 @@ OPTIONS
        --proxy-header <header/@file>
               (HTTP) Extra header to include in the request when sending HTTP to
               a proxy. You may specify any number of extra headers. This is the
-              equivalent option to --header but is for proxy communication only
-              like in CONNECT requests when you want a separate header sent to
-              the proxy to what is sent to the actual remote host.
+              equivalent option to -H, --header but is for proxy communication
+              only like in CONNECT requests when you want a separate header sent
+              to the proxy to what is sent to the actual remote host.
 
               curl will make sure that each header you add/replace is sent with
               the proper end-of-line marker, you should thus not add that as a
@@ -3322,7 +3350,7 @@ OPTIONS
               See also -x, --proxy. Added in 7.37.0.
 
        --proxy-insecure
-              Same as --insecure but used in HTTPS proxy context.
+              Same as -k, --insecure but used in HTTPS proxy context.
 
               Providing --proxy-insecure multiple times has no extra effect.
               Disable it again with --no-proxy-insecure.
@@ -3498,7 +3526,7 @@ OPTIONS
               See also -x, --proxy and --proxy-tlspassword. Added in 7.52.0.
 
        --proxy-tlsv1
-              Same as --tlsv1 but used in HTTPS proxy context.
+              Same as -1, --tlsv1 but used in HTTPS proxy context.
 
               Providing --proxy-tlsv1 multiple times has no extra effect.
 
@@ -3523,8 +3551,8 @@ OPTIONS
               Such sensitive data should be retrieved from a file instead or
               similar and never used in clear text in a command line.
 
-              If --proxy-user is provided several times, the last set value will
-              be used.
+              If -U, --proxy-user is provided several times, the last set value
+              will be used.
 
               Example:
                curl --proxy-user name:pwd -x proxy https://example.com
@@ -3560,8 +3588,8 @@ OPTIONS
               All operations that are performed over an HTTP proxy will
               transparently be converted to HTTP. It means that certain protocol
               specific operations might not be available. This is not the case
-              if you can tunnel through the proxy, as one with the --proxytunnel
-              option.
+              if you can tunnel through the proxy, as one with the -p,
+              --proxytunnel option.
 
               User and password that might be provided in the proxy string are
               URL decoded by curl. This allows you to pass in special characters
@@ -3571,8 +3599,11 @@ OPTIONS
               environment variables, including the protocol prefix (http://) and
               the embedded user + password.
 
-              If --proxy is provided several times, the last set value will be
-              used.
+              When a proxy is used, the active FTP mode as set with -P, --ftp-
+              port, cannot be used.
+
+              If -x, --proxy is provided several times, the last set value will
+              be used.
 
               Example:
                curl --proxy http://proxy.example https://example.com
@@ -3604,7 +3635,7 @@ OPTIONS
               To suppress proxy CONNECT response headers when curl is set to
               output headers use --suppress-connect-headers.
 
-              Providing --proxytunnel multiple times has no extra effect.
+              Providing -p, --proxytunnel multiple times has no extra effect.
               Disable it again with --no-proxytunnel.
 
               Example:
@@ -3715,7 +3746,7 @@ OPTIONS
               symlink source_file target_file
                      See ln.
 
-       --quote can be used several times in a command line
+       -Q, --quote can be used several times in a command line
 
        Example:
         curl --quote "DELE file" ftp://example.com/foo
@@ -3775,8 +3806,8 @@ OPTIONS
               syntax (optionally with one of the numbers omitted). FTP use
               depends on the extended FTP command SIZE.
 
-              If --range is provided several times, the last set value will be
-              used.
+              If -r, --range is provided several times, the last set value will
+              be used.
 
               Example:
                curl --range 22-44 https://example.com
@@ -3791,7 +3822,7 @@ OPTIONS
 
               If given several URLs and a transfer completes faster than the
               allowed rate, curl will wait until the next transfer is started to
-              maintain the requested rate. This option has no effect when
+              maintain the requested rate. This option has no effect when -Z,
               --parallel is used.
 
               The request rate is provided as "N/U" where N is an integer number
@@ -3835,14 +3866,14 @@ OPTIONS
 
        -e, --referer <URL>
               (HTTP) Sends the "Referrer Page" information to the HTTP server.
-              This can also be set with the --header flag of course. When used
-              with --location you can append ";auto" to the --referer URL to
-              make curl automatically set the previous URL when it follows a
-              Location: header. The ";auto" string can be used alone, even if
-              you do not set an initial -e, --referer.
+              This can also be set with the -H, --header flag of course. When
+              used with -L, --location you can append ";auto" to the -e,
+              --referer URL to make curl automatically set the previous URL when
+              it follows a Location: header. The ";auto" string can be used
+              alone, even if you do not set an initial -e, --referer.
 
-              If --referer is provided several times, the last set value will be
-              used.
+              If -e, --referer is provided several times, the last set value
+              will be used.
 
               Examples:
                curl --referer "https://fake.example" https://example.com
@@ -3852,7 +3883,7 @@ OPTIONS
               See also -A, --user-agent and -H, --header.
 
        -J, --remote-header-name
-              (HTTP) This option tells the --remote-name option to use the
+              (HTTP) This option tells the -O, --remote-name option to use the
               server-specified Content-Disposition filename instead of
               extracting a filename from the URL. If the server-provided file
               name contains a path, that will be stripped off before the file
@@ -3875,8 +3906,8 @@ OPTIONS
               file that could be loaded automatically by Windows or some third
               party software.
 
-              Providing --remote-header-name multiple times has no extra effect.
-              Disable it again with --no-remote-header-name.
+              Providing -J, --remote-header-name multiple times has no extra
+              effect.  Disable it again with --no-remote-header-name.
 
               Example:
                curl -OJ https://example.com/file
@@ -3885,9 +3916,9 @@ OPTIONS
 
        --remote-name-all
               This option changes the default action for all given URLs to be
-              dealt with as if --remote-name were used for each one. So if you
-              want to disable that for a specific URL after --remote-name-all
-              has been used, you must use "-o -" or --no-remote-name.
+              dealt with as if -O, --remote-name were used for each one. So if
+              you want to disable that for a specific URL after --remote-name-
+              all has been used, you must use "-o -" or --no-remote-name.
 
               Providing --remote-name-all multiple times has no extra effect.
               Disable it again with --no-remote-name-all.
@@ -3910,9 +3941,9 @@ OPTIONS
               The remote file name to use for saving is extracted from the given
               URL, nothing else, and if it already exists it will be
               overwritten. If you want the server to be able to choose the file
-              name refer to --remote-header-name which can be used in addition
-              to this option. If the server chooses a file name and that name
-              already exists it will not be overwritten.
+              name refer to -J, --remote-header-name which can be used in
+              addition to this option. If the server chooses a file name and
+              that name already exists it will not be overwritten.
 
               There is no URL decoding done on the file name. If it has %20 or
               other URL encoded parts of the name, they will end up as-is as
@@ -3921,7 +3952,7 @@ OPTIONS
               You may use this option as many times as the number of URLs you
               have.
 
-              --remote-name can be used several times in a command line
+              -O, --remote-name can be used several times in a command line
 
               Example:
                curl -O https://example.com/filename
@@ -3934,7 +3965,7 @@ OPTIONS
               of the remote file, and if that is available make the local file
               get that same timestamp.
 
-              Providing --remote-time multiple times has no extra effect.
+              Providing -R, --remote-time multiple times has no extra effect.
               Disable it again with --no-remote-time.
 
               Example:
@@ -3987,10 +4018,10 @@ OPTIONS
               This option only changes the actual word used in the HTTP request,
               it does not alter the way curl behaves. So for example if you want
               to make a proper HEAD request, using -X HEAD will not suffice. You
-              need to use the --head option.
+              need to use the -I, --head option.
 
-              The method string you set with --request will be used for all
-              requests, which if you for example use --location may cause
+              The method string you set with -X, --request will be used for all
+              requests, which if you for example use -L, --location may cause
               unintended side-effects when curl does not change request method
               according to the HTTP 30x response codes - and similar.
 
@@ -4007,8 +4038,8 @@ OPTIONS
               (SMTP) Specifies a custom SMTP command to use instead of HELP or
               VRFY. (Added in 7.34.0)
 
-              If --request is provided several times, the last set value will be
-              used.
+              If -X, --request is provided several times, the last set value
+              will be used.
 
               Examples:
                curl -X "DELETE" https://example.com
@@ -4031,8 +4062,8 @@ OPTIONS
               resolved last so any --resolve with a specific host and port will
               be used first.
 
-              The provided address set by this option will be used even if
-              --ipv4 or --ipv6 is set to make curl use another IP version.
+              The provided address set by this option will be used even if -4,
+              --ipv4 or -6, --ipv6 is set to make curl use another IP version.
 
               By prefixing the host with a '+' you can make the entry time out
               after curl's default timeout (1 minute). Note that this will only
@@ -4107,7 +4138,7 @@ OPTIONS
               Disable it again with --no-retry-connrefused.
 
               Example:
-               curl --retry-connrefused --retry https://example.com
+               curl --retry-connrefused --retry 7 https://example.com
 
               See also --retry and --retry-all-errors. Added in 7.52.0.
 
@@ -4122,7 +4153,7 @@ OPTIONS
               will be used.
 
               Example:
-               curl --retry-delay 5 --retry https://example.com
+               curl --retry-delay 5 --retry 7 https://example.com
 
               See also --retry.
 
@@ -4220,7 +4251,7 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              Providing --show-error multiple times has no extra effect.
+              Providing -S, --show-error multiple times has no extra effect.
               Disable it again with --no-show-error.
 
               Example:
@@ -4234,11 +4265,11 @@ OPTIONS
               for, potentially even to the terminal/stdout unless you redirect
               it.
 
-              Use --show-error in addition to this option to disable progress
-              meter but still show error messages.
+              Use -S, --show-error in addition to this option to disable
+              progress meter but still show error messages.
 
-              Providing --silent multiple times has no extra effect.  Disable it
-              again with --no-silent.
+              Providing -s, --silent multiple times has no extra effect.
+              Disable it again with --no-silent.
 
               Example:
                curl -s https://example.com
@@ -4258,12 +4289,12 @@ OPTIONS
               mutually exclusive.
 
               This option is superfluous since you can specify a socks4 proxy
-              with --proxy using a socks4:// protocol prefix.
+              with -x, --proxy using a socks4:// protocol prefix.
 
               Since 7.52.0, --preproxy can be used to specify a SOCKS proxy at
-              the same time --proxy is used with an HTTP/HTTPS proxy. In such a
-              case curl first connects to the SOCKS proxy and then connects
-              (through SOCKS) to the HTTP or HTTPS proxy.
+              the same time -x, --proxy is used with an HTTP/HTTPS proxy. In
+              such a case curl first connects to the SOCKS proxy and then
+              connects (through SOCKS) to the HTTP or HTTPS proxy.
 
               If --socks4 is provided several times, the last set value will be
               used.
@@ -4285,12 +4316,12 @@ OPTIONS
               mutually exclusive.
 
               This option is superfluous since you can specify a socks4a proxy
-              with --proxy using a socks4a:// protocol prefix.
+              with -x, --proxy using a socks4a:// protocol prefix.
 
               Since 7.52.0, --preproxy can be used to specify a SOCKS proxy at
-              the same time --proxy is used with an HTTP/HTTPS proxy. In such a
-              case curl first connects to the SOCKS proxy and then connects
-              (through SOCKS) to the HTTP or HTTPS proxy.
+              the same time -x, --proxy is used with an HTTP/HTTPS proxy. In
+              such a case curl first connects to the SOCKS proxy and then
+              connects (through SOCKS) to the HTTP or HTTPS proxy.
 
               If --socks4a is provided several times, the last set value will be
               used.
@@ -4371,12 +4402,12 @@ OPTIONS
               mutually exclusive.
 
               This option is superfluous since you can specify a socks5 hostname
-              proxy with --proxy using a socks5h:// protocol prefix.
+              proxy with -x, --proxy using a socks5h:// protocol prefix.
 
               Since 7.52.0, --preproxy can be used to specify a SOCKS proxy at
-              the same time --proxy is used with an HTTP/HTTPS proxy. In such a
-              case curl first connects to the SOCKS proxy and then connects
-              (through SOCKS) to the HTTP or HTTPS proxy.
+              the same time -x, --proxy is used with an HTTP/HTTPS proxy. In
+              such a case curl first connects to the SOCKS proxy and then
+              connects (through SOCKS) to the HTTP or HTTPS proxy.
 
               If --socks5-hostname is provided several times, the last set value
               will be used.
@@ -4398,12 +4429,12 @@ OPTIONS
               mutually exclusive.
 
               This option is superfluous since you can specify a socks5 proxy
-              with --proxy using a socks5:// protocol prefix.
+              with -x, --proxy using a socks5:// protocol prefix.
 
               Since 7.52.0, --preproxy can be used to specify a SOCKS proxy at
-              the same time --proxy is used with an HTTP/HTTPS proxy. In such a
-              case curl first connects to the SOCKS proxy and then connects
-              (through SOCKS) to the HTTP or HTTPS proxy.
+              the same time -x, --proxy is used with an HTTP/HTTPS proxy. In
+              such a case curl first connects to the SOCKS proxy and then
+              connects (through SOCKS) to the HTTP or HTTPS proxy.
 
               This option (as well as --socks4) does not work with IPV6, FTPS or
               LDAP.
@@ -4419,9 +4450,9 @@ OPTIONS
        -Y, --speed-limit <speed>
               If a transfer is slower than this given speed (in bytes per
               second) for speed-time seconds it gets aborted. speed-time is set
-              with --speed-time and is 30 if not set.
+              with -y, --speed-time and is 30 if not set.
 
-              If --speed-limit is provided several times, the last set value
+              If -Y, --speed-limit is provided several times, the last set value
               will be used.
 
               Example:
@@ -4439,8 +4470,8 @@ OPTIONS
               affect slow connects etc. If this is a concern for you, try the
               --connect-timeout option.
 
-              If --speed-time is provided several times, the last set value will
-              be used.
+              If -y, --speed-time is provided several times, the last set value
+              will be used.
 
               Example:
                curl --speed-limit 300 --speed-time 10 https://example.com
@@ -4496,11 +4527,17 @@ OPTIONS
 
        --ssl-reqd
               (FTP IMAP POP3 SMTP LDAP) Require SSL/TLS for the connection.
-              Terminates the connection if the server does not support SSL/TLS.
+              Terminates the connection if the transfer cannot be upgraded to
+              use SSL/TLS.
 
               This option is handled in LDAP since version 7.81.0. It is fully
               supported by the OpenLDAP backend and rejected by the generic ldap
               backend if explicit TLS is required.
+
+              This option is unnecessary if you use a URL scheme that in itself
+              implies immediate and implicit use of TLS, like for FTPS, IMAPS,
+              POP3S, SMTPS and LDAPS. Such transfers will always fail if the TLS
+              handshake does not work.
 
               This option was formerly known as --ftp-ssl-reqd.
 
@@ -4557,7 +4594,7 @@ OPTIONS
               in curl 7.77.0 this instruction is ignored. SSLv2 is widely
               considered insecure (see RFC 6176).
 
-              Providing --sslv2 multiple times has no extra effect.
+              Providing -2, --sslv2 multiple times has no extra effect.
 
               Example:
                curl --sslv2 https://example.com
@@ -4572,7 +4609,7 @@ OPTIONS
               in curl 7.77.0 this instruction is ignored. SSLv3 is widely
               considered insecure (see RFC 7568).
 
-              Providing --sslv3 multiple times has no extra effect.
+              Providing -3, --sslv3 multiple times has no extra effect.
 
               Example:
                curl --sslv3 https://example.com
@@ -4602,6 +4639,10 @@ OPTIONS
               headers to the terminal. Use --no-styled-output to switch them
               off.
 
+              Styled output requires a terminal that supports bold fonts. This
+              feature is not present on curl for Windows due to lack of this
+              capability.
+
               This option is global and does not need to be specified for each
               use of -:, --next.
 
@@ -4614,11 +4655,11 @@ OPTIONS
               See also -I, --head and -v, --verbose. Added in 7.61.0.
 
        --suppress-connect-headers
-              When --proxytunnel is used and a CONNECT request is made do not
-              output proxy CONNECT response headers. This option is meant to be
-              used with --dump-header or --include which are used to show
-              protocol headers in the output. It has no effect on debug options
-              such as --verbose or --trace, or any statistics.
+              When -p, --proxytunnel is used and a CONNECT request is made do
+              not output proxy CONNECT response headers. This option is meant to
+              be used with -D, --dump-header or -i, --include which are used to
+              show protocol headers in the output. It has no effect on debug
+              options such as -v, --verbose or --trace, or any statistics.
 
               Providing --suppress-connect-headers multiple times has no extra
               effect.  Disable it again with --no-suppress-connect-headers.
@@ -4664,7 +4705,7 @@ OPTIONS
 
               NEW_ENV=<var,val> Sets an environment variable.
 
-              --telnet-option can be used several times in a command line
+              -t, --telnet-option can be used several times in a command line
 
               Example:
                curl -t TTYPE=vt100 telnet://example.com/
@@ -4711,8 +4752,8 @@ OPTIONS
               document that is older than the given date/time, default is a
               document that is newer than the specified date/time.
 
-              If --time-cond is provided several times, the last set value will
-              be used.
+              If -z, --time-cond is provided several times, the last set value
+              will be used.
 
               Examples:
                curl -z "Wed 01 Sep 2021 12:18:00" https://example.com
@@ -4879,7 +4920,7 @@ OPTIONS
               (SSL) Tells curl to use at least TLS version 1.x when negotiating
               with a remote TLS server. That means TLS version 1.0 or higher
 
-              Providing --tlsv1 multiple times has no extra effect.
+              Providing -1, --tlsv1 multiple times has no extra effect.
 
               Example:
                curl --tlsv1 https://example.com
@@ -4982,18 +5023,19 @@ OPTIONS
               be specified instead of "-" to use stdin in non-blocking mode to
               allow reading server output while stdin is being uploaded.
 
-              You can specify one --upload-file for each URL on the command
+              You can specify one -T, --upload-file for each URL on the command
               line. Each -T, --upload-file + URL pair specifies what to upload
-              and to where. curl also supports "globbing" of the --upload-file
-              argument, meaning that you can upload multiple files to a single
-              URL by using the same URL globbing style supported in the URL.
+              and to where. curl also supports "globbing" of the -T, --upload-
+              file argument, meaning that you can upload multiple files to a
+              single URL by using the same URL globbing style supported in the
+              URL.
 
               When uploading to an SMTP server: the uploaded data is assumed to
               be RFC 5322 formatted. It has to feature the necessary set of
               headers and mail body formatted correctly by the user as curl will
               not transcode nor encode it further in any way.
 
-              --upload-file can be used several times in a command line
+              -T, --upload-file can be used several times in a command line
 
               Examples:
                curl -T file https://example.com
@@ -5001,6 +5043,28 @@ OPTIONS
                curl --upload-file "{file1,file2}" https://example.com
 
               See also -G, --get and -I, --head.
+
+       --url-query <data>
+              (all) This option adds a piece of data, usually a name + value
+              pair, to the end of the URL query part. The syntax is identical to
+              that used for --data-urlencode with one extension:
+
+              If the argument starts with a '+' (plus), the rest of the string
+              is provided as-is unencoded.
+
+              The query part of a URL is the one following the question mark on
+              the right end.
+
+              --url-query can be used several times in a command line
+
+              Examples:
+               curl --url-query name=val https://example.com
+               curl --url-query =encodethis http://example.net/foo
+               curl --url-query name@file https://example.com
+               curl --url-query @fileonly https://example.com
+               curl --url-query "+name=%20foo" https://example.com
+
+              See also --data-urlencode and -G, --get. Added in 7.87.0.
 
        --url <url>
               Specify a URL to fetch. This option is mostly handy when you want
@@ -5013,8 +5077,8 @@ OPTIONS
               used. Since 7.45.0 guessing can be disabled by setting a default
               protocol, see --proto-default for details.
 
-              To control where this URL is written, use the --output or the
-              --remote-name options.
+              To control where this URL is written, use the -o, --output or the
+              -O, --remote-name options.
 
               WARNING: On Windows, particular file:// accesses can be converted
               to network accesses by the operating system. Beware!
@@ -5031,8 +5095,8 @@ OPTIONS
               enforced by using a URL that ends with ";type=A". This option
               causes data sent to stdout to be in text mode for win32 systems.
 
-              Providing --use-ascii multiple times has no extra effect.  Disable
-              it again with --no-use-ascii.
+              Providing -B, --use-ascii multiple times has no extra effect.
+              Disable it again with --no-use-ascii.
 
               Example:
                curl -B ftp://example.com/README
@@ -5042,15 +5106,15 @@ OPTIONS
        -A, --user-agent <name>
               (HTTP) Specify the User-Agent string to send to the HTTP server.
               To encode blanks in the string, surround the string with single
-              quote marks. This header can also be set with the --header or the
-              --proxy-header options.
+              quote marks. This header can also be set with the -H, --header or
+              the --proxy-header options.
 
               If you give an empty argument to -A, --user-agent (""), it will
               remove the header completely from the request. If you prefer a
               blank header, you can set it to a single space (" ").
 
-              If --user-agent is provided several times, the last set value will
-              be used.
+              If -A, --user-agent is provided several times, the last set value
+              will be used.
 
               Example:
                curl -A "Agent 007" https://example.com
@@ -5059,7 +5123,7 @@ OPTIONS
 
        -u, --user <user:password>
               Specify the user name and password to use for server
-              authentication. Overrides --netrc and --netrc-optional.
+              authentication. Overrides -n, --netrc and --netrc-optional.
 
               If you simply specify the user name, curl will prompt for a
               password.
@@ -5093,8 +5157,8 @@ OPTIONS
               curl to select the user name and password from your environment by
               specifying a single colon with this option: "-u :".
 
-              If --user is provided several times, the last set value will be
-              used.
+              If -u, --user is provided several times, the last set value will
+              be used.
 
               Example:
                curl -u user:secret https://example.com
@@ -5108,8 +5172,8 @@ OPTIONS
               by curl that is hidden in normal cases, and a line starting with
               '*' means additional info provided by curl.
 
-              If you only want HTTP headers in the output, --include might be
-              the option you are looking for.
+              If you only want HTTP headers in the output, -i, --include might
+              be the option you are looking for.
 
               If you think this option still does not give you enough details,
               consider using --trace or --trace-ascii instead.
@@ -5117,10 +5181,10 @@ OPTIONS
               This option is global and does not need to be specified for each
               use of -:, --next.
 
-              Use --silent to make curl really quiet.
+              Use -s, --silent to make curl really quiet.
 
-              Providing --verbose multiple times has no extra effect.  Disable
-              it again with --no-verbose.
+              Providing -v, --verbose multiple times has no extra effect.
+              Disable it again with --no-verbose.
 
               Example:
                curl --verbose https://example.com
@@ -5221,8 +5285,8 @@ OPTIONS
               zstd   Automatic decompression (via zstd) of compressed files over
                      HTTP is supported.
 
-       Providing --version multiple times has no extra effect.  Disable it again
-       with --no-version.
+       Providing -V, --version multiple times has no extra effect.  Disable it
+       again with --no-version.
 
        Example:
         curl --version
@@ -5268,9 +5332,9 @@ OPTIONS
               filename_effective
                              The ultimate filename that curl writes out to. This
                              is only meaningful if curl is told to write to a
-                             file with the --remote-name or --output option.
-                             It's most useful in combination with the --remote-
-                             header-name option.
+                             file with the -O, --remote-name or -o, --output
+                             option. It's most useful in combination with the
+                             -J, --remote-header-name option.
 
               ftp_entry_path The initial path curl ended up in when logging on
                              to the remote FTP server.
@@ -5326,10 +5390,10 @@ OPTIONS
                              means the verification was successful. (Added in
                              7.52.0)
 
-              redirect_url   When an HTTP request was made without --location to
-                             follow redirects (or when --max-redirs is met),
-                             this variable will show the actual URL a redirect
-                             would have gone to.
+              redirect_url   When an HTTP request was made without -L,
+                             --location to follow redirects (or when --max-
+                             redirs is met), this variable will show the actual
+                             URL a redirect would have gone to.
 
               referer        The Referer: header, if there was any. (Added in
                              7.76.0)
@@ -5371,13 +5435,13 @@ OPTIONS
                              that was requested. 0 means the verification was
                              successful.
 
-              stderr         From this point on, the --write-out output will be
-                             written to standard error. (Added in 7.63.0)
+              stderr         From this point on, the -w, --write-out output will
+                             be written to standard error. (Added in 7.63.0)
 
-              stdout         From this point on, the --write-out output will be
-                             written to standard output.  This is the default,
-                             but can be used to switch back after switching to
-                             stderr.  (Added in 7.63.0)
+              stdout         From this point on, the -w, --write-out output will
+                             be written to standard output.  This is the
+                             default, but can be used to switch back after
+                             switching to stderr.  (Added in 7.63.0)
 
               time_appconnect
                              The time, in seconds, it took from the start until
@@ -5425,8 +5489,8 @@ OPTIONS
                              location: headers.
 
 
-              If --write-out is provided several times, the last set value will
-              be used.
+              If -w, --write-out is provided several times, the last set value
+              will be used.
 
               Example:
                curl -w '%{http_code}\n' https://example.com
@@ -5450,7 +5514,7 @@ OPTIONS
 
 FILES
        ~/.curlrc
-              Default config file, see --config for details.
+              Default config file, see -K, --config for details.
 
 ENVIRONMENT
        The environment variables can be specified in lower case or upper case.
@@ -5458,7 +5522,7 @@ ENVIRONMENT
        is only available in lower case.
 
        Using an environment variable to set the proxy has the same effect as
-       using the --proxy option.
+       using the -x, --proxy option.
 
 
        http_proxy [protocol://]<host>[:port]
@@ -5482,7 +5546,7 @@ ENVIRONMENT
               the hostname itself.
 
               This environment variable disables use of the proxy even when
-              specified with the --proxy option. That is
+              specified with the -x, --proxy option. That is
               NO_PROXY=direct.example.com curl -x http://proxy.example.com
               http://direct.example.com accesses the target URL directly, and
               NO_PROXY=direct.example.com curl -x http://proxy.example.com
@@ -5492,9 +5556,11 @@ ENVIRONMENT
               The list of host names can also be include numerical IP addresses,
               and IPv6 versions should then be given without enclosing brackets.
 
-              IPv6 numerical addresses are compared as strings, so they will
-              only match if the representations are the same: "::1" is the same
-              as "::0:1" but they do not match.
+              Since 7.86.0, IP addresses can be specified using CIDR notation:
+              an appended slash and number specifies the number of "network
+              bits" out of the address to use in the comparison. For example
+              "192.168.0.0/16" would match all addresses starting with
+              "192.168".
 
        APPDATA <dir>
               On Windows, this variable is used when trying to find the home
@@ -5510,7 +5576,7 @@ ENVIRONMENT
 
        CURL_HOME <dir>
               If set, is the first variable curl checks when trying to find its
-              home directory. If not set, it continues to check XDG_CONFIG_HOME.
+              home directory. If not set, it continues to check XDG_CONFIG_HOME
 
        CURL_SSL_BACKEND <TLS backend>
               If curl was built with support for "MultiSSL", meaning that it has
@@ -5657,7 +5723,7 @@ EXIT CODES
 
        22     HTTP page not retrieved. The requested URL was not found or
               returned another error with the HTTP error code being 400 or
-              above. This return code only appears if --fail is used.
+              above. This return code only appears if -f, --fail is used.
 
        23     Write error. Curl could not write data to a local filesystem or
               similar.

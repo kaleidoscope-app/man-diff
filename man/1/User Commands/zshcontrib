@@ -38,7 +38,7 @@ UTILITIES
        distribution in your home directory, you would use the commands:
 
               mkdir ~/zsh_help
-              perl ~/zsh-5.8.1/Util/helpfiles ~/zsh_help
+              perl ~/zsh-5.9/Util/helpfiles ~/zsh_help
 
        The HELPDIR parameter tells run-help where to look for the help files.
        When unset, it uses the default installation path.  To use your own set
@@ -150,7 +150,7 @@ UTILITIES
 
        Run zkbd either as an autoloaded function, or as a shell script:
 
-              zsh -f ~/zsh-5.8.1/Functions/Misc/zkbd
+              zsh -f ~/zsh-5.9/Functions/Misc/zkbd
 
        When you run zkbd, it first asks you to enter your terminal type; if the
        default it offers is correct, just press return.  It then asks you to
@@ -194,7 +194,7 @@ UTILITIES
        To use reporter, read the script into your shell with the `.' command and
        redirect the output into a file:
 
-              . ~/zsh-5.8.1/Util/reporter > zsh.report
+              . ~/zsh-5.9/Util/reporter > zsh.report
 
        You should check the zsh.report file for any sensitive information such
        as passwords and delete them by hand before sending the script to the
@@ -299,7 +299,7 @@ UTILITIES
               this is added to the array of widgets to be invoked in the given
               hook context.  Widgets are invoked in the order they were added,
               with
-                     zle widgetname -Nw -- "$@"
+                     zle widgetname -Nw -f "nolast" -- "$@"
 
               Note that this means that the `WIDGET' special parameter tracks
               the widgetname when the widget function is called, rather than
@@ -400,7 +400,7 @@ REMEMBERING RECENT DIRECTORIES
               list can be edited to any extent you like; no sanity checking is
               performed.  Completion is available.  No quoting is necessary
               (except for newlines, where I have in any case no sympathy);
-              directories are in unabbreviated from and contain an absolute
+              directories are in unabbreviated form and contain an absolute
               path, i.e. they start with /.  Usually the first entry should be
               left as the current directory.
 
@@ -578,9 +578,9 @@ REMEMBERING RECENT DIRECTORIES
 
 ABBREVIATED DYNAMIC REFERENCES TO DIRECTORIES
        The dynamic directory naming system is described in the subsection
-       Dynamic named directories of the section Filename Expansion in expn(1).
-       In this, a reference to ~[...] is expanded by a function found by the
-       hooks mechanism.
+       Dynamic named directories of the section Filename Expansion in
+       zshexpn(1).  In this, a reference to ~[...] is expanded by a function
+       found by the hooks mechanism.
 
        The contributed function zsh_directory_name_generic provides a system
        allowing the user to refer to directories with only a limited amount of
@@ -618,7 +618,7 @@ ABBREVIATED DYNAMIC REFERENCES TO DIRECTORIES
 
        Then arrange for the wrapper to be run as a zsh_directory_name hook:
 
-              autoload -Uz add-zsh-hook zsh_diretory_name_generic zdn_mywrapper
+              autoload -Uz add-zsh-hook zsh_directory_name_generic zdn_mywrapper
               add-zsh-hook -U zsh_directory_name zdn_mywrapper
 
    Configuration
@@ -1044,8 +1044,8 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
               select the simpler one by setting this style to true; the default
               is to use the not-that-simple code, which is potentially a lot
               slower but might be more accurate in all possible cases. This
-              style is used by the bzr and hg backends. In the case of hg it
-              will invoke the external hexdump program to parse the binary
+              style is used by the bzr, hg, and git backends. In the case of hg
+              it will invoke the external hexdump program to parse the binary
               dirstate cache file; this method will not return the local
               revision number.
 
@@ -1094,7 +1094,7 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
               gather a list of unapplied patches (for example with Mercurial
               Queue patches).
 
-              Used by the quilt and hg backends.
+              Used by the quilt, hg, and git backends.
 
        The default values for these styles in all contexts are:
 
@@ -1190,15 +1190,15 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
               as the %Q expando.
 
        %Q     Quilt series information.  When quilt is used (either in `addon'
-              mode or as a `standalone' backend), this expando is set to quilt
-              series' patch-format string.  The set-patch-format hook and
+              mode or as a `standalone' backend), this expando is set to the
+              quilt series' patch-format string.  The set-patch-format hook and
               nopatch-format style are honoured.
 
               See Quilt Support below for details.
 
        In branchformat these replacements are done:
 
-       %b     The branch name.
+       %b     The branch name. For hg, the branch name can include a topic name.
        %r     The current revision number or the hgrevformat style for hg.
 
        In hgrevformat these replacements are done:
@@ -1265,7 +1265,7 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
        directory is configurable via the `QUILT_PATCHES' environment variable.
        If that variable exists its value is used, otherwise the value `patches'
        is assumed. The value from $QUILT_PATCHES can be overwritten using the
-       `quilt-patches' style. (Note: you can use vcs_info to keep the value of
+       `quilt-patch-dir' style. (Note: you can use vcs_info to keep the value of
        $QUILT_PATCHES correct all the time via the post-quilt hook).
 
        When the directory in question is found, quilt is assumed to be active.
@@ -1361,8 +1361,8 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
               details.
 
        vcs_info_lastmsg
-              Outputs the last ${vcs_info_msg_*_} value.  Takes into account the
-              value of the use-prompt-escapes style in
+              Outputs the current values of ${vcs_info_msg_*_}.  Takes into
+              account the value of the use-prompt-escapes style in
               ':vcs_info:formats:command:-all-'. It also only prints max-exports
               values.
 
@@ -1487,9 +1487,16 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
               generated; the use-quilt zstyle must be true for quilt (the mq and
               stgit backends are active by default).
 
-              This hook gets the names of all applied patches which vcs_info
-              collected so far in the opposite order, which means that the first
-              argument is the top-most patch and so forth.
+              The arguments to this hook describe applied patches in the
+              opposite order, which means that the first argument is the
+              top-most patch and so forth.
+
+              When the patches' log messages can be extracted, those are
+              embedded within each argument after a space, so each argument is
+              of the form `patch-name first line of the log message', where
+              patch-name contains no whitespace. The mq backend passes arguments
+              of the form `patch name', with possible embedded spaces, but
+              without extracting the patch's log message.
 
               When setting ret to non-zero, the string in
               ${hook_com[applied-string]} will be available as %p in the
@@ -1497,20 +1504,30 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
               with set-patch-format, responsible for %-escaping that value for
               use in the prompt.  (See the Oddities section.)
 
+              The quilt backend passes to this hook the inputs
+              ${hook_com[quilt-patches-dir]} and, if it has been determined,
+              ${hook_com[quilt-pc-dir]}.
+
        gen-unapplied-string
               Called in the git (with stgit or during rebase), and hg (with mq)
               backend and in quilt support when the unapplied-string is
               generated; the get-unapplied style must be true.
 
               This hook gets the names of all unapplied patches which vcs_info
-              collected so far in order, which means that the first argument is
-              the patch next-in-line to be applied and so forth.
+              in order, which means that the first argument is the patch
+              next-in-line to be applied and so forth.
+
+              The format of each argument is as for gen-applied-string, above.
 
               When setting ret to non-zero, the string in
               ${hook_com[unapplied-string]} will be available as %u in the
               patch-format and nopatch-format styles.  This hook is, in concert
               with set-patch-format, responsible for %-escaping that value for
               use in the prompt.  (See the Oddities section.)
+
+              The quilt backend passes to this hook the inputs
+              ${hook_com[quilt-patches-dir]} and, if it has been determined,
+              ${hook_com[quilt-pc-dir]}.
 
        gen-mqguards-string
               Called in the hg backend when guards-string is generated; the
@@ -1594,6 +1611,10 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
               %-escaping the final patch-format value for use in the prompt.
               (See the Oddities section.)
 
+              The quilt backend passes to this hook the inputs
+              ${hook_com[quilt-patches-dir]} and, if it has been determined,
+              ${hook_com[quilt-pc-dir]}.
+
        set-message
               Called each time before a `vcs_info_msg_N_' message is set.  It
               takes two arguments; the first being the `N' in the message
@@ -1652,16 +1673,27 @@ GATHERING INFORMATION FROM VERSION CONTROL SYSTEMS
 
        Display the revision number in yellow for bzr and svn:
               zstyle ':vcs_info:(svn|bzr):*' \
+                     branchformat '%b%%F{yellow}:%r'
+
+       The doubled percent sign is explained in the Oddities section.
+
+       Alternatively, one can use the raw colour codes directly:
+
+              zstyle ':vcs_info:(svn|bzr):*' \
                      branchformat '%b%{'${fg[yellow]}'%}:%r'
 
-       If you want colors, make sure you enclose the color codes in %{...%} if
-       you want to use the string provided by vcs_info in prompts.
+       Normally when a variable is interpolated into a format string, the
+       variable needs to be %-escaped. In this example we skipped that because
+       we assume the value of ${fg[yellow]} doesn't contain any % signs.
+
+       Make sure you enclose the color codes in %{...%} if you want to use the
+       string provided by vcs_info in prompts.
 
        Here is how to print the VCS information as a command (not in a prompt):
-              alias vcsi='vcs_info command; vcs_info_lastmsg'
+              vcsi() { vcs_info interactive; vcs_info_lastmsg }
 
        This way, you can even define different formats for output via
-       vcs_info_lastmsg in the ':vcs_info:*:command:*' namespace.
+       vcs_info_lastmsg in the ':vcs_info:*:interactive:*' namespace.
 
        Now as promised, some code that uses hooks: say, you'd like to replace
        the string `svn' by `subversion' in vcs_info's %s formats replacement.
@@ -1740,7 +1772,7 @@ PROMPT THEMES
    Installation
        You should make sure all the functions from the Functions/Prompts
        directory of the source distribution are available; they all begin with
-       the string `prompt_' except for the special function`promptinit'.  You
+       the string `prompt_' except for the special function `promptinit'.  You
        also need the `colors' and `add-zsh-hook' functions from Functions/Misc.
        All these functions may already be installed on your system; if not, you
        will need to find them and copy them.  The directory should appear as one
@@ -1830,18 +1862,21 @@ PROMPT THEMES
               even beyond the scope of localoptions, should your function need
               that.
 
-       Modify precmd and preexec
-              Use of add-zsh-hook is recommended.  The precmd and preexec hooks
-              are automatically adjusted if the prompt theme changes or is
-              disabled.
+       Modify hooks
+              Use of add-zsh-hook and add-zle-hook-widget is recommended (see
+              the Manipulating Hook Functions section above).  All hooks that
+              follow the naming pattern prompt_theme_hook are automatically
+              removed when the prompt theme changes or is disabled.
 
        Declare cleanup
               If your function makes any other changes that should be undone
               when the theme is disabled, your setup function may call
-              prompt_cleanup command
-       where command should be suitably quoted.  If your theme is ever disabled
-       or replaced by another, command is executed with eval.  You may declare
-       more than one such cleanup hook.
+
+                     prompt_cleanup command
+
+              where command should be suitably quoted.  If your theme is ever
+              disabled or replaced by another, command is executed with eval.
+              You may declare more than one such cleanup hook.
 
        Define preview
               Define or autoload a function prompt_name_preview to display a
@@ -2103,7 +2138,7 @@ ZLE FUNCTIONS
               directly.
 
        bracketed-paste-magic
-              The bracketed-paste widget (see subsection Miscellaneous in
+              The bracketed-paste widget (see the subsection `Miscellaneous' in
               zshzle(1)) inserts pasted text literally into the editor buffer
               rather than interpret it as keystrokes.  This disables some common
               usages where the self-insert widget is replaced in order to
@@ -2260,6 +2295,12 @@ ZLE FUNCTIONS
               Edit the command line using your visual editor, as in ksh.
 
                      bindkey -M vicmd v edit-command-line
+
+              The editor to be used can also be specified using the editor style
+              in the context of the widget. It is specified as an array of
+              command and arguments:
+
+                     zstyle :zle:edit-command-line editor gvim -f
 
        expand-absolute-path
               Expand the file name under the cursor to an absolute path,
@@ -2930,7 +2971,7 @@ ZLE FUNCTIONS
 
        zcalc-auto-insert
               This function is useful together with the zcalc function described
-              in the section Mathematical Functions.  It should be bound to a
+              in the section `Mathematical Functions'.  It should be bound to a
               key representing a binary operator such as `+', `-', `*' or `/'.
               When running in zcalc, if the key occurs at the start of the line
               or immediately following an open parenthesis, the text "ans " is
@@ -3287,7 +3328,8 @@ MIME FUNCTIONS
               be shown during the setup operation.
 
               The system respects the mailcap flags needsterminal and
-              copiousoutput, see mailcap(4).
+              copiousoutput; see mailcap(4) or mailcap(5) (the man page's name
+              varies across platforms).
 
               The functions use the following styles, which are defined with the
               zstyle builtin command (see zshmodules(1)).  They should be
@@ -3356,7 +3398,7 @@ MIME FUNCTIONS
                      this example shows, the complete file name is matched
                      against the pattern, regardless of how the file was passed
                      to the handler.  The file is resolved to a full path using
-                     the :P modifier described in the subsection Modifiers in
+                     the :P modifier described in the subsection `Modifiers' in
                      zshexpn(1); this means that symbolic links are resolved
                      where possible, so that links into other file systems
                      behave in the correct fashion.
@@ -3950,6 +3992,11 @@ OTHER FUNCTIONS
               distribution, but can be created by linking zed to the name fned
               in some directory in your fpath.
 
+       histed [ [ name ] size ]
+              Same as zed -h.  This function does not appear in the zsh
+              distribution, but can be created by linking zed to the name histed
+              in some directory in your fpath.
+
        is-at-least needed [ present ]
               Perform a greater-than-or-equal-to comparison of two strings
               having the format of a zsh version number; that is, a string of
@@ -3979,10 +4026,10 @@ OTHER FUNCTIONS
 
        regexp-replace var regexp replace
               Use regular expressions to perform a global search and replace
-              operation on a variable.  POSIX extended regular expressions are
-              used, unless the option RE_MATCH_PCRE has been set, in which case
-              Perl-compatible regular expressions are used (this requires the
-              shell to be linked against the pcre library).
+              operation on a variable.  POSIX extended regular expressions (ERE)
+              are used, unless the option RE_MATCH_PCRE has been set, in which
+              case Perl-compatible regular expressions are used (this requires
+              the shell to be linked against the pcre library).
 
               var is the name of the variable containing the string to be
               matched.  The variable will be modified directly by the function.
@@ -3998,6 +4045,9 @@ OTHER FUNCTIONS
 
               The return status is 0 if at least one match was performed, else
               1.
+
+              Note that if using POSIX EREs, the ^ or word boundary operators
+              (where available) may not work properly.
 
        run-help cmd
               This function is designed to be invoked by the run-help ZLE
@@ -4036,6 +4086,7 @@ OTHER FUNCTIONS
               scripts in your search path, in order to be found and used by
               run-help.
 
+              run-help-btrfs
               run-help-git
               run-help-ip
               run-help-openssl
@@ -4043,8 +4094,8 @@ OTHER FUNCTIONS
               run-help-sudo
               run-help-svk
               run-help-svn
-                     Assistant functions for the git, ip, openssl, p4, sudo,
-                     svk, and svn, commands.
+                     Assistant functions for the btrfs, git, ip, openssl, p4,
+                     sudo, svk, and svn, commands.
 
        tetris Zsh was once accused of not being as complete as Emacs, because it
               lacked a Tetris game.  This function was written to refute this
@@ -4130,11 +4181,12 @@ OTHER FUNCTIONS
               arg list.  Also, any time -i or -I is used, each input is
               processed separately as if by `-L 1'.
 
-              For details of the other zargs options, see xargs(1) (but note the
-              difference in function between zargs and xargs) or run zargs with
-              the --help option.
+              For details of the other zargs options, see the xargs(1) man page
+              (but note the difference in function between zargs and xargs) or
+              run zargs with the --help option.
 
        zed [ -f [ -x num ] ] name
+       zed [ -h [ name ] size ]
        zed -b This function uses the ZLE editor to edit a file or function.
 
               Only one name argument is allowed.  If the -f option is given, the
@@ -4148,7 +4200,15 @@ OTHER FUNCTIONS
               distributed with the shell.
 
               Without -f, name is the path name of the file to edit, which need
-              not exist; it is created on write, if necessary.
+              not exist; it is created on write, if necessary.  With -h, the
+              file is presumed to contain history events.
+
+              When no file name is provided for -h the current shell history is
+              edited in place.  The history is renumbered when zed exits
+              successfully.
+
+              When editing history, multi-line events must have a trailing
+              backslash on every line before the last.
 
               While editing, the function sets the main keymap to zed and the vi
               command keymap to zed-vicmd.  These will be copied from the
@@ -4165,17 +4225,19 @@ OTHER FUNCTIONS
               this will overwrite the existing zed and zed-vicmd keymaps.
 
               Completion is available, and styles may be set with the context
-              prefix `:completion:zed'.
+              prefix `:completion:zed:'.
 
               A zle widget zed-set-file-name is available.  This can be called
-              by name from within zed using `\ex zed-set-file-name' (note,
-              however, that because of zed's rebindings you will have to type ^j
-              at the end instead of the return key), or can be bound to a key in
-              either of the zed or zed-vicmd keymaps after `zed -b' has been
-              run.  When the widget is called, it prompts for a new name for the
-              file being edited.  When zed exits the file will be written under
-              that name and the original file will be left alone.  The widget
-              has no effect with `zed -f'.
+              by name from within zed using `\ex zed-set-file-name' or can be
+              bound to a key in either of the zed or zed-vicmd keymaps after
+              `zed -b' has been run.  When the widget is called, it prompts for
+              a new name for the file being edited.  When zed exits the file
+              will be written under that name and the original file will be left
+              alone.  The widget has no effect when invoked from `zed -f'.  The
+              completion context is changed to `:completion:zed-set-file-name:'.
+              When editing the current history with `zed -h', the history is
+              first updated and then the file is written, but the global setting
+              of HISTFILE is not altered.
 
               While zed-set-file-name is running, zed uses the keymap
               zed-normal-keymap, which is linked from the main keymap in effect
@@ -4213,7 +4275,7 @@ OTHER FUNCTIONS
               function to abort without doing anything.
 
               In addition to pattern replacement, the variable $f can be
-              referrred to in the second (replacement) argument.  This makes it
+              referred to in the second (replacement) argument.  This makes it
               possible to use variable substitution to alter the argument; see
               examples below.
 

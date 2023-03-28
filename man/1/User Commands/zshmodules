@@ -106,6 +106,9 @@ DESCRIPTION
        zsh/terminfo
               Interface to the terminfo database.
 
+       zsh/watch
+              Reporting of login and logout events.
+
        zsh/zftp
               A builtin FTP client.
 
@@ -928,8 +931,8 @@ THE ZSH/CURSES MODULE
 THE ZSH/DATETIME MODULE
        The zsh/datetime module makes available one builtin command:
 
-       strftime [ -s scalar ] format [ epochtime [ nanoseconds ] ]
-       strftime -r [ -q ] [ -s scalar ] format timestring
+       strftime [ -s scalar | -n ] format [ epochtime [ nanoseconds ] ]
+       strftime -r [ -q ] [ -s scalar | -n ] format timestring
               Output the date in the format specified.  With no epochtime, the
               current system date/time is used; optionally, epochtime may be
               used to specify the number of seconds since the epoch, and
@@ -938,6 +941,8 @@ THE ZSH/DATETIME MODULE
               be 0).  See strftime(3) for details.  The zsh extensions described
               in the section EXPANSION OF PROMPT SEQUENCES in zshmisc(1) are
               also available.
+
+              -n     Suppress printing a newline after the formatted string.
 
               -q     Run quietly; suppress printing of all error messages
                      described below.  Errors for invalid epochtime values are
@@ -1266,7 +1271,7 @@ THE ZSH/MAPFILE MODULE
               may also be assigned to, in which case the file in question is
               written (whether or not it originally existed); or an element may
               be unset, which will delete the file in question.  For example,
-              `vared mapfile[myfile]' works as expected, editing the file
+              `vared 'mapfile[myfile]'' works as expected, editing the file
               `myfile'.
 
               When the array is accessed as a whole, the keys are the names of
@@ -1465,7 +1470,8 @@ THE ZSH/NEWUSER MODULE
        zsh-newuser-install.  This may be invoked directly by the user even if
        the zsh/newuser module is disabled.  Note, however, that if the module is
        not installed the function will not be installed either.  The function is
-       documented in the section User Configuration Functions in zshcontrib(1).
+       documented in the section `User Configuration Functions' in
+       zshcontrib(1).
 
 THE ZSH/PARAMETER MODULE
        The zsh/parameter module gives access to some of the internal hash tables
@@ -1605,12 +1611,18 @@ THE ZSH/PARAMETER MODULE
               Non-numeric job references may be used when looking up a value;
               for example, ${jobdirs[%+]} refers to the current job.
 
+              See the jobs builtin for how job information is provided in a
+              subshell.
+
        jobtexts
               This associative array maps job numbers to the texts of the
               command lines that were used to start the jobs.
 
               Handling of the keys of the associative array is as described for
               jobdirs above.
+
+              See the jobs builtin for how job information is provided in a
+              subshell.
 
        jobstates
               This associative array gives information about the states of the
@@ -1625,6 +1637,9 @@ THE ZSH/PARAMETER MODULE
 
               Handling of the keys of the associative array is as described for
               jobdirs above.
+
+              See the jobs builtin for how job information is provided in a
+              subshell.
 
        nameddirs
               This associative array maps the names of named directories to the
@@ -1765,10 +1780,14 @@ THE ZSH/PARAM/PRIVATE MODULE
 
        This module provides a single autoloaded builtin:
 
-       private [ {+|-}AHUahlprtux ] [ {+|-}EFLRZi [ n ] ] [ name[=value] ... ]
+       private [ {+|-}AHUahlmrtux ] [ {+|-}EFLRZi [ n ] ] [ name[=value] ... ]
               The private builtin accepts all the same options and arguments as
               local (zshbuiltins(1)) except for the `-T' option.  Tied
               parameters may not be made private.
+
+              The `-p' option is presently a no-op because the state of private
+              parameters cannot reliably be reloaded.  This also applies to
+              printing private parameters with `typeset -p'.
 
               If used at the top level (outside a function scope), private
               creates a normal parameter in the same manner as declare or
@@ -1828,7 +1847,9 @@ THE ZSH/PARAM/PRIVATE MODULE
               private parameter does NOT hide other parameters of the same name,
               so for example a global parameter of the same name is visible and
               may be assigned or unset.  This includes calls to anonymous
-              functions, although that may also change in the future.
+              functions, although that may also change in the future.  However,
+              the private name may not be created outside the local scope when
+              it was not previously declared.
 
        •      An exported private remains in the environment of inner scopes but
               appears unset for the current shell in those scopes.  Generally,
@@ -1863,6 +1884,19 @@ THE ZSH/REGEX MODULE
 
               If BASH_REMATCH is set, then the array BASH_REMATCH will be set
               instead of MATCH and match.
+
+              Note that the zsh/regex module logic relies on the host system.
+              The same expr and regex pair could produce different results on
+              different platforms if a regex with non-standard syntax is given.
+
+              For example, no syntax for matching a word boundary is defined in
+              the POSIX extended regular expression standard. GNU libc and BSD
+              libc both provide such syntaxes as extensions (\b and
+              [[:<:]]/[[:>:]] respectively), but neither of these syntaxes is
+              supported by both of these implementations.
+
+              Refer to the regcomp(3) and re_format(7) manual pages on your
+              system for locally-supported syntax.
 
 THE ZSH/SCHED MODULE
        The zsh/sched module makes available one builtin command and one
@@ -2066,8 +2100,10 @@ THE ZSH/STAT MODULE
               -F fmt Supplies a strftime (see strftime(3)) string for the
                      formatting of the time elements.  The format string
                      supports all of the zsh extensions described in the section
-                     EXPANSION OF PROMPT SEQUENCES in zshmisc(1).  The -s option
-                     is implied.
+                     EXPANSION OF PROMPT SEQUENCES in zshmisc(1).  In
+                     particular, -F %s.%N can be used to show timestamps with
+                     nanosecond precision if supported by the system.  The -s
+                     option is implied.
 
               -g     Show the time elements in the GMT time zone.  The -s option
                      is implied.
@@ -2167,6 +2203,9 @@ THE ZSH/SYSTEM MODULE
               nofollow
                      fail if file is a symbolic link
 
+              nonblock
+                     the file is opened in nonblocking mode
+
               sync   request that writes wait until data has been physically
                      written
 
@@ -2262,7 +2301,7 @@ THE ZSH/SYSTEM MODULE
               error message is printed in the last case, but the parameter ERRNO
               will reflect the error that occurred.
 
-       zsystem flock [ -t timeout ] [ -f var ] [-er] file
+       zsystem flock [ -t timeout ] [ -i interval ] [ -f var ] [-er] file
        zsystem flock -u fd_expr
               The builtin zsystem's subcommand flock performs advisory file
               locking (via the fcntl(2) system call) over the entire contents of
@@ -2293,9 +2332,16 @@ THE ZSH/SYSTEM MODULE
 
               By default the shell waits indefinitely for the lock to succeed.
               The option -t timeout specifies a timeout for the lock in seconds;
-              currently this must be an integer.  The shell will attempt to lock
-              the file once a second during this period.  If the attempt times
+              fractional seconds are allowed.  During this period, the shell
+              will attempt to lock the file every interval seconds if the -i
+              interval option is given, otherwise once a second.  (This interval
+              is shortened before the last attempt if needed, so that the shell
+              waits only until the timeout and not longer.) If the attempt times
               out, status 2 is returned.
+
+              (Note: timeout is limited to 2^30-1 seconds (about 34 years), and
+              interval to 0.999 * LONG_MAX microseconds (only about 35 minutes
+              on 32-bit systems).)
 
               If the option -e is given, the file descriptor for the lock is
               preserved when the shell uses exec to start a new process;
@@ -2338,9 +2384,10 @@ THE ZSH/SYSTEM MODULE
                      subshells.  Compare $$, which returns the process ID of the
                      main shell process.
 
-              ppid   Returns the process ID of the parent of the current
+              ppid   Returns the current process ID of the parent of the current
                      process, even in subshells.  Compare $PPID, which returns
-                     the process ID of the parent of the main shell process.
+                     the process ID of the initial parent of the main shell
+                     process.
 
               procsubstpid
                      Returns the process ID of the last process started for
@@ -2503,6 +2550,116 @@ THE ZSH/TERMINFO MODULE
        terminfo
               An associative array that maps terminfo capability names to their
               values.
+
+THE ZSH/WATCH MODULE
+       The zsh/watch module can be used to report when specific users log in or
+       out. This is controlled via the following parameters.
+
+       LOGCHECK
+              The interval in seconds between checks for login/logout activity
+              using the watch parameter.
+
+       watch <S> <Z> (WATCH <S>)
+              An array (colon-separated list) of login/logout events to report.
+
+              If it contains the single word `all', then all login/logout events
+              are reported.  If it contains the single word `notme', then all
+              events are reported as with `all' except $USERNAME.
+
+              An entry in this list may consist of a username, an `@' followed
+              by a remote hostname, and a `%' followed by a line (tty).  Any of
+              these may be a pattern (be sure to quote this during the
+              assignment to watch so that it does not immediately perform file
+              generation); the setting of the EXTENDED_GLOB option is respected.
+              Any or all of these components may be present in an entry; if a
+              login/logout event matches all of them, it is reported.
+
+              For example, with the EXTENDED_GLOB option set, the following:
+
+                     watch=('^(pws|barts)')
+
+              causes reports for activity associated with any user other than
+              pws or barts.
+
+       WATCHFMT
+              The format of login/logout reports if the watch parameter is set.
+              Default is `%n has %a %l from %m'.  Recognizes the following
+              escape sequences:
+
+              %n     The name of the user that logged in/out.
+
+              %a     The observed action, i.e. "logged on" or "logged off".
+
+              %l     The line (tty) the user is logged in on.
+
+              %M     The full hostname of the remote host.
+
+              %m     The hostname up to the first `.'.  If only the IP address
+                     is available or the utmp field contains the name of an
+                     X-windows display, the whole name is printed.
+
+                     NOTE: The `%m' and `%M' escapes will work only if there is
+                     a host name field in the utmp on your machine.  Otherwise
+                     they are treated as ordinary strings.
+
+              %F{color} (%f)
+                     Start (stop) using a different foreground color.
+
+              %K{color} (%k)
+                     Start (stop) using a different background color.
+
+              %S (%s)
+                     Start (stop) standout mode.
+
+              %U (%u)
+                     Start (stop) underline mode.
+
+              %B (%b)
+                     Start (stop) boldface mode.
+
+              %t
+              %@     The time, in 12-hour, am/pm format.
+
+              %T     The time, in 24-hour format.
+
+              %w     The date in `day-dd' format.
+
+              %W     The date in `mm/dd/yy' format.
+
+              %D     The date in `yy-mm-dd' format.
+
+              %D{string}
+                     The date formatted as string using the strftime function,
+                     with zsh extensions as described by EXPANSION OF PROMPT
+                     SEQUENCES in zshmisc(1).
+
+              %(x:true-text:false-text)
+                     Specifies a ternary expression.  The character following
+                     the x is arbitrary; the same character is used to separate
+                     the text for the "true" result from that for the "false"
+                     result.  Both the separator and the right parenthesis may
+                     be escaped with a backslash.  Ternary expressions may be
+                     nested.
+
+                     The test character x may be any one of `l', `n', `m' or
+                     `M', which indicate a `true' result if the corresponding
+                     escape sequence would return a non-empty value; or it may
+                     be `a', which indicates a `true' result if the watched user
+                     has logged in, or `false' if he has logged out.  Other
+                     characters evaluate to neither true nor false; the entire
+                     expression is omitted in this case.
+
+                     If the result is `true', then the true-text is formatted
+                     according to the rules above and printed, and the
+                     false-text is skipped.  If `false', the true-text is
+                     skipped and the false-text is formatted and printed.
+                     Either or both of the branches may be empty, but both
+                     separators must be present in any case.
+
+       Furthermore, the zsh/watch module makes available one builtin command:
+
+       log    List all users currently logged in who are affected by the current
+              setting of the watch parameter.
 
 THE ZSH/ZFTP MODULE
        The zsh/zftp module makes available one builtin command:
@@ -3128,7 +3285,7 @@ THE ZSH/ZSELECT MODULE
               writing, or has an error condition, with an optional timeout.  If
               this is not available on your system, the command prints an error
               message and returns status 2 (normal errors return status 1).  For
-              more information, see your systems documentation for select(3).
+              more information, see your system's documentation for select(3).
               Note there is no connection with the shell builtin of the same
               name.
 
@@ -3210,21 +3367,26 @@ THE ZSH/ZUTIL MODULE
 
               Example
 
-              For example, to define your preferred form of precipitation
-              depending on which city you're in, you might set the following in
-              your zshrc:
+              For example, a fictional `weather' plugin might state in its
+              documentation that it looks up the preferred-precipitation style
+              under the `:weather:continent:day-of-the-week:phase-of-the-moon'
+              context.  According to this, you might set the following in your
+              zshrc:
 
                      zstyle ':weather:europe:*' preferred-precipitation rain
-                     zstyle ':weather:europe:germany:* preferred-precipitation none
-                     zstyle ':weather:europe:germany:*:munich' preferred-precipitation snow
+                     zstyle ':weather:*:Sunday:*' preferred-precipitation snow
 
-              Then, the fictional `weather' plugin might run under the hood a
-              command such as
+              Then the plugin would run under the hood a command such as
 
-                     zstyle -s ":weather:${continent}:${country}:${county}:${city}" preferred-precipitation REPLY
+                     zstyle -s ":weather:${continent}:${day_of_week}:${moon_phase}" preferred-precipitation REPLY
 
               in order to retrieve your preference into the scalar variable
-              $REPLY.
+              $REPLY.  On Sundays $REPLY would be set to `snow'; in Europe it
+              would be set to `rain'; and on Sundays in Europe it would be set
+              to `snow' again, because the patterns `:weather:europe:*' and
+              `:weather:*:Sunday:*' both match the context argument to zstyle
+              -s, are equally specific, and the latter is more specific (because
+              it has more colon-separated components).
 
               Usage
 
@@ -3321,8 +3483,9 @@ THE ZSH/ZUTIL MODULE
                      at least one of the strings in the value.
 
        zformat -f param format spec ...
+       zformat -F param format spec ...
        zformat -a array sep spec ...
-              This builtin provides two different forms of formatting. The first
+              This builtin provides different forms of formatting. The first
               form is selected with the -f option. In this case the format
               string will be modified by replacing sequences starting with a
               percent sign in it with strings from the specs.  Each spec should
@@ -3365,19 +3528,25 @@ THE ZSH/ZUTIL MODULE
               format specifier c is 3, agreeing with the digit argument to the
               ternary expression.
 
-              The second form, using the -a option, can be used for aligning
-              strings.  Here, the specs are of the form `left:right' where
-              `left' and `right' are arbitrary strings.  These strings are
-              modified by replacing the colons by the sep string and padding the
-              left strings with spaces to the right so that the sep strings in
-              the result (and hence the right strings after them) are all
-              aligned if the strings are printed below each other.  All strings
-              without a colon are left unchanged and all strings with an empty
-              right string have the trailing colon removed.  In both cases the
-              lengths of the strings are not used to determine how the other
-              strings are to be aligned.  A colon in the left string can be
-              escaped with a backslash.  The resulting strings are stored in the
-              array.
+              With -F instead of -f, ternary expressions choose between the
+              `true' or `false' text on the basis of whether the format
+              specifier is present and non-empty.  A test number indicates a
+              minimum width for the value given in the format specifier.
+              Negative numbers reverse this, so the test is for whether the
+              value exceeds a maximum width.
+
+              The form, using the -a option, can be used for aligning strings.
+              Here, the specs are of the form `left:right' where `left' and
+              `right' are arbitrary strings.  These strings are modified by
+              replacing the colons by the sep string and padding the left
+              strings with spaces to the right so that the sep strings in the
+              result (and hence the right strings after them) are all aligned if
+              the strings are printed below each other.  All strings without a
+              colon are left unchanged and all strings with an empty right
+              string have the trailing colon removed.  In both cases the lengths
+              of the strings are not used to determine how the other strings are
+              to be aligned.  A colon in the left string can be escaped with a
+              backslash.  The resulting strings are stored in the array.
 
        zregexparse
               This implements some internals of the _regex_arguments function.

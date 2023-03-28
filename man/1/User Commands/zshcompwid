@@ -30,7 +30,7 @@ DESCRIPTION
        When this newly defined widget is bound to a key using the bindkey
        builtin command defined in the zsh/zle module (see zshzle(1)), typing
        that key will call the shell function `completer'. This function is
-       responsible for generating the possible matches using the builtins
+       responsible for generating completion matches using the builtins
        described below.  As with other ZLE widgets, the function is called with
        its standard input closed.
 
@@ -176,9 +176,9 @@ COMPLETION SPECIAL PARAMETERS
                      unset.
 
               ignored
-                     The number of words that were ignored because they matched
-                     one of the patterns given with the -F option to the compadd
-                     builtin command.
+                     The number of completions that were ignored because they
+                     matched one of the patterns given with the -F option to the
+                     compadd builtin command.
 
               insert This controls the manner in which a match is inserted into
                      the command line.  On entry to the widget function, if it
@@ -273,8 +273,7 @@ COMPLETION SPECIAL PARAMETERS
                      value of LISTMAX.
 
               nmatches
-                     The number of matches generated and accepted by the
-                     completion code so far.
+                     The number of matches added by the completion code so far.
 
               old_insert
                      On entry to the widget this will be set to the number of
@@ -310,9 +309,9 @@ COMPLETION SPECIAL PARAMETERS
               pattern_insert
                      Normally this is set to menu, which specifies that menu
                      completion will be used whenever a set of matches was
-                     generated using pattern matching.  If it is set to any
-                     other non-empty string by the user and menu completion is
-                     not selected by other option settings, the code will
+                     generated using pattern_match (see below).  If it is set to
+                     any other non-empty string by the user and menu completion
+                     is not selected by other option settings, the code will
                      instead insert any common prefix for the generated matches
                      as with normal completion.
 
@@ -327,7 +326,7 @@ COMPLETION SPECIAL PARAMETERS
                      wildcard `*' is assumed at the cursor position; if it is
                      empty or unset, metacharacters will be treated literally.
 
-                     Note that the matcher specifications given to the compadd
+                     Note that the match specifications given to the compadd
                      builtin command are not used if this is set to a non-empty
                      string.
 
@@ -406,17 +405,17 @@ COMPLETION BUILTIN COMMANDS
                [-r remove-chars ] [ -R remove-func ]
                [-D array ] [ -O array ] [ -A array ]
                [-E number ]
-               [-M match-spec ] [ -- ] [ words ... ]
+               [-M match-spec ] [ -- ] [ completions ... ]
 
               This builtin command can be used to add matches directly and
               control all the information the completion code stores with each
-              possible match. The return status is zero if at least one match
-              was added and non-zero if no matches were added.
+              possible completion. The return status is zero if at least one
+              match was added and non-zero if no matches were added.
 
-              The completion code breaks the string to complete into seven
-              fields in the order:
+              The completion code breaks each match into seven fields in the
+              order:
 
-                     <ipre><apre><hpre><word><hsuf><asuf><isuf>
+                     <ipre><apre><hpre><body><hsuf><asuf><isuf>
 
               The first field is an ignored prefix taken from the command line,
               the contents of the IPREFIX parameter plus the string given with
@@ -426,64 +425,64 @@ COMPLETION BUILTIN COMMANDS
               considered part of the match but that should not be shown when
               listing completions, given with the -p option; for example,
               functions that do filename generation might specify a common path
-              prefix this way.  <word> is the part of the match that should
-              appear in the list of completions, i.e. one of the words given at
-              the end of the compadd command line. The suffixes <hsuf>, <asuf>
-              and <isuf> correspond to the prefixes <hpre>, <apre> and <ipre>
-              and are given by the options -s, -S and -I, respectively.
+              prefix this way.  <body> is the part of the match that should
+              appear in the list of matches shown to the user.  The suffixes
+              <hsuf>, <asuf> and <isuf> correspond to the prefixes <hpre>,
+              <apre> and <ipre> and are given by the options -s, -S and -I,
+              respectively.
 
               The supported flags are:
 
               -P prefix
-                     This gives a string to be inserted before the given words.
-                     The string given is not considered as part of the match and
-                     any shell metacharacters in it will not be quoted when the
+                     This gives a string to be inserted before each match.  The
+                     string given is not considered as part of the match and any
+                     shell metacharacters in it will not be quoted when the
                      string is inserted.
 
               -S suffix
-                     Like -P, but gives a string to be inserted after the match.
+                     Like -P, but gives a string to be inserted after each
+                     match.
 
               -p hidden-prefix
-                     This gives a string that should be inserted into the
-                     command line before the match but that should not appear in
-                     the list of matches. Unless the -U option is given, this
-                     string must be matched as part of the string on the command
-                     line.
+                     This gives a string that should be inserted before each
+                     match but that should not appear in the list of matches.
+                     Unless the -U option is given, this string must be matched
+                     as part of the string on the command line.
 
               -s hidden-suffix
-                     Like `-p', but gives a string to insert after the match.
+                     Like `-p', but gives a string to insert after each match.
 
               -i ignored-prefix
-                     This gives a string to insert into the command line just
-                     before any string given with the `-P' option.  Without `-P'
-                     the string is inserted before the string given with `-p' or
-                     directly before the match.
+                     This gives a string to insert just before any string given
+                     with the `-P' option.  Without `-P' the string is inserted
+                     before the string given with `-p' or directly before each
+                     match.
 
               -I ignored-suffix
                      Like -i, but gives an ignored suffix.
 
-              -a     With this flag the words are taken as names of arrays and
-                     the possible matches are their values.  If only some
-                     elements of the arrays are needed, the words may also
+              -a     With this flag the completions are taken as names of arrays
+                     and the actual completions are their values.  If only some
+                     elements of the arrays are needed, the completions may also
                      contain subscripts, as in `foo[2,-1]'.
 
-              -k     With this flag the words are taken as names of associative
-                     arrays and the possible matches are their keys.  As for -a,
-                     the words may also contain subscripts, as in
-                     `foo[(R)*bar*]'.
+              -k     With this flag the completions are taken as names of
+                     associative arrays and the actual completions are their
+                     keys.  As for -a, the words may also contain subscripts, as
+                     in `foo[(R)*bar*]'.
 
               -d array
-                     This adds per-match display strings. The array should
-                     contain one element per word given. The completion code
-                     will then display the first element instead of the first
-                     word, and so on. The array may be given as the name of an
-                     array parameter or directly as a space-separated list of
-                     words in parentheses.
+                     This adds per-completion display strings. The array should
+                     contain one element per completion given. The completion
+                     code will then display the first element instead of the
+                     first completion, and so on. The array may be given as the
+                     name of an array parameter or directly as a space-separated
+                     list of words in parentheses.
 
-                     If there are fewer display strings than words, the leftover
-                     words will be displayed unchanged and if there are more
-                     display strings than words, the leftover display strings
-                     will be silently ignored.
+                     If there are fewer display strings than completions, the
+                     leftover completions will be displayed unchanged and if
+                     there are more display strings than completions, the
+                     leftover display strings will be silently ignored.
 
               -l     This option only has an effect if used together with the -d
                      option. If it is given, the display strings are listed one
@@ -503,10 +502,10 @@ COMPLETION BUILTIN COMMANDS
                             option). This is the default if `-o' is specified
                             but the order argument is omitted.
 
-                     nosort This specifies that the matches are pre-sorted and
-                            their order should be preserved.  This value only
-                            makes sense alone and cannot be combined with any
-                            others.
+                     nosort This specifies that the completions are pre-sorted
+                            and their order should be preserved.  This value
+                            only makes sense alone and cannot be combined with
+                            any others.
 
                      numeric
                             If the matches include numbers, sort them
@@ -517,7 +516,7 @@ COMPLETION BUILTIN COMMANDS
                             ordering.
 
               -J group-name
-                     Gives the name of the group of matches the words should be
+                     Gives the name of the group that the matches should be
                      stored in.
 
               -V group-name
@@ -585,21 +584,21 @@ COMPLETION BUILTIN COMMANDS
                      the characters in the list is typed.
 
               -R remove-func
-                     This is another form of the -r option. When a suffix has
-                     been inserted and the completion accepted, the function
+                     This is another form of the -r option. When a match has
+                     been accepted and a suffix has been inserted, the function
                      remove-func will be called after the next character typed.
                      It is passed the length of the suffix as an argument and
                      can use the special parameters available in ordinary
                      (non-completion) zle widgets (see zshzle(1)) to analyse and
                      modify the command line.
 
-              -f     If this flag is given, all of the matches built from words
-                     are marked as being the names of files.  They are not
-                     required to be actual filenames, but if they are, and the
-                     option LIST_TYPES is set, the characters describing the
-                     types of the files in the completion lists will be shown.
-                     This also forces a slash to be added when the name of a
-                     directory is completed.
+              -f     If this flag is given, all of the matches built from the
+                     completions are marked as being the names of files.  They
+                     are not required to be actual filenames, but if they are,
+                     and the option LIST_TYPES is set, the characters describing
+                     the types of the files in the completion lists will be
+                     shown. This also forces a slash to be added when the name
+                     of a directory is completed.
 
               -e     This flag can be used to tell the completion code that the
                      matches added are parameter names for a parameter
@@ -607,17 +606,16 @@ COMPLETION BUILTIN COMMANDS
                      AUTO_PARAM_KEYS options be used for the matches.
 
               -W file-prefix
-                     This string is a pathname that will be prepended to each of
-                     the matches formed by the given words together with any
-                     prefix specified by the -p option to form a complete
-                     filename for testing.  Hence it is only useful if combined
-                     with the -f flag, as the tests will not otherwise be
-                     performed.
+                     This string is a pathname that will be prepended to each
+                     match together with any prefix specified by the -p option
+                     to form a complete filename for testing.  Hence it is only
+                     useful if combined with the -f flag, as the tests will not
+                     otherwise be performed.
 
               -F array
-                     Specifies an array containing patterns. Words matching one
-                     of these patterns are ignored, i.e. not considered to be
-                     possible matches.
+                     Specifies an array containing patterns.  completions that
+                     match one of these patterns are ignored, that is, not
+                     considered to be matches.
 
                      The array may be the name of an array parameter or a list
                      of literal patterns enclosed in parentheses and quoted, as
@@ -625,7 +623,7 @@ COMPLETION BUILTIN COMMANDS
                      the elements of the array are taken as the patterns.
 
               -Q     This flag instructs the completion code not to quote any
-                     metacharacters in the words when inserting them into the
+                     metacharacters in the matches when inserting them into the
                      command line.
 
               -M match-spec
@@ -636,37 +634,36 @@ COMPLETION BUILTIN COMMANDS
                      specification string to use.  Note that they will only be
                      used if the -U option is not given.
 
-              -n     Specifies that the words added are to be used as possible
-                     matches, but are not to appear in the completion listing.
+              -n     Specifies that matching completions are to be added to the
+                     set of matches, but are not to be listed to the user.
 
-              -U     If this flag is given, all words given will be accepted and
-                     no matching will be done by the completion code. Normally
-                     this is used in functions that do the matching themselves.
+              -U     If this flag is given, all completions are added to the set
+                     of matches and no matching will be done by the completion
+                     code. Normally this is used in functions that do the
+                     matching themselves.
 
               -O array
-                     If this option is given, the words are not added to the set
-                     of possible completions.  Instead, matching is done as
-                     usual and all of the words given as arguments that match
-                     the string on the command line will be stored in the array
-                     parameter whose name is given as array.
+                     If this option is given, the completions are not added to
+                     the set of matches.  Instead, matching is done as usual and
+                     all of the completions that match will be stored in the
+                     array parameter whose name is given as array.
 
               -A array
-                     As the -O option, except that instead of those of the words
-                     which match being stored in array, the strings generated
-                     internally by the completion code are stored. For example,
-                     with a matching specification of `-M "L:|no="', the string
-                     `nof' on the command line and the string `foo' as one of
-                     the words, this option stores the string `nofoo' in the
-                     array, whereas the -O option stores the `foo' originally
-                     given.
+                     As the -O option, except that instead of those of the
+                     completions which match being stored in array, the strings
+                     generated internally by the completion code are stored.
+                     For example, with a match specification of `-M "L:|no="', a
+                     current word of `nof' and completions of `foo', this option
+                     stores the string `nofoo' in the array, whereas the -O
+                     option stores the `foo' originally given.
 
               -D array
-                     As with -O, the words are not added to the set of possible
-                     completions.  Instead, the completion code tests whether
-                     each word in turn matches what is on the line.  If the nth
-                     word does not match, the nth element of the array is
-                     removed.  Elements for which the corresponding word is
-                     matched are retained.
+                     As with -O, the completions are not added to the set of
+                     matches.  Instead, whenever the nth completion does not
+                     match, the nth element of the array is removed.  Elements
+                     for which the corresponding completion matches are
+                     retained.  This option can be used more than once to remove
+                     elements from multiple arrays.
 
               -C     This option adds a special match which expands to all other
                      matches when inserted into the line, even those that are
@@ -678,23 +675,23 @@ COMPLETION BUILTIN COMMANDS
                      truncated to the width of the screen.
 
               -E number
-                     This option adds number empty matches after the words have
-                     been added.  An empty match takes up space in completion
-                     listings but will never be inserted in the line and can't
-                     be selected with menu completion or menu selection.  This
-                     makes empty matches only useful to format completion lists
-                     and to make explanatory string be shown in completion lists
-                     (since empty matches can be given display strings with the
-                     -d option).  And because all but one empty string would
-                     otherwise be removed, this option implies the -V and -2
-                     options (even if an explicit -J option is given).  This can
-                     be important to note as it affects the name space into
-                     which matches are added.
+                     This option adds number empty matches after matching
+                     completions have been added.  An empty match takes up space
+                     in completion listings but will never be inserted in the
+                     line and can't be selected with menu completion or menu
+                     selection.  This makes empty matches only useful to format
+                     completion lists and to make explanatory string be shown in
+                     completion lists (since empty matches can be given display
+                     strings with the -d option).  And because all but one empty
+                     string would otherwise be removed, this option implies the
+                     -V and -2 options (even if an explicit -J option is given).
+                     This can be important to note as it affects the name space
+                     into which matches are added.
 
               -
               --     This flag ends the list of flags and options. All arguments
-                     after it will be taken as the words to use as matches even
-                     if they begin with hyphens.
+                     after it will be taken as the completions even if they
+                     begin with hyphens.
 
               Except for the -M flag, if any of these flags is given more than
               once, the first one (and its argument) will be used.
@@ -824,250 +821,249 @@ COMPLETION CONDITION CODES
               succeed.
 
 COMPLETION MATCHING CONTROL
-       It is possible by use of the -M option of the compadd builtin command to
-       specify how the characters in the string to be completed (referred to
-       here as the command line) map onto the characters in the list of matches
-       produced by the completion code (referred to here as the trial
-       completions). Note that this is not used if the command line contains a
-       glob pattern and the GLOB_COMPLETE option is set or the pattern_match of
-       the compstate special association is set to a non-empty string.
+       When the user invokes completion, the current word on the command line
+       (that is, the word the cursor is currently on) is used to generate a
+       match pattern.  Only those completions that match the pattern are offered
+       to the user as matches.
 
-       The match-spec given as the argument to the -M option (see `Completion
-       Builtin Commands' above) consists of one or more matching descriptions
-       separated by whitespace.  Each description consists of a letter followed
-       by a colon and then the patterns describing which character sequences on
-       the line match which character sequences in the trial completion.  Any
-       sequence of characters not handled in this fashion must match exactly, as
-       usual.
+       The default match pattern is generated from the current word by either
 
-       The forms of match-spec understood are as follows. In each case, the form
-       with an upper case initial character retains the string already typed on
-       the command line as the final result of completion, while with a lower
-       case initial character the string on the command line is changed into the
-       corresponding part of the trial completion.
+       •      appending a `*' (matching any number of characters in a
+              completion) or,
 
-       m:lpat=tpat
-       M:lpat=tpat
-              Here, lpat is a pattern that matches on the command line,
-              corresponding to tpat which matches in the trial completion.
+       •      if the shell option COMPLETE_IN_WORD is set, inserting a `*' at
+              the cursor position.
 
-       l:lanchor|lpat=tpat
-       L:lanchor|lpat=tpat
-       l:lanchor||ranchor=tpat
-       L:lanchor||ranchor=tpat
-       b:lpat=tpat
-       B:lpat=tpat
-              These letters are for patterns that are anchored by another
-              pattern on the left side. Matching for lpat and tpat is as for m
-              and M, but the pattern lpat matched on the command line must be
-              preceded by the pattern lanchor.  The lanchor can be blank to
-              anchor the match to the start of the command line string;
-              otherwise the anchor can occur anywhere, but must match in both
-              the command line and trial completion strings.
+       This narrow pattern can be broadened selectively by passing a match
+       specification to the compadd builtin command through its -M option (see
+       `Completion Builtin Commands' above).  A match specification consists of
+       one or more matchers separated by whitespace.  Matchers in a match
+       specification are applied one at a time, from left to right.  Once all
+       matchers have been applied, completions are compared to the final match
+       pattern and non-matching ones are discarded.
 
-              If no lpat is given but a ranchor is, this matches the gap between
-              substrings matched by lanchor and ranchor. Unlike lanchor, the
-              ranchor only needs to match the trial completion string.
+       •      Note that the -M option is ignored if the current word contains a
+              glob pattern and the shell option GLOB_COMPLETE is set or if the
+              pattern_match key of the special associative array compstate is
+              set to a non-empty value (see `Completion Special Parameters'
+              above).
 
-              The b and B forms are similar to l and L with an empty anchor, but
-              need to match only the beginning of the word on the command line
-              or trial completion, respectively.
+       •      Users of the completion system (see zshcompsys(1))  should
+              generally not use the -M option directly, but rather use the
+              matcher-list and matcher styles (see the subsection Standard
+              Styles in the documentation for COMPLETION SYSTEM CONFIGURATION in
+              zshcompsys(1)).
 
-       r:lpat|ranchor=tpat
-       R:lpat|ranchor=tpat
-       r:lanchor||ranchor=tpat
-       R:lanchor||ranchor=tpat
-       e:lpat=tpat
-       E:lpat=tpat
-              As l, L, b and B, with the difference that the command line and
-              trial completion patterns are anchored on the right side.  Here an
-              empty ranchor and the e and E forms force the match to the end of
-              the command line or trial completion string.
+       Each matcher consists of
 
-       x:     This form is used to mark the end of matching specifications:
-              subsequent specifications are ignored. In a single standalone list
-              of specifications this has no use but where matching
-              specifications are accumulated, such as from nested function
-              calls, it can allow one function to override another.
+       •      a case-sensitive letter
 
-       Each lpat, tpat or anchor is either an empty string or consists of a
-       sequence of literal characters (which may be quoted with a backslash),
-       question marks, character classes, and correspondence classes; ordinary
-       shell patterns are not used.  Literal characters match only themselves,
-       question marks match any character, and character classes are formed as
-       for globbing and match any character in the given set.
+       •      a `:',
 
-       Correspondence classes are defined like character classes, but with two
-       differences: they are delimited by a pair of braces, and negated classes
-       are not allowed, so the characters ! and ^ have no special meaning
-       directly after the opening brace.  They indicate that a range of
-       characters on the line match a range of characters in the trial
-       completion, but (unlike ordinary character classes) paired according to
-       the corresponding position in the sequence.  For example, to make any
-       ASCII lower case letter on the line match the corresponding upper case
-       letter in the trial completion, you can use `m:{a-z}={A-Z}' (however, see
-       below for the recommended form for this).  More than one pair of classes
-       can occur, in which case the first class before the = corresponds to the
-       first after it, and so on.  If one side has more such classes than the
-       other side, the superfluous classes behave like normal character classes.
-       In anchor patterns correspondence classes also behave like normal
-       character classes.
+       •      one or more patterns separated by pipes (`|'),
 
-       The standard `[:name:]' forms described for standard shell patterns (see
-       the section FILENAME GENERATION in zshexpn(1)) may appear in
-       correspondence classes as well as normal character classes.  The only
-       special behaviour in correspondence classes is if the form on the left
-       and the form on the right are each one of [:upper:], [:lower:].  In these
-       cases the character in the word and the character on the line must be the
-       same up to a difference in case.  Hence to make any lower case character
-       on the line match the corresponding upper case character in the trial
-       completion you can use `m:{[:lower:]}={[:upper:]}'.  Although the
-       matching system does not yet handle multibyte characters, this is likely
-       to be a future extension, at which point this syntax will handle
-       arbitrary alphabets; hence this form, rather than the use of explicit
-       ranges, is the recommended form.  In other cases `[:name:]' forms are
-       allowed.  If the two forms on the left and right are the same, the
-       characters must match exactly.  In remaining cases, the corresponding
-       tests are applied to both characters, but they are not otherwise
-       constrained; any matching character in one set goes with any matching
-       character in the other set:  this is equivalent to the behaviour of
-       ordinary character classes.
+       •      an equals sign (`='), and
 
-       The pattern tpat may also be one or two stars, `*' or `**'. This means
-       that the pattern on the command line can match any number of characters
-       in the trial completion. In this case the pattern must be anchored (on
-       either side); in the case of a single star, the anchor then determines
-       how much of the trial completion is to be included -- only the characters
-       up to the next appearance of the anchor will be matched. With two stars,
-       substrings matched by the anchor can be matched, too.
+       •      another pattern.
 
-       Examples:
+       The patterns before the `=' are used to match substrings of the current
+       word.  For each matched substring, the corresponding part of the match
+       pattern is broadened with the pattern after the `=', by means of a
+       logical OR.
 
-       The keys of the options association defined by the parameter module are
-       the option names in all-lower-case form, without underscores, and without
-       the optional no at the beginning even though the builtins setopt and
-       unsetopt understand option names with upper case letters, underscores,
-       and the optional no.  The following alters the matching rules so that the
-       prefix no and any underscore are ignored when trying to match the trial
-       completions generated and upper case letters on the line match the
-       corresponding lower case letters in the words:
+       Each pattern in a matcher cosists of either
 
-              compadd -M 'L:|[nN][oO]= M:_= M:{[:upper:]}={[:lower:]}' - \
-                ${(k)options}
+       •      the empty string or
 
-       The first part says that the pattern `[nN][oO]' at the beginning (the
-       empty anchor before the pipe symbol) of the string on the line matches
-       the empty string in the list of words generated by completion, so it will
-       be ignored if present. The second part does the same for an underscore
-       anywhere in the command line string, and the third part uses
-       correspondence classes so that any upper case letter on the line matches
-       the corresponding lower case letter in the word. The use of the upper
-       case forms of the specification characters (L and M) guarantees that what
-       has already been typed on the command line (in particular the prefix no)
-       will not be deleted.
+       •      a sequence of
 
-       Note that the use of L in the first part means that it matches only when
-       at the beginning of both the command line string and the trial
-       completion. I.e., the string `_NO_f' would not be completed to `_NO_foo',
-       nor would `NONO_f' be completed to `NONO_foo' because of the leading
-       underscore or the second `NO' on the line which makes the pattern fail
-       even though they are otherwise ignored. To fix this, one would use
-       `B:[nN][oO]=' instead of the first part. As described above, this matches
-       at the beginning of the trial completion, independent of other characters
-       or substrings at the beginning of the command line word which are ignored
-       by the same or other match-specs.
+              •      literal characters (which may be quoted with a `\'),
 
-       The second example makes completion case insensitive.  This is just the
-       same as in the option example, except here we wish to retain the
-       characters in the list of completions:
+              •      question marks (`?'),
 
-              compadd -M 'm:{[:lower:]}={[:upper:]}' ...
+              •      bracket expressions (`[...]'; see the subsection Glob
+                     Operators in the documentation for GLOB OPERATORS in
+                     zshexpn(1)), and/or
 
-       This makes lower case letters match their upper case counterparts.  To
-       make upper case letters match the lower case forms as well:
+              •      brace expressions (see below).
 
-              compadd -M 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' ...
 
-       A nice example for the use of * patterns is partial word completion.
-       Sometimes you would like to make strings like `c.s.u' complete to strings
-       like `comp.source.unix', i.e. the word on the command line consists of
-       multiple parts, separated by a dot in this example, where each part
-       should be completed separately -- note, however, that the case where each
-       part of the word, i.e. `comp', `source' and `unix' in this example, is to
-       be completed from separate sets of matches is a different problem to be
-       solved by the implementation of the completion widget.  The example can
-       be handled by:
+       Other shell patterns are not allowed.
 
-              compadd -M 'r:|.=* r:|=*' \
-                - comp.sources.unix comp.sources.misc ...
+       A brace expression, like a bracket expression, consists of a list of
 
-       The first specification says that lpat is the empty string, while anchor
-       is a dot; tpat is *, so this can match anything except for the `.' from
-       the anchor in the trial completion word.  So in `c.s.u', the matcher sees
-       `c', followed by the empty string, followed by the anchor `.', and
-       likewise for the second dot, and replaces the empty strings before the
-       anchors, giving `c[omp].s[ources].u[nix]', where the last part of the
-       completion is just as normal.
+       •      literal characters,
 
-       With the pattern shown above, the string `c.u' could not be completed to
-       `comp.sources.unix' because the single star means that no dot (matched by
-       the anchor) can be skipped. By using two stars as in `r:|.=**', however,
-       `c.u' could be completed to `comp.sources.unix'. This also shows that in
-       some cases, especially if the anchor is a real pattern, like a character
-       class, the form with two stars may result in more matches than one would
-       like.
+       •      ranges (`0-9'), and/or
 
-       The second specification is needed to make this work when the cursor is
-       in the middle of the string on the command line and the option
-       COMPLETE_IN_WORD is set. In this case the completion code would normally
-       try to match trial completions that end with the string as typed so far,
-       i.e. it will only insert new characters at the cursor position rather
-       than at the end.  However in our example we would like the code to
-       recognise matches which contain extra characters after the string on the
-       line (the `nix' in the example).  Hence we say that the empty string at
-       the end of the string on the line matches any characters at the end of
-       the trial completion.
+       •      character classes (`[:name:]').
 
-       More generally, the specification
+       However, they differ from each other as follows:
 
-              compadd -M 'r:|[.,_-]=* r:|=*' ...
+       •      A brace expression is delimited by a pair of braces (`{...}').
 
-       allows one to complete words with abbreviations before any of the
-       characters in the square brackets.  For example, to complete
-       veryverylongfile.c rather than veryverylongheader.h with the above in
-       effect, you can just type very.c before attempting completion.
+       •      Brace expressions do not support negations.  That is, an initial
+              `!' or `^' has no special meaning and will be interpreted as a
+              literal character.
 
-       The specifications with both a left and a right anchor are useful to
-       complete partial words whose parts are not separated by some special
-       character. For example, in some places strings have to be completed that
-       are formed `LikeThis' (i.e. the separate parts are determined by a
-       leading upper case letter) or maybe one has to complete strings with
-       trailing numbers. Here one could use the simple form with only one anchor
-       as in:
+       •      When a character in the current word matches the nth pattern in a
+              brace expression, the corresponding part of the match pattern is
+              broadened only with the nth pattern of the brace expression on the
+              other side of the `=', if there is one; if there is no brace
+              expression on the other side, then this pattern is the empty
+              string.  However, if either brace expression has more elements
+              than the other, then the excess entries are simply ignored.  When
+              comparing indexes, each literal character or character class
+              counts as one element, but each range is instead expanded to the
+              full list of literal characters it represents.  Additionally, if
+              on both sides of the `=', the nth pattern is `[:upper:]' or
+              `[:lower:]', then these are expanded as ranges, too.
 
-              compadd -M 'r:|[[:upper:]0-9]=* r:|=*' LikeTHIS FooHoo 5foo123 5bar234
+       Note that, although the matching system does not yet handle multibyte
+       characters, this is likely to be a future extension.  Hence, using
+       `[:upper:]' and `[:lower:]' is recommended over `A-Z' and `a-z'.
 
-       But with this, the string `H' would neither complete to `FooHoo' nor to
-       `LikeTHIS' because in each case there is an upper case letter before the
-       `H' and that is matched by the anchor. Likewise, a `2' would not be
-       completed. In both cases this could be changed by using
-       `r:|[[:upper:]0-9]=**', but then `H' completes to both `LikeTHIS' and
-       `FooHoo' and a `2' matches the other strings because characters can be
-       inserted before every upper case letter and digit. To avoid this one
-       would use:
+       Below are the different forms of matchers supported.  Each uppercase form
+       behaves exactly like its lowercase counterpart, but adds an additional
+       step after the match pattern has filtered out non-matching completions:
+       Each of a match's substrings that was matched by a subpattern from an
+       uppercase matcher is replaced with the corresponding substring of the
+       current word.  However, patterns from lowercase matchers have higher
+       weight:  If a substring of the current word was matched by patterns from
+       both a lowercase and an uppercase matcher, then the lowercase matcher's
+       pattern wins and the corresponding part of the match is not modified.
 
-              compadd -M 'r:[^[:upper:]0-9]||[[:upper:]0-9]=** r:|=*' \
-                  LikeTHIS FooHoo foo123 bar234
+       Unless indicated otherwise, each example listed assumes COMPLETE_IN_WORD
+       to be unset (as it is by default).
 
-       By using these two anchors, a `H' matches only upper case `H's that are
-       immediately preceded by something matching the left anchor
-       `[^[:upper:]0-9]'. The effect is, of course, that `H' matches only the
-       string `FooHoo', a `2' matches only `bar234' and so on.
+       m:word-pat=match-pat
+       M:word-pat=match-pat
 
-       When using the completion system (see zshcompsys(1)), users can define
-       match specifications that are to be used for specific contexts by using
-       the matcher and matcher-list styles. The values for the latter will be
-       used everywhere.
+              For each substring of the current word that matches word-pat,
+              broaden the corresponding part of the match pattern to
+              additionally match match-pat.
+
+              Examples:
+
+                     m:{[:lower:]}={[:upper:]} lets any lower case character in
+                     the current word be completed to itself or its uppercase
+                     counterpart.  So, the completions `foo', `FOO' and `Foo'
+                     will are be considered matches for the word `fo'.
+
+                     M:_= inserts every underscore from the current word into
+                     each match, in the same relative position, determined by
+                     matching the substrings around it.  So, given a completion
+                     `foo', the word `f_o' will be completed to the match
+                     `f_oo', even though the latter was not present as a
+                     completion.
+
+       b:word-pat=match-pat
+       B:word-pat=match-pat
+       e:word-pat=match-pat
+       E:word-pat=match-pat
+
+              For each consecutive substring at the b:eginning or e:nd of the
+              current word that matches word-pat, broaden the corresponding part
+              of the match pattern to additionally match match-pat.
+
+              Examples:
+
+                     `b:-=+' lets any number of minuses at the start of the
+                     current word be completed to a minus or a plus.
+
+                     `B:0=' adds all zeroes at the beginning of the current word
+                     to the beginning of each match.
+
+       l:|word-pat=match-pat
+       L:|word-pat=match-pat
+       R:word-pat|=match-pat
+       r:word-pat|=match-pat
+
+              If there is a substring at the l:eft or r:ight edge of the current
+              word that matches word-pat, then broaden the corresponding part of
+              the match pattern to additionally match match-pat.
+
+              For each l:, L:, r: and R: matcher (including the ones below), the
+              pattern match-pat may also be a `*'.  This matches any number of
+              characters in a completion.
+
+              Examples:
+
+                     `r:|=*' appends a `*' to the match pattern, even when
+                     COMPLETE_IN_WORD is set and the cursor is not at the end of
+                     the current word.
+
+                     If the current word starts with a minus, then `L:|-=' will
+                     prepend it to each match.
+
+       l:anchor|word-pat=match-pat
+       L:anchor|word-pat=match-pat
+       r:word-pat|anchor=match-pat
+       R:word-pat|anchor=match-pat
+
+              For each substring of the current word that matches word-pat and
+              has on its l:eft or r:ight another substring matching anchor,
+              broaden the corresponding part of the match pattern to
+              additionally match match-pat.
+
+              Note that these matchers (and the ones below) modify only what is
+              matched by word-pat; they do not change the matching behavior of
+              what is matched by anchor (or coanchor; see the matchers below).
+              Thus, unless its corresponding part of the match pattern has been
+              modified, the anchor in the current word has to match literally in
+              each completion, just like any other substring of the current
+              word.
+
+              If a matcher includes at least one anchor (which includes the
+              matchers with two anchors, below), then match-pat may also be `*'
+              or `**'.  `*' can match any part of a completion that does not
+              contain any substrings matching anchor, whereas a `**' can match
+              any part of a completion, period.  (Note that this is different
+              from the behavior of `*' in the anchorless forms of `l:' and `r:'
+              and and also different from `*' and `**' in glob expressions.)
+
+              Examples:
+
+                     `r:|.=*' makes the completion `comp.sources.unix' a match
+                     for the word `..u' -- but not for the word `.u'.
+
+                     Given a completion `--foo', the matcher `L:--|no-=' will
+                     complete the word `--no-' to the match `--no-foo'.
+
+       l:anchor||coanchor=match-pat
+       L:anchor||coanchor=match-pat
+       r:coanchor||anchor=match-pat
+       R:coanchor||anchor=match-pat
+
+              For any two consecutive substrings of the current word that match
+              anchor and coanchor, in the order given, insert the pattern
+              match-pat between their corresponding parts in the match pattern.
+
+              Note that, unlike anchor, the pattern coanchor does not change
+              what `*' can match.
+
+              Examples:
+
+                     `r:?||[[:upper:]]=*' will complete the current word `fB' to
+                     `fooBar', but it will not complete it to `fooHooBar'
+                     (because `*' here cannot match anything that includes a
+                     match for `[[:upper:]]), nor will it complete `B' to
+                     `fooBar' (because there is no character in the current word
+                     to match coanchor).
+
+                     Given the current word `pass.n' and a completion
+                     `pass.byname', the matcher `L:.||[[:alpha:]]=by' will
+                     produce the match `pass.name'.
+
+       x:
+
+              Ignore this matcher and all matchers to its right.
+
+              This matcher is used to mark the end of a match specification.  In
+              a single standalone list of matchers, this has no use, but where
+              match specifications are concatenated, as is often the case when
+              using the completion system (see zshcompsys(1)), it can allow one
+              match specification to override another.
 
 COMPLETION WIDGET EXAMPLE
        The first step is to define the widget:

@@ -72,7 +72,13 @@ SHELL BUILTIN COMMANDS
               that value.  A trailing space in value causes the next word to be
               checked for alias expansion.  If the -g flag is present, define a
               global alias; global aliases are expanded even if they do not
-              occur in command position.
+              occur in command position:
+
+                     % perldoc --help 2>&1 | grep 'built-in functions'
+                         -f   Search Perl built-in functions
+                     % alias -g HG='--help 2>&1 | grep'
+                     % perldoc HG 'built-in functions'
+                         -f   Search Perl built-in functions
 
               If the -s flag is present, define a suffix alias: if the command
               word on a command line is in the form `text.name', where text is
@@ -646,7 +652,8 @@ SHELL BUILTIN COMMANDS
               Do nothing and return an exit status of 1.
 
 
-       fc [ -e ename ] [ -LI ] [ -m match ] [ old=new ... ] [ first [ last ] ]
+       fc [ -e ename ] [ -s ] [ -LI ] [ -m match ] [ old=new ... ] [ first [
+       last ] ]
        fc -l [ -LI ] [ -nrdfEiD ] [ -t timefmt ] [ -m match ]
              [ old=new ... ] [ first [ last ] ]
        fc -p [ -a ] [ filename [ histsize [ savehistsize ] ] ]
@@ -666,14 +673,15 @@ SHELL BUILTIN COMMANDS
               All substitutions old=new, if any, are then performed on the text
               of the events.
 
-              In addition to the number range,
+              The range of events selected by numbers can be narrowed further by
+              the following flags.
               -I     restricts to only internal events (not from $HISTFILE)
               -L     restricts to only local events (not from other shells, see
                      SHARE_HISTORY in zshoptions(1) -- note that $HISTFILE is
                      considered local when read at startup)
-              -m     takes the first argument as a pattern (should be quoted)
-                     and only the history events matching this pattern are
-                     considered
+              -m     takes the first argument as a pattern (which should be
+                     quoted) and only the history events matching this pattern
+                     are considered
 
               If first is not specified, it will be set to -1 (the most recent
               event), or to -16 if the -l flag is given.  If last is not
@@ -691,8 +699,9 @@ SHELL BUILTIN COMMANDS
               no editor is invoked.  When editing is complete, the edited
               command is executed.
 
-              The flag -r reverses the order of the events and the flag -n
-              suppresses event numbers when listing.
+              The flag `-s' is equivalent to `-e -'.  The flag -r reverses the
+              order of the events and the flag -n suppresses event numbers when
+              listing.
 
               Also when listing,
               -d     prints timestamps for each event
@@ -768,7 +777,8 @@ SHELL BUILTIN COMMANDS
        functions +M [ -m ] mathfn ...
               Equivalent to typeset -f, with the exception of the -c, -x, -M and
               -W options.  For functions -u and functions -U, see autoload,
-              which provides additional options.
+              which provides additional options.  For functions -t and functions
+              -T, see typeset -f.
 
               The -x option indicates that any functions output will have each
               leading tab for indentation, added by the shell to show syntactic
@@ -788,6 +798,8 @@ SHELL BUILTIN COMMANDS
               a library shell function which is then redefined to call newfn,
               thereby installing a modified version of the function.
 
+              The -M and +M flags
+
               Use of the -M option may not be combined with any of the options
               handled by typeset -f.
 
@@ -806,10 +818,50 @@ SHELL BUILTIN COMMANDS
               mathfn (not shellfn as would usually be the case), provided the
               option FUNCTION_ARGZERO is in effect.  The positional parameters
               in the shell function correspond to the arguments of the
-              mathematical function call.  The result of the last arithmetical
-              expression evaluated inside the shell function (even if it is a
-              form that normally only returns a status) gives the result of the
-              mathematical function.
+              mathematical function call.
+
+              The result of the last arithmetical expression evaluated inside
+              the shell function gives the result of the mathematical function.
+              This is not limited to arithmetic substitutions of the form
+              $((...)), but also includes arithmetical expressions evaluated in
+              any other way, including by the let builtin, by ((...))
+              statements, and even by the return builtin and by array
+              subscripts.  Therefore, care must be taken not to use syntactical
+              constructs that perform arithmetic evaluation after evaluating
+              what is to be the result of the function.  For example:
+
+                     # WRONG
+                     zmath_cube() {
+                       (( $1 * $1 * $1 ))
+                       return 0
+                     }
+                     functions -M cube 1 1 zmath_cube
+                     print $(( cube(3) ))
+
+              This will print `0' because of the return.
+
+              Commenting the return out would lead to a different problem: the
+              ((...)) statement would become the last statement in the function,
+              so the return status ($?) of the function would be non-zero
+              (indicating failure) whenever the arithmetic result of the
+              function would happen to be zero (numerically):
+
+                     # WRONG
+                     zmath_cube() {
+                       (( $1 * $1 * $1 ))
+                     }
+                     functions -M cube 1 1 zmath_cube
+                     print $(( cube(0) ))
+
+              Instead, the true builtin can be used:
+
+                     # RIGHT
+                     zmath_cube() {
+                       (( $1 * $1 * $1 ))
+                       true
+                     }
+                     functions -M cube 1 1 zmath_cube
+                     print $(( cube(3) ))
 
               If the additional option -s is given to functions -M, the argument
               to the function is a single string: anything between the opening
@@ -817,6 +869,12 @@ SHELL BUILTIN COMMANDS
               single argument, even if it includes commas or white space.  The
               minimum and maximum argument specifiers must therefore be 1 if
               given.  An empty argument list is passed as a zero-length string.
+              Thus, the following string function takes a single argument,
+              including the commas, and prints 11:
+
+                     stringfn() { (( $#1 )); true }
+                     functions -Ms stringfn
+                     print $(( stringfn(foo,bar,rod) ))
 
               functions -M with no arguments lists all such user-defined
               functions in the same form as a definition.  With the additional
@@ -828,19 +886,6 @@ SHELL BUILTIN COMMANDS
               functions whose mathfn matches the pattern are removed.  Note that
               the shell function implementing the behaviour is not removed
               (regardless of whether its name coincides with mathfn).
-
-              For example, the following prints the cube of 3:
-
-                     zmath_cube() { (( $1 * $1 * $1 )) }
-                     functions -M cube 1 1 zmath_cube
-                     print $(( cube(3) ))
-
-              The following string function takes a single argument, including
-              the commas, so prints 11:
-
-                     stringfn() { (( $#1 )) }
-                     functions -Ms stringfn
-                     print $(( stringfn(foo,bar,rod) ))
 
        getcap See the section `The zsh/cap Module' in zshmodules(1).
 
@@ -866,7 +911,8 @@ SHELL BUILTIN COMMANDS
               The first option to be examined may be changed by explicitly
               assigning to OPTIND.  OPTIND has an initial value of 1, and is
               normally set to 1 upon entry to a shell function and restored upon
-              exit (this is disabled by the POSIX_BUILTINS option).  OPTARG is
+              exit.  (The POSIX_BUILTINS option disables this, and also changes
+              the way the value is calculated to match other shells.)  OPTARG is
               not reset and retains its value from the most recent call to
               getopts.  If either of OPTIND or OPTARG is explicitly unset, it
               remains unset, and the index or option argument is not stored.
@@ -949,6 +995,24 @@ SHELL BUILTIN COMMANDS
               with the given string, truncated if necessary to fit.  This will
               normally be visible in ps (ps(1)) listings.  This feature is
               typically used by daemons, to indicate their state.
+
+              Full job control is only available in the top-level interactive
+              shell, not in commands run in the left hand side of pipelines or
+              within the (...) construct.  However, a snapshot of the job state
+              at that point is taken, so it is still possible to use the jobs
+              builtin, or any parameter providing job information.  This gives
+              information about the state of jobs at the point the subshell was
+              created.  If background processes are created within the subshell,
+              then instead information about those processes is provided.
+
+              For example,
+
+                     sleep 10 &    # Job in background
+                     (             # Shell forks
+                     jobs          # Shows information about "sleep 10 &"
+                     sleep 5 &     # Process in background (no job control)
+                     jobs          # Shows information about "sleep 5 &"
+                     )
 
        kill [ -s signal_name | -n signal_number | -sig ] job ...
        kill -l [ sig ... ]
@@ -1076,9 +1140,6 @@ SHELL BUILTIN COMMANDS
               Same as typeset, except that the options -g, and -f are not
               permitted.  In this case the -x option does not force the use of
               -g, i.e. exported variables will be local to functions.
-
-       log    List all users currently logged in who are affected by the current
-              setting of the watch parameter.
 
        logout [ n ]
               Same as exit, except that it only works in a login shell.
@@ -1299,7 +1360,7 @@ SHELL BUILTIN COMMANDS
 
 
        read [ -rszpqAclneE ] [ -t [ num ] ] [ -k [ num ] ] [ -d delim ]
-            [ -u n ] [ name[?prompt] ] [ name ...  ]
+            [ -u n ] [ [name][?prompt] ] [ name ...  ]
               Read one line and break it into fields using the characters in
               $IFS as separators, except as noted below.  The first field is
               assigned to the first name, the second field to the second name,
@@ -1421,8 +1482,13 @@ SHELL BUILTIN COMMANDS
        return [ n ]
               Causes a shell function or `.' script to return to the invoking
               script with the return status specified by an arithmetic
-              expression n. If n is omitted, the return status is that of the
-              last command executed.
+              expression n.  For example, the following prints `42':
+
+                     () { integer foo=40; return "foo + 2" }
+                     echo $?
+
+              If n is omitted, the return status is that of the last command
+              executed.
 
               If return was executed from a trap in a TRAPNAL function, the
               effect is different for zero and non-zero return status.  With
@@ -1431,8 +1497,8 @@ SHELL BUILTIN COMMANDS
               with a non-zero status, the shell will behave as interrupted
               except that the return status of the trap is retained.  Note that
               the numeric value of the signal which caused the trap is passed as
-              the first argument, so the statement `return $((128+$1))' will
-              return the same status as if the signal had not been trapped.
+              the first argument, so the statement `return "128+$1"' will return
+              the same status as if the signal had not been trapped.
 
        sched  See the section `The zsh/sched Module' in zshmodules(1).
 
@@ -1652,7 +1718,7 @@ SHELL BUILTIN COMMANDS
               line are preserved.  Strings of commands run between editing the
               command line will see a consistent tty state.  See also the shell
               variable STTY for a means of initialising the tty before running
-              external commands.
+              external commands and/or freezing the tty around a single command.
 
        type [ -wfpamsS ] name ...
               Equivalent to whence -v.
@@ -1674,7 +1740,11 @@ SHELL BUILTIN COMMANDS
               which retain their special attributes when made local.
 
               For each name=value assignment, the parameter name is set to
-              value.
+              value.  If the assignment is omitted and name does not refer to an
+              existing parameter, a new parameter is intialized to empty string,
+              zero, or empty array (as appropriate), unless the shell option
+              TYPESET_TO_UNSET is set.  When that option is set, the parameter
+              attributes are recorded but the parameter remains unset.
 
               If the shell option TYPESET_SILENT is not set, for each remaining
               name that refers to a parameter that is already set, the name and
@@ -1746,7 +1816,7 @@ SHELL BUILTIN COMMANDS
               after expansion.  Hence it is not possible to assign to multiple
               arrays by this means.
 
-              Note that each interface to any of the commands my be disabled
+              Note that each interface to any of the commands may be disabled
               separately.  For example, `disable -r typeset' disables the
               reserved word interface to typeset, exposing the builtin
               interface, while `disable typeset' disables the builtin.  Note
@@ -2106,12 +2176,12 @@ SHELL BUILTIN COMMANDS
 
        umask [ -S ] [ mask ]
               The umask is set to mask.  mask can be either an octal number or a
-              symbolic value as described in chmod(1).  If mask is omitted, the
-              current value is printed.  The -S option causes the mask to be
-              printed as a symbolic value.  Otherwise, the mask is printed as an
-              octal number.  Note that in the symbolic form the permissions you
-              specify are those which are to be allowed (not denied) to the
-              users specified.
+              symbolic value as described in the chmod(1) man page.  If mask is
+              omitted, the current value is printed.  The -S option causes the
+              mask to be printed as a symbolic value.  Otherwise, the mask is
+              printed as an octal number.  Note that in the symbolic form the
+              permissions you specify are those which are to be allowed (not
+              denied) to the users specified.
 
        unalias [ -ams ] name ...
               Removes aliases.  This command works the same as unhash -a, except

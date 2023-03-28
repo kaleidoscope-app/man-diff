@@ -136,7 +136,7 @@ DESCRIPTION
 
      Comparison options:
 
-     -A algo, -algorithm algo
+     -A algo, --algorithm algo
              Configure the algorithm used when comparing files.  diff supports 3
              algorithms:
 
@@ -145,7 +145,7 @@ DESCRIPTION
                      files are detected it causes the Myers algorithm to bails
                      out and produces correct, but non-optimal diff output.
              patience
-                     The patience variant of the Myers algorithm, this variant
+                     The Patience variant of the Myers algorithm, this variant
                      attempts to create more aesthetically pleasing diff output
                      by logically grouping lines.
              stone   The Stone algorithm looks for the longest common
@@ -154,9 +154,18 @@ DESCRIPTION
                      In large files this can lead to a significant performance
                      impact.  The Stone algorithm is maintained for
                      compatibility.
-             Diff defaults the algorithm to Myers diff, but will fall back to
-             the Stone algorithm if the input or output options are not
-             supported by libdiff.
+
+             The default diff algorithm when this flag is not given is “myers”.
+             diff will fallback to the “stone” algorithm if the “myers”
+             algorithm cannot be supported with the given options and the
+             algorithm has not been set explicitly.
+
+             The default algorithm is affected by the POSIXLY_CORRECT and
+             POSIX_PEDANTIC environment variables.  When either variable is set
+             the default algorithm will be “stone”.
+
+             If the diff algorithm is selected, but cannot be supported with the
+             given options diff will produce an error.
 
      -a --text
              Treat all files as ASCII text.  Normally diff will simply print

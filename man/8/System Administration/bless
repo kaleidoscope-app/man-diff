@@ -9,13 +9,13 @@ SYNOPSIS
      bless --folder directory [--file file] [--bootefi [file]]
            [--label name | --labelfile file] [--setBoot] [--nextonly]
            [--shortform] [--legacy] [--legacydrivehint device]
-           [--options string] [--personalize] [--create-snapshot]
-           [--last-sealed-snapshot] [--quiet | --verbose]
+           [--options string] [--personalize] [--create-snapshot] [--snapshot]
+           [--snapshotname] [--last-sealed-snapshot] [--quiet | --verbose]
 
      bless --mount directory [--file file] [--setBoot] [--nextonly]
            [--shortform] [--legacy] [--legacydrivehint device]
-           [--options string] [--personalize] [--create-snapshot]
-           [--last-sealed-snapshot] [--quiet | --verbose]
+           [--options string] [--personalize] [--snapshot] [--snapshotname]
+           [--create-snapshot] [--last-sealed-snapshot] [--quiet | --verbose]
 
      bless --device device [--label name | --labelfile file]
            [--startupfile file] [--setBoot] [--nextonly] [--shortform]
@@ -136,10 +136,18 @@ OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES:
                               and valid for this particular machine.  This may
                               require network access, in order to check the
                               signatures.
+     Only one of the following snapshot options can be activated at the same
+                              time:
      --create-snapshot        Attempts to create an APFS root snapshot of the
                               target APFS system volume and set it as root
                               snapshot of the system volume. The target system
                               will boot from this snapshot on its next boot.
+     --snapshot               Set specific snapshot (uuid) as root snapshot of
+                              the system volume.  The target system will boot
+                              from this snapshot on its next boot.
+     --snapshotname           Set specific snapshot (name) as root snapshot of
+                              the system volume.  The target system will boot
+                              from this snapshot on its next boot.
      --last-sealed-snapshot   Reverts back to using the previously signed APFS
                               root snapshot reenabling Authenticated Root
                               Volume.
@@ -169,6 +177,8 @@ OPTIONS FOR INTEL ARCHITECTURE BASED DEVICES:
      --options                Same as for Folder Mode.
      --personalize            Same as for Folder Mode.
      --create-snapshot        Same as for Folder Mode.
+     --snapshot               Same as for Folder Mode.
+     --snapshotname           Same as for Folder Mode.
      --last-sealed-snapshot   Same as for Folder Mode.
      --bootefi                This enables copying required boot objects when
                               --create-snapshot or --last-sealed-snapshot is
@@ -288,6 +298,12 @@ OPTIONS FOR APPLE SILICON DEVICES:
                               target APFS system volume and set it as root
                               snapshot of the system volume. The target system
                               will boot from this snapshot on its next boot.
+     --snapshot               Set specific snapshot (uuid) as root snapshot of
+                              the system volume.  The target system will boot
+                              from this snapshot on its next boot.
+     --snapshotname           Set specific snapshot (name) as root snapshot of
+                              the system volume.  The target system will boot
+                              from this snapshot on its next boot.
      --last-sealed-snapshot   Reverts back to using the previously signed APFS
                               root snapshot reenabling Authenticated Root
                               Volume.  The target system will boot from this
