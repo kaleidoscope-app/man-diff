@@ -41,6 +41,11 @@ Or quickly lookup a single man page:
 
 ## Changelog
 
+Mar 28, 2023:
+* Added macOS 13.3:  
+  ```git difftool changeset/macOS13.2.1..changeset/macOS13.3```
+* No changes in macOS 13.2.1
+
 Jan 24, 2023:
 * Added macOS 13.2:  
   ```git difftool changeset/macOS13.1..changeset/macOS13.2```
