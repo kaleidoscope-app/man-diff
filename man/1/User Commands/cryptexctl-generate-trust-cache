@@ -1,0 +1,62 @@
+CRYPTEXCTL-GENERATE-TRUST-CACHE(1)                       General Commands Manual
+
+NAME
+     cryptexctl generate-trust-cache – Generate a trust cache from a directory
+     of Mach-O files
+
+SYNOPSIS
+     cryptexctl generate-trust-cache [-o | --output-file OUTPUT-FILE]
+                [-t | --type ⟨static|loadable|development⟩]
+                [-b | --base-trust-cache TRUST-CACHE-PATH] DIRECTORY-PATH
+
+DESCRIPTION
+     Generate a trust cache from the mach object files (see Mach-O(5)) in the
+     directory hierarchy given by DIRECTORY-PATH.  Each mach object, regardles
+     of whether it is an executable, bundle, dylib, or dylib shared cache, is
+     inspected for a valid code directory.  If found, the code directory is
+     hashed, and the resulting hash is added to the trust cache.  If the mach
+     object has no code signature, it is impossible to add it to the trust
+     cache, and it is ignored.
+
+     If a fat mach file is encountered, each slice is examined with the above
+     logic.
+
+     The implementation expects well-formed mach objects, whose load command
+     counts are accurate, and will not attempt to work around poorly-formed
+     inputs just for the sake of a single user's tooling.
+
+OPTIONS
+     A list of flags and their descriptions:
+
+     -o | --output-file OUTPUT-FILE
+              The file to which the trust cache should be written, will be
+              replaced if it already exists [default: a file named trustcache in
+              the current working direcory.]
+
+     -t | --type ⟨static|loadable|development⟩
+              The type of trust cache to produce. Valid types are:
+
+              static - a static trust cache, of which there may only be one on a
+              given device.  This option is generally not useful, but is
+              included for completeness.
+
+              loadable - a trust cache which may be loaded at runtime and
+              persisted on the device
+
+              development - a trust cache which may only be loaded on devices
+              with development fusing while running a DEVELOPMENT iBoot
+
+              [default: loadable]
+
+     -b | --base-trust-cache TRUST-CACHE-PATH
+              The path to an existing trust cache of any type whose cdhashes
+              should be incorporated into the one being generated. This flag may
+              be specified multiple times.
+
+SEE ALSO
+     codesign(1) cryptexctl(1) cryptexctl-create(1)
+     cryptexctl-dump-trust-cache(1) trustcachectl(1) Mach-O(5)
+
+HISTORY
+     Introduced in macOS 11.0
+

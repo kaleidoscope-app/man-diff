@@ -1,0 +1,57 @@
+CRYPTEXCTL-DEVICE(1)         General Commands Manual        CRYPTEXCTL-DEVICE(1)
+
+NAME
+     cryptexctl device – manage connections to devices running the cryptex
+     subsytem
+
+SYNOPSIS
+     cryptexctl device device ACTION
+
+DESCRIPTION
+     Perform actions on a connected device. This subcommand will, when
+     appropriate, trigger the pairing dialog on the connected device.
+
+OPTIONS
+     A list of actions which may be performed:
+
+     print    Print information about a connected device. This includes
+              information about the device name, UDID and various device
+              identifiers used for personalization (see cryptexctl-create(1)).
+
+     pair     Initiate pairing cryptexctl on this machine with a device. This
+              will trigger a pairing dialog on the device which must be accepted
+              before other cryptex operations, such as installation, may be
+              performed.
+
+              The pair action will return immediately if the device has already
+              been paired.
+
+     unpair   Remove the pairing between this machine and a device. Performing
+              future cryptex operations will require the device be paired again.
+
+     list     List devices on which cryptexctl may be able to operate. These
+              devices may be connected via a physical cable or over the network
+              if remote lockdown is enabled. This is one way to retrieve the
+              device UDID, which is required to select the device on which to
+              operate when using other commands.
+
+ENVIRONMENT
+     CRYPTEXCTL_UDID
+                   Read by cryptexctl device to set the --udid option on the
+                   base cryptexctl(1) command. This UDID value can be retrieved
+                   from the list or print actions and provides a convenient way
+                   to operate on a single device when multiple devices are
+                   connected.
+
+                   The magic value "first" will select the first discovered
+                   device.  Note that this will select the first device detected
+                   over the lockdown protocol. This may include wireless devices
+                   and the ordering is not guaranteed. It is usually best to use
+                   a specific UDID.
+
+SEE ALSO
+     cryptexctl(1), cryptexctl-create(1)
+
+HISTORY
+     Introduced in macOS 11.0
+

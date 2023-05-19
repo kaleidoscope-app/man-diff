@@ -1,0 +1,124 @@
+cryptexctl-create(1)         General Commands Manual        cryptexctl-create(1)
+
+NAME
+     cryptexctl create – create a cryptex from a disk image
+
+SYNOPSIS
+     cryptexctl create [--replace] --identifier IDENTIFIER --version VERSION
+                --variant VARIANT PATH-TO-DMG
+
+
+     cryptexctl create [--host-identity] [--replace] --identifier IDENTIFIER
+                --version VERSION PATH-TO-DMG
+
+
+     cryptexctl create [--identity IDENTITY-PLIST] [--replace] [--BORD BOARD-ID]
+                [--CHIP CHIP-ID] [--SDOM SDOM] --identifier IDENTIFIER
+                --version VERSION --variant VARIANT PATH-TO-DMG
+
+DESCRIPTION
+     cryptexctl create creates a new cryptex(5) from a disk image.  The disk
+     image must encapsulate an HFS+ or HFSX filesystem with a hierarchy as
+     described in cryptex(5).  The result will be a directory with a "cxbd" file
+     name extension.  The cryptex bundle has the same structure with a restore
+     bundle, and has the following structure and assets:
+
+         ./Restore
+         ./Restore/BuildManifest.plist
+         ./Restore/Cryptex
+         ./Restore/Cryptex/<Cryptex Name>
+         ./Restore/Cryptex/<Cryptex Name>/c411
+         ./Restore/Cryptex/<Cryptex Name>/pdmg
+         ./Restore/Cryptex/<Cryptex Name>/ltrs
+
+     Together, these objects comprise the cryptex bundle. They are not
+     independently useful.
+
+     In most cases the device identity will be retrieved by cryptexctl create
+     from either the host, if the host is running a cryptexd(8) daemon, or from
+     a connected device (See the --udid option on the root cryptexctl(1)
+     command.)
+
+     If the device cannot be connected directly the identity can be specified on
+     the command line directly.
+
+OPTIONS
+     A list of options with their descriptions. See DEVICE IDENTIFIERS for the
+     identity arguments.
+
+     Required:
+
+     -i | --identifier IDENTIFIER
+             A reverse-ICANN identitifer for the cryptex
+
+     -v | --version VERSION
+             The CFBundleVersion-style version number for the cryptex
+
+     -V | --variant VARIANT
+             The name of the cryptex
+
+     PATH-TO-DMG
+             The path to the disk image file from which the cryptex will be
+             created -- the disk image must encapsulate an HFS+ or HFSX file
+             system containing a cryptex(5) filesystem hierarchy.
+
+     Optional:
+
+     -o | --output-directory OUTPUT-DIRECTORY
+             The directory to which the cryptex should be written. Upon
+             successful completion, this directory will contain a directory
+             named for the given IDENTIFIER, which will contain the cryptex's
+             constituent personalized objects [default: the current working
+             directory]
+
+     -r | --replace
+             Replace the cryptex in OUTPUT-DIRECTORY if it already exists. The
+             old directory will be rename(2)ed into a temporary directory rather
+             than being deleted outright.
+
+     -H | --host-identity
+             Use the host's identity for the personalization; if specified all
+             other identifiers are ignored
+
+     -z | --research
+             Cryptex will be created as a research cryptex with the cpxd tag.
+
+DEVICE IDENTIFIERS
+     These tags can be retrieved from a device with cryptexctl-identity(1) for
+     offline personalization or retrieved automatically for the host or a
+     connected device.
+
+     The following components comprise a host identity for cryptex creation.
+     For more information about these tags and the personalization process, see
+     cryptex-image4(7).
+
+     BORD  The board identifier of the target device
+     CHIP  The chip identifier of the target device
+     SDOM  The security domain of the target device [default: 0x1]
+           cryptexctl-nonce(1).  [default: all zeros]
+
+ENVIRONMENT
+     CRYPTEXCTL_UDID
+             Read by the base cryptexctl(1) command to select the device on
+             which to operate when the --udid option is not specified and there
+             is no cryptexd(8) daemon on the host. See cryptexctl(1) for more
+             information about CRYPTEXCTL_UDID.
+
+EXAMPLES
+     Create a cryptex bundle using host identity:
+
+           $ cryptexctl create -i com.apple.cryptex-http -v 0.0.1 -V CryptexHTTP
+           -H /path/to/cryptex-http.dmg
+
+     Create a cryptex bundle and specify build identify on command line:
+
+           $ cryptexctl create -i com.apple.cryptex-http -v 0.0.1 -V CryptexHTTP
+           -B 0x4 -C 0x8030 -D 0x1 /path/to/cryptex-http.dmg
+
+SEE ALSO
+     cryptexctl(1), cryptexctl-identity(1), cryptexctl-personalize(1),
+     cryptexctl-install(1), cryptexctl-nonce(1), cryptex(5)
+
+HISTORY
+     Introduced in macOS 11.0
+

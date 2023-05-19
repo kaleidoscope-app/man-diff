@@ -64,6 +64,11 @@ OPTIONS
               added to the filename, however format strings containing '%'
               characters will be respected.
 
+       -T     Causes all but the initial logfile to be truncated when opened.
+              This is useful when the format string contains something that will
+              loop around, such as the day of the month. Available in 2.4.56 and
+              later.
+
        -v     Produce verbose output on STDERR. The output contains the result
               of the configuration parsing, and all file open and close actions.
 
@@ -179,6 +184,17 @@ EXAMPLES
        and then truncating the file once per day. It is expected in this
        scenario that a separate process (such as tail) would process the file in
        real time.
+
+
+            CustomLog "|bin/rotatelogs -T /var/log/logfile.%d 86400" common
+
+
+
+       If the server is started (or restarted) on the first of the month, this
+       appends to /var/log/logfile.01. When a log entry is written on the second
+       of the month, /var/log/logfile.02 is truncated and new entries will be
+       added to the top. This example keeps approximately 1 months worth of logs
+       without external maintenance.
 
 
 PORTABILITY

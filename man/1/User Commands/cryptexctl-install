@@ -1,0 +1,70 @@
+CRYPTEXCTL-INSTALL(1)        General Commands Manual       CRYPTEXCTL-INSTALL(1)
+
+NAME
+     cryptexctl install – install a cryptex, either to the host or to a target
+     device
+
+SYNOPSIS
+     cryptexctl install --variant VARIANT [-p | --print-info] CRYPTEX-DIRECTORY
+
+DESCRIPTION
+     Install a cryptex, either to the host (if the host has a cryptex management
+     daemon) or to a target device specified in the top level cryptexctl(1)
+     command.
+
+OPTIONS
+     A list of options with descriptions:
+
+     Required:
+
+     -V | --variant VARIANT
+              The name of the cryptex
+
+     CRYPTEX-DIRECTORY
+              The path to the cryptex bundle directory. The cryptex bundle
+              directory is the product of the cryptexctl-personalize(1)
+              subcommand and is expected to contain a personalized Image4
+              manifest.
+
+     Optional:
+
+     [-p | --print-info]
+              Print information about the cryptex that was installed.
+
+ENVIRONMENT
+     CRYPTEXCTL_UDID  Read by the base cryptexctl(1) command to select the
+                      device on which to operate when the --udid option is not
+                      specified and there is no cryptexd(8) daemon on the host.
+                      See cryptexctl(1) for more information about
+                      CRYPTEXCTL_UDID.
+
+TROUBLESHOOTING
+     If an installation is failing you may wish to enable verbose logging. The
+     following will enable the most verbose logging from cryptexctl install:
+
+           % cryptexctl -v9 -d9 -ldt install -V CryptexHTTP --print-info
+           ./com.example.cryptex.cxbd.signed
+
+     You may also want to see logging from the services involved in the cryptex
+     subsytem, the cryptexctl-log(1) command is a quick way to get more
+     information about a failing installation.
+
+           % cryptexctl log stream
+
+     In more extreme cases you might need to collect logging from the device.
+     If you have the CRYPTEXCTL_UDID environment variable set, you should use
+     "sudo -E" to pass the environment variable through to cryptexctl install.
+     Otherwise you must specify the --udid option to cryptexctl install.
+
+           % sudo -E cryptexctl log collect
+           % cryptexctl log show -- --archive ./system_logs.logarchive
+
+     For more information about logging, see cryptexctl-log(1) and log(1).
+
+SEE ALSO
+     cryptexctl(1), cryptexctl-create(1), cryptexctl-personalize(1),
+     cryptexctl-log(1), cryptexctl-uninstall(1), log(1)
+
+HISTORY
+     Introduced in macOS 11.0
+

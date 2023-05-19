@@ -1,0 +1,171 @@
+cryptexctl-personalize(1)    General Commands Manual   cryptexctl-personalize(1)
+
+NAME
+     cryptexctl personalize – personalize a cryptex from a cryptex bundle
+
+SYNOPSIS
+     cryptexctl personalize [--replace] --identity-plist IDENTITY-PLIST
+                --variant VARIANT PATH-TO-CRYPTEX-BUNDLE
+
+
+     cryptexctl personalize [--host-identity] [--replace] --variant VARIANT
+                PATH-TO-CRYPTEX-BUNDLE
+
+
+     cryptexctl personalize [--replace] [--ALGO CRYPTO-ALGORITHM]
+                [--CEPO CERTIFICATE-EPOCH] [--BORD BOARD-ID] [--CHIP CHIP-ID]
+                [--ECID ECID] [--SDOM SDOM]
+                [--CPRO CERTIFICATE-PRODUCTION-STATUS]
+                [--CSEC CERTIFICATE-SECURITY-MODE]
+                [--EPRO EFFECTIVE-PRODUCTION-STATUS]
+                [--ESEC EFFECTIVE-SECURITY-MODE] [--BNCH NONCE-HASH]
+                --variant VARIANT PATH-TO-CRYPTEX-BUNDLE
+
+DESCRIPTION
+     cryptexctl personalize personalize a cryptex(5) from a cryptex bundle. The
+     result will be a cryptex bundle with the same name as the original bundle
+     but with a "signed" suffix. An im4m asset will be added to the signed
+     cryptex bundle on following path:
+
+       ./Restore/Cryptex/<Cryptex Name>/im4m
+
+     This subcommand requires that Apple's trusted signing service --
+     tss.apple.com -- be reachable.
+
+     The cryptex will be personalized for the target device by sending
+     measurements of the disk image content and the identity of a device to
+     Apple's trusted signing service (tss.apple.com).
+
+     In most cases the device identity will be retrieved by cryptexctl
+     personalize from either the host, if the host is running a cryptexd(8)
+     daemon, or from a connected device (See the --udid option on the root
+     cryptexctl(1) command.)
+
+     If the device cannot be connected directly the identity can be specified
+     either on the command line directly or using the --identity-plist argument.
+     See DEVICE IDENTIFIERS.
+
+OPTIONS
+     A list of options with their descriptions. See DEVICE IDENTIFIERS for the
+     identity arguments.
+
+     Required:
+
+     -V | --variant VARIANT
+             The name of the cryptex
+
+     PATH-TO-CRYPTEX-BUNDLE
+             The path to the cryptex bundle directory created from
+             cryptexctl-create(1) command, or to a mounted restore style bundle
+             directory
+
+     Optional:
+
+     -o | --output-directory OUTPUT-DIRECTORY
+             The directory to which the cryptex should be written. Upon
+             successful completion, this directory will contain a directory
+             named for the given IDENTIFIER, which will contain the cryptex's
+             constituent personalized objects [default: the current working
+             directory]
+
+     -r | --replace
+             Replace the cryptex in OUTPUT-DIRECTORY if it already exists. The
+             old directory will be rename(2)ed into a temporary directory rather
+             than being deleted outright.
+
+     -I | --identity-plist IDENTITY-PLIST
+             Path to a property list whose root node is a dictionary containing
+             a set of key-value pairs for each aspect of device identity. The
+             keys are the same as argument names (BORD, CHIP, etc.) and the
+             values are all integers; defaults to the value of the environment
+             variable CRYPTEXCTL_CREATE_IDENTITY.  For an example of such a
+             property list, see EXAMPLES.
+
+     -H | --host-identity
+             Use the host's identity for the personalization; if specified all
+             other identifiers are ignored
+
+     -M | --allow-mix-n-match
+             Personalize with the AMNM entitlement. Only useful for Apple
+             internal development.
+
+     -z | --research
+             Cryptex will be created as a research cryptex with the cpxd tag.
+
+DEVICE IDENTIFIERS
+     These tags can be retrieved from a device with cryptexctl-identity(1) for
+     offline personalization or retrieved automatically for the host or a
+     connected device.
+
+     For convenience the identity can be specified as a property list with
+     --identity-plist.  The property list's root node is a dictionary containing
+     a set of key-value pairs key-value pairs for each aspect of the device
+     identity.  The keys are the same as the argument names (BORD, CHIP, etc).
+
+     The following components comprise a host identity for cryptex creation.
+     For more information about these tags and the personalization process, see
+     cryptex-image4(7).
+
+     ALGO  The crypto algorithm employed by the target device. Valid values are:
+           sha1, sha2-384 [default: sha2-384]
+     CEPO  The certificate epoch of the target device
+     BORD  The board identifier of the target device
+     CHIP  The chip identifier of the target device
+     ECID  The unique chip instance identifier of the target device
+     SDOM  The security domain of the target device [default: 0x1]
+     CPRO  The certificate production status of the target device [default: 0x1]
+     CSEC  The certificate security mode of the target device [default: 0x1]
+     EPRO  The effective production status of the target device [default: 0x1]
+     ESEC  The effective security mode of the target device [default: 0x1]
+     BNCH  The nonce hash to use for the personalization. Can be retrieved with
+           cryptexctl-nonce(1).  [default: all zeros]
+
+ENVIRONMENT
+     CRYPTEXCTL_CREATE_IDENTITY
+             Sets the default value for --identity-plist.  This is useful when
+             personalizing for an offline or disconnected device.
+
+     CRYPTEXCTL_UDID
+             Read by the base cryptexctl(1) command to select the device on
+             which to operate when the --udid option is not specified and there
+             is no cryptexd(8) daemon on the host. See cryptexctl(1) for more
+             information about CRYPTEXCTL_UDID.
+
+EXAMPLES
+     The following is an example of the content of a property list that might be
+     passed to --identity-plist to personalize for an offline device.
+
+     <?xml version="1.0" encoding="UTF-8"?>
+     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+     <plist version="1.0">
+     <dict>
+         <key>ALGO</key>
+         <string>sha2-384</string>
+         <key>CEPO</key>
+         <string>0x0</string>
+         <key>BORD</key>
+         <string>0x6</string>
+         <key>CHIP</key>
+         <string>0x8015</string>
+         <key>ECID</key>
+         <string>0x184d610044a83a</string>
+         <key>SDOM</key>
+         <string>0x1</string>
+         <key>CPRO</key>
+         <false/>
+         <key>CSEC</key>
+         <true/>
+         <key>EPRO</key>
+         <false/>
+         <key>ESEC</key>
+         <true/>
+     </dict>
+     </plist>
+
+SEE ALSO
+     cryptexctl(1), cryptexctl-create(1), cryptexctl-identity(1),
+     cryptexctl-install(1), cryptexctl-nonce(1), cryptex(5)
+
+HISTORY
+     Introduced in macOS 12.0
+

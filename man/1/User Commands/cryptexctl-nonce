@@ -1,0 +1,63 @@
+CRYPTEXCTL-NONCE(1)          General Commands Manual         CRYPTEXCTL-NONCE(1)
+
+NAME
+     cryptexctl nonce – retrieve or manipulate cryptex personalization nonces
+
+SYNOPSIS
+     cryptexctl nonce nonce [-r | --roll] [-g | --global] CRYPTEX-NAME
+
+DESCRIPTION
+     Retrieve or manipulate personalization nonces for cryptexes. In the current
+     implementation, all cryptexes are personalized with a single nonce which is
+     rolled when the host performs a software update. In the future, each
+     cryptex will have an individual nonce.
+
+     This nonce can be used with cryptexctl-create(1) to personalize a cryptex
+     for a device when the device is not present.
+
+OPTIONS
+     A list of options with descriptions:
+
+     [-r | --roll]
+             Roll the cryptex's personalization nonce. This will invalidate the
+             existing personalization for the cryptex such it will not be
+             accepted at the next validation (usually at the next boot). This is
+             not a live revocation and does not affect the state of the already-
+             active cryptex. Once rolled, a new nonce is generated at the next
+             boot, and thus the cryptex nonce will not be queryable until then.
+
+     [-g | --global]
+             Operate on the global cryptex nonce. Currently, all cryptexes are
+             personalized with this nonce, but in the future, each will have its
+             own nonce.
+
+     CRYPTEX-NAME
+             The cryptex whose nonce is to be manipulated. Currently, all
+             cryptexes are personalized with the same nonce, but in the future,
+             each will have its own nonce. This option must be provided if the
+             --global option is not given.
+
+ENVIRONMENT
+     CRYPTEXCTL_UDID
+                   Read by cryptexctl nonce to set the [--udid] option on the
+                   base cryptexctl(1) command. This UDID value can be retrieved
+                   from the cryptexctl-device(1) command's list or print actions
+                   and provides a convenient way to operate on a single device
+                   when multiple devices are connected.
+
+                   The magic value "first" will select the first discovered
+                   device.
+
+TROUBLESHOOTING
+     This command will communicate with the local cryptex subsystem if [-udid]
+     or CRYPTEXTCTL_UDID is not specified. When manually personalizing a cryptex
+     with cryptexctl-create(1) ensure you are communicating with the device you
+     expect by confirming the UDID matches with the output from
+     cryptexctl-device(1).
+
+SEE ALSO
+     cryptexctl(1), cryptexctl-create(1), cryptexctl-list(1)
+
+HISTORY
+     Introduced in macOS 11.0
+

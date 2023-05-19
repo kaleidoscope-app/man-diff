@@ -1,0 +1,39 @@
+CRYPTEXCTL-IDENTITY(1)       General Commands Manual      CRYPTEXCTL-IDENTITY(1)
+
+NAME
+     cryptexctl identity – print the host's personalization identity
+
+SYNOPSIS
+     cryptexctl identity identity
+
+DESCRIPTION
+     Query and fetch the host's personalization identity. The identifiers
+     displayed by this command uniquely identify the host.
+
+     These identifiers can be used with cryptexctl-create(1) to personalize a
+     cryptex for a device when the device is not present.
+
+ENVIRONMENT
+     CRYPTEXCTL_UDID
+                   Read by cryptexctl identity to set the ---udid option on the
+                   base cryptexctl(1) command. This UDID value can be retrieved
+                   from the cryptexctl-device(1) command's list or print actions
+                   and provides a convenient way to operate on a single device
+                   when multiple devices are connected.
+
+                   The magic value "first" will select the first discovered
+                   device.
+
+TROUBLESHOOTING
+     This command will communicate with the local cryptex subsystem if --udid or
+     CRYPTEXTCTL_UDID is not specified. When manually personalizing a cryptex
+     with cryptexctl-create(1) ensure you are communicating with the device you
+     expect by confirming the UDID matches with the output from
+     cryptexctl-device(1).
+
+SEE ALSO
+     cryptexctl(1), cryptexctl-create(1), cryptexctl-device(1)
+
+HISTORY
+     Introduced in macOS 11.0
+

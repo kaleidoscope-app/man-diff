@@ -1152,7 +1152,7 @@ OPTIONS
 
               Having multiple transfers in one set of operations (i.e. the URLs
               in one -:, --next clause), will append them to the same file,
-              seperated by a blank line.
+              separated by a blank line.
 
               If -D, --dump-header is provided several times, the last set value
               will be used.
@@ -1850,6 +1850,7 @@ OPTIONS
                curl -H "X-First-Name: Joe" https://example.com
                curl -H "User-Agent: yes-please/2000" https://example.com
                curl -H "Host:" https://example.com
+               curl -H @headers.txt https://example.com
 
               See also -A, --user-agent and -e, --referer.
 
@@ -1859,9 +1860,6 @@ OPTIONS
               arguments.  If the argument "all" was provided, curl will display
               all options available.  If the argument "category" was provided,
               curl will display all categories and their meanings.
-
-              Providing -h, --help multiple times has no extra effect.  Disable
-              it again with --no-help.
 
               Example:
                curl --help all
@@ -1887,6 +1885,9 @@ OPTIONS
               of the remote host's public key. Curl will refuse the connection
               with the host unless the hashes match.
 
+              This feature requires libcurl to be built with libssh2 and does
+              not work with other SSH backends.
+
               If --hostpubsha256 is provided several times, the last set value
               will be used.
 
@@ -1900,6 +1901,11 @@ OPTIONS
               name points to an existing HSTS cache file, that will be used.
               After a completed transfer, the cache will be saved to the file
               name again if it has been modified.
+
+              If curl is told to use HTTP:// for a transfer involving a host
+              name that exists in the HSTS cache, it upgrades the transfer to
+              use HTTPS. Each HSTS cache entry has an individual life time after
+              which the upgrade is no longer performed.
 
               Specify a "" file name (zero length) to avoid loading/saving and
               make curl just handle HSTS in memory.
@@ -1998,19 +2004,51 @@ OPTIONS
               mutually exclusive to --http1.1 and -0, --http1.0 and
               --http2-prior-knowledge and --http3. Added in 7.33.0.
 
+       --http3-only
+              (HTTP) **WARNING**: this option is experimental. Do not use in
+              production.
+
+              Instructs curl to use HTTP/3 to the host in the URL, with no
+              fallback to earlier HTTP versions. HTTP/3 can only be used for
+              HTTPS and not for HTTP URLs. For HTTP, this option will trigger an
+              error.
+
+              This option allows a user to avoid using the Alt-Svc method of
+              upgrading to HTTP/3 when you know that the target speaks HTTP/3 on
+              the given host and port.
+
+              This option will make curl fail if a QUIC connection cannot be
+              established, it will not attempt any other HTTP version on its
+              own. Use --http3 for similar functionality with a fallback.
+
+              Providing --http3-only multiple times has no extra effect.
+
+              Example:
+               curl --http3-only https://example.com
+
+              See also --http1.1, --http2 and --http3. --http3-only requires
+              that the underlying libcurl was built to support HTTP/3. This
+              option is mutually exclusive to --http1.1 and -0, --http1.0 and
+              --http2 and --http2-prior-knowledge and --http3. Added in 7.88.0.
+
        --http3
               (HTTP) **WARNING**: this option is experimental. Do not use in
               production.
 
-              Tells curl to use HTTP version 3 directly to the host and port
-              number used in the URL. A normal HTTP/3 transaction will be done
-              to a host and then get redirected via Alt-Svc, but this option
-              allows a user to circumvent that when you know that the target
-              speaks HTTP/3 on the given host and port.
+              Tells curl to try HTTP/3 to the host in the URL, but fallback to
+              earlier HTTP versions if the HTTP/3 connection establishment
+              fails. HTTP/3 is only available for HTTPS and not for HTTP URLs.
 
-              This option will make curl fail if a QUIC connection cannot be
-              established, it cannot fall back to a lower HTTP version on its
-              own.
+              This option allows a user to avoid using the Alt-Svc method of
+              upgrading to HTTP/3 when you know that the target speaks HTTP/3 on
+              the given host and port.
+
+              When asked to use HTTP/3, curl will issue a separate attempt to
+              use older HTTP versions with a slight delay, so if the HTTP/3
+              transfer fails or is very slow, curl will still try to proceed
+              with an older HTTP version.
+
+              Use --http3-only for similar functionality without a fallback.
 
               Providing --http3 multiple times has no extra effect.
 
@@ -2020,7 +2058,7 @@ OPTIONS
               See also --http1.1 and --http2. --http3 requires that the
               underlying libcurl was built to support HTTP/3. This option is
               mutually exclusive to --http1.1 and -0, --http1.0 and --http2 and
-              --http2-prior-knowledge. Added in 7.66.0.
+              --http2-prior-knowledge and --http3-only. Added in 7.66.0.
 
        --ignore-content-length
               (FTP HTTP) For HTTP, Ignore the Content-Length header. This is
@@ -2076,6 +2114,11 @@ OPTIONS
               names and their public keys.
 
               WARNING: using this option makes the transfer insecure.
+
+              When curl uses secure protocols it trusts responses and allows for
+              example HSTS and Alt-Svc information to be stored and used
+              subsequently. Using -k, --insecure can make curl trust and use
+              such information from malicious servers.
 
               Providing -k, --insecure multiple times has no extra effect.
               Disable it again with --no-insecure.
@@ -2482,9 +2525,6 @@ OPTIONS
        -M, --manual
               Manual. Display the huge help text.
 
-              Providing -M, --manual multiple times has no extra effect.
-              Disable it again with --no-manual.
-
               Example:
                curl --manual
 
@@ -2703,7 +2743,7 @@ OPTIONS
 
               Note that this is the negated option name documented.  You can
               thus use --clobber to enforce the clobbering, even if -J,
-              --remote-header-name or -J is specified.
+              --remote-header-name is specified.
 
               Providing --no-clobber multiple times has no extra effect.
               Disable it again with --clobber.
@@ -3894,12 +3934,17 @@ OPTIONS
 
               If the server specifies a file name and a file with that name
               already exists in the destination directory, it will not be
-              overwritten and an error will occur. If the server does not
-              specify a file name then this option has no effect.
+              overwritten and an error will occur - unless you allow it by using
+              the --clobber option. If the server does not specify a file name
+              then this option has no effect.
 
               There's no attempt to decode %-sequences (yet) in the provided
               file name, so this option may provide you with rather unexpected
               file names.
+
+              This feature uses the name from the "filename" field, it does not
+              yet support the "filename*" field (filenames with explicit
+              character sets).
 
               WARNING: Exercise judicious use of this option, especially on
               Windows. A rogue server could send you the name of a DLL or other
@@ -5285,9 +5330,6 @@ OPTIONS
               zstd   Automatic decompression (via zstd) of compressed files over
                      HTTP is supported.
 
-       Providing -V, --version multiple times has no extra effect.  Disable it
-       again with --no-version.
-
        Example:
         curl --version
 
@@ -5316,10 +5358,18 @@ OPTIONS
               exactly as sent over the network, with leading and trailing
               whitespace trimmed. Added in curl 7.84.0.
 
-              NOTE: The %-symbol is a special symbol in the win32-environment,
-              where all occurrences of % must be doubled when using this option.
+              NOTE: In Windows the %-symbol is a special symbol used to expand
+              environment variables. In batch files all occurrences of % must be
+              doubled when using this option to properly escape. If this option
+              is used at the command prompt then the % cannot be escaped and
+              unintended expansion is possible.
 
               The variables available are:
+
+              certs          Output the certificate chain with details.
+                             Supported only by the OpenSSL, GnuTLS, Schannel,
+                             NSS, GSKit and Secure Transport backends (Added in
+                             7.88.0)
 
               content_type   The Content-Type of the requested document, if
                              there was any.
@@ -5342,7 +5392,7 @@ OPTIONS
               header_json    A JSON object with all HTTP response headers from
                              the recent transfer. Values are provided as arrays,
                              since in the case of multiple headers there can be
-                             multiple values.
+                             multiple values. (Added in 7.83.0)
 
                              The header names provided in lowercase, listed in
                              order of appearance over the wire. Except for
@@ -5370,6 +5420,11 @@ OPTIONS
 
               method         The http method used in the most recent HTTP
                              request. (Added in 7.72.0)
+
+              num_certs      Number of server certificates received in the TLS
+                             handshake. Supported only by the OpenSSL, GnuTLS,
+                             Schannel, NSS, GSKit and Secure Transport backends
+                             (Added in 7.88.0)
 
               num_connects   Number of new connects made in the recent transfer.
 

@@ -1,0 +1,40 @@
+CRYPTEXCTL-UNINSTALL(1)      General Commands Manual     CRYPTEXCTL-UNINSTALL(1)
+
+NAME
+     cryptexctl uninstall – uninstall a cryptex
+
+SYNOPSIS
+     cryptexctl uninstall uninstall [-i | --immediate] CRYPTEX-IDENTIFIER
+
+DESCRIPTION
+     Uninstall the cryptex identified by CRYPTEX-IDENTIFIER.  A list of
+     installed cryptexes and their identifiers can be retrieved via
+     cryptexctl-list(1).
+
+     When a cryptex is uninstalled cryptexd(8) will attempt to dispose of any
+     services that were loaded from the cryptex and unmount the disk image.
+     Complete uninstallation requires a reboot to ensure all processes are
+     killed and all files are no longer in use before cryptexd(8) can safely
+     finish the uninstallation.
+
+OPTIONS
+     -i | --immediate
+              Force physical uninstalltion to happen immediately if possible.
+              Normally uninstallation does not take full effect until the next
+              reboot. This option will attempt to dispose of services loaded
+              from the cryptex and unmount the disk image. Note that even if the
+              disk image is unmounted successfully, there is no guarantee that
+              all services from the cryptex have been disposed of. Exercise
+              caution with this option.
+
+     CRYPTEX-IDENTIFIER
+              The identifier of the cryptex to uninstall. This is the same
+              identifier used by cryptexctl-install(1) to install the cryptex
+              and listed by cryptexctl-list(1).
+
+SEE ALSO
+     cryptexctl-install(1), cryptexctl-list(1), cryptexd(8)
+
+HISTORY
+     Introduced in macOS 11.0
+
