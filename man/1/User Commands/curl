@@ -46,8 +46,9 @@ URL
          "http://example.com/archive[1996-1999]/vol[1-4]/part{a,b,c}.html"
 
        You can specify any amount of URLs on the command line. They will be
-       fetched in a sequential manner in the specified order. You can specify
-       command line options and URLs mixed and in any order on the command line.
+       fetched in a sequential manner in the specified order unless you use -Z,
+       --parallel. You can specify command line options and URLs mixed and in
+       any order on the command line.
 
        You can specify a step counter for the ranges to get every Nth number or
        letter:
@@ -66,20 +67,16 @@ URL
 
          "http://[fe80::3%25eth0]/"
 
-       If you specify URL without protocol:// prefix, curl will attempt to guess
-       what protocol you might want. It will then default to HTTP but try other
-       protocols based on often-used host name prefixes. For example, for host
-       names starting with "ftp." curl will assume you want to speak FTP.
+       If you specify a URL without a protocol:// scheme, curl guesses what
+       protocol you want. It then defaults to HTTP but assumes others based on
+       often-used host name prefixes. For example, for host names starting with
+       "ftp." curl assumes you want FTP.
 
-       curl will do its best to use what you pass to it as a URL. It is not
-       trying to validate it as a syntactically correct URL by any means but is
-       fairly liberal with what it accepts.
-
-       curl will attempt to re-use connections for multiple file transfers, so
-       that getting many files from the same server will not do multiple
-       connects / handshakes. This improves speed. Of course this is only done
-       on files specified on a single command line and cannot be used between
-       separate curl invocations.
+       curl attempts to re-use connections when doing multiple file transfers,
+       so that getting many files from the same server do not use multiple
+       connects / handshakes. This improves speed. Connection re-use can only be
+       done for URLs specified for a single command line invocation and cannot
+       be performed between separate curl runs.
 
 OUTPUT
        If not told otherwise, curl writes the received data to stdout. It can be
@@ -173,6 +170,15 @@ PROGRESS METER
        --progress-bar is your friend. You can also disable the progress meter
        completely with the -s, --silent option.
 
+VERSION
+       This man page describes curl 8.1.2. If you use a later version, chances
+       are this man page does not fully document it. If you use an earlier
+       version, this document tries to include version information about which
+       specific version that introduced changes.
+
+       You can always learn which the latest curl version is by running
+       curl https://curl.se/info
+
 OPTIONS
        Options start with one or two dashes. Many of the options require an
        additional value next to them.
@@ -190,6 +196,16 @@ OPTIONS
        disabled with --no-option. That is, you use the same option name but
        prefix it with "no-". However, in this list we mostly only list and show
        the --option version of them.
+
+       When -:, --next is used, it resets the parser state and you start again
+       with a clean option state, except for the options that are "global".
+       Global options will retain their values and meaning even after -:,
+       --next.
+
+       The following options are global: --fail-early, --libcurl, --parallel-
+       immediate, -Z, --parallel, -#, --progress-bar, --rate, -S, --show-error,
+       --stderr, --styled-output, --trace-ascii, --trace-time, --trace and -v,
+       --verbose.
 
        --abstract-unix-socket <path>
               (HTTP) Connect through an abstract Unix domain socket, instead of
@@ -278,7 +294,7 @@ OPTIONS
               be used.
 
               Example:
-               curl --aws-sigv4 "aws:amz:east-2:es" --user "key:secret" https://example.com
+               curl --aws-sigv4 "aws:amz:us-east-2:es" --user "key:secret" https://example.com
 
               See also --basic and -u, --user. Added in 7.75.0.
 
@@ -487,8 +503,12 @@ OPTIONS
 
        --compressed
               (HTTP) Request a compressed response using one of the algorithms
-              curl supports, and automatically decompress the content. Headers
-              are not modified.
+              curl supports, and automatically decompress the content.
+
+              Response headers are not modified when saved, so if they are
+              "interpreted" separately again at a later point they might appear
+              to be saying that the content is (still) compressed; while in fact
+              it has already been decompressed.
 
               If this option is used and the server sends an unsupported
               encoding, curl will report an error. This is a request, not an
@@ -553,7 +573,7 @@ OPTIONS
 
               1) "$CURL_HOME/.curlrc"
 
-              2) "$XDG_CONFIG_HOME/.curlrc" (Added in 7.73.0)
+              2) "$XDG_CONFIG_HOME/curlrc" (Added in 7.73.0)
 
               3) "$HOME/.curlrc"
 
@@ -915,6 +935,11 @@ OPTIONS
               out. If you do not want the @ character to have a special
               interpretation use --data-raw instead.
 
+              The data for this option is passed on to the server exactly as
+              provided on the command line. curl will not convert it, change it
+              or improve it. It is up to the user to provide the data in the
+              correct form.
+
               -d, --data can be used several times in a command line
 
               Examples:
@@ -1260,13 +1285,13 @@ OPTIONS
               given on the command line. This way, no transfer failures go
               undetected by scripts and similar.
 
-              This option is global and does not need to be specified for each
-              use of -:, --next.
-
               This option does not imply -f, --fail, which causes transfers to
               fail due to the server's HTTP status code. You can combine the two
               options, however note -f, --fail is not global and is therefore
               contained by -:, --next.
+
+              This option is global and does not need to be specified for each
+              use of --next.
 
               Providing --fail-early multiple times has no extra effect.
               Disable it again with --no-fail-early.
@@ -1999,8 +2024,8 @@ OPTIONS
               Example:
                curl --http2 https://example.com
 
-              See also --http1.1 and --http3. --http2 requires that the
-              underlying libcurl was built to support HTTP/2. This option is
+              See also --http1.1, --http3 and --no-alpn. --http2 requires that
+              the underlying libcurl was built to support HTTP/2. This option is
               mutually exclusive to --http1.1 and -0, --http1.0 and
               --http2-prior-knowledge and --http3. Added in 7.33.0.
 
@@ -2149,11 +2174,10 @@ OPTIONS
               See also --dns-interface.
 
        -4, --ipv4
-              This option tells curl to use IPv4 addresses only, and not for
-              example try IPv6.
+              This option tells curl to use IPv4 addresses only when resolving
+              host names, and not for example try IPv6.
 
-              Providing -4, --ipv4 multiple times has no extra effect.  Disable
-              it again with --no-ipv4.
+              Providing -4, --ipv4 multiple times has no extra effect.
 
               Example:
                curl --ipv4 https://example.com
@@ -2162,11 +2186,10 @@ OPTIONS
               to -6, --ipv6.
 
        -6, --ipv6
-              This option tells curl to use IPv6 addresses only, and not for
-              example try IPv4.
+              This option tells curl to use IPv6 addresses only when resolving
+              host names, and not for example try IPv4.
 
-              Providing -6, --ipv6 multiple times has no extra effect.  Disable
-              it again with --no-ipv6.
+              Providing -6, --ipv6 multiple times has no extra effect.
 
               Example:
                curl --ipv6 https://example.com
@@ -2308,7 +2331,7 @@ OPTIONS
               equivalent of what your command-line operation does!
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               If --libcurl is provided several times, the last set value will be
               used.
@@ -2972,7 +2995,7 @@ OPTIONS
               multiplexed streams on another connection.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               Providing --parallel-immediate multiple times has no extra effect.
               Disable it again with --no-parallel-immediate.
@@ -3005,7 +3028,7 @@ OPTIONS
               regular serial manner.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               Providing -Z, --parallel multiple times has no extra effect.
               Disable it again with --no-parallel.
@@ -3160,7 +3183,7 @@ OPTIONS
               transferred, with a set of flying hash sign symbols on top.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               Providing -#, --progress-bar multiple times has no extra effect.
               Disable it again with --no-progress-bar.
@@ -3389,6 +3412,22 @@ OPTIONS
 
               See also -x, --proxy. Added in 7.37.0.
 
+       --proxy-http2
+              (HTTP) Tells curl to try negotiate HTTP version 2 with an HTTPS
+              proxy. The proxy might still only offer HTTP/1 and then curl will
+              stick to using that version.
+
+              This has no effect for any other kinds of proxies.
+
+              Providing --proxy-http2 multiple times has no extra effect.
+              Disable it again with --no-proxy-http2.
+
+              Example:
+               curl --proxy-http2 -x proxy https://example.com
+
+              See also -x, --proxy. --proxy-http2 requires that the underlying
+              libcurl was built to support HTTP/2. Added in 8.1.0.
+
        --proxy-insecure
               Same as -k, --insecure but used in HTTPS proxy context.
 
@@ -3612,7 +3651,9 @@ OPTIONS
               for the host part. e.g. socks5h://localhost/path/to/socket.sock
 
               HTTPS proxy support via https:// protocol prefix was added in
-              7.52.0 for OpenSSL, GnuTLS and NSS.
+              7.52.0 for OpenSSL, GnuTLS and NSS. Since 7.87.0, it also works
+              for BearSSL, mbedTLS, rustls, Schannel, Secure Transport and
+              wolfSSL.
 
               Unrecognized and unsupported proxy protocols cause an error since
               7.52.0.  Prior versions may ignore the protocol and use http://
@@ -3882,13 +3923,16 @@ OPTIONS
               When retrying transfers, enabled with --retry, the separate retry
               delay logic is used and not this setting.
 
+              This option is global and does not need to be specified for each
+              use of --next.
+
               If --rate is provided several times, the last set value will be
               used.
 
               Examples:
-               curl --rate 2/s https://example.com
-               curl --rate 3/h https://example.com
-               curl --rate 14/m https://example.com
+               curl --rate 2/s https://example.com ...
+               curl --rate 3/h https://example.com ...
+               curl --rate 14/m https://example.com ...
 
               See also --limit-rate and --retry-delay. Added in 7.84.0.
 
@@ -4294,7 +4338,7 @@ OPTIONS
               if it fails.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               Providing -S, --show-error multiple times has no extra effect.
               Disable it again with --no-show-error.
@@ -4669,7 +4713,7 @@ OPTIONS
               the file name is a plain '-', it is instead written to stdout.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               If --stderr is provided several times, the last set value will be
               used.
@@ -4689,7 +4733,7 @@ OPTIONS
               capability.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               Providing --styled-output multiple times has no extra effect.
               Disable it again with --no-styled-output.
@@ -4997,7 +5041,7 @@ OPTIONS
               might be easier to read for untrained humans.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               If --trace-ascii is provided several times, the last set value
               will be used.
@@ -5013,7 +5057,7 @@ OPTIONS
               displays.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               Providing --trace-time multiple times has no extra effect.
               Disable it again with --no-trace-time.
@@ -5030,7 +5074,7 @@ OPTIONS
               filename to have the output sent to stderr.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
+              use of --next.
 
               If --trace is provided several times, the last set value will be
               used.
@@ -5217,16 +5261,14 @@ OPTIONS
               by curl that is hidden in normal cases, and a line starting with
               '*' means additional info provided by curl.
 
-              If you only want HTTP headers in the output, -i, --include might
-              be the option you are looking for.
+              If you only want HTTP headers in the output, -i, --include or -D,
+              --dump-header might be more suitable options.
 
               If you think this option still does not give you enough details,
               consider using --trace or --trace-ascii instead.
 
               This option is global and does not need to be specified for each
-              use of -:, --next.
-
-              Use -s, --silent to make curl really quiet.
+              use of --next.
 
               Providing -v, --verbose multiple times has no extra effect.
               Disable it again with --no-verbose.
@@ -5234,8 +5276,8 @@ OPTIONS
               Example:
                curl --verbose https://example.com
 
-              See also -i, --include. This option is mutually exclusive to
-              --trace and --trace-ascii.
+              See also -i, --include, -s, --silent, --trace and --trace-ascii.
+              This option is mutually exclusive to --trace and --trace-ascii.
 
        -V, --version
               Displays information about curl and the libcurl version it uses.
@@ -5368,7 +5410,7 @@ OPTIONS
 
               certs          Output the certificate chain with details.
                              Supported only by the OpenSSL, GnuTLS, Schannel,
-                             NSS, GSKit and Secure Transport backends (Added in
+                             NSS, GSKit and Secure Transport backends. (Added in
                              7.88.0)
 
               content_type   The Content-Type of the requested document, if
@@ -5423,7 +5465,7 @@ OPTIONS
 
               num_certs      Number of server certificates received in the TLS
                              handshake. Supported only by the OpenSSL, GnuTLS,
-                             Schannel, NSS, GSKit and Secure Transport backends
+                             Schannel, NSS, GSKit and Secure Transport backends.
                              (Added in 7.88.0)
 
               num_connects   Number of new connects made in the recent transfer.
@@ -5436,7 +5478,7 @@ OPTIONS
                              request.
 
               onerror        The rest of the output is only shown if the
-                             transfer returned a non-zero error (Added in
+                             transfer returned a non-zero error.  (Added in
                              7.75.0)
 
               proxy_ssl_verify_result
@@ -5535,6 +5577,70 @@ OPTIONS
 
               url            The URL that was fetched. (Added in 7.75.0)
 
+              url.scheme     The scheme part of the URL that was fetched. (Added
+                             in 8.1.0)
+
+              url.user       The user part of the URL that was fetched. (Added
+                             in 8.1.0)
+
+              url.password   The password part of the URL that was fetched.
+                             (Added in 8.1.0)
+
+              url.options    The options part of the URL that was fetched.
+                             (Added in 8.1.0)
+
+              url.host       The host part of the URL that was fetched. (Added
+                             in 8.1.0)
+
+              url.port       The port number of the URL that was fetched. If no
+                             port number was specified, but the URL scheme is
+                             known, that scheme's default port number is shown.
+                             (Added in 8.1.0)
+
+              url.path       The path part of the URL that was fetched. (Added
+                             in 8.1.0)
+
+              url.query      The query part of the URL that was fetched. (Added
+                             in 8.1.0)
+
+              url.fragment   The fragment part of the URL that was fetched.
+                             (Added in 8.1.0)
+
+              url.zoneid     The zoneid part of the URL that was fetched. (Added
+                             in 8.1.0)
+
+              urle.scheme    The scheme part of the effective (last) URL that
+                             was fetched. (Added in 8.1.0)
+
+              urle.user      The user part of the effective (last) URL that was
+                             fetched. (Added in 8.1.0)
+
+              urle.password  The password part of the effective (last) URL that
+                             was fetched. (Added in 8.1.0)
+
+              urle.options   The options part of the effective (last) URL that
+                             was fetched. (Added in 8.1.0)
+
+              urle.host      The host part of the effective (last) URL that was
+                             fetched. (Added in 8.1.0)
+
+              urle.port      The port number of the effective (last) URL that
+                             was fetched. If no port number was specified, but
+                             the URL scheme is known, that scheme's default port
+                             number is shown. (Added in 8.1.0)
+
+              urle.path      The path part of the effective (last) URL that was
+                             fetched. (Added in 8.1.0)
+
+              urle.query     The query part of the effective (last) URL that was
+                             fetched. (Added in 8.1.0)
+
+              urle.fragment  The fragment part of the effective (last) URL that
+                             was fetched. (Added in 8.1.0)
+
+              urle.zoneid    The zoneid part of the effective (last) URL that
+                             was fetched. (Added in 8.1.0)
+
               urlnum         The URL index number of this transfer, 0-indexed.
                              De-globbed URLs share the same index number as the
                              origin globbed URL. (Added in 7.75.0)
@@ -5548,7 +5654,7 @@ OPTIONS
               will be used.
 
               Example:
-               curl -w '%{http_code}\n' https://example.com
+               curl -w '%{response_code}\n' https://example.com
 
               See also -v, --verbose and -I, --head.
 
@@ -5917,6 +6023,13 @@ EXIT CODES
 
        96     QUIC connection error. This error may be caused by an SSL library
               error. QUIC is the protocol used for HTTP/3 transfers.
+
+       97     Proxy handshake error.
+
+       98     A client-side certificate is required to complete the TLS
+              handshake.
+
+       99     Poll or select returned fatal error.
 
        XX     More error codes will appear here in future releases. The existing
               ones are meant to never change.
