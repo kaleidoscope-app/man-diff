@@ -320,13 +320,16 @@ VERBS
                 Externally-connected disk(s) are not affected.  Ownership of the
                 affected disks is required.
 
-     eraseDisk format name [APM[Format] | MBR[Format] | GPT[Format]] device
+     eraseDisk  [-noEFI] format name [APM[Format] | MBR[Format] | GPT[Format]]
+                device
                 Erase an existing disk, removing all volumes and writing out a
                 new partitioning scheme containing one new empty file system
                 volume.  If the partitioning scheme is not specified, then an
                 appropriate one for the current machine is chosen.  Format is
                 discussed below in the section for the partitionDisk verb.
                 Ownership of the affected disk is required.
+                If -noEFI is specified, do not create EFI partition on the
+                target disk.
 
      eraseVolume format name device
                 Write out a new empty file system volume (erasing any current
@@ -429,9 +432,10 @@ VERBS
                 because this renders your data irretrievable in practical terms.
                 Consider using APFS encryption (FileVault).
 
-     partitionDisk device [numberOfPartitions] [APM[Format] | MBR[Format] |
-                GPT[Format]] [part1Format part1Name part1Size part2Format
-                part2Name part2Size part3Format part3Name part3Size ...]
+     partitionDisk device [-noEFI] [numberOfPartitions] [APM[Format] |
+                MBR[Format] | GPT[Format]] [part1Format part1Name part1Size
+                part2Format part2Name part2Size part3Format part3Name part3Size
+                ...]
 
                 (re)Partition a disk, removing all volumes.  All volumes on this
                 disk will be destroyed.  The device parameter specifies which
@@ -440,6 +444,8 @@ VERBS
                 to create; if given then the number of parameter triplets (see
                 below) is expected to match; else, the number of triplets alone
                 given will determine the number of partitions created.
+                If -noEFI is specified, do not create EFI partition on the
+                target disk.
 
                 The optional partitioning scheme parameter forces a particular
                 partitioning scheme; if not specified, a suitable default is
@@ -1726,10 +1732,10 @@ VERBS
                            To re-lock the volume, make it offline again by
                            ejecting it, e.g. with diskutil eject.
 
-     image      [-stdinpassphrase] [-verbose] [-plist] diskimageverb
+     image      [--stdinpassphrase] [--verbose] [--plist] diskimageverb
                 diskutil image verb uses DiskImages framework alongside with
                 StorageKit framework to facilitate in manipulating disk images.
-                Currently only attach is supported.
+                Currently only attach , info and create are supported.
 
                 Add verbose flag for verbose output.
 
@@ -1744,9 +1750,9 @@ VERBS
                 The following is a list of diskutil image sub-verbs with their
                 descriptions and individual arguments.
 
-                attach     [-readOnly] [-nobrowse] [-mountPoint mountPoint]
-                           [-mountOptions opt[,opt]*] [-mountPolicy mountPolicy]
-                           [-noMount] image-url
+                attach     [--readOnly] [--nobrowse] [--mountPoint mountPoint]
+                           [--mountOptions opt[,opt]*] [--mountPolicy
+                           mountPolicy] [--noMount] image-url
                            Attach a disk image as a device. Upon success will
                            return the disk identifier matching the attached disk
                            image.
@@ -1798,11 +1804,119 @@ VERBS
                            contain only a single mountable entity, otherwise the
                            operation will fail.  Additionally, can manipulate
                            the mount operation by passing mountOptions, see
-                           mount(8). Can supply multiple options seperated by
+                           mount(8). Can supply multiple options separated by
                            ','. These options will be used during mount
                            operation.  Lastly, nobrowse can be supplied to hide
                            the mounted volume in the disk image from GUI
                            applications (such as Finder).
+
+                info       [--extra] image-url
+                           Print out information about a disk image.
+                           The operation includes an attach operation of the
+                           image in order to retrieve various details. If the
+                           image is already attached, it will remain attached.
+                           Otherwise, the image is ejected upon completion.
+                           If --extra is specified, additional information will
+                           be retrieved for some image types.
+
+                create     [-e, --encrypt] [blank | from] ...
+                           Create a disk image. Either blank or from an existing
+                           source.
+
+                           Creates an optionally encrypted disk image.
+
+                           With encrypt can encrypt the newly created disk image
+                           using AES-256.  When creating from source and
+                           encryption applies to both, source and destination,
+                           stdinpassphrase applies the first passphrase to
+                           source and the second to destination.
+
+                           At the end of the operation the image is not mounted.
+
+                           Use blank to create a blank disk image.  Use from to
+                           create the disk image from source (e.g. disk3 /
+                           existing disk image).
+
+
+                           blank   [--format format] [--size size] [--volumeName
+                                   name] image-path
+                                   Creates a blank disk image.
+
+                                   The disk image will be created at image-path.
+                                   Should be a writable path.
+
+                                   format
+
+                                         •   RAW     - RAW read-write format
+                                             (previously known as UDRW)
+
+                                         •   UDSB    - Sparse bundle
+
+                                   name creates an APFS filesystem with the
+                                   requested volume name on the image (default:
+                                   untitled).
+
+                                   size allows to specify the size of the newly
+                                   created image, see SIZES.
+
+
+                           from    [--format format] [--source source]
+                                   Creates a disk image from source (e.g. disk3
+                                   or disk image URL).
+
+                                   The disk image will be created at image-path.
+                                   Should be a writable path.
+
+                                   format
+
+                                         •   RAW     - RAW read-write format
+                                             (previously known as UDRW)
+
+                                         •   UDRO    - UDIF read-only
+                                             uncompressed
+
+                                         •   UDZO    - UDIF read-only zlib-
+                                             compressed
+
+                                         •   ULFO    - UDIF read-only lzfse-
+                                             compressed
+
+                                         •   ULMO    - UDIF read-only lzma-
+                                             compressed
+
+                                         •   UDSB    - Sparse bundle
+
+                                   source should be the source for the disk
+                                   image to be created from (e.g. disk3 /
+                                   existing disk image).
+
+                resize     [-s, --size] [--image-only] image-url
+                           Resizes an existing disk image represented by
+                           image-url
+                           Prints disk image resize limits when no size is
+                           specified.
+
+                           In case the image contains a resizable filesystem
+                           (e.g. APFS) it will be resized and image limits will
+                           be calculated accordingly.
+
+                           In case the image contains one or more partitions,
+                           only the last one will be resized based on the input.
+
+                           Only GPT partition tables are supported or partition-
+                           less images with APFS.
+
+                           The image should not be attached prior to resizing.
+
+                           size The new size of the disk image, should not
+                           exceed the size from the disk image limits. Can be
+                           either size from size section (see SIZES) or 'min' to
+                           resize to minimum size as reported by diskutil.
+
+                           image-only Will only resize the disk image and adjust
+                           a secondary GPT table to the new size if there is
+                           one.
+
 
 DEVICES
      A device parameter for any of the above commands (except where explicitly
@@ -2135,11 +2249,29 @@ EXAMPLES
      Journaled\ HFS+ vol3 25% Free\ Space volX 10g
 
      Attach a 100MiB RAM disk image
-     diskutil image attach -mountPolicy=noMount ram://100MiB
+     diskutil image attach --mountPolicy=noMount ram://100MiB
 
      Attach a read-only disk image at some specified mount point
-     diskutil image attach -readOnly -mountPoint /tmp/myMountPoint
+     diskutil image attach --readOnly --mountPoint /tmp/myMountPoint
      /tmp/myImage.dmg
+
+     Creating a blank 100MiB disk image with UDSB format
+     diskutil image create -s 100MiB -f UDSB /tmp/myImage.dmg
+
+     Creating a blank 100MiB disk image with APFS volume named MyVolume
+     diskutil image create -s 100MiB --volumeName MyVolume /tmp/myImage.dmg
+
+     Creating a disk image from an existing disk
+     diskutil image create from --source disk3 /tmp/myImage.dmg
+
+     Resizing a disk image:
+     diskutil image resize --size 100G /tmp/my.dmg
+
+     Resize to minimal size:
+     diskutil image resize --size min /tmp/my.dmg
+
+     Print resize limits in plist format
+     diskutil image resize --plist /tmp/my.dmg
 
 ERRORS
      diskutil will exit with status based on sysexits (see sysexits(3)) or 1 if

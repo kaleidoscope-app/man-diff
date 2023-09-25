@@ -1,93 +1,51 @@
-ICONV(1)                    Linux Programmer's Manual                   ICONV(1)
-
-
+ICONV(1)                     General Commands Manual                    ICONV(1)
 
 NAME
-       iconv - character set conversion
+     iconv – codeset conversion utility
 
 SYNOPSIS
-       iconv [OPTION...] [-f encoding] [-t encoding] [inputfile ...]
-       iconv -l
+     iconv [-cs] -f from_name -t to_name [file ...]
+     iconv -f from_name [-cs] [-t to_name] [file ...]
+     iconv -t to_name [-cs] [-f from_name] [file ...]
+     iconv -l
 
 DESCRIPTION
-       The iconv program converts text from one encoding to another encoding.
-       More precisely, it converts from the encoding given for the -f option to
-       the encoding given for the -t option. Either of these encodings defaults
-       to the encoding of the current locale. All the inputfiles are read and
-       converted in turn; if no inputfile is given, the standard input is used.
-       The converted text is printed to standard output.
+     The iconv utility converts the codeset of file (or from standard input if
+     no file is specified) from codeset from_name to codeset to_name and outputs
+     the converted text on standard output.
 
-       The encodings permitted are system dependent. For the libiconv
-       implementation, they are listed in the iconv_open(3) manual page.
+     The following options are available:
 
-       Options controlling the input and output format:
+     -c    Prevent output of any invalid characters.  By default, iconv outputs
+           an “invalid character” specified by the to_name codeset when it
+           encounts a character which is valid in the from_name codeset but does
+           not have a corresponding character in the to_name codeset.
 
-       -f encoding, --from-code=encoding
-              Specifies the encoding of the input.
+     -f    Specifies the source codeset name as from_name.
 
-       -t encoding, --to-code=encoding
-              Specifies the encoding of the output.
+     -l    Lists available codeset names.  Note that not all combinations of
+           from_name and to_name are valid.
 
-       Options controlling conversion problems:
+     -s    Silent.  By default, iconv outputs the number of “invalid characters”
+           to standard error if they exist.  This option prevents this
+           behaviour.
 
-       -c     When this option is given, characters that cannot be converted are
-              silently discarded, instead of leading to a conversion error.
+     -t    Specifies the destination codeset name as to_name.
 
-       --unicode-subst=formatstring
-              When this option is given, Unicode characters that cannot be
-              represented in the target encoding are replaced with a placeholder
-              string that is constructed from the given formatstring, applied to
-              the Unicode code point. The formatstring must be a format string
-              in the same format as for the printf command or the printf()
-              function, taking either no argument or exactly one unsigned
-              integer argument.
-
-       --byte-subst=formatstring
-              When this option is given, bytes in the input that are not valid
-              in the source encoding are replaced with a placeholder string that
-              is constructed from the given formatstring, applied to the byte's
-              value. The formatstring must be a format string in the same format
-              as for the printf command or the printf() function, taking either
-              no argument or exactly one unsigned integer argument.
-
-       --widechar-subst=formatstring
-              When this option is given, wide characters in the input that are
-              not valid in the source encoding are replaced with a placeholder
-              string that is constructed from the given formatstring, applied to
-              the byte's value. The formatstring must be a format string in the
-              same format as for the printf command or the printf() function,
-              taking either no argument or exactly one unsigned integer
-              argument.
-
-       Options controlling error output:
-
-       -s, --silent
-              When this option is given, error messages about invalid or
-              unconvertible characters are omitted, but the actual converted
-              text is unaffected.
-
-       The iconv -l or iconv --list command lists the names of the supported
-       encodings, in a system dependent format. For the libiconv implementation,
-       the names are printed in upper case, separated by whitespace, and alias
-       names of an encoding are listed on the same line as the encoding itself.
+EXIT STATUS
+     The iconv utility exits 0 on success, and >0 if an error occurs.
 
 EXAMPLES
-       iconv -f ISO-8859-1 -t UTF-8
-              converts input from the old West-European encoding ISO-8859-1 to
-              Unicode.
+     Convert file.txt from IBM273 to UTF-8 and save the result to converted.txt:
 
-       iconv -f KOI8-R --byte-subst="<0x%x>"
-                       --unicode-subst="<U+%04X>"
-              converts input from the old Russian encoding KOI8-R to the locale
-              encoding, substituting an angle bracket notation with hexadecimal
-              numbers for invalid bytes and for valid but unconvertible
-              characters.
-
-       iconv --list
-              lists the supported encodings.
+           iconv -f IBM273 -t UTF-8 file.txt > converted.txt
 
 SEE ALSO
-       iconv_open(3)
+     mkcsmapper(1), mkesdb(1), iconv(3)
 
+STANDARDS
+     iconv conform to IEEE Std 1003.1-2008 (“POSIX.1”).
 
+HISTORY
+     iconv first appeared in NetBSD 2.0, and made its appearance in FreeBSD 9.0.
 

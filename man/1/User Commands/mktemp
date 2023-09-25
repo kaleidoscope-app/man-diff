@@ -4,8 +4,8 @@ NAME
      mktemp – make temporary file name (unique)
 
 SYNOPSIS
-     mktemp [-d] [-q] [-t prefix] [-u] template ...
-     mktemp [-d] [-q] [-u] -t prefix
+     mktemp [-d] [-p tmpdir] [-q] [-t prefix] [-u] template ...
+     mktemp [-d] [-p tmpdir] [-q] [-u] -t prefix
 
 DESCRIPTION
      The mktemp utility takes each of the given file name templates and
@@ -27,9 +27,9 @@ DESCRIPTION
      If the -t prefix option is given, mktemp will generate a template string
      based on the prefix and the _CS_DARWIN_USER_TEMP_DIR configuration variable
      if available.  Fallback locations if _CS_DARWIN_USER_TEMP_DIR is not
-     available are TMPDIR and /tmp.  Care should be taken to ensure that it is
-     appropriate to use an environment variable potentially supplied by the
-     user.
+     available are TMPDIR, the -p option's tmpdir
+      if set, and /tmp.  Care should be taken to ensure that it is appropriate
+     to use an environment variable potentially supplied by the user.
 
      If no arguments are passed or if only the -d flag is passed mktemp behaves
      as if -t tmp was supplied.
@@ -50,16 +50,26 @@ DESCRIPTION
 OPTIONS
      The available options are as follows:
 
-     -d      Make a directory instead of a file.
+     -d, --directory
+             Make a directory instead of a file.
 
-     -q      Fail silently if an error occurs.  This is useful if a script does
+     -p tmpdir, --tmpdir[=tmpdir]
+             Use tmpdir for the -t flag if the TMPDIR environment variable is
+             not set.  Additionally, any provided template arguments will be
+             interpreted relative to the path specified as tmpdir.  If tmpdir is
+             either empty or omitted, then the TMPDIR environment variable will
+             be used.
+
+     -q, --quiet
+             Fail silently if an error occurs.  This is useful if a script does
              not want error output to go to standard error.
 
      -t prefix
              Generate a template (using the supplied prefix and TMPDIR if set)
              to create a filename template.
 
-     -u      Operate in “unsafe” mode.  The temp file will be unlinked before
+     -u, --dry-run
+             Operate in “unsafe” mode.  The temp file will be unlinked before
              mktemp exits.  This is slightly better than mktemp(3) but still
              introduces a race condition.  Use of this option is not encouraged.
 

@@ -4,10 +4,11 @@ NAME
      codesign – Create and manipulate code signatures
 
 SYNOPSIS
-     codesign -s identity [-i identifier] [-r requirements] [-fv] [path ...]
+     codesign -s identity [-i identifier] [-r requirements] [-fv] path ...
      codesign -v [-R requirement] [-v] [path|pid ...]
      codesign -d [-v] [path|pid ...]
      codesign -h [-v] [pid ...]
+     codesign --validate-constraint path ...
 
 DESCRIPTION
      The codesign command is used to create, check, and display code signatures,
@@ -240,6 +241,15 @@ OPTIONS
              If the signature has no entitlement data, nothing is written (this
              is not an error).
 
+     --enforce-constraint-validity
+             When signing, require that any supplied constraints (e.g.
+             --launch-constraint-* or --library-constraint ) are structurally
+             valid and contain only keys that are known on this version of macOS
+             or properly use the $optional operator. By default, constraints are
+             checked and errors are reported but their validity is not required.
+             This default behavior allows developers to set contraints for newer
+             OS versions on the current OS version.
+
      --extract-certificates prefix
              When displaying a signature, extract the certificates in the
              embedded certificate chain and write them to individual files. The
@@ -304,33 +314,39 @@ OPTIONS
              This option takes a comma-separated list of names, which you may
              reasonably abbreviate:
 
-             identifier    Preserve the signing identifier (--identifier)
-                           instead of generating a default identifier.
+             identifier           Preserve the signing identifier (--identifier)
+                                  instead of generating a default identifier.
 
-             entitlements  Preserve the entitlement data (--entitlements).
+             entitlements         Preserve the entitlement data
+                                  (--entitlements).
 
-             requirements  Preserve the internal requirements (--requirements
-                           option), including any explicit Designated
-                           Requirement. Note that all internal requirements are
-                           preserved or regenerated as a whole; you cannot pick
-                           and choose individual elements with this option.
+             requirements         Preserve the internal requirements
+                                  (--requirements option), including any
+                                  explicit Designated Requirement. Note that all
+                                  internal requirements are preserved or
+                                  regenerated as a whole; you cannot pick and
+                                  choose individual elements with this option.
 
-             flags         Preserve the option flags (-o), see the OPTION FLAGS
-                           section below.
+             flags                Preserve the option flags (-o), see the OPTION
+                                  FLAGS section below.
 
-             runtime       Preserve the hardened runtime version (-o runtime
-                           flag, --runtime-version option) instead of overriding
-                           or deriving the version.
+             runtime              Preserve the hardened runtime version (-o
+                                  runtime flag, --runtime-version option)
+                                  instead of overriding or deriving the version.
 
-             launch-constraints
-                           Preserve any existing launch constraints set on the
-                           binary rather than removing them. This option is
-                           ignored if any of the --launch-constraint-* options
-                           are set.
-             For historical reasons, this option can be given without a value,
-             which preserves all of these values as presently known. This use is
-             deprecated and will eventually be removed; always specify an
-             explicit list of preserved items.
+             launch-constraints   Preserve any existing launch constraints set
+                                  on the binary rather than removing them. This
+                                  option is ignored if any of the --launch-
+                                  constraint-* options are set.
+
+             library-constraints  Preserve any existing library load constraints
+                                  set on the binary rather than removing them.
+                                  This option is ignored if the --library-
+                                  constraint option is set.
+             For historical reasons, the --preserve-metadata option can be given
+             without a value, which preserves all of these values as presently
+             known. This use is deprecated and will eventually be removed;
+             always specify an explicit list of preserved items.
 
      --strict options
              When validating code, apply additional restrictions beyond the
@@ -396,6 +412,30 @@ OPTIONS
              executable will not launch if its responsible process does not
              satisfy this launch constraint.
 
+     --library-constraint path
+             When signing, take the file at the given path and embed its
+             contents in the signature as a constraint on the libraries this
+             process can load. Operating system libraries can not be restricted
+             via this mechanism. The file at path should contain a plist
+             expressing the desired constraint conditions. This executable will
+             not load libraries that do not satisfy the specified conditions.
+
+     --strip-disallowed-xattrs
+             When signing, strip xattrs (such as com.apple.FinderInfo and
+             com.apple.ResourceFork) that could interfere with code signing. If
+             a disallowed xattr is encountered, codesign will complain about the
+             presence of detritus, and the path and xattr of the offending file
+             will be logged verbosely.
+
+     --single-threaded-signing
+             When signing, use one thread for building the resource seal.
+
+     --validate-constraint
+             Validate that the constraint plist(s) indicated by path(s) are
+             structurally valid and contain only keys known on this OS version
+             or keys that are properly wrapped with the $optional operator.  An
+             error message is printed if an error occurs.
+
 OPERATION
      In the first synopsis form, codesign attempts to sign the code objects at
      the path(s) given, using the identity provided. Internal requirements and
@@ -449,6 +489,11 @@ OPERATION
      taken as a statement of formal code validity. Only codesign --verify can do
      that; and in fact, formal verification constructs the hosting chain as part
      of its operation (but does not display it).
+
+     In the fifth synopsis form, codesign validates the path(s) supplied.
+     Validation means ensuring that keys and operators are properly structured
+     with appropriate types and that all keys and operators are known or nested
+     in the $optional operator.
 
 SIGNING IDENTITIES
      To be used for code signing, a digital identity must be stored in a
@@ -615,6 +660,16 @@ EXAMPLES
 
      To display the XML entitlements of process 1337:
            codesign --display --entitlements - --xml +1337
+
+     To sign Terminal.app with an embedded launch constraint and an embedded
+     library constraint:
+           codesign --sign authority --launch-constraint-self
+           self-constraint.plist --library-constraint library-constraint.plist
+           Terminal.app
+
+     To validate a set of constraint files before signing:
+           codesign --validate-constraint self-constraint.plist
+           library-constraint.plist
 
 TROUBLESHOOTING
      A common source of confusion when using codesign arises from the ordering

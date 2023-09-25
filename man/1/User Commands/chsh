@@ -13,7 +13,7 @@ DESCRIPTION
      The chpass utility cannot change the user's password on Open Directory
      systems.  Use the passwd(1) utility instead.
 
-     The chfn, and chsh utilities behave identically to chpass.  (There is only
+     The chfn and chsh utilities behave identically to chpass.  (There is only
      one program.)
 
      The information is formatted and supplied to an editor for changes.
@@ -22,17 +22,15 @@ DESCRIPTION
 
      The options are as follows:
 
-     -l location
-             If not specified, chpass will perform a search for the user record
-             on all available Open Directory nodes.  When specified, chpass will
-             edit the user record on the directory node at the given location.
+     -l location    If not specified, chpass will perform a search for the user
+                    record on all available Open Directory nodes.  When
+                    specified, chpass will edit the user record on the directory
+                    node at the given location.
 
-     -u authname
-             The user name to use when authenticating to the directory node
-             containing the user.
+     -u authname    The user name to use when authenticating to the directory
+                    node containing the user.
 
-     -s newshell
-             Attempt to change the user's shell to newshell.
+     -s newshell    Attempt to change the user's shell to newshell.
 
      Possible display items are as follows:
 
@@ -58,8 +56,8 @@ DESCRIPTION
      that manipulate these files will often return only one of the multiple
      entries, and that one by random selection.
 
-     The group field is the group that the user will be placed in at login.
-     Since BSD supports multiple groups (see groups(1)) this field currently has
+     The gid field is the group that the user will be placed in at login.  Since
+     BSD supports multiple groups (see groups(1)) this field currently has
      little special meaning.  This field may be filled in with either a number
      or a group name (see group(5)).
 
@@ -91,11 +89,16 @@ ENVIRONMENT
      super-user, may edit the information associated with the user.
 
 FILES
-     /etc/chpass.XXXXXX  temporary copy of the data to edit
+     /etc/chpass.XXXXXX  temporary file
      /etc/shells         the list of approved shells
 
+EXAMPLES
+     Change the shell of the current user to ‘/bin/zsh’:
+
+           chsh -s /bin/zsh
+
 SEE ALSO
-     login(1), passwd(1), getusershell(3), passwd(5)
+     login(1), passwd(1), getusershell(3), DirectoryService(8)
 
      Robert Morris and Ken Thompson, UNIX Password security.
 

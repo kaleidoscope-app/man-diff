@@ -9,7 +9,7 @@ SYNOPSIS
            [-G sweep] [-h hoplimit] [-I interface] [-i wait] [-k trafficclass]
            [-K netservicetype] [-l preload] [-P policy] [-p pattern]
            [-S sourceaddr] [-s packetsize] [-z tclass] [--apple-connect]
-           [--apple-time] [hops ...] host
+           [--apple-progress] [--apple-time] [hops ...] host
 
 DESCRIPTION
      The ping6 utility uses the ICMPv6 protocol's mandatory ICMP6_ECHO_REQUEST
@@ -182,6 +182,9 @@ DESCRIPTION
              Connects the socket to the destination address.  This option is an
              Apple addition.
 
+     --apple-progress
+             Prints progress for debugging.  This option is an Apple addition.
+
      --apple-time
              Prints the time a packet was received.  This option is an Apple
              addition.
@@ -289,8 +292,9 @@ BUGS
 
      There have been many discussions on why we separate ping6 and ping(8).
      Some people argued that it would be more convenient to uniform the ping
-     command for both IPv4 and IPv6.  The followings are an answer to the
-     request.
+     command for both IPv4 and IPv6.
+
+     The following are an answer to the request:
 
      From a developer's point of view: since the underling raw sockets API is
      totally different between IPv4 and IPv6, we would end up having two types

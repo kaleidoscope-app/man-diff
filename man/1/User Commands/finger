@@ -15,14 +15,35 @@ DESCRIPTION
 
      -6      Forces finger to use IPv6 addresses only.
 
-     -g      This option restricts the gecos output to only the users' real
-             name.  It also has the side-effect of restricting the output of the
-             remote host when used in conjunction with the -h option.
+     -s      Display the user's login name, real name, terminal name and write
+             status (as a ``*'' before the terminal name if write permission is
+             denied), idle time, login time, and either office location and
+             office phone number, or the remote host.  If -o is given, the
+             office location and office phone number is printed (the default).
+             If -h is given, the remote host is printed instead.
+
+             Idle time is in minutes if it is a single integer, hours and
+             minutes if a ``:'' is present, or days if a ``d'' is present.  If
+             it is an “*”, the login time indicates the time of last login.
+             Login time is displayed as the day name if less than 6 days, else
+             month, day; hours and minutes, unless more than six months ago, in
+             which case the year is displayed rather than the hours and minutes.
+
+             Unknown devices as well as nonexistent idle and login times are
+             displayed as single asterisks.
 
      -h      When used in conjunction with the -s option, the name of the remote
              host is displayed instead of the office location and office phone.
 
-     -k      Disable all use of utmpx(5).
+     -o      When used in conjunction with the -s option, the office location
+             and office phone information is displayed instead of the name of
+             the remote host.
+
+     -g      This option restricts the gecos output to only the users' real
+             name.  It also has the side-effect of restricting the output of the
+             remote host when used in conjunction with the -h option.
+
+     -k      Disable all use of the user accounting database.
 
      -l      Produce a multi-line format displaying all of the information
              described for the -s option as well as the user's home directory,
@@ -50,34 +71,13 @@ DESCRIPTION
              looked at their mailbox since new mail arriving, or ``New mail
              received ...'', ``Unread since ...'' if they have new mail.
 
+     -p      Prevent the -l option of finger from displaying the contents of the
+             .forward, .plan, .project and .pubkey files.
+
      -m      Prevent matching of user names.  User is usually a login name;
              however, matching will also be done on the users' real names,
              unless the -m option is supplied.  All name matching performed by
              finger is case insensitive.
-
-     -o      When used in conjunction with the -s option, the office location
-             and office phone information is displayed instead of the name of
-             the remote host.
-
-     -p      Prevent the -l option of finger from displaying the contents of the
-             .forward, .plan, .project and .pubkey files.
-
-     -s      Display the user's login name, real name, terminal name and write
-             status (as a ``*'' before the terminal name if write permission is
-             denied), idle time, login time, and either office location and
-             office phone number, or the remote host.  If -o is given, the
-             office location and office phone number is printed (the default).
-             If -h is given, the remote host is printed instead.
-
-             Idle time is in minutes if it is a single integer, hours and
-             minutes if a ``:'' is present, or days if a ``d'' is present.  If
-             it is an “*”, the login time indicates the time of last login.
-             Login time is displayed as the day name if less than 6 days, else
-             month, day; hours and minutes, unless more than six months ago, in
-             which case the year is displayed rather than the hours and minutes.
-
-             Unknown devices as well as nonexistent idle and login times are
-             displayed as single asterisks.
 
      If no options are specified, finger defaults to the -l style output if
      operands are provided, otherwise to the -s style.  Note that some fields
@@ -107,8 +107,8 @@ ENVIRONMENT
      FINGER      This variable may be set with favored options to finger.
 
 FILES
-     /etc/finger.conf  alias definition data base
-     /var/log/lastlog  last login data base
+     /etc/finger.conf        alias definition data base
+     /var/log/utx.lastlogin  last login data base
 
 SEE ALSO
      chpass(1), w(1), who(1), finger.conf(5), fingerd(8)
@@ -120,11 +120,5 @@ HISTORY
      The finger command appeared in 3.0BSD.
 
 BUGS
-     The current FINGER protocol RFC requires that the client keep the
-     connection fully open until the server closes.  This prevents the use of
-     the optimal three-packet T/TCP exchange.  (Servers which depend on this
-     requirement are bogus but have nonetheless been observed in the Internet at
-     large.)
-
      The finger utility does not recognize multibyte characters.
 

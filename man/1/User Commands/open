@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
      open [-e] [-t] [-f] [-F] [-W] [-R] [-n] [-g] [-j] [-h] [-u URL] [-s sdk]
           [-b bundle_identifier] [-a application] [--env VAR] [--stderr PATH]
-          [--stdin PATH] [--stdout PATH] file ... [--args arg1 ...]
+          [--stdin PATH] [--stdout PATH] [--arch ARCH] [--args arg1 ...]
 
 DESCRIPTION
      The open command opens a file (or a directory or URL), just as if you had
@@ -36,7 +36,7 @@ DESCRIPTION
          Specifies the bundle identifier for the application to use when opening
          the file
 
-     -e  Causes the file to be opened with /Applications/TextEdit
+     -e  Causes the file to be opened with the TextEdit application
 
      -t  Causes the file to be opened with the default text editor, as
          determined via LaunchServices
@@ -61,6 +61,13 @@ DESCRIPTION
      -g  Do not bring the application to the foreground.
 
      -j  Launches the app hidden.
+
+     --arch ARCH
+         Launch with the given cpu architecture type and subtype; ARCH should be
+         one of any, arm, arm64, arm64e, arm64_32, x86_64, x86_64h, i386.  Two
+         integers matching the values for cpu_type_t and cpu_subtype_t can be
+         specified as integers separated by a '/' character, like "12/13" for
+         CPU_TYPE_ARM/CPU_SUBTYPE_ARM_V8.
 
      -h  Searches header locations for a header whose name matches the given
          string and then opens it.  Pass a full header name (such as NSView.h)

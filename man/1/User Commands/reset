@@ -41,8 +41,7 @@ DESCRIPTION
        -Ttype indicates the type of terminal.  Normally this option is
               unnecessary, because the default is taken from the environment
               variable TERM.  If -T is specified, then the shell variables LINES
-              and COLUMNS will be ignored,and the operating system will not be
-              queried for the actual screen size.
+              and COLUMNS will also be ignored.
 
        capname
               indicates the capability from the terminfo database.  When termcap
@@ -104,7 +103,7 @@ DESCRIPTION
               [see term(5)].
 
        If tput is invoked by a link named reset, this has the same effect as
-       tput reset.  See tset for comparison, which has similar behavior.
+       tput reset.  See @TSET@ for comparison, which has similar behavior.
 
 EXAMPLES
        tput init
@@ -226,12 +225,21 @@ PORTABILITY
        implementation, clear is part of the capname support.  Other
        implementations of tput on SVr4-based systems such as Solaris, IRIX64 and
        HPUX as well as others such as AIX and Tru64 provide support for capname
-       operands.  A few platforms such as FreeBSD and NetBSD recognize termcap
-       names rather than terminfo capability names in their respective tput
-       commands.
+       operands.
+
+       A few platforms such as FreeBSD and NetBSD recognize termcap names rather
+       than terminfo capability names in their respective tput commands.
+
+       Most implementations which provide support for capname operands use the
+       tparm function to expand parameters in it.  That function expects a
+       mixture of numeric and string parameters, requiring tput to know which
+       type to use.  This implementation uses a table to determine that for the
+       standard capname operands, and an internal library function to analyze
+       nonstandard capname operands.  Other implementations may simply guess
+       that an operand containing only digits is intended to be a number.
 
 SEE ALSO
-       clear(1), stty(1), tabs(1), terminfo(5).
+       clear(1), stty(1), tabs(1), terminfo(5), curs_termcap(3X).
 
        This describes ncurses version 5.7 (patch 20081102).
 

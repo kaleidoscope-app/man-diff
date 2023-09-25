@@ -110,3 +110,38 @@ EXAMPLES
      Authenticate to the PRETENDCO.COM realm as jappleseed:
               app-sso -a PRETENDCO.COM -u jappleseed
 
+Kerberos Extension UI Options
+     startInSmartCardMode
+          The default behavior of the KerberosExtension is to start in the UI
+          mode last used by the user.  To force it to start in SmartCard mode,
+          run this defaults command:
+
+                defaults write com.apple.AppSSOKerberos.KerberosExtension
+                startInSmartCardMode -bool true
+
+     allowSmartCard
+           The default behavior of the KerberosExtension is to show both
+          password and SmartCard authentication in the UI.  To hide SmartCards,
+          run this defaults command:
+
+                defaults write com.apple.AppSSOKerberos.KerberosExtension
+                allowSmartCard -bool false
+
+     allowPassword
+           The default behavior of the KerberosExtension is to show both
+          password and SmartCard authentication in the UI.  To hide passwords,
+          run this defaults command:
+
+                defaults write com.apple.AppSSOKerberos.KerberosExtension
+                allowPassword -bool false
+
+     identityIssuerAutoSelectFilter
+           The default behavior of the KerberosExtension is to auto select an
+          available identity if one is available.  If more than one is
+          available, then the identityIssuerAutoSelectFilter can be used to
+          filter the issuer names.  If one is left, then it will be auto
+          selected.  The value should include any wild cards.  To enable it, run
+          this defaults command with the correct filter value:
+
+                defaults write com.apple.AppSSOKerberos.KerberosExtension identityIssuerAutoSelectFilter 'Apple CA*'
+

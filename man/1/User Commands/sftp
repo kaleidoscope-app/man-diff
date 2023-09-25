@@ -5,10 +5,10 @@ NAME
 
 SYNOPSIS
      sftp [-46AaCfNpqrv] [-B buffer_size] [-b batchfile] [-c cipher]
-          [-D sftp_server_path] [-F ssh_config] [-i identity_file]
+          [-D sftp_server_command] [-F ssh_config] [-i identity_file]
           [-J destination] [-l limit] [-o ssh_option] [-P port]
           [-R num_requests] [-S program] [-s subsystem | sftp_server]
-          destination
+          [-X sftp_option] destination
 
 DESCRIPTION
      sftp is a file transfer program, similar to ftp(1), which performs all
@@ -74,9 +74,11 @@ DESCRIPTION
              Selects the cipher to use for encrypting the data transfers.  This
              option is directly passed to ssh(1).
 
-     -D sftp_server_path
+     -D sftp_server_command
              Connect directly to a local sftp server (rather than via ssh(1)).
-             This option may be useful in debugging the client and server.
+             A command and arguments may be specified, for example
+             "/path/sftp-server -el debug3".  This option may be useful in
+             debugging the client and server.
 
      -F ssh_config
              Specifies an alternative per-user configuration file for ssh(1).
@@ -163,6 +165,7 @@ DESCRIPTION
                    PubkeyAcceptedAlgorithms
                    PubkeyAuthentication
                    RekeyLimit
+                   RequiredRSASize
                    SendEnv
                    ServerAliveInterval
                    ServerAliveCountMax
@@ -202,6 +205,21 @@ DESCRIPTION
              have an sftp subsystem configured.
 
      -v      Raise logging level.  This option is also passed to ssh.
+
+     -X sftp_option
+             Specify an option that controls aspects of SFTP protocol behaviour.
+             The valid options are:
+
+             nrequests=value
+                     Controls how many concurrent SFTP read or write requests
+                     may be in progress at any point in time during a download
+                     or upload.  By default 64 requests may be active
+                     concurrently.
+
+             buffer=value
+                     Controls the maximum buffer size for a single SFTP
+                     read/write operation used during download or upload.  By
+                     default a 32KB buffer is used.
 
 INTERACTIVE COMMANDS
      Once in interactive mode, sftp understands a set of commands similar to

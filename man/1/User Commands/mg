@@ -67,9 +67,10 @@ BACKUP FILES
      files or not can be toggled with the make-backup-files command.  The backup
      file location can either be in the current working directory, or all
      backups can be moved to a ~/.mg.d directory where files retain their path
-     name to retain uniqueness.  Use the backup-to-home-directory to alternate
-     between these two locations.  Further, if any application creates backup
-     files in /tmp, these can be left with the leave-tmpdir-backups command.
+     name to retain uniqueness.  Use the backup-to-home-directory command to
+     alternate between these two locations.  Further, if any application creates
+     backup files in /tmp, these can be left with the leave-tmpdir-backups
+     command.
 
 TAGS
      mg supports tag files created by ctags(1), allowing the user to quickly
@@ -186,6 +187,7 @@ DEFAULT KEY BINDINGS
            M-v           scroll-down
            M-w           copy-region-as-kill
            M-x           execute-extended-command
+           M-z           zap-to-char
            M-{           backward-paragraph
            M-|           shell-command-on-region
            M-}           forward-paragraph
@@ -230,8 +232,8 @@ MG COMMANDS
 
      auto-indent-mode
             Toggle indent mode in the current buffer, where indentation is
-            preserved after a newline.  Can be set globally with set-default-
-            mode.
+            preserved after a newline.  Can be set globally with
+            set-default-mode.
 
      back-to-indentation
             Move the dot to the first non-whitespace character on the current
@@ -604,11 +606,15 @@ MG COMMANDS
 
      newline-and-indent
             Insert a newline, then enough tabs and spaces to duplicate the
-            indentation of the previous line.  Assumes tabs are every eight
-            characters.
+            indentation of the previous line, respecting no-tab-mode and the
+            buffer tab width.
 
      next-line
             Move forward n lines.
+
+     no-tab-mode
+            Toggle notab mode.  In this mode, spaces are inserted rather than
+            tabs.
 
      not-modified
             Turn off the modified flag in the current buffer.
@@ -629,7 +635,8 @@ MG COMMANDS
 
      prefix-region
             Inserts a prefix string before each line of a region.  The prefix
-            string is settable by using 'set-prefix-string'.
+            string is settable by using set-prefix-string or by invoking this
+            command with a prefix argument.
 
      previous-line
             Move backwards n lines.
@@ -765,7 +772,11 @@ MG COMMANDS
             Sets the mark in the current window to the current dot location.
 
      set-prefix-string
-            Sets the prefix string to be used by the 'prefix-region' command.
+            Sets the prefix string to be used by the prefix-region command.
+
+     set-tab-width
+            Set the tab width for the current buffer, or the default for new
+            buffers if called with a prefix argument or from the startup file.
 
      shell-command
             Execute external command from mini-buffer.
@@ -850,7 +861,7 @@ MG COMMANDS
             flash.
 
      visit-tags-table
-            Record name of the tags file to be used for subsequent find-tag.
+            Load tags file to be used for subsequent find-tag.
 
      what-cursor-position
             Display a bunch of useful information about the current location of
@@ -867,6 +878,13 @@ MG COMMANDS
 
      yank   Yank text from kill-buffer.  Unlike emacs, the mg kill buffer
             consists only of the most recent kill.  It is not a ring.
+
+     zap-to-char
+            Ask for a character and delete text from the current cursor position
+            until the next instance of that character, including it.
+
+     zap-up-to-char
+            Like zap-to-char but doesn't delete the target character.
 
 MG DIRED KEY BINDINGS
      Specific key bindings are available in dired mode.
@@ -916,8 +934,8 @@ MG DIRED COMMANDS
      dired-flag-file-deletion
              Flag the file listed on the current line for deletion.  This is
              indicated in the buffer by putting a D at the left margin.  No
-             files are actually deleted until the function dired-do-flagged-
-             delete is executed.
+             files are actually deleted until the function
+             dired-do-flagged-delete is executed.
 
      dired-find-file-other-window
              Open the file on the current line of the dired buffer in a
@@ -994,7 +1012,7 @@ CAVEATS
      parameters can be changed in startup files.
 
      In order to use 8-bit characters (such as German umlauts), the Meta key
-     needs to be disabled via the “meta-key-mode” command.
+     needs to be disabled via the meta-key-mode command.
 
      Multi-byte character sets, such as UTF-8, are not supported.
 

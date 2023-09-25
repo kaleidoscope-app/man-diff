@@ -4,7 +4,7 @@ NAME
      tail – display the last part of a file
 
 SYNOPSIS
-     tail [-F | -f | -r] [-q] [-b number | -c number | -n number] [file ...]
+     tail [-F | -f | -r] [-qv] [-b number | -c number | -n number] [file ...]
 
 DESCRIPTION
      The tail utility displays the contents of file or, by default, its standard
@@ -46,7 +46,8 @@ DESCRIPTION
      -n number, --lines=number
              The location is number lines.
 
-     -q      Suppresses printing of headers when multiple files are being
+     -q, --quiet, --silent
+             Suppresses printing of headers when multiple files are being
              examined.
 
      -r      The -r option causes the input to be displayed in reverse order, by
@@ -57,9 +58,16 @@ DESCRIPTION
              the input from which to begin the display.  The default for the -r
              option is to display all of the input.
 
-     If more than a single file is specified, each file is preceded by a header
-     consisting of the string “==> XXX <==” where XXX is the name of the file
-     unless -q flag is specified.
+     -v, --verbose
+             Prepend each file with a header.
+
+     If more than a single file is specified, or if the -v option is used, each
+     file is preceded by a header consisting of the string “==> XXX <==” where
+     XXX is the name of the file.  The -q flag disables the printing of the
+     header in all cases.
+
+     All number arguments may also be specified with size suffixes supported by
+     expand_number(3).
 
 EXIT STATUS
      The tail utility exits 0 on success, and >0 if an error occurs.
@@ -75,7 +83,7 @@ EXAMPLES
            $ tail -F /var/log/messages
 
 SEE ALSO
-     cat(1), head(1), sed(1)
+     cat(1), head(1), sed(1), expand_number(3)
 
 STANDARDS
      The tail utility is expected to be a superset of the IEEE Std 1003.2-1992

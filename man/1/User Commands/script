@@ -4,7 +4,8 @@ NAME
      script – make typescript of terminal session
 
 SYNOPSIS
-     script [-adkpqr] [-F pipe] [-t time] [file [command ...]]
+     script [-aeFkqr] [-t time] [file [command ...]]
+     script -p [-deq] [-T fmt] [file]
 
 DESCRIPTION
      The script utility makes a typescript of everything printed on your
@@ -20,31 +21,40 @@ DESCRIPTION
 
      The following options are available:
 
-     -a      Append the output to file or typescript, retaining the prior
-             contents.
+     -a       Append the output to file or typescript, retaining the prior
+              contents.
 
-     -d      When playing back a session with the -p flag, do not sleep between
-             records when playing back a timestamped session.
+     -d       When playing back a session with the -p flag, do not sleep between
+              records when playing back a timestamped session.
 
-     -F pipe
-             Immediately flush output after each write.  This will allow a user
-             to create a named pipe using mkfifo(1) and another user may watch
-             the live session using a utility like cat(1).
+     -e       Accepted for compatibility with util-linux script.  The child
+              command exit status is always the exit status of script.
 
-     -k      Log keys sent to the program as well as output.
+     -F       Immediately flush output after each write.  This will allow a user
+              to create a named pipe using mkfifo(1) and another user may watch
+              the live session using a utility like cat(1).
 
-     -p      Play back a session recorded with the -r flag in real time.
+     -k       Log keys sent to the program as well as output.
 
-     -q      Run in quiet mode, omit the start, stop and command status
-             messages.
+     -p       Play back a session recorded with the -r flag in real time.
 
-     -r      Record a session with input, output, and timestamping.
+     -q       Run in quiet mode, omit the start, stop and command status
+              messages.
 
-     -t time
-             Specify the interval at which the script output file will be
-             flushed to disk, in seconds.  A value of 0 causes script to flush
-             after every character I/O event.  The default interval is 30
-             seconds.
+     -r       Record a session with input, output, and timestamping.
+
+     -t time  Specify the interval at which the script output file will be
+              flushed to disk, in seconds.  A value of 0 causes script to flush
+              after every character I/O event.  The default interval is 30
+              seconds.
+
+     -T fmt   Implies -p, but just reports the time-stamp of each output.  This
+              is very useful for assessing the timing of events.
+
+              If fmt does not contain any ‘%’ characters, it indicates the
+              default format: ‘%n@ %s [%Y-%m-%d %T]%n’, which is useful for both
+              tools and humans to read, should be used.  Note that time-stamps
+              will only be output when different from the previous one.
 
      The script ends when the forked shell (or command) exits (a control-D to
      exit the Bourne shell (sh(1)), and exit, logout or control-D (if ignoreeof
@@ -58,18 +68,67 @@ DESCRIPTION
 ENVIRONMENT
      The following environment variables are utilized by script:
 
-     SCRIPT
-            The SCRIPT environment variable is added to the sub-shell.  If
-            SCRIPT already existed in the users environment, its value is
-            overwritten within the sub-shell.  The value of SCRIPT is the name
-            of the typescript file.
+     SCRIPT  The SCRIPT environment variable is added to the sub-shell.  If
+             SCRIPT already existed in the users environment, its value is
+             overwritten within the sub-shell.  The value of SCRIPT is the name
+             of the typescript file.
 
-     SHELL  If the variable SHELL exists, the shell forked by script will be
-            that shell.  If SHELL is not set, the Bourne shell is assumed.
-            (Most shells set this variable automatically).
+     SHELL   If the variable SHELL exists, the shell forked by script will be
+             that shell.  If SHELL is not set, the Bourne shell is assumed.
+             (Most shells set this variable automatically).
+
+EXAMPLES
+     Record a simple csh(1) session with no additional details like input,
+     output, and timestamping:
+
+           $ SHELL=/bin/csh script
+           Script started, output file is typescript
+           % date
+           Tue Jan  5 15:08:10 UTC 2021
+           % exit
+           exit
+
+           Script done, output file is typescript
+
+     Now, replay the session recorded in the previous example:
+
+           $ cat ./typescript
+           Script started on Tue Jan  5 15:08:08 2021
+           % date
+           Tue Jan  5 15:08:10 UTC 2021
+           % exit
+           exit
+
+           Script done on Tue Jan  5 15:08:13 2021
+
+     Record a csh(1) session, but this time with additional details like
+     timestamping:
+
+           $ SHELL=/bin/csh script -r
+           Script started, output file is typescript
+           % date
+           Tue Jan  5 15:17:11 UTC 2021
+           % exit
+           exit
+
+           Script done, output file is typescript
+
+     In order to replay a sessions recorded with the -r flag, it is necessary to
+     specify -p (cat(1) will not work because of all the aditional information
+     stored in the session file).  Also, let us use -d to print the whole
+     session at once:
+
+           $ script -dp ./typescript
+           Script started on Tue Jan  5 15:17:09 2021
+           % date
+           Tue Jan  5 15:17:11 UTC 2021
+           % exit
+           exit
+
+           Script done on Tue Jan  5 15:17:14 2021
 
 SEE ALSO
-     csh(1)
+     csh(1) (for the history mechanism)
 
 HISTORY
      The script command appeared in 3.0BSD.

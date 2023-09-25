@@ -3,7 +3,18 @@ AUDIT_WARN(5)                  File Formats Manual                 AUDIT_WARN(5)
 NAME
      audit_warn – alert when audit daemon issues warnings
 
-DESCRIPTION (NOW DEPRECATED)
+DEPRECATION NOTICE
+     The audit(4) subsystem has been deprecated since macOS 11.0, disabled since
+     macOS 14.0, and WILL BE REMOVED in a future version of macOS.  Applications
+     that require a security event stream should use the EndpointSecurity(7) API
+     instead.
+
+     On this version of macOS, you can re-enable audit(4) by renaming or copying
+     /etc/security/audit_control.example to /etc/security/audit_control, re-
+     enabling the system/com.apple.auditd service by running launchctl enable
+     system/com.apple.auditd as root, and rebooting.
+
+DESCRIPTION
      The audit_warn script runs when auditd(8) generates warning messages.
 
      The default audit_warn is a script whose first parameter is the type of

@@ -4,7 +4,7 @@ NAME
      sshd – OpenSSH daemon
 
 SYNOPSIS
-     sshd [-46DdeiqTt] [-C connection_spec] [-c host_certificate_file]
+     sshd [-46DdeGiqTtV] [-C connection_spec] [-c host_certificate_file]
           [-E log_file] [-f config_file] [-g login_grace_time]
           [-h host_key_file] [-o option] [-p port] [-u len]
 
@@ -66,6 +66,11 @@ DESCRIPTION
              /etc/ssh/sshd_config.  sshd refuses to start if there is no
              configuration file.
 
+     -G      Parse and print configuration file.  Check the validity of the
+             configuration file, output the effective configuration to stdout
+             and then exit.  Optionally, Match rules may be applied by
+             specifying the connection parameters using one or more -C options.
+
      -g login_grace_time
              Gives the grace time for clients to authenticate themselves
              (default 120 seconds).  If the client fails to authenticate the
@@ -102,7 +107,9 @@ DESCRIPTION
      -T      Extended test mode.  Check the validity of the configuration file,
              output the effective configuration to stdout and then exit.
              Optionally, Match rules may be applied by specifying the connection
-             parameters using one or more -C options.
+             parameters using one or more -C options.  This is similar to the -G
+             flag, but it includes the additional testing performed by the -t
+             flag.
 
      -t      Test mode.  Only check the validity of the configuration file and
              sanity of the keys.  This is useful for updating sshd reliably as
@@ -120,6 +127,8 @@ DESCRIPTION
              include HostbasedAuthentication and using a from="pattern-list"
              option in a key file.  Configuration options that require DNS
              include using a USER@HOST pattern in AllowUsers or DenyUsers.
+
+     -V      Display the version number and exit.
 
 AUTHENTICATION
      The OpenSSH SSH daemon supports SSH protocol 2 only.  Each host has a host-
@@ -307,8 +316,10 @@ AUTHORIZED_KEYS FILE FORMAT
 
      expiry-time="timespec"
              Specifies a time after which the key will not be accepted.  The
-             time may be specified as a YYYYMMDD date or a YYYYMMDDHHMM[SS] time
-             in the system time-zone.
+             time may be specified as a YYYYMMDD[Z] date or a
+             YYYYMMDDHHMM[SS][Z] time.  Dates and times will be interpreted in
+             the system time zone unless suffixed by a Z character, in which
+             case they will be interpreted in the UTC time zone.
 
      from="pattern-list"
              Specifies that in addition to public key authentication, either the
@@ -505,7 +516,6 @@ SSH_KNOWN_HOSTS FILE FORMAT
      An example ssh_known_hosts file:
 
         # Comments allowed at start of line
-        closenet,...,192.0.2.53 1024 37 159...93 closenet.example.net
         cvs.example.net,192.0.2.10 ssh-rsa AAAA1234.....=
         # A hashed hostname
         |1|JfKTdBh7rNbXkVAQCRp4OQoPfmI=|USECr3SWf1JUPsms5AqfD5QfxkM= ssh-rsa

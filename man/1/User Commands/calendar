@@ -4,23 +4,35 @@ NAME
      calendar – reminder service
 
 SYNOPSIS
-     calendar [-a] [-A num] [-B num] [-F friday] [-f calendarfile]
-              [-t dd[.mm[.year]]] [-W num]
+     calendar [-A num] [-a] [-B num] [-D moon|sun] [-d] [-F friday]
+              [-f calendarfile] [-l longitude] [-t dd[.mm[.year]]] [-U
+              UTC-offset] [-W num]
 
 DESCRIPTION
      The calendar utility checks the current directory for a file named calendar
-     and displays lines that begin with either today's date or tomorrow's.  On
-     the day before a weekend (normally Friday), events for the next three days
-     are displayed.
+     and displays lines that fall into the specified date range.  On the day
+     before a weekend (normally Friday), events for the next three days are
+     displayed.
 
      The following options are available:
 
      -A num  Print lines from today and the next num days (forward, future).
 
-     -a      Process the ``calendar'' files of all users and mail the results to
-             them.  This requires super-user privileges.
+     -a      Process the ``calendar'' files for users found in /etc/passwd and
+             mail the results to them.  This can result in multiple messages for
+             specific files, since /etc/passwd does not require home directories
+             to be unique.  In particular, by default root, toor and daemon
+             share the same home directory.  If this directory contains calendar
+             information, calendar will process the file three times.
+
+             This option requires super-user privileges.
 
      -B num  Print lines from today and the previous num days (backward, past).
+
+     -D moon|sun
+             Print UTC offset, longitude and moon or sun information.
+
+     -d      Debug option: print current date information.
 
      -F friday
              Specify which day of the week is ``Friday'' (the day before the
@@ -29,17 +41,44 @@ DESCRIPTION
      -f calendarfile
              Use calendarfile as the default calendar file.
 
+     -l longitude
+             Perform lunar and solar calculations from this longitude.  If
+             neither longitude nor UTC offset is specified, the calculations
+             will be based on the difference between UTC time and localtime.  If
+             both are specified, UTC offset overrides longitude.
+
      -t dd[.mm[.year]]
              For test purposes only: set date directly to argument values.
+
+     -U UTC-offset
+             Perform lunar and solar calculations from this UTC offset.  If
+             neither UTC offset nor longitude is specified, the calculations
+             will be based on the difference between UTC time and localtime.  If
+             both are specified, UTC offset overrides longitude.
 
      -W num  Print lines from today and the next num days (forward, future).
              Ignore weekends when calculating the number of days.
 
+FILE FORMAT
      To handle calendars in your national code table you can specify
-     “LANG=<locale_name>” in the calendar file as early as possible.  To handle
-     national Easter names in the calendars “Easter=<national_name>” (for
-     Catholic Easter) or “Paskha=<national_name>” (for Orthodox Easter) can be
-     used.
+     “LANG=<locale_name>” in the calendar file as early as possible.
+
+     To handle the local name of sequences, you can specify them as:
+     “SEQUENCE=<first> <second> <third> <fourth> <fifth> <last>” in the calendar
+     file as early as possible.
+
+     The names of the following special days are recognized:
+     Easter           Catholic Easter.
+     Paskha           Orthodox Easter.
+     NewMoon          The lunar New Moon.
+     FullMoon         The lunar Full Moon.
+     MarEquinox       The solar equinox in March.
+     JunSolstice      The solar solstice in June.
+     SepEquinox       The solar equinox in September.
+     DecSolstice      The solar solstice in December.
+     ChineseNewYear   The first day of the Chinese year.
+     These names may be reassigned to their local names via an assignment like
+     “Easter=Pasen” in the calendar file.
 
      Other lines should begin with a month and day.  They may be entered in
      almost any format, either numeric or as character strings.  If the proper
@@ -50,11 +89,8 @@ DESCRIPTION
      tabs default to the last entered date, allowing multiple line
      specifications for a single date.
 
-     ``Easter'', is Easter for this year, and may be followed by a positive or
-     negative integer.
-
-     ``Paskha'', is Orthodox Easter for this year, and may be followed by a
-     positive or negative integer.
+     The names of the recognized special days may be followed by a positive or
+     negative integer, like: “Easter+3” or “Paskha-4”.
 
      Weekdays may be followed by ``-4'' ... ``+5'' (aliases for last, first,
      second, third, fourth) for moving events like ``the last Monday in April''.
@@ -67,15 +103,30 @@ DESCRIPTION
      character in the line is a <tab> character, it is treated as a continuation
      of the previous line.
 
-     The ``calendar'' file is preprocessed by cpp(1), allowing the inclusion of
-     shared files such as lists of company holidays or meetings.  If the shared
-     file is not referenced by a full pathname, cpp(1) searches in the current
-     (or home) directory first, and then in the directory /usr/share/calendar.
-     Empty lines and lines protected by the C commenting syntax (/* ... */) are
-     ignored.
+     The calendar file is preprocessed by a limited subset of cpp(1) internally,
+     allowing the inclusion of shared files such as lists of company holidays or
+     meetings.  This limited subset consists of #include, #define, #undef,
+     #ifdef, #ifndef, #else, #warning, and #error.
+
+     Conditions can be nested and the consistency of opening and closing
+     instructions is checked.  Only the first word after #define is used as the
+     name of the condition variable being defined.  More than word following
+     #ifdef, #ifndef, or #undef is considered a syntax error, since names cannot
+     include white-space.  Included files are parsed in a global scope with
+     regard to the condition variables being defined or tested therein.  All
+     conditional blocks are implicitly closed at the end of a file, and missing
+     #endif instructions are assumed to be present on implied succeeding lines.
+
+     If the shared file is not referenced by a full pathname, calendar searches
+     in the current (or home) directory first, and then in the directory
+     /usr/share/calendar.
+
+     Blank lines and text protected by the C comment syntax ‘/* ... */’ or ‘//’
+     are ignored, but the latter only at the beginning of a line or after white
+     space to allow for URLs in calendar entries.
 
      Some possible calendar entries (<tab> characters highlighted by \t
-     sequence)
+     sequence):
 
            LANG=C
            Easter=Ostern
@@ -89,6 +140,7 @@ DESCRIPTION
            Thursday\tEvery Thursday.
            June\tEvery June 1st.
            15 *\t15th of every month.
+           2010/4/15\t15 April 2010
 
            May Sun+2\tsecond Sunday in May (Muttertag)
            04/SunLast\tlast Sunday in April,
@@ -99,47 +151,23 @@ DESCRIPTION
 
 
 FILES
-     calendar            file in current directory
+     calendar            file in current directory.
      ~/.calendar         calendar HOME directory.  A chdir is done into this
                          directory if it exists.
      ~/.calendar/calendar
                          calendar file to use if no calendar file exists in the
                          current directory.
      ~/.calendar/nomail  do not send mail if this file exists.
+     /usr/share/calendar
+                         system wide location of calendar files provided as part
+                         of the operating system.
+     /usr/local/share/calendar
+                         system wide location for calendar files not provided by
+                         the operating system.
 
-     The following default calendar files are provided:
-
-     calendar.all          File which includes all the default files.
-     calendar.australia    Calendar of events in Australia.
-     calendar.birthday     Births and deaths of famous (and not-so-famous)
-                           people.
-     calendar.christian    Christian holidays.  This calendar should be updated
-                           yearly by the local system administrator so that
-                           roving holidays are set correctly for the current
-                           year.
-     calendar.computer     Days of special significance to computer people.
-     calendar.croatian     Calendar of events in Croatia.
-     calendar.freebsd      Birthdays of FreeBSD committers.
-     calendar.french       Calendar of events in France.
-     calendar.german       Calendar of events in Germany.
-     calendar.history      Everything else, mostly U.S. historical events.
-     calendar.holiday      Other holidays, including the not-well-known,
-                           obscure, and really obscure.
-     calendar.judaic       Jewish holidays.  This calendar should be updated
-                           yearly by the local system administrator so that
-                           roving holidays are set correctly for the current
-                           year.
-     calendar.music        Musical events, births, and deaths.  Strongly
-                           oriented toward rock 'n' roll.
-     calendar.newzealand   Calendar of events in New Zealand.
-     calendar.russian      Russian calendar.
-     calendar.southafrica  Calendar of events in South Africa.
-     calendar.usholiday    U.S. holidays.  This calendar should be updated
-                           yearly by the local system administrator so that
-                           roving holidays are set correctly for the current
-                           year.
-     calendar.world        Includes all calendar files except for national
-                           files.
+     The order of precedence in searches for a calendar file is: current
+     directory, ~/.calendar, /usr/local/share/calendar, /usr/share/calendar.
+     Files of similar names are ignored in lower precedence locations.
 
 COMPATIBILITY
      The calendar program previously selected lines which had the correct date
@@ -147,11 +175,36 @@ COMPATIBILITY
      when it occurs at the beginning of a line.
 
 SEE ALSO
-     at(1), cpp(1), mail(1), cron(8)
+     at(1), mail(1), cron(8)
 
 HISTORY
      A calendar command appeared in Version 7 AT&T UNIX.
 
+NOTES
+     Chinese New Year is calculated at 120 degrees east of Greenwich, which
+     roughly corresponds with the east coast of China.  For people west of
+     China, this might result that the start of Chinese New Year and the day of
+     the related new moon might differ.
+
+     The phases of the moon and the longitude of the sun are calculated against
+     the local position which corresponds with 30 degrees times the time-
+     difference towards Greenwich.
+
+     The new and full moons are happening on the day indicated: They might
+     happen in the time period in the early night or in the late evening.  It
+     does not indicate that they are starting in the night on that date.
+
+     Because of minor differences between the output of the formulas used and
+     other sources on the Internet, Druids and Werewolves should double-check
+     the start and end time of solar and lunar events.
+
 BUGS
-     The calendar utility does not handle Jewish holidays and moon phases.
+     The calendar does only recognise the cpp directives #include, #define,
+     #ifdef, #ifndef and #else.  It supports nested conditions, but does not
+     perform any validation on the correct use and nesting of conditions.
+     #endif without prior #ifdef or #define is ignored and #else outside a
+     conditional section skips input lines up to the next #endif.
+
+     There is no possibility to properly specify the local position needed for
+     solar and lunar calculations.
 

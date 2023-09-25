@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
      apfs.util -A get path
      apfs.util -A set=yes/no path
-     apfs.util -C -type TYPE path
+     apfs.util -C -type type path
      apfs.util -D get device
      apfs.util -D set=yes/no device
      apfs.util -E path
@@ -29,7 +29,7 @@ SYNOPSIS
      apfs.util -Z path
 
 DESCRIPTION
-     The apfs.util Command supports getting and setting various file system
+     The apfs.util command supports getting and setting various file system
      options.
 
      path argument is a path to any file within the mounted file system.  If it
@@ -45,11 +45,11 @@ DESCRIPTION
      -A set=yes/no path
              enable or disable update setting for volume specified by path.
 
-     -C -type TYPE path
+     -C -type type path
              clear the purgeability of files of the specified type on the volume
              referred to by path.
-             TYPE could be one of: photos, music, mail, document, data, podcast,
-             video, movie, messages, books.
+             type could be one of: photo, music, mail, document, data, podcast,
+             video, movie, message, book.
 
      -D get device
              Get defragmentation setting for volume or container specied by
@@ -63,14 +63,14 @@ DESCRIPTION
              drop the extents for path from the first snapshot
 
      -G path
-             get stats on the purgeble files on the volume specified by path.
+             get stats on the purgeable files on the volume specified by path.
 
      -k      Return the UUID of the apfs volume on device.
 
      -m verb path
              mark the file at path as purgeable with the various options
              specified.
-             verb could be many of: -low -med -high -photo -music -mail
+             verb could be one or more of: -low -med -high -photo -music -mail
              -document -data -podcast -video -movie -message -book -fault -clear
 
      -M dir  flag the named directory as "maintain-dir-stats".
@@ -88,9 +88,9 @@ DESCRIPTION
              criteria could be -low -med -high
              and/or with specified parameters: -minsize VAL -maxage VAL -maxage
              AGE_IN_SECONDS -total TOTAL_PURGE_AMOUNT
-             and/or specifiend by: -type TYPE, that could be one of -photos
-             -music -mail -document -data -podcast -video -movie -messages
-             -books
+             and/or specified by: -type type, that could be one of -photo -music
+             -mail -document -data -podcast -video -movie -message -book
+             (and optionally, -typetotal TYPE_PURGE_AMOUNT)
 
      -r dir  set the sync-root flag on the specified dir directory.
 
@@ -113,7 +113,8 @@ DESCRIPTION
      -Y dir  get the sync-root flag from the specified directory in dir.
 
      -z path
-             make the file at exempt from copy-on-write semantics for snapshots
+             make the file at path exempt from copy-on-write semantics for
+             snapshots
 
      -Z path
              get the purgeable file flags for the specific file at path.

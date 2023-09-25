@@ -4,7 +4,8 @@ NAME
      fsck_apfs – APFS consistency check
 
 SYNOPSIS
-     fsck_apfs [-n | -y] [-q] [-l] [-s] [-S] [-o] device
+     fsck_apfs [-n | -y] [-q] [-l] [-s] [-S] [-o] [-b num] [-c] [-C] [-d]
+               [-E path] [-F | -M] [-g | -x] [-W] [-T] [-D] device
 
 DESCRIPTION
      The fsck_apfs utility verifies and repairs APFS containers and volumes.
@@ -20,30 +21,64 @@ DESCRIPTION
 
      The options are as follows:
 
-           -q      Causes fsck_apfs to quickly check whether the device is
-                   `clean'. If device is an APFS volume, fsck_apfs will quickly
-                   check the APFS container and the specified APFS volume.  If
-                   device is an APFS container, fsck_apfs will quickly check the
-                   APFS container and all the APFS volumes in it.  By default,
-                   no repairs are attempted during a quick check.
+     -q        Causes fsck_apfs to quickly check whether the device is `clean'.
+               If device is an APFS volume, fsck_apfs will quickly check the
+               APFS container and the specified APFS volume.  If device is an
+               APFS container, fsck_apfs will quickly check the APFS container
+               and all the APFS volumes in it.  By default, no repairs are
+               attempted during a quick check.
 
-           -n      Never attempt to repair any damage that is found.
+     -n        Never attempt to repair any damage that is found.
 
-           -y      Always attempt to repair any damage that is found.
+     -y        Always attempt to repair any damage that is found.
 
-           -l      Enable live verification mode.  This makes it possible to
-                   check an APFS container which is currently mounted read-
-                   write, although no repairs can be made. Note that live
-                   verification mode may cause your system to stop responding
-                   until fsck_apfs completes.
+     -l        Enable live verification mode.  This makes it possible to check
+               an APFS container which is currently mounted read-write, although
+               no repairs can be made. Note that live verification mode may
+               cause your system to stop responding until fsck_apfs completes.
 
-           -s      Print space verification summary.
+     -s        Print space verification summary.
 
-           -S      Skip iteration of snapshots (top-level snapshot structures
-                   will still be checked), although no repairs can be made.
+     -S        Skip iteration of snapshots (top-level snapshot structures will
+               still be checked), although no repairs can be made.
 
-           -o      Repair overallocations; please do not run an older fsck_apfs
-                   on newer systems with this option.
+     -o        Repair overallocations; please do not run an older fsck_apfs on
+               newer systems with this option.
+
+     -b <num>  Set the default cache block size to num KB.
+
+     -c        Enable the gathering and printing of cache statistics.
+
+     -C        Force a sync of the container prior to freezing it in live
+               verification mode.
+
+     -d        Print extra debugging information.
+
+     -E <path> Write warning and error summary information to path in addition
+               to the standard location (/var/log/fsck_apfs_error.log).  Pass -
+               to write it to stdout.
+
+     -F        Force checking of encrypted volumes, requiring the volumes to be
+               unlocked.
+
+     -M        Skip checks requiring decryption of volume data. Unencrypted
+               volume metadata is still checked.
+
+     -g        Use "GUI" mode for the output.  Output is in a form suitable for
+               parsing by other programs.
+
+     -x        Output will be in XML.
+
+     -W        Treat warnings as fatal.  By default, fsck_apfs will exit with a
+               return code of 0 if there are warnings but no errors.  This
+               option will cause it to exit with an appropriate error code in
+               that situation.
+
+     -T        Enable B-Tree node repairs.  Only used when repairing so either
+               -y must be present, or both -n and -q must be absent.
+
+     -D        When doing B-Tree node repairs, allow searching free blocks for
+               candidate nodes.  This requires the -T option as well.
 
 EXIT STATUS
      fsck_apfs exits with 0 on success, and >0 if error occurs.

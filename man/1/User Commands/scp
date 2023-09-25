@@ -6,13 +6,14 @@ NAME
 SYNOPSIS
      scp [-346ABCOpqRrsTv] [-c cipher] [-D sftp_server_path] [-F ssh_config]
          [-i identity_file] [-J destination] [-l limit] [-o ssh_option]
-         [-P port] [-S program] source ... target
+         [-P port] [-S program] [-X sftp_option] source ... target
 
 DESCRIPTION
      scp copies files between hosts on a network.
 
-     It uses ssh(1) for data transfer, and uses the same authentication and
-     provides the same security as a login session.
+     scp uses the SFTP protocol over a ssh(1) connection for data transfer, and
+     uses the same authentication and provides the same security as a login
+     session.
 
      scp will ask for passwords or passphrases if they are needed for
      authentication.
@@ -52,9 +53,9 @@ DESCRIPTION
              option is directly passed to ssh(1).
 
      -D sftp_server_path
-             When using the SFTP protocol support via -M, connect directly to a
-             local SFTP server program rather than a remote one via ssh(1).
-             This option may be useful in debugging the client and server.
+             Connect directly to a local SFTP server program rather than a
+             remote one via ssh(1).  This option may be useful in debugging the
+             client and server.
 
      -F ssh_config
              Specifies an alternative per-user configuration file for ssh.  This
@@ -139,6 +140,7 @@ DESCRIPTION
                    PubkeyAcceptedAlgorithms
                    PubkeyAuthentication
                    RekeyLimit
+                   RequiredRSASize
                    SendEnv
                    ServerAliveInterval
                    ServerAliveCountMax
@@ -187,6 +189,21 @@ DESCRIPTION
              about their progress.  This is helpful in debugging connection,
              authentication, and configuration problems.
 
+     -X sftp_option
+             Specify an option that controls aspects of SFTP protocol behaviour.
+             The valid options are:
+
+             nrequests=value
+                     Controls how many concurrent SFTP read or write requests
+                     may be in progress at any point in time during a download
+                     or upload.  By default 64 requests may be active
+                     concurrently.
+
+             buffer=value
+                     Controls the maximum buffer size for a single SFTP
+                     read/write operation used during download or upload.  By
+                     default a 32KB buffer is used.
+
 EXIT STATUS
      The scp utility exits 0 on success, and >0 if an error occurs.
 
@@ -198,7 +215,7 @@ HISTORY
      scp is based on the rcp program in BSD source code from the Regents of the
      University of California.
 
-     Since OpenSSH 8.8, scp has use the SFTP protocol for transfers by default.
+     Since OpenSSH 9.0, scp has used the SFTP protocol for transfers by default.
 
 AUTHORS
      Timo Rinne <tri@iki.fi>

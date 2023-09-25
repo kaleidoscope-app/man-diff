@@ -368,6 +368,7 @@ OPTIONS
                      F     flags
                      U     process UUID (not shown by default)
                      V     verbose printf of pcap-ng blocks (not shown by default)
+                     d     data link type
                      f     flow identifier
                      t     trace tag
                      A     display all types of metadata
@@ -1410,6 +1411,7 @@ PACKET METADATA FILTER
               dir    direction
               eproc  effective process name
               epid   effective process ID
+              dlt    data link type
 
        For example to filter packets from interface en0 "sent" by the process
        named "nc" or incoming packet not on interface en0:
@@ -1423,6 +1425,21 @@ PACKET METADATA FILTER
        For example:
 
               -Q "proc = 'Some App'"
+
+       Interface names can be filtered by partial string if the unit number is
+       ommitted.  For example use the following to include interfaces whose name
+       begins with "en":
+
+              -Q "if = en"
+
+       The data link type can be specified by number or by one of the following
+       symbolic names:
+
+              NULL
+              EN10MB
+              PPP
+              RAW
+              ether (same as EN10MB)
 
 SEE ALSO
        stty(1), pcap(3PCAP), bpf(4), nit(4P), pcap-savefile(5), pcap-filter(7),

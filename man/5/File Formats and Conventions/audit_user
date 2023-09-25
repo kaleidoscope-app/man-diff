@@ -3,7 +3,18 @@ AUDIT_USER(5)                  File Formats Manual                 AUDIT_USER(5)
 NAME
      audit_user – events to be audited for given users
 
-DESCRIPTION (NOW DEPRECATED)
+DEPRECATION NOTICE
+     The audit(4) subsystem has been deprecated since macOS 11.0, disabled since
+     macOS 14.0, and WILL BE REMOVED in a future version of macOS.  Applications
+     that require a security event stream should use the EndpointSecurity(7) API
+     instead.
+
+     On this version of macOS, you can re-enable audit(4) by renaming or copying
+     /etc/security/audit_control.example to /etc/security/audit_control, re-
+     enabling the system/com.apple.auditd service by running launchctl enable
+     system/com.apple.auditd as root, and rebooting.
+
+DESCRIPTION
      The audit_user file specifies which audit event classes are to be audited
      for the given users.  If specified, these flags are combined with the
      system-wide audit flags in the audit_control(5) file to determine which

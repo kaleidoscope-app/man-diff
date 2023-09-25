@@ -14,95 +14,211 @@ SYNOPSIS
      sc_auth enable_for_login -c class-id
      sc_auth filevault -o operation [-u user] [-h hash]
 
-SYNOPSIS - legacy
-     sc_auth accept [-v] [-u user] [-d domain] [-k keyname] sc_auth accept [-v]
-     [-u user] [-d domain] -h hash sc_auth remove [-v] [-u user] [-d domain]
+   CTK Identity
+     sc_auth create-ctk-identity -l label -k p-256|p-384|p-521|p-256-ne|p-384-ne
+             [-t bio|none] [-N CN] [-E emailAddress] [-U OU] [-O O] [-L L]
+             [-S ST] [-C C]
+     sc_auth delete-ctk-identity -h hash
+     sc_auth delete-all-ctk-identities
+     sc_auth list-ctk-identities [-t sha1|sha256|ssh] [-e hex|b64]
+     sc_auth import-ctk-identities -f fileName [-t bio|none] [-p password]
+     sc_auth export-ctk-identity -h hash -f fileName [-p password]
+     sc_auth create-ctk-csr -h hash -f fileName [-N CN] [-E emailAddress]
+             [-U OU] [-O O] [-L L] [-S ST] [-C C]
+     sc_auth import-ctk-certificate -f fileName
+
+   Legacy Support
+     sc_auth accept [-v] [-u user] [-d domain] -k keyname
+     sc_auth accept [-v] [-u user] [-d domain] -h hash
+     sc_auth remove [-v] [-u user] [-d domain]
      sc_auth hash   [-k keyname]
 
 DESCRIPTION
-     sc_auth configures a local user account to permit authentication using a
-     supported SmartCard.  Authentication is via asymmetric key (also known as
-     public-key) encryption.  sc_auth works with signing keys, but not
-     encryption keys.
+     Configures a local user account to permit authentication using a supported
+     SmartCard.  Authentication is via asymmetric key (also known as public-key)
+     encryption.
 
-     sc_auth can perform the following actions:
+   CTK Identity
+     CTK Identity allows to create and manipulate CryptoTokenKit identities.
+     CryptoTokenKit identities can use non-exportable or exportable private
+     keys. The non-exportable private key is protected by the Secure Enclave and
+     the key never leves the Secure Enclave in open form. The exportable private
+     key is encrypted with Elliptic Curve Encryption Standard Variable IVX963
+     algorithm which is backed by a Secure Enclave key. CryptoTokenKit
+     Identities and private keys can be used for TLS authentication, email
+     protection and SSL using ssh-keychain(8) library.
 
-     pair     Associate a user with a public key. Because user's keychain will
-              be modified to be unlockable by a key, SmartCard with that key
-              must be present in the reader. The key to use has to be specified
-              by its hash.
+   Legacy Support
+     Performs the legacy actions.
 
-     unpair   Remove association with a user and keychain. If no specific hash
-              is provided, all associations with a user are removed.
+COMMANDS
+     pair [-v] -u user -h hash Associate a user with a public key. Because
+     user's keychain will be modified to be unlockable by a key, SmartCard with
+     that key must be present in the reader. The key to use has to be specified
+     by its hash.
 
-     pairing_ui
-              Enable, disable and force to display pairing dialog when card with
-              unpaired identities is inserted
+            -v       Verbose mode
+            -u user  Specifies the user account.
+            -h hash  Specifies a public key using its hash
 
-     identities
-              List all identities on all SmartCards and display appropriate
-              associations with users (for associated keys) or key names (for
-              unassociated keys).
+     unpair [-v] [-u user] [-h hash] Remove association with a user and
+     keychain. If no specific hash is provided, all associations with a user are
+     removed.
 
-     list     List all public keys associated with a user.
+            -v       Verbose mode
+            -u user  Specifies the user account.
+            -h hash  Specifies a public key using its hash
 
-     changepin
-              Change or unblock SmartCard PIN.  This command works only for
-              Personal Identity Verification (PIV) SmartCards. With -u argument,
-              PIN can be unblocked using PUK and without the -u argument, PIN
-              can be changed. Optional -t argument allows specifying tokenID.
+     pairing_ui [-v] [-f] [-s enable|disable|status] Enable, disable and force
+     to display pairing dialog when card with unpaired identities is inserted.
 
-     verifypin
-              Verify SmartCard PIN. This command works only for Personal
-              Identity Verification (PIV) SmartCards. Optional -t argument
-              allows specifying tokenID. Optional -p argument allows specifying
-              PIN.
+            -v       Verbose mode
+            -f       Force to display pairing dialog
+            -s enable|disable|status
+                     Enable, disable or provide status for pairing dialog
 
-     enable_for_login
-              Enable the app extension for login and make the token available to
-              the system for authentication.
+     identities List all identities on all SmartCards and display appropriate
+     associations with users (for associated keys) or key names (for
+     unassociated keys).
+     list [-v] [-u user] [-d domain] List all public keys associated with a
+     user.
 
-     filevault
-              Manage SmartCard support for FileVault unlock.
+            -v       Verbose mode
+            -u user  Specifies the user account.
+            -d domain
+                     Specifies the directory domain containing the user account
+     changepin [-t tokenid] [-u] Change or unblock SmartCard PIN.  This command
+     works only for Personal Identity Verification (PIV) SmartCards.
 
-DESCRIPTION - legacy
-     sc_auth can perform the following legacy actions:
+            -u       Unblock PIN using PUK
+            -t tokenid
+                     Specifies a token by tokenID
+     verifypin [-t tokenid] [-p PIN] Verify SmartCard PIN. This command works
+     only for Personal Identity Verification (PIV) SmartCards.
 
-     accept   Associate a user with a public key on a card.  The key to use can
-              be specified either by its name or its hash.
+            -t tokenid
+                     Specifies a token by tokenID
+            -p PIN   Specifies SmartCard PIN
+     enable_for_login [-c class-id] Enable the app extension for login and make
+     the token available to the system for authentication.
 
-     remove   Remove all public keys associated with a user.
+            -c class-id
+                     Specifies a token by  'com.apple.ctk.class-id' from
+                     Info.plist
+     filevault -o status|enable|disable [-u user] [-h hash] Manage SmartCard
+     support for FileVault unlock.
 
-     hash     Print the hashes for all keys on all inserted cards.
+            -o status|enable|disable
+                     Use status to query the status of SmartCard support for
+                     FileVault unlock for the specified user (current user by
+                     default) enable/disable to activate/deactivate SmartCard
+                     support for FileVault unlock
+            -u user  Specifies the user account.
+            -h hash  Specifies a public key using its hash
 
-OPTIONS
-     -u user  Specifies the user whose account is to be modified
+COMMANDS - CTK Identity
+     create-ctk-identity -l label -k p-256|p-384|p-521|p-256-ne|p-384-ne [-t
+     bio|none] [-N CN] [-E emailAddress] [-U OU] [-O O] [-L L] [-S ST] [-C C]
+     Create an CTK Identity.
 
-     -d domain
-              Specifies the directory domain containing the user account
+            -l label
+                     Specifies the key label
+            -k p-256|p-384|p-521|p-256-ne|p-384-ne
+                     Specifies the key type. The "-ne" suffix means non-
+                     exportable variant of key
+            -t bio|none
+                     Specifies private key protection
+            -N CN    Specifies certificate Common Name. If not specified the
+                     label is used instead
+            -E emailAddress
+                     Specifies certificate Email Address
+            -U OU    Specifies certificate Organizational Unit Name
+            -O O     Specifies certificate Organization Name
+            -L L     Specifies certificate Locality Name
+            -S ST    Specifies certificate State Or Province Name
+            -C C     Specifies certificate Country Name
 
-     -k keyname
-              Specifies a public key by its name
+     delete-ctk-identity -h hash Delete an CTK Identity.
 
-     -h hash  Specifies a public key by its hash
+            -h hash  Specifies the identity by its public key hash
 
-     -v       Verbose mode
+     delete-all-ctk-identities Delete all CTK Identities.
 
-     -f       Force to display pairing dialog
+     list-ctk-identities [-t sha1|sha256 |ssh] [-e hex|b64] List all CTK
+     identities.
 
-     -t tokenid
-              Specifies a token by tokenID
+            -t sha1|sha256|ssh
+                     Specifies used alghorithm for public key hash. SHA-1,
+                     SHA-256 and SHA-256 compatible with SSH.
+            -e hex|b64
+                     Specifies public key hash encoding, hexadecimal or Base64
 
-     -c class-id
-              Specifies a token by  'com.apple.ctk.class-id' from Info.plist
+     import-ctk-identities -f fileName [-t bio|none] [-p password] Import one or
+     more Identities from a PKCS#12 archive.
 
-     -p PIN   Specifies a PIN
+            -f fileName
+                     Specifies the PKCS#12 file
+            -t bio|none
+                     Specifies private key protection.
+            -p password
+                     Specifies password for PKCS#12 archive
 
-     -o operation
-              Use status to query the status of SmartCard support for FileVault
-              unlock for the specified user (current user by default)
-              enable/disable to activate/deactivate SmartCard support for
-              FileVault unlock
+     export-ctk-identity -h hash -f fileName [-p password] Export one CTK
+     Identity in to the PKCS#12 archive.
+
+            -h hash Specifies the CTK Identity by its publick key hash
+            -f fileName
+                     Specifies the PKCS#12 file
+            -p password
+                     Specifies password for PKCS#12 archive
+
+     create-ctk-csr -h hash -f fileName [-N CN] [-E emailAddress] [-U OU] [-O O]
+     [-L L] [-S ST] [-C C] Create an PEM formated Certificate Signing Request
+     (CSR)
+
+            -h hash Specifies the CTK Identity by its publick key hash
+            -f fileName
+                     Specifies the CSR file
+            -N CN    Specifies certificate Common Name. If not specified the
+                     label is used instead
+            -E emailAddress
+                     Specifies Email Address
+            -U OU    Specifies Organizational Unit Name
+            -O O     Specifies Organization Name
+            -L L     Specifies Locality Name
+            -S ST    Specifies State Or Province Name
+            -C C     Specifies Country Name
+
+     import-ctk-certificate -f fileName Import an PEM formated Certificate
+
+            -f fileName
+                     Specifies the certificate file name
+
+COMMANDS - Legacy Support
+     accept [-v] [-u user] [-d domain] -k keyname -h hash Associate a user with
+     a public key on a card.  The key to use can be specified either by its name
+     or its hash.
+
+            -v       Verbose mode
+            -u user  Specifies the user account.
+            -d domain
+                     Specifies the directory domain containing the user account
+            -k keyname
+                     Specifies a public key using its name
+            -k hash  Specifies a public key using its hash
+
+     remove [-v] [-u user] [-d domain] Remove all public keys associated with a
+     user.
+
+            -v       Verbose mode
+            -u user  Specifies the user account.
+            -d domain
+                     Specifies the directory domain containing the user account
+
+     hash [-k keyname] Print hashes for all keys on all inserted cards.
+
+            -k keyname
+                     Specifies a public key using its name
 
 NOTES
      sc_auth is a shell script.  It is intended to be modified by administrators
@@ -112,5 +228,6 @@ NOTES
      source for some limited guidance to using remote directories.
 
 SEE ALSO
-     SmartCardServices(7), SmartCardServices-legacy(7), pam_smartcard(8)
+     SmartCardServices(7), SmartCardServices-legacy(7), pam_smartcard(8),
+     ssh-keychain(8)
 

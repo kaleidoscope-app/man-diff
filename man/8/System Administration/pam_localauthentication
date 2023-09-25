@@ -1,47 +1,39 @@
-pam_opendirectory(8)         System Manager's Manual        pam_opendirectory(8)
+pam_localauthentication(8)   System Manager's Manual  pam_localauthentication(8)
 
 NAME
-     pam_opendirectory – OpenDirectory PAM module
+     pam_localauthentication – LocalAuthentication PAM module
 
 SYNOPSIS
-     [service-name] function-class control-flag pam_opendirectory [options]
+     [service-name] function-class control-flag pam_localauthentication
+     [options]
 
 DESCRIPTION
-     The OpenDirectory PAM module supports the authentication, account
-     management and password management function classes.  In terms of the
-     function-class parameter, these are “auth”, “account” and “password”
-     respectively.
+     The LocalAuthentication PAM module supports the authentication function
+     class, function-class parameter is “auth”.
 
-   The OpenDirectory Authentication Module
-     The OpenDirectory authentication module permits or denies users based on
-     OpenDirectory password authentication.
+   The LocalAuthentication Authentication Module
+     The LocalAuthentication authentication module permits or denies
+     authentication based on LAContext policy evaluation.
 
-     The following option may be passed to this authentication module:
+     The module will try to create LAContext from the externalized blob returned
+     by previous invocation of “LAContext.externalizedContext”.  The blob will
+     be queried by pam_get_data(3) as data named “token_la”.
 
-     nullok  Allow null passwords.
+     When the LAContext instance is successfully created, the module will try to
+     evaluate “LAPolicyDeviceOwnerAuthenticationWithBiometrics” on it with user
+     interaction disabled. The expectation is that the policy was already
+     successfully evaluated before. If so, then the authentication performed by
+     this module will succeed as well.
 
-   The OpenDirectory Account Management Module
-     The OpenDirectory account management module permits or denies users based
-     whether the account is enabled in OpenDirectory.
+     The following options may be passed to this authentication module:
 
-     The following option may be passed to this account management module:
+     continuityunlock
+             Use the alternative LAContext for AppleWatch unlock. The LAContext
+             blob will be queried by pam_get_data(3) as data named
+             “token_lacont” and the policy evaluated will be
+             “LAPolicyContinuityUnlock”.
 
-     no_check_shell
-             Skip validating the user's shell.
-
-     no_check_home
-             Skip validating the user's home directory.
-
-     refresh=min
-             Sets the mbr_check_membership(3) cache timeout to min minutes.
-             When this option is used, the min value must be specified, and it
-             must be an integer.
-
-   The OpenDirectory Password Management Module
-     The OpenDirectory password management module supports password changing and
-     enforces the OpenDirectory password policy.
 
 SEE ALSO
-     mbr_check_membership(3), pam.conf(5), pam(8), pwpolicy(8),
-     DirectoryService(8)
+     mbr_check_membership(3), pam.conf(5), pam(8), pwpolicy(8), pam_get_data(3)
 

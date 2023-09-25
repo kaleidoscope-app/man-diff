@@ -26,7 +26,8 @@ DESCRIPTION
 
      The options are as follows:
 
-     -0      Change xargs to expect NUL (``\0'') characters as separators,
+     -0, --null
+             Change xargs to expect NUL (``\0'') characters as separators,
              instead of spaces and newlines.  This is expected to be used in
              concert with the -print0 function in find(1).
 
@@ -62,13 +63,11 @@ DESCRIPTION
                    /bin/ls -1d [A-Z]* | xargs -J % cp -Rp % destdir
 
      -L number
-             Call utility for every number non-empty lines read.  A line ending
-             with a space continues to the next non-empty line.  If EOF is
-             reached and fewer lines have been read than number then utility
-             will be called with the available lines.  The -L and -n options are
-             mutually-exclusive; the last one given will be used.
+             Call utility for every number lines read.  If EOF is reached and
+             fewer lines have been read than number then utility will be called
+             with the available lines.
 
-     -n number
+     -n number, --max-args=number
              Set the maximum number of arguments taken from standard input for
              each invocation of utility.  An invocation of utility will use less
              than number standard input arguments if the number of bytes
@@ -80,18 +79,20 @@ DESCRIPTION
              command.  This is useful if you want xargs to run an interactive
              application.
 
-     -P maxprocs
+     -P maxprocs, --max-procs=maxprocs
              Parallel mode: run at most maxprocs invocations of utility at once.
              If maxprocs is set to 0, xargs will run as many processes as
              possible.
 
-     -p      Echo each command to be executed and ask the user whether it should
+     -p, --interactive
+             Echo each command to be executed and ask the user whether it should
              be executed.  An affirmative response, ‘y’ in the POSIX locale,
              causes the command to be executed, any other response causes it to
              be skipped.  No commands are executed if the process is not
              attached to a terminal.
 
-     -r      Compatibility with GNU xargs.  The GNU version of xargs runs the
+     -r, --no-run-if-empty
+             Compatibility with GNU xargs.  The GNU version of xargs runs the
              utility argument at least once, even if xargs input is empty, and
              it supports a -r option to inhibit this behavior.  The FreeBSD
              version of xargs does not run the utility argument on empty input,
@@ -108,17 +109,19 @@ DESCRIPTION
              Specify the amount of space (in bytes) that -I can use for
              replacements.  The default for replsize is 255.
 
-     -s size
+     -s size, --max-chars=size
              Set the maximum number of bytes for the command line length
              provided to utility.  The sum of the length of the utility name,
              the arguments passed to utility (including NULL terminators) and
              the current environment will be less than or equal to this number.
              The current default value for size is ARG_MAX - 4096.
 
-     -t      Echo the command to be executed to standard error immediately
+     -t, --verbose
+             Echo the command to be executed to standard error immediately
              before it is executed.
 
-     -x      Force xargs to terminate immediately if a command line containing
+     -x, --exit
+             Force xargs to terminate immediately if a command line containing
              number arguments will not fit in the specified (or default) command
              line length.
 
@@ -126,8 +129,7 @@ DESCRIPTION
 
      Undefined behavior may occur if utility reads from the standard input.
 
-     The xargs utility exits immediately (without processing any further input)
-     if a command line cannot be assembled, utility cannot be invoked, an
+     If a command line cannot be assembled, or cannot be invoked, or if an
      invocation of utility is terminated by a signal, or an invocation of
      utility exits with a value of 255, the xargs utility stops processing input
      and exits after all invocations of utility finish processing.
@@ -144,6 +146,27 @@ EXIT STATUS
      cannot be found, xargs exits with a value of 127, otherwise if utility
      cannot be executed, xargs exits with a value of 126.  If any other error
      occurs, xargs exits with a value of 1.
+
+EXAMPLES
+     Create a 3x3 matrix with numbers from 1 to 9.  Every echo(1) instance
+     receives three lines as arguments:
+
+           $ seq 1 9 | xargs -L3 echo
+           1 2 3
+           4 5 6
+           7 8 9
+
+     Duplicate every line from standard input:
+
+           $ echo -e "one\ntwo\nthree" | xargs -I % echo % %
+           one one
+           two two
+           three three
+
+     Execute at most 2 concurrent instances of find(1) every one of them using
+     one of the directories from the standard input:
+
+           ls -d /usr/local /opt | xargs -J % -P2 -n1 find % -name file
 
 SEE ALSO
      echo(1), find(1), execvp(3), compat(5)

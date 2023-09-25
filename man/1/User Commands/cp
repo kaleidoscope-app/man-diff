@@ -4,11 +4,11 @@ NAME
      cp – copy files
 
 SYNOPSIS
-     cp [-R [-H | -L | -P]] [-fi | -n] [-alpsvXx] source_file target_file
-     cp [-R [-H | -L | -P]] [-fi | -n] [-alpsvXx]
+     cp [-R [-H | -L | -P]] [-fi | -n] [-alpSsvXx] source_file target_file
+     cp [-R [-H | -L | -P]] [-fi | -n] [-alpSsvXx]
         source_file ... target_directory
-     cp [-f | -i | -n] [-alPpsvx] source_file target_file
-     cp [-f | -i | -n] [-alPpsvx] source_file ... target_directory
+     cp [-f | -i | -n] [-alPpSsvx] source_file target_file
+     cp [-f | -i | -n] [-alPpSsvx] source_file ... target_directory
 
 DESCRIPTION
      In the first synopsis form, the cp utility copies the contents of the
@@ -46,6 +46,10 @@ DESCRIPTION
      -a    Archive mode.  Same as -RpP options. Preserves structure and
            attributes of files but not directory structure.
 
+     -c    copy files using clonefile(2).  Note that if clonefile(2) is not
+           supported for the target filesystem, then cp will fallback to using
+           copyfile(2) instead to ensure the copy still succeeds.
+
      -f    If the destination file cannot be opened, remove it and create a new
            file, without prompting for confirmation regardless of its
            permissions.  (The -f option overrides any previous -n option.)
@@ -82,6 +86,8 @@ DESCRIPTION
            cannot be preserved, neither the set-user-ID nor set-group-ID bits
            are preserved in the copy's permissions.
 
+     -S    Do not attempt to preserve holes in sparse files.
+
      -s    Create symbolic links to regular files in a hierarchy instead of
            copying.
 
@@ -90,8 +96,6 @@ DESCRIPTION
      -X    Do not copy Extended Attributes (EAs) or resource forks.
 
      -x    File system mount points are not traversed.
-
-     -c    copy files using clonefile(2)
 
      For each destination file that already exists, its contents are overwritten
      if permissions allow.  Its mode, user ID, and group ID are unchanged unless
@@ -169,7 +173,8 @@ LEGACY DESCRIPTION
      For more information about legacy mode, see compat(5).
 
 SEE ALSO
-     install(1), mv(1), rcp(1), umask(2), fts(3), compat(5), symlink(7)
+     install(1), mv(1), rcp(1), clonefile(2), copyfile(2), umask(2), fts(3),
+     compat(5), symlink(7)
 
 STANDARDS
      The cp command is expected to be IEEE Std 1003.2 (“POSIX.2”) compatible.

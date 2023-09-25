@@ -6,7 +6,7 @@ NAME
        infocmp - compare or print out terminfo descriptions
 
 SYNOPSIS
-       infocmp [-1CEFGILTUVcdegilnpqrtux]
+       infocmp [-1CDEFGIKLTUVcdegilnpqrtux]
              [-v n] [-s d| i| l| c] [-R subset]
              [-w width] [-A directory] [-B directory]
              [termname...]
@@ -38,13 +38,14 @@ DESCRIPTION
        terminals.
 
        The -c option produces a list of each capability that is common between
-       two entries.  Capabilities that are not set are ignored.  This option can
-       be used as a quick check to see if the -u option is worth using.
+       two or more entries.  Capabilities that are not set are ignored.  This
+       option can be used as a quick check to see if the -u option is worth
+       using.
 
-       The -n option produces a list of each capability that is in neither
-       entry.  If no termnames are given, the environment variable TERM will be
-       used for both of the termnames.  This can be used as a quick check to see
-       if anything was left out of a description.
+       The -n option produces a list of each capability that is in none of the
+       given entries.  If no termnames are given, the environment variable TERM
+       will be used for both of the termnames.  This can be used as a quick
+       check to see if anything was left out of a description.
 
    Source Listing Options [-I] [-L] [-C] [-r]
        The -I, -L, and -C options will produce a source listing for each
@@ -54,6 +55,7 @@ DESCRIPTION
              -L   use the long C variable name listed in <term.h>
              -C   use the termcap names
              -r   when using -C, put out all capabilities in termcap form
+             -K   modifies the -C option, improving BSD-compatibility.
 
        If no termnames are given, the environment variable TERM will be used for
        the terminal name.
@@ -64,6 +66,14 @@ DESCRIPTION
        information, and anything not converted will be plainly marked in the
        output and commented out.  These should be edited by hand.
 
+       For best results when converting to termcap format, you should use both
+       -C and -r.  Normally a termcap description is limited to 1023 bytes.
+       infocmp trims away less essential parts to make it fit.  If you are
+       converting to one of the (rare) termcap implementations which accept an
+       unlimited size of termcap, you may want to add the -T option.  More often
+       however, you must help the termcap implementation, and trim excess
+       whitespace (use the -0 option for that).
+
        All padding information for strings will be collected together and placed
        at the beginning of the string where termcap expects it.  Mandatory
        padding (padding information with a trailing '/') will become optional.
@@ -73,7 +83,10 @@ DESCRIPTION
        terminfo capabilities will be translated; only those variables which were
        part of termcap will normally be output.  Specifying the -r option will
        take off this restriction, allowing all capabilities to be output in
-       termcap form.
+       termcap form.  Normally you would use both the -C and -r options.  The
+       actual format used incorporates some improvements for escaped characters
+       from terminfo format.  For a stricter BSD-compatible translation, use the
+       -K option rather than -C.
 
        Note that because padding is collected to the beginning of the
        capability, not all capabilities are output.  Mandatory padding is not
@@ -132,17 +145,26 @@ DESCRIPTION
        not needed.
 
    Changing Databases [-A directory] [-B directory]
-       The location of the compiled terminfo database is taken from the
-       environment variable TERMINFO .  If the variable is not defined, or the
-       terminal is not found in that location, the system terminfo database, in
-       /usr/share/terminfo, will be used.  The options -A and -B may be used to
-       override this location.  The -A option will set TERMINFO for the first
-       termname and the -B option will set TERMINFO for the other termnames.
-       With this, it is possible to compare descriptions for a terminal with the
-       same name located in two different databases.  This is useful for
-       comparing descriptions for the same terminal created by different people.
+       Like other ncurses utilities, infocmp looks for the terminal descriptions
+       in several places.  You can use the TERMINFO and TERMINFO_DIRS
+       environment variables to override the compiled-in default list of places
+       to search (see curses(3X) for details).
+
+       You can also use the options -A and -B to override the list of places to
+       search when comparing terminal descriptions:
+
+       •   The -A option sets the location for the first termname
+
+       •   The -B option sets the location for the other termnames.
+
+       Using these options, it is possible to compare descriptions for a
+       terminal with the same name located in two different databases.  For
+       instance, you can use this feature for comparing descriptions for the
+       same terminal created by different people.
 
    Other Options
+       -0   causes the fields to be printed on one line, without wrapping.
+
        -1   causes the fields to be printed out one to a line.  Otherwise, the
             fields will be printed several to a line to a maximum width of 60
             characters.
@@ -150,6 +172,9 @@ DESCRIPTION
        -a   tells infocmp to retain commented-out capabilities rather than
             discarding them.  Capabilities are commented by prefixing them with
             a period.
+
+       -D   tells infocmp to print the database locations that it knows about,
+            and exit.
 
        -E   Dump the capabilities of the given terminal as tables, needed in the
             C initializer for a TERMTYPE structure (the terminal capability
@@ -187,16 +212,21 @@ DESCRIPTION
             decimal equivalents.
 
        -i   Analyze the initialization (is1, is2, is3), and reset (rs1, rs2,
-            rs3), strings in the entry.  For each string, the code tries to
-            analyze it into actions in terms of the other capabilities in the
-            entry, certain X3.64/ISO 6429/ECMA-48 capabilities, and certain DEC
-            VT-series private modes (the set of recognized special sequences has
-            been selected for completeness over the existing terminfo database).
-            Each report line consists of the capability name, followed by a
-            colon and space, followed by a printable expansion of the capability
-            string with sections matching recognized actions translated into
-            {}-bracketed descriptions.  Here is a list of the DEC/ANSI special
-            sequences recognized: i.
+            rs3), strings in the entry, as well as those used for
+            starting/stopping cursor-positioning mode (smcup, rmcup) as well as
+            starting/stopping keymap mode (smkx, rmkx).
+
+            For each string, the code tries to analyze it into actions in terms
+            of the other capabilities in the entry, certain X3.64/ISO
+            6429/ECMA-48 capabilities, and certain DEC VT-series private modes
+            (the set of recognized special sequences has been selected for
+            completeness over the existing terminfo database).  Each report line
+            consists of the capability name, followed by a colon and space,
+            followed by a printable expansion of the capability string with
+            sections matching recognized actions translated into {}-bracketed
+            descriptions.
+
+            Here is a list of the DEC/ANSI special sequences recognized:
 
                           Action        Meaning
                           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -239,8 +269,8 @@ DESCRIPTION
             BLINK, and REVERSE.  All but NORMAL may be prefixed with `+' (turn
             on) or `-' (turn off).
 
-       An SGR0 designates an empty highlight sequence (equivalent to
-       {SGR:NORMAL}).
+            An SGR0 designates an empty highlight sequence (equivalent to
+            {SGR:NORMAL}).
 
        -l   Set output format to terminfo.
 
@@ -255,10 +285,12 @@ DESCRIPTION
             archaic versions of terminfo like those on SVr1, Ultrix, or HP/UX
             that do not support the full set of SVR4/XSI Curses terminfo; and
             variants such as AIX that have their own extensions incompatible
-            with SVr4/XSI.  Available terminfo subsets are "SVr1", "Ultrix",
-            "HP", and "AIX"; see terminfo(5) for details.  You can also choose
-            the subset "BSD" which selects only capabilities with termcap
-            equivalents recognized by 4.4BSD.
+            with SVr4/XSI.
+
+            Available terminfo subsets are "SVr1", "Ultrix", "HP", and "AIX";
+            see terminfo(5) for details.  You can also choose the subset "BSD"
+            which selects only capabilities with termcap equivalents recognized
+            by 4.4BSD.
 
        -s [d|i|l|c]
             The -s option sorts the fields within each type according to the
@@ -308,8 +340,8 @@ FILES
        /usr/share/terminfo Compiled terminal description database.
 
 EXTENSIONS
-       The -E, -F, -G, -R, -T, -V, -a, -e, -f, -g, -i, -l, -p, -q and -t options
-       are not supported in SVr4 curses.
+       The -0, -1, -E, -F, -G, -R, -T, -V, -a, -e, -f, -g, -i, -l, -p, -q and -t
+       options are not supported in SVr4 curses.
 
        The -r option's notion of `termcap' capabilities is System V Release 4's.
        Actual BSD curses versions will have a more restricted set.  To see only
@@ -320,6 +352,8 @@ BUGS
 
 SEE ALSO
        captoinfo(1M), infotocap(1M), tic(1M), toe(1M), curses(3X), terminfo(5).
+
+       http://invisible-island.net/ncurses/tctest.html
 
        This describes ncurses version 5.7 (patch 20081102).
 

@@ -4,7 +4,8 @@ NAME
      shutdown – close down the system at a given time
 
 SYNOPSIS
-     shutdown [-] [-h [-u] | -r | -s | -k] [-o [-n]] time [warning-message ...]
+     shutdown [-] [-h [-u] | -p | -r | -s | -k] [-o [-n]] time
+              [warning-message ...]
 
 DESCRIPTION
      The shutdown utility provides an automated shutdown procedure for super-
@@ -14,22 +15,24 @@ DESCRIPTION
 
      The following options are available:
 
-     -h      The system is halted at the specified time.
+     -h      The system is halted and powered off at the specified time.
+
+     -p      This flag is the equivalent of -h.
+
+     -r      The system is rebooted at the specified time.
+
+     -s      The system is put to sleep at the specified time.
 
      -k      Kick everybody off.  The -k option does not actually halt the
              system, but leaves the system multi-user with logins disabled (for
              all but super-user).
 
-     -n      If the -o is specified, prevent the file system cache from being
-             flushed by passing -n option to halt(8) or reboot(8).  This option
-             should probably not be used.
+     -o      If one of the -h or -r options are specified, shutdown will execute
+             halt(8) or reboot(8) instead of sending a signal to launchd(8).
 
-     -o      If -h or -r is specified, shutdown will execute halt(8) or
-             reboot(8) instead of sending a signal to launchd(8).
-
-     -r      The system is rebooted at the specified time.
-
-     -s      The system is put to sleep at the specified time.
+     -n      If the -o option is specified, prevent the file system cache from
+             being flushed by passing -n to halt(8) or reboot(8).  The use of
+             this option is discouraged as it can result in data loss.
 
      -u      The system is halted up until the point of removing system power,
              but waits before removing power for 5 minutes so that an external
@@ -39,11 +42,19 @@ DESCRIPTION
              shutdowns.
 
      time    Time is the time at which shutdown will bring the system down and
-             may be the word now (indicating an immediate shutdown) or specify a
-             future time in one of two formats: +number, or yymmddhhmm, where
-             the year, month, and day may be defaulted to the current system
-             values.  The first form brings the system down in number minutes
-             and the second at the absolute time specified.
+             may be the case-insensitive word now (indicating an immediate
+             shutdown) or a future time in one of two formats: +number, or
+             yymmddhhmm, where the year, month, and day may be defaulted to the
+             current system values.  The first form brings the system down in
+             number minutes and the second at the absolute time specified.
+             +number may be specified in units other than minutes by appending
+             the corresponding suffix: “s”, “sec”, “m”, “min”, “h”, “hour”.
+
+             If an absolute time is specified, but not a date, and that time
+             today has already passed, shutdown will assume that the same time
+             tomorrow was meant.  (If a complete date is specified which has
+             already passed, shutdown will print an error and exit without
+             shutting the system down.)
 
      warning-message
              Any other arguments comprise the warning message that is broadcast
@@ -54,16 +65,27 @@ DESCRIPTION
 
      At intervals, becoming more frequent as apocalypse approaches and starting
      at ten hours before shutdown, warning messages are displayed on the
-     terminals of all users logged in.
+     terminals of all users logged in.  Five minutes before shutdown, or
+     immediately if shutdown is in less than 5 minutes, logins are disabled by
+     creating /var/run/nologin and copying the warning message there.  If this
+     file exists when a user attempts to log in, login(1) prints its contents
+     and exits.  The file is removed just before shutdown exits.
 
      At shutdown time a message is written to the system log, containing the
      time of shutdown, the person who initiated the shutdown and the reason.
-     Corresponding signal is then sent to launchd(8) to respectively halt,
+     The corresponding signal is then sent to launchd(8) to respectively halt,
      reboot or bring the system down to single-user state (depending on the
-     above options).
+     above options).  The time of the shutdown and the warning message are
+     placed in /var/run/nologin and should be used to inform the users about
+     when the system will be back up and why it is going down (or anything
+     else).
 
      A scheduled shutdown can be canceled by killing the shutdown process (a
-     SIGTERM should suffice).
+     SIGTERM should suffice).  The /var/run/nologin file that shutdown created
+     will be removed automatically.
+
+     When run without options, the shutdown utility will place the system into
+     single user mode at the time specified.
 
 SIGTERM TO SIGKILL INTERVAL
      Upon shutdown, all running processes are sent a SIGTERM followed by a
@@ -73,13 +95,24 @@ SIGTERM TO SIGKILL INTERVAL
      bug with the OS vendor, should they encounter an issue with this
      functionality.
 
-SEE ALSO
-     kill(1), login(1), wall(1), halt(8), launchd(8), reboot(8)
+FILES
+     /var/run/nologin  tells login(1) not to let anyone log in
 
-BACKWARD COMPATIBILITY
+EXAMPLES
+     Reboot the system in 30 minutes and display a warning message on the
+     terminals of all users currently logged in:
+
+           # shutdown -r +30 "System will reboot"
+
+COMPATIBILITY
      The hours and minutes in the second time format may be separated by a colon
      (``:'') for backward compatibility.
 
+SEE ALSO
+     kill(1), login(1), wall(1), nologin(5), halt(8), launchd(8), reboot(8)
+
 HISTORY
-     The shutdown utility appeared in 4.0BSD.
+     A shutdown command was originally written by Ian Johnstone for UNSW's
+     modified AT&T UNIX 6th Edn.  It was modified and then incorporated in
+     4.1BSD.
 

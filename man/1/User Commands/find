@@ -14,7 +14,7 @@ DESCRIPTION
 
      The options are as follows:
 
-     -E      Interpret regular expressions followed by -regex and -iregex
+     -E      Interpret regular expressions following the -regex and -iregex
              primaries as extended (modern) regular expressions rather than
              basic regular expressions (BRE's).  The re_format(7) manual page
              fully describes both formats.
@@ -53,9 +53,20 @@ DESCRIPTION
              specified by IEEE Std 1003.1-2001 (“POSIX.1”).  Refer to its
              description under PRIMARIES for more information.
 
+     -f path
+             Add path to the list of paths that will be recursed into.  This is
+             useful when path begins with a character that would otherwise be
+             interpreted as an expression, namely “!” , “(” and “-”.
+
      -s      Cause find to traverse the file hierarchies in lexicographical
              order, i.e., alphabetical order within each directory.  Note: ‘find
              -s’ and ‘find | sort’ may give different results.
+
+             For example, ‘find -s’ puts a directory ‘foo’ with all its contents
+             before a directory ‘foo’.  but ‘find | sort’ puts the directory
+             name ‘foo’.  before any string like ‘foo/bar’ because ‘.’ goes
+             before ‘/’ in ASCII.  In locales other than C results may vary more
+             due to collation differences.
 
      -x      Prevent find from descending into directories that have a device
              number different than that of the file from which the descent
@@ -333,8 +344,8 @@ PRIMARIES
              (X=m) than the last access time (Y=a), inode creation time (Y=B),
              change time (Y=c), or modification time (Y=m) of file.  In
              addition, if Y=t, then file is instead interpreted as a direct date
-             specification of the form understood by cvs(1).  Note that -newermm
-             is equivalent to -newer.
+             specification of the form understood by ISO8601 or RFC822.  Note
+             that -newermm is equivalent to -newer.
 
      -nogroup
              True if the file belongs to an unknown group.
@@ -537,8 +548,8 @@ COMPATIBILITY
      See the STANDARDS section below for details.
 
 SEE ALSO
-     chflags(1), chmod(1), cvs(1), locate(1), lsvfs(1), whereis(1), which(1),
-     xargs(1), stat(2), acl(3), fts(3), getgrent(3), getpwent(3), strmode(3),
+     chflags(1), chmod(1), locate(1), lsvfs(1), whereis(1), which(1), xargs(1),
+     stat(2), acl(3), fts(3), getgrent(3), getpwent(3), strmode(3), ascii(7),
      re_format(7), symlink(7)
 
 STANDARDS
@@ -573,7 +584,7 @@ HISTORY
      A simple find command appeared in Version 1 AT&T UNIX and was removed in
      Version 3 AT&T UNIX.  It was rewritten for Version 5 AT&T UNIX and later be
      enhanced for the Programmer's Workbench (PWB).  These changes were later
-     incorporated in AT&T UNIX v7.
+     incorporated in Version 7 AT&T UNIX.
 
 BUGS
      The special characters used by find are also special characters to many

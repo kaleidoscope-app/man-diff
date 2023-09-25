@@ -1,0 +1,230 @@
+TRACE(1)                     General Commands Manual                    TRACE(1)
+
+NAME
+     trace – record trace files
+
+SYNOPSIS
+     trace record file-name [options]
+     trace amend file-path --add provider [options]
+     trace plans [options]
+     trace providers [options]
+
+DESCRIPTION
+     trace records software events for performance analysis.  A trace file
+     captures what the system was doing over a period of time, like which
+     threads are scheduled, what memory is used for the first time, and
+     thousands of other kinds of events from software running in the kernel,
+     user space, or on coprocessors.
+
+RECORD
+     Trace files (with the .atrc extension) capture how a Darwin system behaves
+     for a period of time.  By default, they include a selection of kdebug trace
+     events, Unified Logging information, and metadata to support analysis, like
+     symbols and machine configuration.
+
+     The record subcommand creates these files from the current system,
+     according to a plan and options passed in on the command line.  The
+     file-name positional argument is used as a prefix and can include path
+     components.  The path to the file is derived by adding an incrementing
+     number at the end, followed by the file extension.  To write to a
+     particular file path, end the argument with ‘.atrc’.  The default plan
+     produces files readable by Instruments System Trace and spindump(1).
+
+     Plans support safe configuration by the user with ‘layers’ and ‘providers’.
+     Layers are listed by the help output for trace record and alter basic
+     configuration of the plan, like which events are collected.  Listing
+     providers is not yet implemented, but they add more complex features, like
+     custom data sources beyond kdebug trace.  Unified Logging support is
+     implemented as a provider, for instance.
+
+     This subcommand is opinionated about unsafe operations, and requires any
+     options that may impact the reliability of the tool to also include the
+     --unsafe flag to acknowledge that the files produced may be unusable.
+     Experimental features are treated similarly, requiring a --experimental
+     flag while they are still being vetted.
+
+     --help | -h
+             Present a help message for the record subcommand.
+
+     --plan  Use a non-default plan.  Must be one of those listed by trace
+             plans.
+
+     --add layer-or-provider
+             Add a layer or provider to the chosen plan, augmenting its
+             behavior.  The list of layers is shown in the help message or trace
+             plans. The list of providers can be obtained using trace providers.
+
+     --provider-name:option-name=option-value
+             Set the option option-name to option-value for use by the provider
+             named provider-name.  The list of possible options are reported by
+             trace providers.
+
+     --omit layer-or-provider
+             Omit a default layer or provider from the chosen plan.
+
+     --overwrite
+             Allow the output file to overwrite a pre-existing file.
+
+     --compress
+             Compress the events in the output file.
+
+     --notify-after-start notification-name
+             Emit a Darwin notification named notification-name with notify(3)
+             after starting the trace session.  Other systems can use this
+             notification to stage their workloads, either with the notify(3)
+             interfaces or notifyutil(1).  For instance, ‘notifyutil -1
+             ktrace-start’ will wait for the notification named ktrace-start to
+             be published and then exit.  This option can be specified multiple
+             times to send additional notifications.
+
+     --notify-after-end notification-name
+             Emit a Darwin notification named notification-name with notify(3)
+             after the trace session has finished.
+
+     --end-after-duration durations
+             End tracing after the specified time period elapses.
+
+     --end-on-notification notification-name
+             End tracing when a Darwin notification matching the
+             notification-nameis published with notify(3).
+
+     --end-on-kdebug-event event-id
+             End tracing when a kdebug event with the given event-id is emitted.
+             This is currently experimental and unsafe if the event is not part
+             of the plan.
+
+     --end-after-kdebug-events-size size-bytes
+             End tracing when the file reaches the specified size-bytes number
+             of bytes for kdebug events.
+
+     --trailing-duration duration
+             Only include events within the specified duration before trace is
+             ended.  In other words, keep a ringbuffer of events, dropping any
+             that are older than duration time in the past.  This can be used to
+             reduce the impact of recording's I/O on storage, at the cost of
+             higher CPU usage spent processing incoming events.
+
+     --start-on-notification notification-name
+             Wait to start tracing until a Darwin notification matching the
+             notification-name is published with notify(3) or notifyutil(1).
+             For instance, ‘notifyutil -p ktrace-end’ published a notification
+             named ktrace-end.
+
+     --profiling-interval duration
+             Fire the profiling timer at a different rate than the plan
+             specifies.  The duration argument accepts suffixes of us, ms, and
+             s.
+
+     The following options are unsafe and have a may produce an unusable trace
+     file.
+
+     --unsafe
+             Allow unsafe options to be used.
+
+     --experimental
+             Allow experimental plans and options to be used.
+
+     --kdebug-buffer-size size-with-suffix
+             Override the default buffer size for the kdebug trace system.
+             Smaller buffers are likely to lose events, while larger buffers can
+             have a more significant impact on the system.
+
+     --kdebug-filter-include filter-description
+             Specify additional kdebug events to include in the trace file,
+             following a filter description.  Filter descriptions are a comma-
+             separated list of either two rules:
+
+             C0x01   Filter all events in the given class; in this case, class
+                     1.
+
+             S0x0140
+                     Filter events in a particular subclass, where the top byte
+                     is the class and the bottom byte is the subclass within
+                     that class.  In this case, class 1 and subclass 0x40.
+
+             Additional events may require changes to the buffer size.
+
+     --kdebug-filter-exclude filter-description
+             Prevent kdebug events from being included in the trace file,
+             following a filter description.  Some events are necessary for
+             particular analysis tools.
+
+     --prioritize-collection
+             Increase the priority of the collection thread, at the cost of
+             potentially interfering with the workload being measured.
+
+AMEND
+     trace amend adds more information to previously-recorded trace files from
+     providers.
+
+     --add provider-name
+             At least one provider must be added to the amending process.
+
+     --provider-name:option-name=option-value
+             Set options for the provider to amend with, as described in trace
+             providers.
+
+PLANS
+     trace plans lists the plans available to trace record and the layers that
+     can be added to them.
+
+     --verbose
+             Print additional information about each plan, like its
+             documentation.
+
+     --experimental
+             Show experimental plans.
+
+PROVIDERS
+     trace providers lists the providers available to trace record and the
+     options that can be passed to them.
+
+     --experimental
+             Show experimental providers.
+
+ENVIRONMENT
+     KTRACE_PLAN_PATH
+             Redirect the tool to search for plans under the directory path set
+             in this variable.  This requires the --experimental flag.
+
+KTRACE
+     The ‘ktrace’ feature is supported by two kernel subsystems: kdebug provides
+     the event format and buffering system and kperf emits sampling information
+     as events based on triggers.
+
+     The event format used by kdebug is simple and constraining, but effective.
+     Events are classified using a 32-bit debug ID:
+
+            class  subclass     code     function
+           ╭──────┬───────┬─────────────┬─╮
+           │  8   │   8   │     14      │2│
+           ╰──────┴───────┴─────────────┴─╯
+           ╰──────────────╯               │
+            class-subclass              00│
+           ╰──────────────────────────────╯
+           │          event ID            │
+           ╰──────────────────────────────╯
+                      debug ID
+
+     Classes are assigned in <sys/kdebug.h> for broad parts of the system.  Each
+     class can assign its own subclasses.  The class-subclass is the finest
+     granularity that can be filtered on.  Codes are for specific events in each
+     subclass, and functions denote whether the event is a start
+     (DBG_FUNC_START), end (DBG_FUNC_END), or impulse (left unset).  An event ID
+     is a debug ID with the function bits set to 0.
+
+     Events also contain a timestamp, 4 pointer-sized arguments, the ID of the
+     thread that emitted the event, and the CPU ID on which it was emitted.  The
+     CPU ID may be greater than the number of CPUs on the system — denoting a
+     coprocessor event.
+
+     Trace files can be analyzed with dedicated tools, including fs_usage(1),
+     spindump(1), or Instruments, depending on how they were recorded and the
+     filters in effect.
+
+EXIT STATUS
+     The trace utility exits 0 on success, and >0 if an error occurs.
+
+SEE ALSO
+     fs_usage(1), notify(3), ktrace(5), and ktrace(1)
+

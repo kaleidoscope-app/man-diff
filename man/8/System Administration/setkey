@@ -60,7 +60,7 @@ DESCRIPTION
      -v      Be verbose.  The program will dump messages exchanged on the PF_KEY
              socket, including messages sent from other processes to the kernel.
 
-   Configuration syntax
+Configuration syntax
      With -c or -f on the command line, setkey accepts the following
      configuration syntax.  Lines starting with hash signs (‘#’) are treated as
      comment lines.
@@ -192,213 +192,129 @@ DESCRIPTION
              address[port]
              address/prefixlen[port]
 
-             prefixlen and port must be decimal numbers.  The square brackets
-             around port are really necessary, they are not man page meta-
-             characters.  For FQDN resolution, the rules applicable to src and
-             dst apply here as well.
+             prefixlen and port must be a decimal number.  The square brackets
+             around port are necessary and are not manpage metacharacters.  For
+             FQDN resolution, the rules applicable to src and dst apply here as
+             well.
 
      upperspec
              Upper-layer protocol to be used.  You can use one of the words in
              /etc/protocols as upperspec, or icmp6, ip4, or any.  any stands for
              “any protocol”.  You can also use the protocol number.  You can
              specify a type and/or a code of ICMPv6 when the upper-layer
-             protocol is ICMPv6.  The specification can be placed after icmp6.
+             protocol is ICMPv6.  The specification must be placed after icmp6.
              A type is separated from a code by single comma.  A code must
              always be specified.  When a zero is specified, the kernel deals
              with it as a wildcard.  Note that the kernel can not distinguish a
-             wildcard from an ICPMv6 type of zero.  For example, the following
+             wildcard from an ICMPv6 type of zero.  For example, the following
              means that the policy doesn't require IPsec for any inbound
-             Neighbor Solicitation.
-                   spdadd ::/0 ::/0 icmp6 135,0 -P in none;
+             Neighbor Solicitation:
 
-             Note: upperspec does not work against forwarding case at this
-             moment, as it requires extra reassembly at the forwarding node (not
-             implemented at this moment).  There are many protocols in
-             /etc/protocols, but all protocols except of TCP, UDP, and ICMP may
-             not be suitable to use with IPsec.  You have to consider carefully
-             what to use.
+                   spdadd ::/0 ::/0 icmp6 135,0 -P in none ;
+
+             NOTE: upperspec does not work against forwarding case at this
+             moment, as it requires extra reassembly at the forwarding node
+             (currently not implemented).  There are many protocols in
+             /etc/protocols, protocols other than TCP, UDP, and ICMP may not be
+             suitable to use with IPsec.  You have to consider carefully what to
+             use.
 
      policy  policy is in one of the following three formats:
 
-     -P direction [priority specification] discard
-     -P direction [priority specification] none
-     -P direction [priority specification] ipsec
-     protocol/mode/src-dst/level [...]
+             -P direction [priority specification] discard
+             -P direction [priority specification] none
+             -P direction [priority specification] ipsec
+                 protocol/mode/src-dst/level [...]
 
-             You must specify the direction of its policy as
-             direction.
-             Either
-             out,
-             in,
-             or
-             fwd
-             can be used.
+             You must specify the direction of its policy as direction.  Either
+             out, in, or fwd can be used.
 
-             priority specification
-             is used to control the placement of the policy within the SPD.
-             Policy position is determined by
-             a signed integer where higher priorities indicate the policy is placed
-             closer to the beginning of the list and lower priorities indicate the
-             policy is placed closer to the end of the list.
-             Policies with equal priorities are added at the end of groups
-             of such policies.
+             priority specification is used to control the placement of the
+             policy within the SPD.  Policy position is determined by a signed
+             integer where higher priorities indicate the policy is placed
+             closer to the beginning of the list and lower priorities indicate
+             the policy is placed closer to the end of the list.  Policies with
+             equal priorities are added at the end of groups of such policies.
 
-             Priority can only
-             be specified when setkey has been compiled against kernel headers that
-             support policy priorities (Linux >= 2.6.6).
-             If the kernel does not support priorities, a warning message will
-             be printed the first time a priority specification is used.
-             Policy priority takes one of the following formats:
+             Priority can only be specified when setkey has been compiled
+             against kernel headers that support policy priorities (Linux >=
+             2.6.6).  If the kernel does not support priorities, a warning
+             message will be printed the first time a priority specification is
+             used.  Policy priority takes one of the following formats:
 
              {priority,prio} offset
-                      offset
-                      is an integer in the range from -2147483647 to 214783648.
+                      offset is an integer in the range from -2147483647 to
+                      214783648.
 
              {priority,prio} base {+,-} offset
-                      base
-                      is either
-                      low (-1073741824),
-                      def (0),
-                      or
-                      high (1073741824)
+                      base is either low (-1073741824), def (0), or high
+                      (1073741824)
 
-                      offset
-                      is an unsigned integer.
-                      It can be up to 1073741824 for
-                      positive offsets, and up to 1073741823 for negative offsets.
+                      offset is an unsigned integer.  It can be up to 1073741824
+                      for positive offsets, and up to 1073741823 for negative
+                      offsets.
 
-             discard
-             means the packet matching indexes will be discarded.
-             none
+             discard means the packet matching indexes will be discarded.  none
              means that IPsec operation will not take place onto the packet.
-             ipsec
-             means that IPsec operation will take place onto the packet.
+             ipsec means that IPsec operation will take place onto the packet.
 
-             The
-             protocol/mode/src-dst/level
-             part specifies the rule how to process the packet.
-             Either
-             ah,
-             esp,
-             or
-             ipcomp
-             must be used as
-             protocol.
-             mode
-             is either
-             transport
-             or
-             tunnel.
-             If
-             mode
-             is
-             tunnel,
-             you must specify the end-point addresses of the SA as
-             src
-             and
-             dst
-             with
-             ‘-’
-             between these addresses, which is used to specify the SA to use.
-             If
-             mode
-             is
-             transport,
-             both
-             src
-             and
-             dst
-             can be omitted.
-             level
-             is to be one of the following:
-             default, use, require,
-             or
-             unique.
-             If the SA is not available in every level, the kernel will
-             ask the key exchange daemon to establish a suitable SA.
-             default
+             The protocol/mode/src-dst/level part specifies the rule how to
+             process the packet.  Either ah, esp, or ipcomp must be used as
+             protocol.  mode is either transport or tunnel.  If mode is tunnel,
+             you must specify the end-point addresses of the SA as src and dst
+             with ‘-’ between these addresses, which is used to specify the SA
+             to use.  If mode is transport, both src and dst can be omitted.
+             level is to be one of the following: default, use, require, or
+             unique.  If the SA is not available in every level, the kernel will
+             ask the key exchange daemon to establish a suitable SA.  default
              means the kernel consults the system wide default for the protocol
-             you specified, e.g. the
-             esp_trans_deflev
-             sysctl variable, when the kernel processes the packet.
-             use
-             means that the kernel uses an SA if it's available,
-             otherwise the kernel keeps normal operation.
-             require
-             means SA is required whenever the kernel sends a packet matched
-             with the policy.
-             unique
-             is the same as
-             require;
-             in addition, it allows the policy to match the unique out-bound SA.
-             You just specify the policy level
-             unique,
-             racoon(8)
-             will configure the SA for the policy.
-             If you configure the SA by manual keying for that policy,
-             you can put a decimal number as the policy identifier after
-             unique
-             separated by a colon
-             ‘:’
-             like:
-             unique:number
-             in order to bind this policy to the SA.
-             number
-             must be between 1 and 32767.
-             It corresponds to
-             extensions -u
-             of the manual SA configuration.
-             When you want to use SA bundle, you can define multiple rules.
+             you specified, e.g. the esp_trans_deflev sysctl variable, when the
+             kernel processes the packet.  use means that the kernel uses an SA
+             if it's available, otherwise the kernel keeps normal operation.
+             require means SA is required whenever the kernel sends a packet
+             matched with the policy.  unique is the same as require; in
+             addition, it allows the policy to match the unique out-bound SA.
+             You just specify the policy level unique, racoon(8) will configure
+             the SA for the policy.  If you configure the SA by manual keying
+             for that policy, you can put a decimal number as the policy
+             identifier after unique separated by a colon ‘:’ like:
+             unique:number in order to bind this policy to the SA.  number must
+             be between 1 and 32767.  It corresponds to extensions -u of the
+             manual SA configuration.
+
+             When you want to use an SA bundle, you can define multiple rules.
              For example, if an IP header was followed by an AH header followed
              by an ESP header followed by an upper layer protocol header, the
              rule would be:
+
                    esp/transport//require ah/transport//require;
+
              The rule order is very important.
 
              When NAT-T is enabled in the kernel, policy matching for ESP over
-             UDP packets may be done on endpoint addresses and port
-             (this depends on the system.
-             System that do not perform the port check cannot support
-             multiple endpoints behind the same NAT).
-             When using ESP over UDP, you can specify port numbers in the endpoint
-             addresses to get the correct matching.
-             Here is an example:
+             UDP packets may be done on endpoint addresses and port (this
+             depends on the system.  System that do not perform the port check
+             cannot support multiple endpoints behind the same NAT).  When using
+             ESP over UDP, you can specify port numbers in the endpoint
+             addresses to get the correct matching.  Here is an example:
 
              spdadd 10.0.11.0/24[any] 10.0.11.33/32[any] any -P out ipsec
                  esp/tunnel/192.168.0.1[4500]-192.168.1.2[30000]/require ;
 
              These ports must be left unspecified (which defaults to 0) for
-             anything other than ESP over UDP.
-             They can be displayed in SPD dump using
-             setkey
-             -DPp.
+             anything other than ESP over UDP.  They can be displayed in SPD
+             dump using setkey -DPp.
 
-             Note that
-             “discard”
-             and
-             “none”
-             are not in the syntax described in
-             ipsec_set_policy(3).
-             There are a few differences in the syntax.
-             See
-             ipsec_set_policy(3)
-             for detail.
+             Note that “discard” and “none” are not in the syntax described in
+             ipsec_set_policy(3).  There are a few differences in the syntax.
+             See ipsec_set_policy(3) for detail.
 
-   Algorithms
-     The following list shows the supported algorithms.
-     protocol
-     and
-     algorithm
-     are almost orthogonal.
-     These authentication algorithms can be used as
-     aalgo
-     in
-     -A aalgo
-     of the
-     protocol
-     parameter:
+Algorithms
+     The following list shows the supported algorithms.  protocol and algorithm
+     are almost orthogonal.  These authentication algorithms can be used as
+     aalgo in -A aalgo of the protocol parameter:
 
-           algorithm       keylen (bits)
+           algorithm       keylen (bits)   comment
            hmac-md5        128             ah: rfc2403
                            128             ah-old: rfc2085
            hmac-sha1       160             ah: rfc2404
@@ -421,15 +337,10 @@ DESCRIPTION
                            128             ah-old: 128bit ICV (no document)
            tcp-md5         8 to 640        tcp: rfc2385
 
-     These encryption algorithms can be used as
-     ealgo
-     in
-     -E ealgo
-     of the
-     protocol
-     parameter:
+     These encryption algorithms can be used as ealgo in -E ealgo of the
+     protocol parameter:
 
-           algorithm       keylen (bits)
+           algorithm       keylen (bits)   comment
            des-cbc         64              esp-old: rfc1829, esp: rfc2405
            3des-cbc        192             rfc2451
            null            0 to 2048       rfc2410
@@ -441,48 +352,24 @@ DESCRIPTION
            twofish-cbc     0 to 256        draft-ietf-ipsec-ciph-aes-cbc-01
            aes-ctr         160/224/288     draft-ietf-ipsec-ciph-aes-ctr-03
 
-     Note that the first 128 bits of a key for
-     aes-ctr
-     will be used as AES key, and the remaining 32 bits will be used as nonce.
+     Note that the first 128 bits of a key for aes-ctr will be used as AES key,
+     and the remaining 32 bits will be used as nonce.
 
-     These compression algorithms can be used as
-     calgo
-     in
-     -C calgo
-     of the
-     protocol
-     parameter:
+     These compression algorithms can be used as calgo in -C calgo of the
+     protocol parameter:
 
-           algorithm
+           algorithm   comment
            deflate         rfc2394
 
-   RFC vs Linux kernel semantics
-     The Linux kernel uses the
-     fwd
-     policy instead of the
-     in
-     policy for packets what are forwarded through that particular box.
+RFC vs Linux kernel semantics
+     The Linux kernel uses the fwd policy instead of the in policy for packets
+     what are forwarded through that particular box.
 
-     In
-     kernel
-     mode,
-     setkey
-     manages and shows policies and SAs exactly as they are stored in the kernel.
+     In kernel mode, setkey manages and shows policies and SAs exactly as they
+     are stored in the kernel.
 
-     In
-     RFC
-     mode,
-     setkey
-
-     creates
-     fwd
-     policies for every
-     in
-     policy inserted
-
-     (not implemented yet) filters out all
-     fwd
-     policies
+     In RFC mode, setkey creates fwd policies for every in policy inserted
+     (not implemented yet) filters out all fwd policies
 
 RETURN VALUES
      The command exits with 0 on success, and non-zero on errors.

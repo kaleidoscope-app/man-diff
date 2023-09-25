@@ -1,0 +1,94 @@
+YAPP(1)                User Contributed Perl Documentation               YAPP(1)
+
+
+
+
+NAME
+       yapp - A perl frontend to the Parse::Yapp module
+
+SYNOPSYS
+       yapp [options] grammar[.yp]
+
+       yapp -V
+
+       yapp -h
+
+DESCRIPTION
+       yapp is a frontend to the Parse::Yapp module, which lets you compile
+       Parse::Yapp grammar input files into Perl LALR(1) OO parser modules.
+
+OPTIONS
+       Options, as of today, are all optionals :-)
+
+       -v  Creates a file grammar.output describing your parser. It will show
+           you a summary of conflicts, rules, the DFA (Deterministic Finite
+           Automaton) states and overall usage of the parser.
+
+       -s  Create a standalone module in which the driver is included.  Note
+           that if you have more than one parser module called from a program,
+           to have it standalone, you need this option only for one of your
+           parser module.
+
+       -n  Disable source file line numbering embedded in your parser module.  I
+           don't know why one should need it, but it's there.
+
+       -m module
+           Gives your parser module the package name (or name space or module
+           name or class name or whatever-you-call-it) of module.  It defaults
+           to grammar
+
+       -o outfile
+           The compiled output file will be named outfile for your parser
+           module.  It defaults to grammar.pm or, if you specified the option -m
+           A::Module::Name (see below), to Name.pm, in the current working
+           directory.
+
+       -t filename
+           The -t filename option allows you to specify a file which should be
+           used as template for generating the parser output.  The default is to
+           use the internal template defined in Parse::Yapp::Output.pm.  For how
+           to write your own template and which substitutions are available,
+           have a look to the module Parse::Yapp::Output.pm : it should be
+           obvious.
+
+       -b shebang
+           If you work on systems that understand so called shebangs, and your
+           generated parser is directly an executable script, you can specifie
+           one with the -b option, ie:
+
+               yapp -b '/usr/local/bin/perl -w' -o myscript.pl myscript.yp
+
+           This will output a file called myscript.pl whose very first line is:
+
+               #!/usr/local/bin/perl -w
+
+           The argument is mandatory, but if you specify an empty string, the
+           value of $Config{perlpath} will be used instead.
+
+       grammar
+           The input grammar file. If no suffix is given, and the file does not
+           exists, an attempt to open the file with a suffix of  .yp is tried
+           before exiting.
+
+       -V  Display current version of Parse::Yapp and gracefully exits.
+
+       -h  Display the usage screen.
+
+BUGS
+       None known now :-)
+
+AUTHOR
+       William N. Braswell, Jr. <wbraswell_cpan@NOSPAM.nym.hush.com> (Remove
+       "NOSPAM".)
+
+COPYRIGHT
+       Copyright © 1998, 1999, 2000, 2001, Francois Desarmenien.  Copyright ©
+       2017 William N. Braswell, Jr.
+
+       See Parse::Yapp(3) for legal use and distribution rights
+
+SEE ALSO
+       Parse::Yapp(3) Perl(1) yacc(1) bison(1)
+
+
+

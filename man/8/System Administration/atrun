@@ -4,7 +4,7 @@ NAME
      atrun – run jobs queued for later execution
 
 SYNOPSIS
-     atrun
+     atrun [-l load_avg] [-d]
 
 DESCRIPTION
      The atrun utility runs commands queued by at(1).  It is invoked
@@ -15,13 +15,30 @@ DESCRIPTION
      Execute the following command as root to enable atrun:
            launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
 
+     At every invocation, atrun starts all the jobs in the lowercase queues
+     whose start time has elapsed.  In addition, if the load average over the
+     last minute was less than the specified limit, then a maximum of one batch
+     job (denoted by the uppercase queues) is started.
+
+     Before starting a job, atrun checks the status of its owner's account with
+     pam(3) and refuses to run the job if the account is unavailable, e.g.,
+     locked out or expired.
+
+OPTIONS
+     -l load_avg
+             Specify a limiting load factor, over which batch jobs should not be
+             run, instead of the default of 1.5 * number of active CPUs.
+
+     -d      Debug; print error messages to standard error instead of using
+             syslog(3).
+
 FILES
-     /var/at/jobs      Directory containing job files
-     /var/at/spool     Directory containing output spool files
-     /var/at/lockfile  Job-creation lock file.
+     /etc/pam.d/atrun     pam.conf(5) configuration file for atrun
+     /usr/lib/cron/jobs   Directory containing job files
+     /usr/lib/cron/spool  Directory containing output spool files
 
 SEE ALSO
-     at(1), launchd(8)
+     at(1), pam(3), syslog(3), pam.conf(5), launchd(8)
 
 AUTHORS
      Thomas Koenig ⟨ig25@rz.uni-karlsruhe.de⟩

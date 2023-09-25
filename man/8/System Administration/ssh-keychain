@@ -1,24 +1,23 @@
 SSH-KEYCHAIN(8)              System Manager's Manual             SSH-KEYCHAIN(8)
 
 NAME
-     ssh-keychain.dylib – smartcard/keychain support library
+     ssh-keychain.dylib – smartcard/token support library
 
 DESCRIPTION
-     The ssh-keychain.dylib library is used as a PKCS11 module replacement for
-     the family of ssh tools.  It provides certificates on SmartCards and/or in
-     user keychains to the tools.
+     The ssh-keychain.dylib library is used as a PKCS#11 and Secure Key module
+     replacement for the family of ssh tools.  It provides identities from
+     CryptoTokenKit tokens (SmartCards and persistent tokens) to the tools.
 
 OVERVIEW
-     By default, all valid certificates from all SmartCards currently inserted
-     into attached readers are provided.  Manual configuration of
-     ssh-keychain.dylib is required if certificates in user keychains are
-     desired, or if there is a need to limit which SmartCard certificates are
-     provided.  The public key hash is used to select which certificates should
-     be provided.  This hash is usually in hexadecimal string form, without the
-     leading 0x.  To determine the hash for certificate on a SmartCard, the
-     sc_auth hash or sc_auth identities commands can be used.  For certificates
-     in user keychains, it is the value of the hpky attribute from security
-     find-certificate output.
+     By default, all valid (RSA for PKCS#11 and ecdsa256 for Secure Key module)
+     identities from all SmartCards and persistent tokens currently available in
+     the system are provided.  Manual configuration of ssh-keychain.dylib is
+     required if there is a need to limit which token identities are provided.
+     The public key hash is used to select which identities should be provided.
+     This hash is usually in hexadecimal string form, without the leading 0x.
+     To determine the hash for identity use the sc_auth list-ctk-identities and
+     sc_auth identities commands or pkhh attribute from security
+     export-smartcard output.
 
 ENVIRONMENT
      Configuration passed through the environment always takes precedence over
@@ -52,5 +51,5 @@ EXAMPLES
              }
 
 SEE ALSO
-     ssh-add(1), ssh_config(5), sc_auth(8)
+     security(1), ssh-add(1), ssh_config(5), sc_auth(8)
 

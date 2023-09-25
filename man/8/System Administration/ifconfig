@@ -4,12 +4,12 @@ NAME
      ifconfig – configure network interface parameters
 
 SYNOPSIS
-     ifconfig [-L] [-m] [-r] interface [create] [address_family] [address
-              [dest_address]] [parameters]
+     ifconfig [-L] [-m] [-r] [-f type:format] interface [create]
+              [address_family] [address [dest_address]] [parameters]
      ifconfig interface destroy
-     ifconfig -a [-L] [-d] [-m] [-r] [-u] [-v] [address_family]
+     ifconfig -a [-L] [-d] [-m] [-r] [-u] [-v] [-f type:format] [address_family]
      ifconfig -l [-d] [-u] [address_family]
-     ifconfig [-L] [-d] [-m] [-r] [-u] [-v] [-C]
+     ifconfig [-L] [-d] [-m] [-r] [-u] [-v] [-C] [-f type:format]
      ifconfig interface vlan vlan-tag vlandev iface
      ifconfig interface -vlandev iface
      ifconfig interface bonddev iface
@@ -524,6 +524,11 @@ DESCRIPTION
              address and shuts the interface down.  The iface argument is
              useless and hence deprecated.
 
+     tbr rate
+             Set a token bucket regulator that limits the egress bandwidth to
+             rate, measured in bps, Kbps, Mbps or Gbps.  If the specified rate
+             is zero, the token bucket regulator is disabled.
+
      The ifconfig utility displays the current configuration for a network
      interface when no optional parameters are supplied.  If a protocol family
      is specified, ifconfig will report only the details specific to that
@@ -565,6 +570,39 @@ DESCRIPTION
      regular expressions.  This flag may be used with the -a flag and the -l
      flag to further restrict the set of interfaces to be listed.
 
+     The -f flag may be used to control the output format of ifconfig.  The
+     format is specified as a comma-separated list of type:format pairs (see the
+     EXAMPLES section for more information).  The -f flag can be supplied
+     multiple times.
+
+     The types and their associated format strings are:
+
+     addr   Adjust the display of inet and inet6 addresses:
+
+            default  Default format, numeric
+            fqdn     Fully qualified domain names (FQDN)
+            host     Unqualified hostnames
+            numeric  Numeric format
+
+     ether  Adjust the display of link-level ethernet (MAC) addresses:
+
+            colon    Separate address segments with a colon
+            dash     Separate address segments with a dash
+            default  Default format, colon
+
+     inet   Adjust the display of inet address subnet masks:
+
+            cidr     CIDR notation, for example: ‘203.0.113.224/26’
+            default  Default format, hex
+            dotted   Dotted quad notation, for example: ‘255.255.255.192’
+            hex      Hexadecimal format, for example: ‘0xffffffc0’
+
+     inet6  Adjust the display of inet6 address prefixes (subnet masks):
+
+            cidr     CIDR notation, for example: ‘::1/128’ or ‘fe80::1%lo0/64’
+            default  Default format, numeric
+            numeric  Integer format, for example: ‘prefixlen 64’
+
      Only the super-user may modify the configuration of a network interface.
 
 NOTES
@@ -602,6 +640,9 @@ EXAMPLES
 
      Destroy the software network interface gif1:
            # ifconfig gif1 destroy
+
+     Display inet and inet6 address subnet masks in CIDR notation
+           # ifconfig -f inet:cidr,inet6:cidr
 
 DIAGNOSTICS
      Messages indicating the specified interface does not exist, the requested

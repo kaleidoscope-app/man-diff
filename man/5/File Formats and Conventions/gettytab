@@ -63,6 +63,8 @@ CAPABILITIES
                                        /etc/issue
      ig      bool    false             ignore garbage characters in login name
      im      str     NULL              initial (banner) message
+     iM      str     NULL              execute named file to generate initial
+                                       (banner) message
      in      str     ‘^C’              interrupt character
      is      num     unused            input speed
      kl      str     ‘^U’              kill character
@@ -77,7 +79,7 @@ CAPABILITIES
                                        clocal)
      nl      bool    false             terminal has (or might have) a newline
                                        character
-     np      bool    false             terminal uses no parity (i.e. 8-bit
+     np      bool    false             terminal uses no parity (i.e., 8-bit
                                        characters)
      nx      str     default           next table (for auto speed selection)
      o0      num     unused            tty output flags to write messages
@@ -115,6 +117,9 @@ CAPABILITIES
      bd      num     0                 backspace delay
      cb      bool    false             use crt backspace mode
      cd      num     0                 carriage-return delay
+     f0      num     unused            tty mode flags to write messages
+     f1      num     unused            tty mode flags to read login name
+     f2      num     unused            tty mode flags to leave terminal as
      fd      num     0                 form-feed (vertical motion) delay
      lc      bool    false             terminal has lower case
      nd      num     0                 newline (line-feed) delay
@@ -131,13 +136,8 @@ CAPABILITIES
      c0, c1, c2, i0, i1, i2, l0, l1, l2, o0, o1, or o2 numeric specifications,
      which can be used to specify (usually in octal, with a leading '0') the
      exact values of the flags.  These flags correspond to the termios c_cflag,
-     c_iflag, c_lflag, and c_oflag fields, respectively.  Each of these sets
-     must be completely specified to be effective.
-
-     The f0, f1, and f2 are excepted for backwards compatibility with a previous
-     incarnation of the TTY sub-system.  In these flags the bottom 16 bits of
-     the (32 bits) value contain the sgttyb sg_flags field, while the top 16
-     bits represent the local mode word.
+     c_iflag, c_lflag, and c_oflag fields, respectively.  Each these sets must
+     be completely specified to be effective.
 
      Should getty(8) receive a null character (presumed to indicate a line
      break) it will restart using the table indicated by the nx entry.  If there
@@ -162,14 +162,14 @@ CAPABILITIES
            %h               The hostname of the machine, which is normally
                             obtained from the system using gethostname(3), but
                             may also be overridden by the hn table entry.  In
-                            either case it may be edited with the he string.  A
-                            '@' in the he string causes one character from the
-                            real hostname to be copied to the final hostname.  A
-                            '#' in the he string causes the next character of
-                            the real hostname to be skipped.  Each character
-                            that is neither '@' nor '#' is copied into the final
-                            hostname.  Surplus '@' and '#' characters are
-                            ignored.
+                            either case it may be edited with the he POSIX
+                            “extended” regular expression, which is matched
+                            against the hostname.  If there are no parenthesized
+                            subexpressions in the pattern, the entire matched
+                            string is used as the final hostname; otherwise, the
+                            first matched subexpression is used instead.  If the
+                            pattern does not match, the original hostname is not
+                            modified.
 
            %t               The tty name.
 
@@ -271,7 +271,7 @@ CAPABILITIES
      during which all of the connection data has been sent by the modem.
 
 SEE ALSO
-     login(1), gethostname(3), uname(3), termcap(5), getty(8), telnetd(8)
+     login(1), gethostname(3), uname(3), termcap(5), getty(8)
 
 HISTORY
      The gettytab file format appeared in 4.2BSD.

@@ -5,10 +5,10 @@ NAME
      – file pattern searcher
 
 SYNOPSIS
-     grep [-abcdDEFGHhIiJLlMmnOopqRSsUVvwXxZz] [-A num] [-B num] [-C[num]]
+     grep [-abcdDEFGHhIiJLlMmnOopqRSsUVvwXxZz] [-A num] [-B num] [-C num]
           [-e pattern] [-f file] [--binary-files=value] [--color[=when]]
-          [--colour[=when]] [--context[=num]] [--label] [--line-buffered]
-          [--null] [pattern] [file ...]
+          [--colour[=when]] [--context=num] [--label] [--line-buffered] [--null]
+          [pattern] [file ...]
 
 DESCRIPTION
      The grep utility searches any given input files, selecting lines that match
@@ -51,11 +51,9 @@ DESCRIPTION
              The offset in bytes of a matched pattern is displayed in front of
              the respective matched line.
 
-     -C[num], --context[=num]
+     -C num, --context=num
              Print num lines of leading and trailing context surrounding each
-             match.  The default value of num is “2” and is equivalent to “-A 2
-             -B 2”.  Note: no whitespace may be given between the option and its
-             argument.
+             match.  See also the -A and -B options.
 
      -c, --count
              Only a count of selected lines is written to standard output.
@@ -126,7 +124,7 @@ DESCRIPTION
      --help  Print a brief help message.
 
      -I      Ignore binary files.  This option is equivalent to the
-             “--binary-file=without-match” option.
+             “--binary-files=without-match” option.
 
      -i, --ignore-case
              Perform case insensitive matching.  By default, grep is case
@@ -313,11 +311,11 @@ EXAMPLES
          pattern ‘FIXME’.  Do the search recursively from the /usr/src/sys/arm
          directory
 
-               $ grep -H -R FIXME --include=*.h /usr/src/sys/arm/
+               $ grep -H -R FIXME --include="*.h" /usr/src/sys/arm/
 
      -   Same as above but show only the name of the matching file:
 
-               $ grep -l -R FIXME --include=*.h /usr/src/sys/arm/
+               $ grep -l -R FIXME --include="*.h" /usr/src/sys/arm/
 
      -   Show lines containing the text ‘foo’.  The matching part of the output
          is colored and every line is prefixed with the line number and the
@@ -349,7 +347,7 @@ STANDARDS
      The grep utility is compliant with the IEEE Std 1003.1-2008 (“POSIX.1”)
      specification.
 
-     The flags [-AaBbCDdGHhILmoPRSUVw] are extensions to that specification, and
+     The flags [-AaBbCDdGHhILmopRSUVw] are extensions to that specification, and
      the behaviour of the -f flag when used with an empty pattern file is left
      undefined.
 

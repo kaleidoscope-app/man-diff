@@ -14,18 +14,17 @@ DESCRIPTION
      traffic over IPv[46] using EON encapsulation.
 
      Each gif interface is created at runtime using interface cloning.  This is
-     most easily done with the ifconfig(8) create command or using the
-     gifconfig_⟨interface⟩ variable in rc.conf(5).
+     done with the ifconfig(8) create command.
 
      To use gif, administrator needs to configure protocol and addresses used
-     for the outer header.  This can be done by using gifconfig(8), or
-     SIOCSIFPHYADDR ioctl.  Also, administrator needs to configure protocol and
-     addresses used for the inner header, by using ifconfig(8).  Note that IPv6
-     link-local address (those start with fe80::) will be automatically
-     configured whenever possible.  You may need to remove IPv6 link-local
-     address manually using ifconfig(8), when you would like to disable the use
-     of IPv6 as inner header (like when you need pure IPv4-over-IPv6 tunnel).
-     Finally, use routing table to route the packets toward gif interface.
+     for the outer header.  This can be done by using the SIOCSIFPHYADDR ioctl.
+     Also, administrator needs to configure protocol and addresses used for the
+     inner header, by using ifconfig(8).  Note that IPv6 link-local address
+     (those start with fe80::) will be automatically configured whenever
+     possible.  You may need to remove IPv6 link-local address manually using
+     ifconfig(8), when you would like to disable the use of IPv6 as inner header
+     (like when you need pure IPv4-over-IPv6 tunnel).  Finally, use routing
+     table to route the packets toward gif interface.
 
      gif can be configured to be ECN friendly.  This can be configured by
      IFF_LINK1.
@@ -69,7 +68,7 @@ DESCRIPTION
      sysctl(8) variable net.link.gif.parallel_tunnels to 1.
 
 SEE ALSO
-     inet(4), inet6(4), gifconfig(8)
+     inet(4), inet6(4),
 
      R. Gilligan and E. Nordmark, “Transition Mechanisms for IPv6 Hosts and
      Routers”, RFC2893, August 2000, ftp://ftp.isi.edu/in-notes/rfc2893.txt.

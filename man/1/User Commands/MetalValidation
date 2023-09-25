@@ -17,6 +17,7 @@ SYNOPSIS
      MTL_SHADER_VALIDATION_THREADGROUP_MEMORY
      MTL_SHADER_VALIDATION_COMPILER_INLINING
      MTL_SHADER_VALIDATION_FAIL_MODE
+     MTL_SHADER_VALIDATION_REPORT_TO_STDERR
 
 DESCRIPTION
      Unless otherwise noted all environment variables listed must be set before
@@ -112,7 +113,7 @@ ENVIRONMENT
            Setting this value to "0" will disable shader validation error
            reporting but not instrumentation or detection.
 
-     MTL_SHADER_VALIDATION_DEVICE_MEMORY
+     MTL_SHADER_VALIDATION_GLOBAL_MEMORY
            Defaults to 1
            Setting this value to "0" will disable instrumentation of device &
            constant memory access.  The result of accessing invalid global
@@ -157,14 +158,14 @@ ENVIRONMENT
            function call will be skipped.
 
      MTL_SHADER_VALIDATION_COMPILER_INLINING
-           Defaults to "default"
-           Valid options are "default", "none", "partial", "full".
+           Valid options are "default", "full".
 
-           Determines the amount of code inlining that will occur.
-           Increasing inlining may result in improved runtime performance at the
+           Determines whether code inlining will occur.
+           Setting this value to "full" will force inlining
+           Adding inlining may result in improved runtime performance at the
            cost of compile time performance.
-           Decreasing inlining may result in improved compile time performance
-           at the cost of runtime performance.
+           Reducing inlining may result in improved compile time performance at
+           the cost of runtime performance.
 
      MTL_SHADER_VALIDATION_FAIL_MODE
            Defaults to "zerofill"
@@ -177,4 +178,10 @@ ENVIRONMENT
            Setting this value to "allow" allows the invalid read or write, which
            may result in command buffer failure depending on platform, but has
            reduced compile & runtime performance impact.
+
+     MTL_SHADER_VALIDATION_REPORT_TO_STDERR
+           Defaults to "0"
+           Setting this value to any value other than "0" will redirect shader
+           validation error messages to stderr. This is useful if there is any
+           issue with the OS logging mechanism.
 

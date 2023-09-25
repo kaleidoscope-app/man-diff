@@ -10,8 +10,8 @@ SYNOPSIS
    Options:
      [-list] [-groupByType] [-nostacks] [-nosources] [-quiet] [-exclude symbol]
      [-outputGraph path] [-fullContent] [-readonlyContent] [-noContent]
-     [-diffFrom=<memgraph>] [-traceTree address] [-referenceTree]
-     [-autoreleasePools] [-debug=<mode>]
+     [-fullStackHistory] [-diffFrom=<memgraph>] [-traceTree address]
+     [-referenceTree] [-autoreleasePools] [-debug=<mode>] [-conservative]
 
 DESCRIPTION
      leaks identifies leaked memory -- memory that the application has
@@ -112,6 +112,11 @@ OPTIONS
                    from the process if you, for example, file bug reports with
                    that output included.
 
+     -fullStackHistory
+                   When generating a memory graph file, include all available
+                   MallocStackLogging backtraces, including those for historical
+                   allocations that have been freed.
+
      -diffFrom=<memgraph>
                    Show only the new leaks since the specified memgraph.
 
@@ -152,6 +157,11 @@ OPTIONS
                    output, intended for debugging and deeper investigations. Use
                    -debug=help to get more information about various debug
                    modes.
+
+     -conservative
+                   Ignore type information and scan byte-by-byte for pointers,
+                   conservatively assuming that all references are owning
+                   references.
 
      -atExit -- command
                    Launches the specified command and runs leaks when that

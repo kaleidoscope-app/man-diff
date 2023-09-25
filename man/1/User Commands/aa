@@ -1,313 +1,311 @@
 AA(1)                        General Commands Manual                       AA(1)
 
-
-
 NAME
-       aa - Manipulate Apple Archives
+     aa – Manipulate Apple Archives
 
 SYNOPSIS
-       aa command [options]
+     aa command [options]
 
 DESCRIPTION
-       aa creates and manipulates Apple Archives
+     aa creates and manipulates Apple Archives
 
 COMMANDS
-       archive           Archive the contents of the target directory
-
-       append            Archive the contents of the target directory, append to
-       an existing archive file
-
-       extract           Extract the contents of an archive to the target
-       directory
-
-       list              List the contents of an archive
-
-       convert           Convert an archive into another archive
-
-       manifest          Alias for 'archive -manifest'
-
-       verify            Compare the contents of the target directory with a
-       manifest
-
-       check-and-fix     Verify and fix the contents of the target directory
-       using an error correcting manifest
+     archive           Archive the contents of the target directory
+     append            Archive the contents of the target directory, append to
+     an existing archive file
+     extract           Extract the contents of an archive to the target
+     directory
+     list              List the contents of an archive
+     convert           Convert an archive into another archive
+     manifest          Alias for 'archive -manifest'
+     verify            Compare the contents of the target directory with a
+     manifest
+     check-and-fix     Verify and fix the contents of the target directory using
+     an error correcting manifest
 
 OPTIONS
-       -v     Increase verbosity. Default is silent operation.
+     -v      Increase verbosity.  Default is silent operation.
 
-       -h     Print usage and exit.
+     -h      Print usage and exit.
 
-       -d dir Target directory for archive/extract. Default is the current
-              directory.
+     -d -dir
+             Target directory for archive/extract.  Default is the current
+             directory.
 
-       -i input_file
-              Input file. Default is stdin.
+     -i -input_file
+             Input file.  Default is stdin.
 
-       -o output_file
-              Output file. Default is stdout.
+     -o -output_file
+             Output file.  Default is stdout.
 
-       -subdir subdir
-              Path to archive under dir. subdir will be included in the archived
-              paths, and extracted. Default is empty.
+     -subdir -subdir
+             Path to archive under dir.  subdir will be included in the archived
+             paths, and extracted.  Default is empty.
 
-       -D dir_and_subdir
-              Set both dir to `dirname dir_and_subdir` and subdir to `basename
-              dir_and_subdir`.
+     -D -dir_and_subdir
+             Set both dir to `dirname dir_and_subdir` and subdir to `basename
+             dir_and_subdir`.
 
-       -x     Do not cross volume boundaries when archiving.
+     -x      Do not cross volume boundaries when archiving.
 
-       -p     Generate destination path automatically based on source path. For
-              example 'aa archive -d foo -p' becomes 'aa archive -d foo -o
-              foo.aar'.
+     -p      Generate destination path automatically based on source path.  For
+             example 'aa archive -d foo -p' becomes 'aa archive -d foo -o
+             foo.aar'.
 
-       -a algorithm
-              Compression algorithm used when creating archives. One of lzfse,
-              lzma, lz4, zlib, raw. Default is lzfse.
+     -a -algorithm
+             Compression algorithm used when creating archives.  One of lzfse,
+             lzma, lz4, zlib, raw.  Default is lzfse.
 
-       -b block_size
-              Block size used when compressing archives, a number with optional
-              b, k, m, g suffix (bytes are assumed if no suffix is specified).
-              Default is 4m for archive and 1m for the other commands.
+     -b -block_size
+             Block size used when compressing archives, a number with optional
+             b, k, m, g suffix (bytes are assumed if no suffix is specified).
+             Default is 4m for archive and 1m for the other commands.
 
-       -t worker_threads
-              Number of worker threads compressing/decompressing data. Default
-              is the number of physical CPU on the running machine.
+     -t -worker_threads
+             Number of worker threads compressing/decompressing data.  Default
+             is the number of physical CPU on the running machine.
 
-       -wt writer_threads
-              Number of writer threads extracting archive content. Default is to
-              match worker_threads.
+     -wt -writer_threads
+             Number of writer threads extracting archive content.  Default is to
+             match worker_threads.
 
-       -enable-dedup (-no-enable-dedup)
-              If set, and SLC fields are present in the archive, files with same
-              data will be extracted as clones
+     -enable-dedup -(-no-enable-dedup)
+             If set, and SLC fields (the SLC field identifies a cluster of
+             regular files with identical content) are present in the archive,
+             files with same data will be extracted as clones.
 
-       -enable-holes (-no-enable-holes)
-              If set, and the filesystem supports it, detect and create holes in
-              files to store 0-filled segments
+             Note that to create such an archive, you have to manually add the
+             SLC field, for example `aa archive -o archive.aa -include-field SLC
+             ...`.  In this case, aa marks files with identical content as a
+             cluster and shows a summary at the end.
 
-       -ignore-eperm (-no-ignore-eperm)
-              If set, ignore EPERM (operation not permitted) errors when setting
-              files attributes
+             There is no way to deduplicate the data in the archive (by storing
+             the data only once) from the command line.  To achieve this, use
+             the API and pass the `AA_FLAG_ARCHIVE_DEDUPLICATE_DAT` flag.
 
-       -manifest
-              Alias for the following options:
-              -exclude-field dat
-              -include-field sh2,siz,idx,idz
-              -a lzfse -b 1m
+     -enable-holes -(-no-enable-holes)
+             If set, and the filesystem supports it, detect and create holes in
+             files to store 0-filled segments
 
-       -imanifest input_manifest_file
-              Manifest matching the input archive.  Can be used in conjonction
-              with the entry selection options to accelerate processing
+     -ignore-eperm -(-no-ignore-eperm)
+             If set, ignore EPERM (operation not permitted) errors when setting
+             files attributes
 
-       -omanifest output_manifest_file
-              Receives a manifest of the output archive
+     -manifest
+             Alias for the following options:
+             -exclude-field dat
+             -include-field sh2,siz,idx,idz
+             -a lzfse -b 1m
 
-       -list-format format
-              Output format for the list command, one of text, json. Default is
-              text
+     -imanifest -input_manifest_file
+             Manifest matching the input archive.  Can be used in conjonction
+             with the entry selection options to accelerate processing
 
+     -omanifest -output_manifest_file
+             Receives a manifest of the output archive
+
+     -list-format -format
+             Output format for the list command, one of text, json.  Default is
+             text
 
 ENTRY SELECTION OPTIONS
-       -include-path and -include-path-list options are applied first to select
-       an initial set of entries, then -exclude-path, -exclude-path-list,
-       -exclude-name, -exclude-regex are applied to remove entries from this
-       set.  If no -include-path or -include-path-list option is given, all
-       entries are included in the initial set.  If a directory is
-       included/excluded, the entire sub-tree is included/excluded.
+     -include-path and -include-path-list options are applied first to select an
+     initial set of entries, then -exclude-path, -exclude-path-list, -exclude-
+     name, -exclude-regex are applied to remove entries from this set.
 
-       -include-path path
-              Include entry paths having path as a prefix. This option can be
-              given multiple times.
+     If no -include-path or -include-path-list option is given, all entries are
+     included in the initial set.  If a directory is included/excluded, the
+     entire sub-tree is included/excluded.
 
-       -exclude-path path
-              Exclude entry paths having path as a prefix. This option can be
-              given multiple times.
+     -include-path -path
+             Include entry paths having path as a prefix.  This option can be
+             given multiple times.
 
-       -include-path-list path_list_file
-              File containing a list of paths to include, one entry per line.
-              This option can be given multiple times.
+     -exclude-path -path
+             Exclude entry paths having path as a prefix.  This option can be
+             given multiple times.
 
-       -exclude-path-list path_list_file
-              File containing a list of paths to exclude, one entry per line.
-              This option can be given multiple times.
+     -include-path-list -path_list_file
+             File containing a list of paths to include, one entry per line.
+             This option can be given multiple times.
 
-       -include-regex expr
-              Include entry paths matching regular expression expr, see
-              re_format(7). This option can be given multiple times.
+     -exclude-path-list -path_list_file
+             File containing a list of paths to exclude, one entry per line.
+             This option can be given multiple times.
 
-       -exclude-regex expr
-              Exclude entry paths matching regular expression expr, see
-              re_format(7). This option can be given multiple times.
+     -include-regex -expr
+             Include entry paths matching regular expression expr, see
+             re_format(7).  This option can be given multiple times.
 
-       -exclude-name name
-              Exclude entry paths where a single component of the path matches
-              exactly name. This option can be given multiple times.
+     -exclude-regex -expr
+             Exclude entry paths matching regular expression expr, see
+             re_format(7).  This option can be given multiple times.
 
-       -include-type <type_spec>
-              Include only entries matching the given types. <type_spec> is a
-              word containing one or more of the entry type characters listed
-              below.
+     -exclude-name -name
+             Exclude entry paths where a single component of the path matches
+             exactly name.  This option can be given multiple times.
 
-       -exclude-type <type_spec>
-              Include only entries not matching the given types. <type_spec> is
-              a word containing one or more of the entry type characters listed
-              below.
+     --include-type -<type_spec>
+             Include only entries matching the given types.  <type_spec> is a
+             word containing one or more of the entry type characters listed
+             below.
 
-       -include-field <field_spec>
-              Add the given fields to the set of field keys. This option can be
-              given multiple times. <field_spec> is a comma separated list of
-              entry field keys listed below.
+     -exclude-type -<type_spec>
+             Include only entries not matching the given types.  <type_spec> is
+             a word containing one or more of the entry type characters listed
+             below.
 
-       -exclude-field <field_spec>
-              Remove the given fields from the set of field keys. This option
-              can be given multiple times. <field_spec> is a comma separated
-              list of entry field keys listed below.
+     -include-field -<field_spec>
+             Add the given fields to the set of field keys.  This option can be
+             given multiple times.  <field_spec> is a comma separated list of
+             entry field keys listed below.
 
+     -exclude-field -<field_spec>
+             Remove the given fields from the set of field keys.  This option
+             can be given multiple times.  <field_spec> is a comma separated
+             list of entry field keys listed below.
 
 ENCRYPTION OPTIONS
-       When archiving, encryption is selected by one of the -password...,
-       -key..., or -recipient-pub options.  The archive will be signed if a
-       private key is specified with -sign-priv.  With the currently available
-       profiles, public/private keys are on the Elliptic Curve P-256, and
-       symmetric keys are 256-bit long.
+     When archiving, encryption is selected by one of the -password..., -key...,
+     or -recipient-pub options.
 
-       -keychain
-              Use Keychain to load/store symmetric keys and passwords
+     The archive will be signed if a private key is specified with -sign-priv.
 
-       -password file
-              File containing encryption password. When encrypting, and if
-              -password-gen is passed, receives the generated password.  Can be
-              - to print the password to standard output.
+     With the currently available profiles, public/private keys are on the
+     Elliptic Curve P-256, and symmetric keys are 256-bit long.
 
-       -password-value password
-              Password.
+     -keychain
+             Use Keychain to load/store symmetric keys and passwords
 
-       -password-gen
-              When encrypting, generate a new random password.  It is
-              recommended to always use this option, in conjonction with
-              -keychain to store the password in the Keychain, or -password to
-              store the password in a file or print it.
+     -password -file
+             File containing encryption password.  When encrypting, and if
+             -password-gen is passed, receives the generated password.  Can be -
+             to print the password to standard output.
 
-       -key file
-              File containing encryption symmetric key. When encrypting, and if
-              -key-gen is passed, receives the generated key.
+     --password-value -password
+             Password.
 
-       -key-value key
-              Symmetric key, either "hex:<64 hex digits>" or "base64:<32 bytes
-              encoded using base64>".
+     -password-gen
+             When encrypting, generate a new random password.  It is recommended
+             to always use this option, in conjonction with -keychain to store
+             the password in the Keychain, or -password to store the password in
+             a file or print it.
 
-       -key-gen
-              When encrypting, generate a new random symmetric key.
+     -key -file
+             File containing encryption symmetric key.  When encrypting, and if
+             -key-gen is passed, receives the generated key.
 
-       -recipient-pub file
-              Recipient public key for encryption.  The corresponding private
-              key is required to decrypt the archive.
+     -key-value -key
+             Symmetric key, either "hex:<64 hex digits>" or "base64:<32 bytes
+             encoded using base64>".
 
-       -recipient-priv file
-              Recipient private key for decryption.  The archive must have been
-              encrypted against the corresponding public key.
+     -key-gen
+             When encrypting, generate a new random symmetric key.
 
-       -sign-pub file
-              Signing public key for decryption.  The archive must have been
-              signed with the corresponding private key.
+     -recipient-pub -file
+             Recipient public key for encryption.  The corresponding private key
+             is required to decrypt the archive.
 
-       -sign-priv file
-              Signing private key for encryption.  The corresponding public key
-              is required to decrypt and authenticate the archive.
+     -recipient-priv -file
+             Recipient private key for decryption.  The archive must have been
+             encrypted against the corresponding public key.
 
+     -sign-pub -file
+             Signing public key for decryption.  The archive must have been
+             signed with the corresponding private key.
+
+     -sign-priv -file
+             Signing private key for encryption.  The corresponding public key
+             is required to decrypt and authenticate the archive.
 
 ENTRY TYPES
-       b block special
-       c character special
-       d directory
-       f regular file
-       l symbolic link
-       m metadata
-       p fifo
-       s socket
-
+     b block special
+     c character special
+     d directory
+     f regular file
+     l symbolic link
+     m metadata
+     p fifo
+     s socket
 
 ENTRY FIELDS
-       typ entry type
-       pat path
-       lnk link path
-       dev device id
-       uid user id
-       gid group id
-       mod access permissions
-       flg flags
-       mtm modification time
-       ctm creation time
-       btm backup time
-       xat extended attributes
-       acl access control list
-       cks CRC32 checksum
-       sh1 SHA1 digest
-       sh2 SHA2-256 digest
-       dat file contents
-       siz file size
-       duz disk usage
-       idx entry index in main archive
-       yec file data error correcting codes
-       yaf Apple Archive fields (in metadata entry)
-       all alias for all fields (exclude only)
-       attr alias for uid,gid,mod,flg,mtm,btm,ctm
-
+     typ entry type
+     pat path
+     lnk link path
+     dev device id
+     uid user id
+     gid group id
+     mod access permissions
+     flg flags
+     mtm modification time
+     ctm creation time
+     btm backup time
+     xat extended attributes
+     acl access control list
+     cks CRC32 checksum
+     sh1 SHA1 digest
+     sh2 SHA2-256 digest
+     dat file contents
+     siz file size
+     duz disk usage
+     idx entry index in main archive
+     yec file data error correcting codes
+     yaf Apple Archive fields (in metadata entry)
+     all alias for all fields (exclude only)
+     attr alias for uid,gid,mod,flg,mtm,btm,ctm
 
 EXAMPLES
-       Archive the contents of directory foo into archive foo.aar, using LZMA
-       compression with 8 MB blocks
+     Archive the contents of directory foo into archive foo.aar, using LZMA
+     compression with 8 MB blocks
 
-              aa archive -d foo -o foo.aar -a lzma -b 8m
+      aa archive -d foo -o foo.aar -a lzma -b 8m
 
-       Extract the contents of foo.aar in directory dst
+     Extract the contents of foo.aar in directory dst
 
-              aa extract -d dst -i foo.aar
+      aa extract -d dst -i foo.aar
 
-       Create a manifest of the contents of directory foo into foo.manifest,
-       using LZFSE compression with 1 MB blocks
+     Create a manifest of the contents of directory foo into foo.manifest, using
+     LZFSE compression with 1 MB blocks
 
-              aa manifest -d foo -o foo.manifest -a lzfse -b 1m
+      aa manifest -d foo -o foo.manifest -a lzfse -b 1m
 
-       Verify the contents of dst match the manifest foo.manifest
+     Verify the contents of dst match the manifest foo.manifest
 
-              aa verify -i foo.manifest -d dst -v
+      aa verify -i foo.manifest -d dst -v
 
-       Print all entry paths in foo.manifest
+     Print all entry paths in foo.manifest
 
-              aa list -i foo.manifest
+      aa list -i foo.manifest
 
-       Print all entry paths, uid, gid for regular files in foo.manifest
+     Print all entry paths, uid, gid for regular files in foo.manifest
 
-              aa list -v -i foo.manifest -include-type f -exclude-field all
-              -include-field uid,gid,pat
+      aa list -v -i foo.manifest -include-type f -exclude-field all -include-
+     field uid,gid,pat
 
-       Create a manifest of the contents of archive foo.aar in foo.manifest
+     Create a manifest of the contents of archive foo.aar in foo.manifest
 
-              aa convert -manifest -v -i foo.aar -o foo.manifest
+      aa convert -manifest -v -i foo.aar -o foo.manifest
 
-       Extract a subset of entries matching prefix Applications/Mail.app from
-       archive foo.aar in directory dst
+     Extract a subset of entries matching prefix Applications/Mail.app from
+     archive foo.aar in directory dst
 
-              aa extract -i foo.aar -include-path Applications/Mail.app -d dst
+      aa extract -i foo.aar -include-path Applications/Mail.app -d dst
 
-       Archive and encrypt directory foo to archive foo.aea, generating a random
-       password and storing it in the Keychain
+     Archive and encrypt directory foo to archive foo.aea, generating a random
+     password and storing it in the Keychain
 
-              aa archive -d foo -o foo.aea -keychain -password-gen
+      aa archive -d foo -o foo.aea -keychain -password-gen
 
-       Decrypt and extract archive foo.aea to directory dst, obtaining the
-       password from the Keychain (requires local authentication)
+     Decrypt and extract archive foo.aea to directory dst, obtaining the
+     password from the Keychain (requires local authentication)
 
-              aa extract -o foo.aea -d dst -keychain
+      aa extract -o foo.aea -d dst -keychain
 
-       Archive directory foo to archive foo.aar
+     Archive directory foo to archive foo.aar
 
-              aa archive -p -d foo
+      aa archive -p -d foo
 
-       Extract archive foo.aar to directory foo
+     Extract archive foo.aar to directory foo
 
-              aa extract -p -i foo.aar
-
-
+      aa extract -p -i foo.aar
 

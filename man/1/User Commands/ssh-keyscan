@@ -4,8 +4,8 @@ NAME
      ssh-keyscan – gather SSH public keys from servers
 
 SYNOPSIS
-     ssh-keyscan [-46cDHv] [-f file] [-p port] [-T timeout] [-t type]
-                 [host | addrlist namelist]
+     ssh-keyscan [-46cDHv] [-f file] [-O option] [-p port] [-T timeout]
+                 [-t type] [host | addrlist namelist]
 
 DESCRIPTION
      ssh-keyscan is a utility for gathering the public SSH host keys of a number
@@ -19,6 +19,10 @@ DESCRIPTION
      hosts are down or do not run sshd(8).  For scanning, one does not need
      login access to the machines that are being scanned, nor does the scanning
      process involve any encryption.
+
+     Hosts to be scanned may be specified by hostname, address or by CIDR
+     network range (e.g. 192.168.16/28).  If a network range is specified, then
+     all addresses in that range will be scanned.
 
      The options are as follows:
 
@@ -34,13 +38,28 @@ DESCRIPTION
      -f file
              Read hosts or “addrlist namelist” pairs from file, one per line.
              If ‘-’ is supplied instead of a filename, ssh-keyscan will read
-             from the standard input.  Input is expected in the format:
+             from the standard input.  Names read from a file must start with an
+             address, hostname or CIDR network range to be scanned.  Addresses
+             and hostnames may optionally be followed by comma-separated name or
+             address aliases that will be copied to the output.  For example:
 
-             1.2.3.4,1.2.4.4 name.my.domain,name,n.my.domain,n,1.2.3.4,1.2.4.4
+             192.168.11.0/24
+             10.20.1.1
+             happy.example.org
+             10.0.0.1,sad.example.org
 
      -H      Hash all hostnames and addresses in the output.  Hashed names may
              be used normally by ssh(1) and sshd(8), but they do not reveal
              identifying information should the file's contents be disclosed.
+
+     -O option
+             Specify a key/value option.  At present, only a single option is
+             supported:
+
+             hashalg=algorithm
+                     Selects a hash algorithm to use when printing SSHFP records
+                     using the -D flag.  Valid algorithms are “sha1” and
+                     “sha256”.  The default is to print both.
 
      -p port
              Connect to port on the remote host.
@@ -54,9 +73,10 @@ DESCRIPTION
 
      -t type
              Specify the type of the key to fetch from the scanned hosts.  The
-             possible values are “dsa”, “ecdsa”, “ed25519”, or “rsa”.  Multiple
-             values may be specified by separating them with commas.  The
-             default is to fetch “rsa”, “ecdsa”, and “ed25519” keys.
+             possible values are “dsa”, “ecdsa”, “ed25519”, “ecdsa-sk”,
+             “ed25519-sk”, or “rsa”.  Multiple values may be specified by
+             separating them with commas.  The default is to fetch “rsa”,
+             “ecdsa”, “ed25519”, “ecdsa-sk”, and “ed25519-sk” keys.
 
      -v      Verbose mode: print debugging messages about progress.
 
@@ -73,6 +93,10 @@ EXAMPLES
      Print the RSA host key for machine hostname:
 
            $ ssh-keyscan -t rsa hostname
+
+     Search a network range, printing all supported key types:
+
+           $ ssh-keyscan 192.168.0.64/25
 
      Find all hosts from the file ssh_hosts which have new or different keys
      from those in the sorted file ssh_known_hosts:

@@ -4,7 +4,8 @@ NAME
      networkQuality – Network quality testing tool
 
 SYNOPSIS
-     networkQuality [-chksv] [-C configuration URL] [-I interface] [-r host]
+     networkQuality [-chksv] [-C configuration URL] [-f force HTTP version]
+                    [-I interface] [-r host] [-S port]
 
 DESCRIPTION
      networkQuality allows for measuring the different aspects of Network
@@ -32,12 +33,26 @@ DESCRIPTION
               https://github.com/network-quality/server for server
               implementation details.
 
+     -f <option[,<option>,...]>
+              Force usage of a specific protocol selection:
+                 h1: To enforce HTTP/1.1
+                 h2: To enforce HTTP/2
+                 h3: To enforce HTTP/3 (QUIC)
+                 L4S: To force-enable L4S
+                 noL4S: To force-disable L4S
+
      -I interface
               Bind test to interface (e.g., en0, pdp_ip0,...)
 
               If not specified, the default interface will be used.
 
      -r host  Connect to host or IP, overriding DNS for initial config request
+
+     -S port  Create a networkQuality server-instance running locally on the
+              specified port.  It will display the URL of the config-file that
+              can be passed on to a client-instance with option -C. Note that
+              the certificate is self-signed and thus option -k needs to be used
+              on the client-instance.
 
      -c       Produce computer-readable output.
 

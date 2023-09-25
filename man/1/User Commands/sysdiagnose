@@ -6,9 +6,10 @@ NAME
 
 SYNOPSIS
      sysdiagnose -h
-     sysdiagnose [-f results_directory] [-A archive_name] [-V volume_path] [-n]
-                 [-C, --compression compression_type] [-k] [-F] [-S] [-u] [-Q]
-                 [-b] [-p] [-P] [-d] [-D] [-r] [-R] [process_name | pid]
+     sysdiagnose [-H] [-v] [-f results_directory] [-A archive_name]
+                 [-V volume_path] [-C, --compression compression_type] [-n] [-k]
+                 [-F] [-S] [-u] [-Q] [-b] [-p] [-P] [-g] [-G] [-d] [-D] [-r]
+                 [-R] [process_name | pid]
 
 DESCRIPTION
      The sysdiagnose tool gathers system diagnostic information helpful in
@@ -21,7 +22,6 @@ DESCRIPTION
 
    What sysdiagnose collects:
            •   A spindump of the system
-           •   Several seconds of fs_usage ouput
            •   Several seconds of top output
            •   Data about kernel zones
            •   Status of loaded kernel extensions
@@ -42,6 +42,8 @@ DESCRIPTION
 OPTIONS
      -h       Display help.
 
+     -H       Print the path to the default sysdiagnose output directory.
+
      -v       Enable verbose mode to display the container information as it
               executes.
 
@@ -55,11 +57,11 @@ OPTIONS
      -V volume_path
               Specify the root volume for sysdiagnose to run on.
 
-     -n       Do not tar the resulting sysdiagnose directory.
-
      -C, --compression compression_type [tar|yaa|default|no-compression]
               Specify the compression type for the resulting sysdiagnose
               directory.
+
+     -n       Do not tar the resulting sysdiagnose directory.
 
      -k       Do not remove the temporary directory.
 
@@ -71,23 +73,25 @@ OPTIONS
 
      -Q       Skip footprint.
 
+     -q       Same as -Q
+
      -b       Do NOT show the resulting archive in a Finder window upon
               completion.
 
-     -p       Collect only time-sensitive data. Disregards previous -d or -r
+     -p       Only run time-sensitive collections; disregards previous -d or -r
               flags.
 
-     -P       Do not collect time-sensitive data.
+     -P       Do not run time-sensitive collections.
 
-     -d       Collect only log collection data. Disregards previous -p or -r
+     -g       Only run log generation collections; disregards previous -p or -r
               flags.
 
-     -D       Do not collect log collection data.
+     -G       Do not run log generation collections.
 
-     -g       Collect only log generation data. Disregards previous -p or -r
+     -d       Only run log copying collections; disregards previous -p or -r
               flags.
 
-     -G       Do not collect log generation data.
+     -D       Do not run log copying collections.
 
      -r       Collect only log archive. Disregards previous -p or -d flags.
 

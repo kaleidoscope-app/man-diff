@@ -4,27 +4,69 @@ NAME
      last – indicate last logins of users and ttys
 
 SYNOPSIS
-     last [-n] [-h host] [-t tty] [user ...]
+     last [--libxo] [-swy] [-d [[CC]YY][MMDD]hhmm[.SS]] [-f file] [-h host]
+          [-n maxrec] [-t tty] [user ...]
 
 DESCRIPTION
-     Last will list the sessions of specified users, ttys, and hosts, in reverse
-     time order.  Each line of output contains the user name, the tty from which
-     the session was conducted, any hostname, the start and stop times for the
-     session, and the duration of the session.  If the session is still
-     continuing or was cut short by a crash or shutdown, last will so indicate.
+     The last utility will either list the sessions of specified users, ttys,
+     and hosts, in reverse time order, or list the users logged in at a
+     specified date and time.  Each line of output contains the user name, the
+     tty from which the session was conducted, any hostname, the start and stop
+     times for the session, and the duration of the session.  If the session is
+     still continuing or was cut short by a crash or shutdown, last will so
+     indicate.
 
-     -n          Limits the report to n lines.
+     The following options are available:
+
+     --libxo     Generate output via libxo(3) in a selection of different human
+                 and machine readable formats.  See xo_parse_args(3) for details
+                 on command line arguments.
+
+     -d date     Specify the snapshot date and time.  All users logged in at the
+                 snapshot date and time will be reported.  This may be used with
+                 the -f option to derive the results from stored utx.log files.
+                 When this argument is provided, all other options except for -f
+                 and -n are ignored.  The argument should be in the form
+                 [[CC]YY][MMDD]hhmm[.SS] where each pair of letters represents
+                 the following:
+
+                       CC      The first two digits of the year (the century).
+                       YY      The second two digits of the year.  If YY is
+                               specified, but CC is not, a value for YY between
+                               69 and 99 results in a CC value of 19.
+                               Otherwise, a CC value of 20 is used.
+                       MM      Month of the year, from 1 to 12.
+                       DD      Day of the month, from 1 to 31.
+                       hh      Hour of the day, from 0 to 23.
+                       mm      Minute of the hour, from 0 to 59.
+                       SS      Second of the minute, from 0 to 60.
+
+                 If the CC and YY letter pairs are not specified, the values
+                 default to the current year.  If the SS letter pair is not
+                 specified, the value defaults to 0.
+
+     -f file     Read the file file instead of the default, /var/log/utx.log.
 
      -h host     Host names may be names or internet numbers.
+
+     -n maxrec   Limit the report to maxrec lines.
+
+     -s          Report the duration of the login session in seconds, instead of
+                 the default days, hours and minutes.
 
      -t tty      Specify the tty.  Tty names may be given fully or abbreviated,
                  for example, “last -t 03” is equivalent to “last -t tty03”.
 
-     If multiple arguments are given, the information which applies to any of
-     the arguments is printed, e.g., “last root -t console” would list all of
-     “root's” sessions as well as all sessions on the console terminal. If no
-     users, hostnames or terminals are specified, last prints a record of all
-     logins and logouts.
+     -w          Widen the duration field to show seconds, as well as the
+                 default days, hours and minutes.
+
+     -y          Report the year in the session start time.
+
+     If multiple arguments are given, and a snapshot time is not specified, the
+     information which applies to any of the arguments is printed, e.g., “last
+     root -t console” would list all of “root's” sessions as well as all
+     sessions on the console terminal.  If no users, hostnames or terminals are
+     specified, last prints a record of all logins and logouts.
 
      The pseudo-user reboot logs in at reboots of the system, thus “last reboot”
      will give an indication of mean time between reboot.
@@ -33,9 +75,37 @@ DESCRIPTION
      progressed.  If interrupted with a quit signal last indicates how far the
      search has progressed and then continues.
 
+FILES
+     /var/log/utx.log  login data base
+
+EXAMPLES
+     Show logins in pts/14 with the duration in seconds and limit the report to
+     two lines:
+
+           $ last -n2 -s -t pts/14
+           bob    pts/1   Wed Dec  9 11:08   still logged in
+           bob    pts/2   Mon Dec  7 20:10 - 20:23  (     776)
+
+     Show active logins at ‘December 7th 20:23’ of the current year:
+
+           $ last -d 12072023
+           bob    pts/1    Mon Dec  7 20:10 - 20:23  (00:12)
+           bob    pts/6    Mon Dec  7 19:24 - 22:27  (03:03)
+           alice  ttyv0    Mon Dec  7 19:18 - 22:27  (03:09)
+
 SEE ALSO
-     lastcomm(1), utmpx(5), ac(8)
+     lastcomm(1), getutxent(3), libxo(3), xo_parse_args(3), ac(8)
 
 HISTORY
-     Last appeared in 3.0BSD.
+     last utility first appeared in 1BSD.
+
+AUTHORS
+     The original version was written by Howard P. Katseff; Keith Bostic rewrote
+     it in 1986/87 to add functionality and to improve code quality.  Philip
+     Paeps added libxo(3) support in August 2018.
+
+BUGS
+     If a login shell should terminate abnormally for some reason, it is likely
+     that a logout record will not be written to the utx.log file.  In this
+     case, last will indicate the logout time as "shutdown".
 

@@ -11,11 +11,12 @@ DESCRIPTION
            2.   user's configuration file (~/.ssh/config)
            3.   system-wide configuration file (/etc/ssh/ssh_config)
 
-     For each parameter, the first obtained value will be used.  The
-     configuration files contain sections separated by Host specifications, and
-     that section is only applied for hosts that match one of the patterns given
-     in the specification.  The matched host name is usually the one given on
-     the command line (see the CanonicalizeHostname option for exceptions).
+     Unless noted otherwise, for each parameter, the first obtained value will
+     be used.  The configuration files contain sections separated by Host
+     specifications, and that section is only applied for hosts that match one
+     of the patterns given in the specification.  The matched host name is
+     usually the one given on the command line (see the CanonicalizeHostname
+     option for exceptions).
 
      Since the first obtained value for each parameter is used, more host-
      specific declarations should be given near the beginning of the file, and
@@ -343,6 +344,11 @@ DESCRIPTION
              and additional forwardings can be given on the command line.  Only
              the superuser can forward privileged ports.
 
+     EnableEscapeCommandline
+             Enables the command line option in the EscapeChar menu for
+             interactive sessions (default ‘~C’).  By default, the command line
+             is disabled.
+
      EnableSSHKeysign
              Setting this option to yes in the global client configuration file
              /etc/ssh/ssh_config enables the use of the helper program
@@ -575,14 +581,17 @@ DESCRIPTION
      IdentityFile
              Specifies a file from which the user's DSA, ECDSA, authenticator-
              hosted ECDSA, Ed25519, authenticator-hosted Ed25519 or RSA
-             authentication identity is read.  The default is ~/.ssh/id_rsa,
-             ~/.ssh/id_ecdsa, ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519,
-             ~/.ssh/id_ed25519_sk and ~/.ssh/id_dsa.  Additionally, any
-             identities represented by the authentication agent will be used for
-             authentication unless IdentitiesOnly is set.  If no certificates
-             have been explicitly specified by CertificateFile, ssh(1) will try
-             to load certificate information from the filename obtained by
-             appending -cert.pub to the path of a specified IdentityFile.
+             authentication identity is read.  You can also specify a public key
+             file to use the corresponding private key that is loaded in
+             ssh-agent(1) when the private key file is not present locally.  The
+             default is ~/.ssh/id_rsa, ~/.ssh/id_ecdsa, ~/.ssh/id_ecdsa_sk,
+             ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk and ~/.ssh/id_dsa.
+             Additionally, any identities represented by the authentication
+             agent will be used for authentication unless IdentitiesOnly is set.
+             If no certificates have been explicitly specified by
+             CertificateFile, ssh(1) will try to load certificate information
+             from the filename obtained by appending -cert.pub to the path of a
+             specified IdentityFile.
 
              Arguments to IdentityFile may use the tilde syntax to refer to a
              user's home directory or the tokens described in the TOKENS
@@ -896,18 +905,18 @@ DESCRIPTION
              ssh-agent(1) forwarding.
 
      RekeyLimit
-             Specifies the maximum amount of data that may be transmitted before
-             the session key is renegotiated, optionally followed by a maximum
-             amount of time that may pass before the session key is
-             renegotiated.  The first argument is specified in bytes and may
-             have a suffix of ‘K’, ‘M’, or ‘G’ to indicate Kilobytes, Megabytes,
-             or Gigabytes, respectively.  The default is between ‘1G’ and ‘4G’,
-             depending on the cipher.  The optional second value is specified in
-             seconds and may use any of the units documented in the TIME FORMATS
-             section of sshd_config(5).  The default value for RekeyLimit is
-             default none, which means that rekeying is performed after the
-             cipher's default amount of data has been sent or received and no
-             time based rekeying is done.
+             Specifies the maximum amount of data that may be transmitted or
+             received before the session key is renegotiated, optionally
+             followed by a maximum amount of time that may pass before the
+             session key is renegotiated.  The first argument is specified in
+             bytes and may have a suffix of ‘K’, ‘M’, or ‘G’ to indicate
+             Kilobytes, Megabytes, or Gigabytes, respectively.  The default is
+             between ‘1G’ and ‘4G’, depending on the cipher.  The optional
+             second value is specified in seconds and may use any of the units
+             documented in the TIME FORMATS section of sshd_config(5).  The
+             default value for RekeyLimit is default none, which means that
+             rekeying is performed after the cipher's default amount of data has
+             been sent or received and no time based rekeying is done.
 
      RemoteCommand
              Specifies a command to execute on the remote machine after
@@ -954,6 +963,13 @@ DESCRIPTION
              request a TTY when standard input is a TTY), force (always request
              a TTY) or auto (request a TTY when opening a login session).  This
              option mirrors the -t and -T flags for ssh(1).
+
+     RequiredRSASize
+             Specifies the minimum RSA key size (in bits) that ssh(1) will
+             accept.  User authentication keys smaller than this limit will be
+             ignored.  Servers that present host keys smaller than this limit
+             will cause the connection to be terminated.  The default is 1024
+             bits.  Note that this limit may only be raised from the default.
 
      RevokedHostKeys
              Specifies revoked host public keys.  Keys listed in this file will
@@ -1155,8 +1171,9 @@ DESCRIPTION
              separated by whitespace.  Each filename may use tilde notation to
              refer to the user's home directory, the tokens described in the
              TOKENS section and environment variables as described in the
-             ENVIRONMENT VARIABLES section.  The default is ~/.ssh/known_hosts,
-             ~/.ssh/known_hosts2.
+             ENVIRONMENT VARIABLES section.  A value of none causes ssh(1) to
+             ignore any user-specific known hosts files.  The default is
+             ~/.ssh/known_hosts, ~/.ssh/known_hosts2.
 
      VerifyHostKeyDNS
              Specifies whether to verify the remote key using DNS and SSHFP
@@ -1255,7 +1272,7 @@ TOKENS
 
      LocalCommand accepts all tokens.
 
-     ProxyCommand accepts the tokens %%, %h, %n, %p, and %r.
+     ProxyCommand and ProxyJump accept the tokens %%, %h, %n, %p, and %r.
 
 ENVIRONMENT VARIABLES
      Arguments to some keywords can be expanded at runtime from environment

@@ -6,7 +6,7 @@ NAME
        visudo - edit the sudoers file
 
 SYNOPSIS
-       visudo [-chqsV] [[-f] sudoers]
+       visudo [-chIOPqsV] [[-f] sudoers]
 
 DESCRIPTION
        visudo edits the sudoers file in a safe fashion, analogous to vipw(8).
@@ -22,72 +22,96 @@ DESCRIPTION
        enter ‘e’ to re-edit the sudoers file, ‘x’ to exit without saving the
        changes, or ‘Q’ to quit and save changes.  The ‘Q’ option should be used
        with extreme caution because if visudo believes there to be a syntax
-       error, so will sudo and no one will be able to run sudo again until the
-       error is fixed.  If ‘e’ is typed to edit the sudoers file after a syntax
-       error has been detected, the cursor will be placed on the line where the
-       error occurred (if the editor supports this feature).
+       error, so will sudo.  If ‘e’ is typed to edit the sudoers file after a
+       syntax error has been detected, the cursor will be placed on the line
+       where the error occurred (if the editor supports this feature).
 
        There are two sudoers settings that determine which editor visudo will
        run.
 
-       editor    A colon (‘:’) separated list of editors allowed to be used with
-                 visudo.  visudo will choose the editor that matches the user's
-                 SUDO_EDITOR, VISUAL or EDITOR environment variable if possible,
-                 or the first editor in the list that exists and is executable.
-                 Note that sudo does not preserve the SUDO_EDITOR, VISUAL or
-                 EDITOR environment variables unless they are present in the
-                 env_keep list or the env_reset option is disabled in the
-                 sudoers file.  The default editor path is vi which can be set
-                 at compile time via the --with-editor configure option.
+       editor      A colon (‘:’) separated list of editors allowed to be used
+                   with visudo.  visudo will choose the editor that matches the
+                   user's SUDO_EDITOR, VISUAL, or EDITOR environment variable if
+                   possible, or the first editor in the list that exists and is
+                   executable.  sudo does not preserve the SUDO_EDITOR, VISUAL,
+                   or EDITOR environment variables unless they are present in
+                   the env_keep list or the env_reset option is disabled in the
+                   sudoers file.  The default editor path is /usr/bin/vi which
+                   can be set at compile time via the --with-editor configure
+                   option.
 
-       env_editor
-                 If set, visudo will use the value of the SUDO_EDITOR, VISUAL or
-                 EDITOR environment variables before falling back on the default
-                 editor list.  Note that visudo is typically run as root so this
-                 option may allow a user with visudo privileges to run arbitrary
-                 commands as root without logging.  An alternative is to place a
-                 colon-separated list of “safe” editors int the editor variable.
-                 visudo will then only use SUDO_EDITOR, VISUAL or EDITOR if they
-                 match a value specified in editor.  If the env_reset flag is
-                 enabled, the SUDO_EDITOR, VISUAL and/or EDITOR environment
-                 variables must be present in the env_keep list for the
-                 env_editor flag to function when visudo is invoked via sudo.
-                 The default value is on, which can be set at compile time via
-                 the --with-env-editor configure option.
+       env_editor  If set, visudo will use the value of the SUDO_EDITOR, VISUAL,
+                   or EDITOR environment variables before falling back on the
+                   default editor list.  visudo is typically run as root so this
+                   option may allow a user with visudo privileges to run
+                   arbitrary commands as root without logging.  An alternative
+                   is to place a colon-separated list of “safe” editors in the
+                   editor variable.  visudo will then only use SUDO_EDITOR,
+                   VISUAL, or EDITOR if they match a value specified in editor.
+                   If the env_reset flag is enabled, the SUDO_EDITOR, VISUAL,
+                   and/or EDITOR environment variables must be present in the
+                   env_keep list for the env_editor flag to function when visudo
+                   is invoked via sudo.  The default value is on, which can be
+                   set at compile time via the --with-env-editor configure
+                   option.
 
        The options are as follows:
 
-       -c, --check Enable check-only mode.  The existing sudoers file (and any
-                   other files it includes) will be checked for syntax errors.
-                   If the path to the sudoers file was not specified, visudo
-                   will also check the file owner and mode.  A message will be
-                   printed to the standard output describing the status of
-                   sudoers unless the -q option was specified.  If the check
-                   completes successfully, visudo will exit with a value of 0.
-                   If an error is encountered, visudo will exit with a value of
-                   1.
+       -c, --check
+               Enable check-only mode.  The existing sudoers file (and any other
+               files it includes) will be checked for syntax errors.  If the
+               path to the sudoers file was not specified, visudo will also
+               check the file ownership and permissions (see the -O and -P
+               options).  A message will be printed to the standard output
+               describing the status of sudoers unless the -q option was
+               specified.  If the check completes successfully, visudo will exit
+               with a value of 0.  If an error is encountered, visudo will exit
+               with a value of 1.
 
        -f sudoers, --file=sudoers
-                   Specify an alternate sudoers file location, see below.  As of
-                   version 1.8.27, the sudoers path can be specified without
-                   using the -f option.
+               Specify an alternate sudoers file location, see below.  As of
+               version 1.8.27, the sudoers path can be specified without using
+               the -f option.
 
-       -h, --help  Display a short help message to the standard output and exit.
+       -h, --help
+               Display a short help message to the standard output and exit.
 
-       -q, --quiet Enable quiet mode.  In this mode details about syntax errors
-                   are not printed.  This option is only useful when combined
-                   with the -c option.
+       -I, --no-includes
+               Disable the editing of include files unless there is a pre-
+               existing syntax error.  By default, visudo will edit the main
+               sudoers file and any files included via @include or #include
+               directives.  Files included via @includedir or #includedir are
+               never edited unless they contain a syntax error.
+
+       -O, --owner
+               Enforce the default ownership (user and group) of the sudoers
+               file.  In edit mode, the owner of the edited file will be set to
+               the default.  In check mode (-c), an error will be reported if
+               the owner is incorrect.  This option is enabled by default if the
+               sudoers file was not specified.
+
+       -P, --perms
+               Enforce the default permissions (mode) of the sudoers file.  In
+               edit mode, the permissions of the edited file will be set to the
+               default.  In check mode (-c), an error will be reported if the
+               file permissions are incorrect.  This option is enabled by
+               default if the sudoers file was not specified.
+
+       -q, --quiet
+               Enable quiet mode.  In this mode details about syntax errors are
+               not printed.  This option is only useful when combined with the
+               -c option.
 
        -s, --strict
-                   Enable strict checking of the sudoers file.  If an alias is
-                   referenced but not actually defined or if there is a cycle in
-                   an alias, visudo will consider this a syntax error.  Note
-                   that it is not possible to differentiate between an alias and
-                   a host name or user name that consists solely of uppercase
-                   letters, digits, and the underscore (‘_’) character.
+               Enable strict checking of the sudoers file.  If an alias is
+               referenced but not actually defined or if there is a cycle in an
+               alias, visudo will consider this a syntax error.  It is not
+               possible to differentiate between an alias and a host name or
+               user name that consists solely of uppercase letters, digits, and
+               the underscore (‘_’) character.
 
        -V, --version
-                   Print the visudo and sudoers grammar versions and exit.
+               Print the visudo and sudoers grammar versions and exit.
 
        A sudoers file may be specified instead of the default,
        /private/etc/sudoers.  The temporary file used is the specified sudoers
@@ -101,36 +125,34 @@ DESCRIPTION
        that is configured via Debug lines in the sudo.conf(5) file.
 
        Starting with sudo 1.8.12, visudo will also parse the arguments to the
-       sudoers plugin to override the default sudoers path name, UID, GID and
-       file mode.  These arguments, if present, should be listed after the path
-       to the plugin (i.e., after sudoers.so).  Multiple arguments may be
-       specified, separated by white space.  For example:
+       sudoers plugin to override the default sudoers path name, user-ID, group-
+       ID, and file mode.  These arguments, if present, should be listed after
+       the path to the plugin (i.e., after sudoers.so).  Multiple arguments may
+       be specified, separated by white space.  For example:
 
-             Plugin sudoers_policy sudoers.so sudoers_mode=0400
+           Plugin sudoers_policy sudoers.so sudoers_mode=0400
 
        The following arguments are supported:
 
        sudoers_file=pathname
-                 The sudoers_file argument can be used to override the default
-                 path to the sudoers file.
+             The sudoers_file argument can be used to override the default path
+             to the sudoers file.
 
-       sudoers_uid=uid
-                 The sudoers_uid argument can be used to override the default
-                 owner of the sudoers file.  It should be specified as a numeric
-                 user-ID.
+       sudoers_uid=user-ID
+             The sudoers_uid argument can be used to override the default owner
+             of the sudoers file.  It should be specified as a numeric user-ID.
 
-       sudoers_gid=gid
-                 The sudoers_gid argument can be used to override the default
-                 group of the sudoers file.  It must be specified as a numeric
-                 group-ID (not a group name).
+       sudoers_gid=group-ID
+             The sudoers_gid argument can be used to override the default group
+             of the sudoers file.  It must be specified as a numeric group-ID
+             (not a group name).
 
        sudoers_mode=mode
-                 The sudoers_mode argument can be used to override the default
-                 file mode for the sudoers file.  It should be specified as an
-                 octal value.
+             The sudoers_mode argument can be used to override the default file
+             mode for the sudoers file.  It should be specified as an octal
+             value.
 
-       For more information on configuring sudo.conf(5), please refer to its
-       manual.
+       For more information on configuring sudo.conf(5), refer to its manual.
 
 ENVIRONMENT
        The following environment variables may be consulted depending on the
@@ -143,7 +165,7 @@ ENVIRONMENT
        EDITOR           Used by visudo if neither SUDO_EDITOR nor VISUAL is set
 
 FILES
-       /private/etc/sudo.conf    Sudo front end configuration
+       /private/etc/sudo.conf    Sudo front-end configuration
 
        /private/etc/sudoers      List of who can run what
 
@@ -199,17 +221,17 @@ AUTHORS
 
              Todd C. Miller
 
-       See the CONTRIBUTORS file in the sudo distribution
-       (https://www.sudo.ws/contributors.html) for an exhaustive list of people
-       who have contributed to sudo.
+       See the CONTRIBUTORS.md file in the sudo distribution
+       (https://www.sudo.ws/about/contributors/) for an exhaustive list of
+       people who have contributed to sudo.
 
 CAVEATS
        There is no easy way to prevent a user from gaining a root shell if the
        editor used by visudo allows shell escapes.
 
 BUGS
-       If you feel you have found a bug in visudo, please submit a bug report at
-       https://bugzilla.sudo.ws/
+       If you believe you have found a bug in visudo, you can submit a bug
+       report at https://bugzilla.sudo.ws/
 
 SUPPORT
        Limited free support is available via the sudo-users mailing list, see
@@ -219,8 +241,8 @@ SUPPORT
 DISCLAIMER
        visudo is provided “AS IS” and any express or implied warranties,
        including, but not limited to, the implied warranties of merchantability
-       and fitness for a particular purpose are disclaimed.  See the LICENSE
-       file distributed with sudo or https://www.sudo.ws/license.html for
+       and fitness for a particular purpose are disclaimed.  See the LICENSE.md
+       file distributed with sudo or https://www.sudo.ws/about/license/ for
        complete details.
 
 
