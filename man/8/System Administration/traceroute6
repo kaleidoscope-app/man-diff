@@ -4,8 +4,9 @@ NAME
      traceroute6 – print the route IPv6 packets will take to a network node
 
 SYNOPSIS
-     traceroute6 [-dEIlnNrvU] [-f firsthop] [-g gateway] [-m hoplimit] [-p port]
-                 [-q probes] [-s src] [-w waittime] target [datalen]
+     traceroute6 [-adEIlnNrTUv] [-f firsthop] [-g gateway] [-m hoplimit]
+                 [-p port] [-q probes] [-s src] [-t tclass] [-w waittime] target
+                 [datalen]
 
 DESCRIPTION
      The traceroute6 utility uses the IPv6 protocol hop limit field to elicit an
@@ -18,6 +19,12 @@ DESCRIPTION
      (in bytes) after the destination host name.
 
      Other options are:
+
+     -a      Turn on AS# lookups for each hop encountered.
+
+     -A as_server
+             Turn on AS# lookups and use the given server instead of the
+             default.
 
      -d      Debug mode.
 
@@ -58,6 +65,13 @@ DESCRIPTION
              interface was dropped by a routing daemon).
 
      -s src  Src specifies the source IPv6 address to be used.
+
+     -t tclass
+             tclass specifies the traffic class used when sending probe packets.
+             The value must be a decimal integer in the range 0 to 255.  The
+             default is 0.
+
+     -T      Use TCP segments for the probes.
 
      -U      Use UDP datagrams for the probes.  This is the default.
 

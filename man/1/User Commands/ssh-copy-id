@@ -5,8 +5,8 @@ NAME
      machine
 
 SYNOPSIS
-     ssh-copy-id [-f] [-n] [-s] [-i [identity_file]] [-p port] [-o ssh_option]
-                 [user@]hostname
+     ssh-copy-id [-f] [-n] [-s] [-x] [-i [identity_file]] [-p port]
+                 [-o ssh_option] [-t target_path] [user@]hostname
      ssh-copy-id -h | -?
 
 
@@ -18,9 +18,9 @@ DESCRIPTION
      to log in with each key, to see if any of them are already installed (of
      course, if you are not using ssh-agent(1) this may result in you being
      repeatedly prompted for pass-phrases).  It then assembles a list of those
-     that failed to log in, and using ssh, enables logins with those keys on the
-     remote server.  By default it adds the keys by appending them to the remote
-     user's ~/.ssh/authorized_keys (creating the file, and directory, if
+     that failed to log in and, using ssh(1), enables logins with those keys on
+     the remote server.  By default it adds the keys by appending them to the
+     remote user's ~/.ssh/authorized_keys (creating the file, and directory, if
      necessary).  It is also capable of detecting if the remote system is a
      NetScreen, and using its ‘set ssh pka-dsa key ...’ command instead.
 
@@ -51,7 +51,9 @@ DESCRIPTION
              and uploaded with sftp.  This option is useful if the server has
              restrictions on commands which can be used on the remote side.
 
-     -h, -?  Print Usage summary
+     -t target_path
+             the path on the target system where the keys should be added
+             (defaults to ".ssh/authorized_keys")
 
      -p port, -o ssh_option
              These two options are simply passed through untouched, along with
@@ -61,6 +63,12 @@ DESCRIPTION
              Rather than specifying these as command line options, it is often
              better to use (per-host) settings in ssh(1)'s configuration file:
              ssh_config(5).
+
+     -x      This option is for debugging the ssh-copy-id script itself.  It
+             sets the shell's -x flag, so that you can see the commands being
+             run.
+
+     -h, -?  Print Usage summary
 
      Default behaviour without -i, is to check if ‘ssh-add -L’ provides any
      output, and if so those keys are used.  Note that this results in the
@@ -109,7 +117,7 @@ EXAMPLES
      much better to instead use ssh(1)'s ProxyCommand and -W option, to bounce
      through remote servers while always doing direct end-to-end authentication.
      This way the middle hop(s) don't get access to your ssh-agent(1).  A web
-     search for ‘ssh proxycommand nc’ should prove enlightening (N.B. the modern
+     search for ‘ssh proxycommand nc’ should prove enlightening (NB the modern
      approach is to use the -W option, rather than nc(1)).
 
 SEE ALSO

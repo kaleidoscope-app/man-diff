@@ -69,73 +69,73 @@ COMMANDS
          boot or system kext collection.  To load or unload kexts already in a
          collection see the load and unload subcommands.
 
-         -n, —new <boot|sys|aux>
+         -n, --new <boot|sys|aux>
                 Specify one or more of boot, sys, or aux to build one or more
                 collections at a time.
 
-         -L, —no-system-collection
+         -L, --no-system-collection
                 If building an auxiliary collection, don’t look for or generate
                 a system kext collection.
 
-         -s, —strip
+         -s, --strip
                 Specify none, all, or allkexts (default: none) to strip symbol
                 information after a kext has been built into a collection.
 
-         -k, —kernel
+         -k, --kernel
                 When building the boot kext collection, specify the path to the
                 kernel.  If -V is specified, kmutil will append the variant
                 extension.
 
-         -x, —explicit-only
+         -x, --explicit-only
                 Only consider the bundle identifiers and paths explicitly
                 specified, along with their dependencies.
 
-         —compress
+         --compress
                 Compress results using the LZFSE algorithm.
 
-         —img4-encode
+         --img4-encode
                 Encode the collection in an img4 payload.
 
        • inspect: Inspect & display the contents of a kext collection according
          to the options provided.
 
-         —show-mach-header
+         --show-mach-header
                 Print the mach header(s) in the collection(s).  Use with
-                —verbose to also display contents of inner fileset entries.
+                --verbose to also display contents of inner fileset entries.
 
-         —show-fileset-entries
+         --show-fileset-entries
                 Only print mach header information present in fileset
                 subentries.  This is useful for determining prelink addresses
                 and other load information about a kext in a collection.
 
-         —show-kext-load-addresses
+         --show-kext-load-addresses
                 When displaying the default output, include the load addresses
                 of the kexts inline.
 
-         —show-kext-uuids
+         --show-kext-uuids
                 Include the UUIDs of each kext in the output.
 
-         —show-kernel-uuid
+         --show-kernel-uuid
                 Print the UUID (and version) of the kernel if present in the
                 collection.  This will output nothing if a kernel is not found
                 in the specified collection(s).
 
-         —show-kernel-uuid-only
+         --show-kernel-uuid-only
                 Print the UUID of the kernel if present in the collection, and
                 suppress default kext information.
 
-         —show-prelink-info
+         --show-prelink-info
                 Dump the raw __PRELINK_INFO segment of the collection(s).
 
-         —show-collection-metadata
+         --show-collection-metadata
                 Print the metadata of the collection(s), such as their prelink
                 uuids, the uuids of collections they link against, and the build
                 version that produced the collection.
 
-         —show-mach-boot-properties
+         --show-mach-boot-properties
                 Print derived Mach-O boot properties of the collection(s).
 
-         —json  Output the section layout as JSON.
+         --json Output the section layout as JSON.
 
        • load: Load the extension(s) specified with -b or -p.  If the extension
          is not already in the auxiliary kext collection, the collection will be
@@ -153,17 +153,17 @@ COMMANDS
          which are described in Apple’s developer documentation.  These
          functions continue to be supported as of macOS 11.
 
-         -P, —personality-name
+         -P, --personality-name
                 If this kext is already loaded, send the named personality to
                 the catalog.
 
-         -e, —no-default-repositories
+         -e, --no-default-repositories
                 Don’t use the default repositories for kexts.  If you use this
                 option, you will have to explicitly specify all dependencies of
                 the kext being loaded, or otherwise worked on using the
-                —repository option.
+                --repository option.
 
-         —load-style
+         --load-style
                 Control the load style of the request to load extension.  Valid
                 options:
 
@@ -193,11 +193,11 @@ COMMANDS
          unload will fail.  You can determine whether a kext has dependents
          using the showloaded subcommand.
 
-         -c, —class-name <class-name>
+         -c, --class-name <class-name>
                 Terminate all instances of the IOService class, but do not
                 unload its kext or unload its personalities.
 
-         -P, —personalities-only
+         -P, --personalities-only
                 Terminate services and remove personalities only; do not unload
                 kexts.
 
@@ -207,36 +207,36 @@ COMMANDS
          versions.  Information on symbols not found are printed after the
          library kext information for each architecture.
 
-         A handy use of the libraries subcommand is to run it with just the —xml
-         flag and pipe the output to pbcopy(1).  If the exit status is zero
-         (indicating no undefined or multiply-defined symbols), you can open
-         your kext’s Info.plist file in a text editor and paste the library
+         A handy use of the libraries subcommand is to run it with just the
+         --xml flag and pipe the output to pbcopy(1).  If the exit status is
+         zero (indicating no undefined or multiply-defined symbols), you can
+         open your kext’s Info.plist file in a text editor and paste the library
          declarations over the OSBundleLibraries property.
 
          You can specify other collections with the libraries subcommand to look
          for dependencies in other collections as well.
 
-         —all-symbols
+         --all-symbols
                 List all symbols; found, not found, or found more than once.
 
-         —onedef-symbols
+         --onedef-symbols
                 List all symbols found, with the library kext they were found
                 in.
 
-         —multdef-symbols
+         --multdef-symbols
                 List all symbols found more than once, with their library kexts.
 
-         —undef-symbols
+         --undef-symbols
                 List all symbols not found in any library.
 
-         —unsupported
+         --unsupported
                 Look in unsupported kexts for symbols.
 
-         -c, —compatible-versions
+         -c, --compatible-versions
                 Use library kext compatible versions rather than current
                 versions.
 
-         —xml   Print XML fragment suitable for pasting.
+         --xml  Print XML fragment suitable for pasting.
 
        • showloaded: Display the status/information of loaded kernel extensions
          on the system, according to the options provided.  By default, the
@@ -259,8 +259,8 @@ COMMANDS
                 occupies.
 
          Architecture
-                The architecture of the kext, displayed only if using the —arch-
-                info option.
+                The architecture of the kext, displayed only if using the
+                --arch-info option.
 
          Name   The CFBundleIdentifier of the kext.
 
@@ -273,35 +273,35 @@ COMMANDS
 
          The following options are available for the showloaded command:
 
-         —show-mach-headers
+         --show-mach-headers
                 Show the mach headers of the loaded extensions and/or kernel, if
-                —show-kernel is specified.
+                --show-kernel is specified.
 
-         —show <loaded|unloaded|all>
+         --show <loaded|unloaded|all>
                 Restrict output to a specific load state.
 
-         —collection <boot|sys|aux|codeless>
+         --collection <boot|sys|aux|codeless>
                 Restrict the load information to a particular kind.  Defaults to
                 all non-codeless kexts if unspecified.  To display information
                 about codeless kexts and dexts that the kernel knows about, use
-                —collection codeless —show all.
+                --collection codeless --show all.
 
-         —sort  Sort the output by load address of each extension, instead of by
+         --sort Sort the output by load address of each extension, instead of by
                 index.
 
-         —list-only
+         --list-only
                 Print the list of extensions only, omitting the header on the
                 first line.
 
-         —arch-info
+         --arch-info
                 Include the architecture info in output.
 
-         —no-kernel-components
+         --no-kernel-components
                 Do not show kernel components in output.
 
-         —show-kernel
+         --show-kernel
                 Show load information about the kernel in the output.  Use with
-                —show-mach-headers to view the kernel mach header.
+                --show-mach-headers to view the kernel mach header.
 
        • dumpstate: Display diagnostic information about the state of
          kernelmanagerd(8).
@@ -316,21 +316,21 @@ COMMANDS
        • check: Check that load information and/or kext collections on the
          system are consistent.
 
-         —collection-linkage
+         --collection-linkage
                 Check to see that the collections on the system are properly
                 linked together by inspecting the UUID metadata in the prelink
                 info section of each collection on the system.
 
-         —load-info
+         --load-info
                 Check to see that the load information in the kernel properly
                 mirrors the collections on disk.  This is the default action if
                 no other options are specified.
 
-         —kernel-only
+         --kernel-only
                 If checking load info, just check that the kernel matches, and
                 no other kexts.
 
-         —collection <boot|sys|aux>:
+         --collection <boot|sys|aux>:
                 Restrict consistency check to one (or more) of the specified
                 collection types.  If unspecified, check all by default.
 
@@ -346,22 +346,22 @@ COMMANDS
          collections, variants, and architectures can be specified with the
          GENERIC and COLLECTION kmutil options.
 
-         -p, —bundle-path
+         -p, --bundle-path
                 Print diagnostics for the bundle specified at this path (can be
                 specified more than once).
 
-         -Z —no-resolve-dependencies
+         -Z --no-resolve-dependencies
                 Don’t resolve kext dependencies
 
-         -D —diagnose-dependencies
+         -D --diagnose-dependencies
                 Recursively diagnose all kext dependencies of each kext
                 specified with -p.  Ignored when -Z is present.
 
-         —plugins
+         --plugins
                 Diagnose each kext found in the PlugIns directory of kexts
                 specified with -p.
 
-         —do-staging
+         --do-staging
                 Perform kext staging to the SIP protected location.  This test
                 requires root privileges.
 
@@ -408,80 +408,80 @@ RECOVERY COMMANDS
          Setting a custom boot object will further lower the system security to
          Permissive Security, and you will be prompted to confirm this action.
 
-         -c, —custom-boot-object
+         -c, --custom-boot-object
                 The Mach-O that the booter will load and start.  The file can be
                 optionally compressed and wrapped in an img4.
 
-         -C, —compress
+         -C, --compress
                 Compress the custom boot object
 
-         -v, —volume
+         -v, --volume
                 Install the custom boot object for the specified volume
 
-         —raw   Treat custom boot object as a raw file to be installed.  The
+         --raw  Treat custom boot object as a raw file to be installed.  The
                 object will be installed with custom Mach-O boot properties
                 derived from –lowest-virtual-address and –entry-point
 
-         —lowest-virtual-address
+         --lowest-virtual-address
                 Lowest virtual memory address of the raw boot object.  (iBoot
                 will map the raw boot object at this virtual address)
 
-         —entry-point
+         --entry-point
                 Virtual memory address of entry point into the raw boot object
 
 OPTIONS
    GLOBAL OPTIONS
        The following options are global to most kmutil subcommands.
 
-       -a, —arch
+       -a, --arch
               Specify the architecture to use for the extensions or collections
               specified.  Defaults to the current running architecture.
 
-       -V, —variant-suffix
+       -V, --variant-suffix
               Specify a variant, i.e., development, debug, or kasan, of
               extensions or collections to prefer instead of the release
               defaults.
 
-       -z, —no-authentication
+       -z, --no-authentication
               Disable staging and validation of extensions when performing an
               action.
 
-       -v, —verbose
+       -v, --verbose
               Enable verbose output.
 
-       -r, —repository
+       -r, --repository
               Paths to directories containing extensions.  If -R is specified,
               the volume root will be automatically prepended.
 
-       -R, —volume-root
+       -R, --volume-root
               Specify the target volume to operate on.  Defaults to /.
 
    FILTERING OPTIONS
        The following options can be used in certain kmutil commands for
        filtering its input or output.
 
-       -p, —bundle-path
+       -p, --bundle-path
               Include the bundle specified at this path in the results.  Return
               an error if not found.
 
-       -b, —bundle-identifier
+       -b, --bundle-identifier
               Search for, and/or include this identifier in the results.  Return
               an error if not found.
 
-       —optional-identifier
+       --optional-identifier
               Search for, and/or include this identifier in the results, if
               possible.
 
-       —elide-identifier
+       --elide-identifier
               Do not include this identifier in the results.
 
-       -f, —filter
+       -f, --filter
               Specify a filter, in predicate syntax, which must match against
               properties of an extension to be included in the input or output.
               This argument can be overridden by other arguments for specifying
               and including extensions.
 
-       -F, —filter-all
+       -F, --filter-all
               Specify a filter, in predicate syntax, which must match against
               properties of an extension to be included in the input or output.
               This argument can not be overridden by other arguments for
@@ -503,16 +503,16 @@ OPTIONS
        handling kext collections.  If left unspecified, collection paths will
        default to the default paths for the system kext collections.
 
-       -B, —boot-path
+       -B, --boot-path
               The path to the boot kext collection.
 
-       -S, —system-path
+       -S, --system-path
               The path to the system kext collection.
 
-       -A, —aux-path
+       -A, --aux-path
               The path to the auxiliary kext collection.
 
-       -M, —allow-missing-collections
+       -M, --allow-missing-collections
               Recover gracefully, where applicable, if a collection is missing.
 
 EXAMPLES
