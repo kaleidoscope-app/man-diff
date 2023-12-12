@@ -131,6 +131,10 @@ DESCRIPTION
              until the end of the window will show up as 200 ms/s here and 1000
              ms/s in the regular column.
 
+     --show-process-ipc
+             Show per-process Instructions and cycles on ARM machines. Use with
+             --show-process-amp to show cluster stats.
+
      --show-all
              Enables all samplers and displays all the available information for
              each sampler.
@@ -331,10 +335,11 @@ OUTPUT
      Selective forced idle is a mechanism the operating system uses to limit
      system power while minimizing user impact, by throttling certain threads on
      the system. Each thread belongs to an SFI class, and this sampler displays
-     how much each SFI class is currently being throttled. These are
-     instantaneous values taken at the end of the sample window, and do not
-     necessarily reflect the values at other times in the window. To get SFI
-     wait time statistics on a per process basis use --show-process-wait-times.
+     how much each SFI class is currently being throttled or empty if none of
+     them is throttled. These are instantaneous values taken at the end of the
+     sample window, and do not necessarily reflect the values at other times in
+     the window. To get SFI wait time statistics on a per process basis use
+     --show-process-wait-times.
 
 KNOWN ISSUES
      Changes in system time and sleep/wake can cause minor inaccuracies in
